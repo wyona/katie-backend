@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="15px" viewBox="0 0 22 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icon/ filter_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+        <g id="Web---Backend-Dashboard" transform="translate(-1100.000000, -159.000000)" stroke="#737F8B" stroke-width="2">
+            <g id="icon/-filter_icon" transform="translate(1101.000000, 160.000000)">
+                <line x1="0" y1="0.5" x2="20" y2="0.5" id="Path-28"></line>
+                <line x1="4" y1="6.5" x2="16" y2="6.5" id="Path-28"></line>
+                <line x1="8" y1="12.5" x2="12" y2="12.5" id="Path-28"></line>
+            </g>
+        </g>
+    </g>
+</svg>

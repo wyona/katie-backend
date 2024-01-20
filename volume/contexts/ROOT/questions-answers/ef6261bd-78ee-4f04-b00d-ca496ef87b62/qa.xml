@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="ef6261bd-78ee-4f04-b00d-ca496ef87b62">
+  <question epoch="1615144636450">How to evaluate a content security policy?</question>
+  <answer content-type="text/html" type="DEFAULT">Use for example https://csp-evaluator.withgoogle.com/</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

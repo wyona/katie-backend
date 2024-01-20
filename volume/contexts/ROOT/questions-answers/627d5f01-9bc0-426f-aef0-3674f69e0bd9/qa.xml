@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="627d5f01-9bc0-426f-aef0-3674f69e0bd9">
+  <question epoch="1583935060000">What is the highest mountain of the world?</question>
+  <answer content-type="text/html" respondent-id="TODO_1" type="DEFAULT">Mount Everest</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

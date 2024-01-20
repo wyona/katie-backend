@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<knowledge-sources xmlns="http://www.wyona.com/askkatie/1.0.0">
+  <ks connector="OUTLOOK" enabled="false" id="z2n3938d-v512-4b04-8d69-5aad58fcaf46">
+    <name>KatieTest Outlook</name>
+    <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" location="users/MichaelWechner@Wyona.onmicrosoft.com" scope="Mail.Read" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="SHAREPOINT" date-synced-successfully="1696893942042" enabled="false" id="g8n2938a-b512-4b04-8d69-5aad58fjwb29" number-chunks-added="2">
+    <name>TestKatie SharePoint</name>
+    <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" scope="Sites.Read.All" sharepoint-base-url="https://wyona.sharepoint.com/sites/TestKatie" sharepoint-site-id="b961665d-2b8c-4e34-b473-72736ad9df04" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="SHAREPOINT" date-synced-successfully="1696863545274" enabled="false" id="f5b3938d-b512-4b04-8d69-5aad58fcaf46" number-chunks-added="3">
+    <name>KatieTest SharePoint</name>
+    <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" scope="Sites.Read.All" sharepoint-base-url="https://wyona.sharepoint.com/sites/KatieTest" sharepoint-site-id="43c98e69-7d22-4dc1-af38-4498240516e0" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="SHAREPOINT" enabled="false" id="i8v2538d-b512-4b04-8d69-5aad58fcaa29">
+    <name>Kommunikationswebsite (ROOT) SharePoint</name>
+    <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" scope="Sites.Read.All" sharepoint-base-url="https://wyona.sharepoint.com" sharepoint-site-id="ee203dc1-cfd8-4fce-8179-c11dd4db249c" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="SHAREPOINT" enabled="false" id="r4v1827f-b512-4b04-8d69-5aad12bmny17">
+    <name>Test SubSite (of ROOT) SharePoint</name>
+    <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" scope="Sites.Read.All" sharepoint-base-url="https://wyona.sharepoint.com/test-sub-site/" sharepoint-site-id="ee203dc1-cfd8-4fce-8179-c11dd4db249c,47ac3fc7-0349-4720-8086-7c9669dbd119" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="ONENOTE" date-synced-successfully="1690960102302" enabled="false" id="z8n0238d-b572-4k04-8d69-5aad58fcac28" number-chunks-added="4">
+    <name>KatieTest OneNote</name>
+    <microsoft-graph client-id="046d7c6c-c3c0-40f0-93a1-abcd73ce5cbe" client-secret="REPLACE" onenote-location="users/MichaelWechner@Wyona.onmicrosoft.com" scope="Notes.Read.All" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
+  </ks>
+  <ks connector="SUPABASE" enabled="false" id="j2o2492s-b512-4b04-8d69-5aad58kanx29">
+    <name>Repositorium @ Supabase</name>
+    <supabase answer-field-names="abstract, text" classifications-field-names="tags, custom_tags, coauthors" question-field-names="titel" url="https://repid.ch"/>
+  </ks>
+  <ks connector="DISCOURSE" enabled="false" id="f5n8923q-b512-4b04-8d69-5aad52bnmy63">
+    <name>Weaviate Discourse Forum</name>
+  </ks>
+  <ks connector="DIRECTUS" enabled="false" id="u5h1738d-b512-4b04-8d69-5aad58fcaf46">
+    <name>Repositorium @ Directus</name>
+    <directus collection="Repositorium" url="https://repositorium.directus.app"/>
+  </ks>
+  <ks connector="WEAVIATE_SITE_SEARCH" enabled="false" id="a3k1938d-b512-4b04-8d69-5aad58fcaf46">
+    <name>Weaviate Site Search</name>
+    <weaviate-site-search url="https://search.weaviate.io/v1/graphql"/>
+  </ks>
+  <ks connector="WEAVIATE_WIKIPEDIA_SEARCH" enabled="false" id="z5h1938d-b512-4b04-8d69-5aad58frbk29">
+    <name>Wikipedia Cohere Weaviate</name>
+    <weaviate-wikipedia-search url="https://cohere-demo.weaviate.network"/>
+  </ks>
+  <ks connector="CONFLUENCE" enabled="false" id="k4r3238d-b512-4b04-8d69-5aad58fcaf29">
+    <name>Wyona Confluence</name>
+    <!-- INFO: Create token: https://id.atlassian.com/manage-profile/security/api-tokens -->
+    <confluence token="REPLACE" url="https://wyona.atlassian.net" username="michael.wechner@wyona.com"/>
+  </ks>
+  <ks connector="GROUNDED_QA" enabled="false" id="j7n8908d-b512-4b04-8d69-5aad58fcaf17">
+    <name>Taskforce on Nature-related Financial Disclosures</name>
+    <grounded-qa site-url="https://tnfd.global" url="http://localhost:5007">
+      <!--<grounded-qa url="http://localhost:5007" topic="Weaviate">-->
+      <!--<grounded-qa url="https://grounded-qa.ukatie.com">-->
+    </grounded-qa>
+  </ks>
+  <ks connector="ENERGIS" enabled="false" id="a638238f-k582-4b04-8d69-5tnd58fcaf46">
+    <name>EnerGIS</name>
+  </ks>
+  <ks connector="WEBSITE" date-synced-successfully="1690959306395" enabled="false" id="j928238n-k582-4b04-8d69-2tnd58fcaf42" number-chunks-added="40">
+    <name>City of Zürich</name>
+    <website chunk-overlap="50" chunk-size="700" extract-css-selector="" seed-url="https://www.stadt-zuerich.ch/">
+      <urls>
+        <url>https://www.stadt-zuerich.ch/gud/de/index/beratung_bewilligung/baubewilligung/fachthemen/energetische_massnahmen/energiegesetz.html</url>
+        <url>https://www.stadt-zuerich.ch/energie/de/index/foerderung/alle-foerderprogramme/Restwertentschaedigung_Heizungsersatz.html</url>
+      </urls>
+    </website>
+  </ks>
+  <ks connector="MOCK" enabled="false" id="h9l8238d-b512-4b04-8d69-5aad58fcaf46">
+    <name>Mock Connector</name>
+  </ks>
+</knowledge-sources>

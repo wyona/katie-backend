@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="a001ea6f-51a5-4c2c-89a2-25d982b54765">
+  <question epoch="1616450846098">Wie kann ich Katie aus meinem Slack Workspace / Channel entfernen?</question>
+  <answer content-type="text/html" type="DEFAULT">Siehe die Anleitung unter https://slack.com/intl/de-de/help/articles/360003125231-Apps-und-benutzerdefinierte-Integrationen-aus-deinem-Workspace-entfernen</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="de" topic-id="slack_integration"/>
+</qa>

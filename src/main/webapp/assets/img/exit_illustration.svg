@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="29px" height="33px" viewBox="0 0 29 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>exit_illustration</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD-input" transform="translate(-437.000000, -1127.000000)">
+            <g id="exit_illustration" transform="translate(438.000000, 1127.500000)">
+                <rect id="Rectangle" fill="#E5EAF0" x="15.0288398" y="4" width="12" height="24" rx="2"></rect>
+                <path d="M-1.03028697e-13,6.68674945 L-1.03028697e-13,26.5507 C-9.99502011e-14,27.4703378 0.627134167,28.2714478 1.51987993,28.4922161 L13.2245844,31.3866878 C14.2968541,31.6518508 15.3810576,30.9975616 15.6462205,29.9252918 C15.6850663,29.768207 15.7047045,29.6069884 15.7047045,29.4451718 L15.7047045,2.77674875 C15.7047045,1.67217925 14.809274,0.776748747 13.7047045,0.776748747 C13.4893053,0.776748747 13.2753205,0.811544889 13.0710191,0.879792543 L1.36631462,4.78979325 C0.550259586,5.06239952 -1.02689974e-13,5.82636582 -1.03028697e-13,6.68674945 Z" id="Path-16" stroke="#8D99A7" stroke-width="2" fill="#FFFFFF"></path>
+                <circle id="Oval" fill="#737F8B" cx="9.85235223" cy="16" r="2"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

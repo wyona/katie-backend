@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="969ed753-c72d-4340-9e8f-898e433de879">
+  <question>what is the square root of Pi?</question>
+  <answer content-type="text/html" type="DEFAULT">The square root of Pi is approximately 1.77245</answer>
+  <source email="willacbfs001@mailinator.com"/>
+  <no-faq/>
+</qa>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="b8a72b31-252f-4c02-a0a8-94d83605c760">
+  <question>Who is Günther?</question>
+  <answer content-type="text/html" type="DEFAULT">Günther is the imaginary friend of Ezra.</answer>
+  <source email="vanyabrucker@gmail.com"/>
+  <no-faq/>
+</qa>

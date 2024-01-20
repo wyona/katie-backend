@@ -1,0 +1,12 @@
+{
+    "name": "ask",
+    "description": "Answers question",
+    "options": [
+        {
+            "name": "question",
+            "description": "Your question",
+            "type": 3,
+            "required": true
+        }
+    ]
+}

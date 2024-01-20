@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="19px" viewBox="0 0 16 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icon/ profile_icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="20 20 20 -1.79023463e-14 -2.53408405e-14 -1.12410081e-14 -3.03368441e-14 20"></polygon>
+    </defs>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Web---Backend-Dashboard" transform="translate(-460.000000, -166.000000)">
+            <g id="icon/-profile_icon" transform="translate(458.000000, 165.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <g id="Mask"></g>
+                <circle id="Oval" stroke="#737F8B" stroke-width="2" mask="url(#mask-2)" cx="10" cy="20" r="6.5"></circle>
+                <circle id="Oval" stroke="#737F8B" stroke-width="2" mask="url(#mask-2)" cx="10" cy="6" r="4"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

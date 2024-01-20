@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android",
+    "package_name": "ch.cbfs.sampleappandroid",
+    "sha256_cert_fingerprints":
+    ["1B:5F:73:1C:7C:C0:CA:5F:74:64:33:D8:0E:D3:A3:B0:93:8E:B5:BF:14:0C:74:7C:43:DC:25:FA:A5:AF:A2:34","7F:40:B5:1D:9D:25:30:5F:55:9C:E1:6A:C2:B7:27:E0:F4:F6:FA:FF:78:A7:87:3E:A7:94:98:DB:F4:55:A0:92"]
+  }
+}]

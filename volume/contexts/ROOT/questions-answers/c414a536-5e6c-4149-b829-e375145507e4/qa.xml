@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="c414a536-5e6c-4149-b829-e375145507e4">
+  <question epoch="1611738464963">how to use Docker without sudo?</question>
+  <answer content-type="text/html" type="DEFAULT">Execute 'sudo gpasswd -a $USER docker'
+
+whereas also see
+
+https://docs.docker.com/engine/install/linux-postinstall/</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

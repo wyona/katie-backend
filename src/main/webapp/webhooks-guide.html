@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+	<title>Katie - Webhooks Guide</title>
+	<link href="assets/styles/style.css" rel="stylesheet" type="text/css"/>
+	
+        <link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="mask-icon" href="assets/favicons/safari-pinned-tab.svg" color="#5bbad5"/>
+        <link type="text/css" rel="stylesheet" href="assets/font-awesome-4.6.1/css/font-awesome.min.css"/>
+
+<style>
+h2 {
+  font-size: 24px;
+}
+p {
+  font-size: 20px;
+}
+li {
+  font-size: 20px;
+}
+</style>
+</head>
+<body>
+	<a href="index.html"><img id="katie-logo" src="assets/img/katie_logo.svg"/></a>
+
+<h1>Webhooks Guide</h1>
+
+<h2>Webhook payload example without echoed custom data</h2>
+
+<pre>
+{
+  "msgtype":"answer-to-question",
+  "question":"Who was the wife of the german composer and pianist Robert Schumann?",
+  "answer":"Robert Schumann married Clara Wieck on September 12, 1840.",
+  "contenttype":"text/html",
+  "answer":"&lt;p>Robert Schumann married &lt;em>Clara Wieck&lt;/em> on September 12, 1840.&lt;/p>"
+}
+</pre>
+
+<h2>Webhook payload example with echoed custom data</h2>
+
+<pre>
+{
+  "msgtype":"answer-to-question",
+  "question":"Who was the wife of the german composer and pianist Robert Schumann?",
+  "answer":"Robert Schumann married Clara Wieck on September 12, 1840.",
+  "contenttype":"text/html",
+  "answer":"&lt;p>Robert Schumann married &lt;em>Clara Wieck&lt;/em> on September 12, 1840.&lt;/p>",
+  "echodata":"0123456789"
+}
+</pre>
+
+<h2>Webhook Discord payload example</h2>
+
+<p>
+  Discord WebHook documentation: <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks</a>
+  <br/><br/>
+  Example WebHook: https://discord.com/api/webhooks/996407023648391258/NR4J81L573ZuUSD75p1R2NvD6QGCjhkVRTWgB3x2N1EaxTAaxGUnmAOCrt-fApQkDcN6
+</p>
+
+<pre>
+{
+  "content":"The question 'Does Katie support Discord WebHooks?' has been answered: https://app.katie.qa/...",
+}
+</pre>
+
+<h2>Contact</h2>
+<p>
+<a href="mailto:contact@wyona.com?subject=Regarding Katie ...">contact@wyona.com</a>
+</p>
+
+</body>
+<footer>
+		<div id="copyright">
+			<p>Copyright &#169;</p>
+                        <p>
+                        <script type="text/javascript">
+                                     document.write(new Date().getFullYear());
+                        </script>
+                        </p>
+			<p><a href="about.html">Katie</a></p>
+		</div>
+	</footer>
+</html>

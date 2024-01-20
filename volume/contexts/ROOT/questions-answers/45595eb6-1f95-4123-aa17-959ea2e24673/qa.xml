@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="45595eb6-1f95-4123-aa17-959ea2e24673">
+  <question epoch="1617055429073">What is a Moderator?</question>
+  <answer content-type="text/html" modified="1699519632216" type="DEFAULT">
+    <p xmlns="">
+                                                              A 
+      
+        
+      
+        
+      
+        
+      
+        
+      <strong>Moderator</strong>
+                                                               is a person which is moderating the answers of Katie before answers are being replied to users.
+    
+    
+    
+    
+    
+    
+    
+    
+    </p>
+    <p xmlns="">Turning on moderation can make sense when you are testing Katie in a productive environment and you want to make sure, that the answers of Katie are really correct and helpful.</p>
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="domain_configuration"/>
+</qa>

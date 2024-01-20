@@ -1,0 +1,2 @@
+-- add new column SLACK_CHANNEL_ID
+ALTER TABLE QUESTION add SLACK_CHANNEL_ID varchar(250);

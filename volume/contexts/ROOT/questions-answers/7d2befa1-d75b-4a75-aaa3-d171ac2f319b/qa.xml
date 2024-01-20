@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="7d2befa1-d75b-4a75-aaa3-d171ac2f319b">
+  <question epoch="1592985683192">Wo kann man einen MG A mieten</question>
+  <answer content-type="text/html" type="DEFAULT">Muss es genau ein MG A sein, sonst gäb’s hier ein paar andere Briten mit Charme:
+https://www.rentaclassic.swiss/de/fahrzeug-buchen.html</answer>
+  <source email="michi@wyona.com"/>
+  <no-faq/>
+</qa>

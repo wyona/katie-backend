@@ -1,0 +1,56 @@
+<html lang="en">
+
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>Katie - SharePoint Connector</title>
+  <link href="../assets/styles/style.css" rel="stylesheet" type="text/css"/>
+	
+  <link rel="icon" type="image/png" href="favicon.ico"/>
+  <link rel="mask-icon" href="../assets/favicons/safari-pinned-tab.svg" color="#5bbad5"/>
+  <link type="text/css" rel="stylesheet" href="../assets/font-awesome-4.6.1/css/font-awesome.min.css"/>
+</head>
+
+<body>
+  <a href="../index.html"><img id="katie-logo" src="../assets/img/katie_logo.svg"/></a>
+
+<h2>SharePoint Connector</h2>
+
+<p>You can connect SharePoint with Katie using the following REST interface: <a href="https://app.katie.qa/swagger-ui/#/domain-controller/addKnowledgeSourceSharePointUsingPOST" target="_blank">https://app.katie.qa/swagger-ui/#/domain-controller/addKnowledgeSourceSharePointUsingPOST</a></p>
+
+<h3>Requirements</h3>
+In order to connect SharePoint with Katie you need to provide the following information / parameters:
+<ul>
+  <li>SharePoint Base URL, e.g. https://wyona.sharepoint.com/sites/KatieTest</li>
+  <li>SharePoint Site Id, whereas get Id for example by using Microsoft Graph: https://graph.microsoft.com/v1.0/sites?search=KatieTest</li>
+  <li>Microsoft Azure Tenant Id. whereas see https://portal.azure.com/#settings/directory</li>
+  <li>Microsoft Azure App / Client Id and Secret, whereas see Microsoft Entra Id / Applications</li>
+  <li>Configure permissions for Microsoft Azure App / Client, e.g. give consent for Sites.Read.All</li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+
+<h3>Limitations</h3>
+
+<p>SharePoint pages of Content Type "Wiki Page" do not get loaded!</p>
+<p>Also see <a href="https://learn.microsoft.com/en-us/answers/questions/629474/get-wiki-page-content-from-sharepoint-using-graph">https://learn.microsoft.com/en-us/answers/questions/629474/get-wiki-page-content-from-sharepoint-using-graph</a></p>
+
+<h2>Contact</h2>
+<p>Please send us an email in case you have trouble configuring the SharePoint connector ...</p>
+<p>
+<a href="mailto:contact@wyona.com?subject=Regarding Katie SharePoint Connector ...">contact@wyona.com</a>
+</p>
+
+</body>
+<footer>
+		<div id="copyright">
+			<p>Copyright &#169;</p>
+                        <p>
+                        <script type="text/javascript">
+                                     document.write(new Date().getFullYear());
+                        </script>
+                        </p>
+			<p><a href="../about.html">Katie</a></p>
+		</div>
+	</footer>
+</html>

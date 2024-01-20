@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="c157dfde-ecda-41aa-8b33-26a16708465f">
+  <question epoch="1590673114089">What is the phone number of Swiss in Zürich?</question>
+  <answer content-type="text/html" type="DEFAULT">The phone number of SWISS Zürich is +41 848 700 700 or see https://www.swiss.com/ch/DE/kundensupport/service-center</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

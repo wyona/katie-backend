@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>eye_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="eye_icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Oval" stroke="#737F8B" stroke-width="2" cx="12" cy="12" r="4"></circle>
+        <path d="M12,5 C8.01224122,5 4.44378523,7.39886393 1.21317491,11.9994355 C4.44333235,16.6008316 8.01198817,19 12,19 C15.9877588,19 19.5562148,16.6011361 22.7868251,12.0005645 C19.5566677,7.39916838 15.9880118,5 12,5 Z" id="Path-10" stroke="#737F8B" stroke-width="2"></path>
+    </g>
+</svg>

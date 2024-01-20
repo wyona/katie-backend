@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icon/lock_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icon/lock_icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Rectangle" stroke="#737F8B" stroke-width="2" x="4" y="7" width="12" height="12" rx="2"></rect>
+        <circle id="Oval" fill="#737F8B" cx="10" cy="13" r="2"></circle>
+        <path d="M6,6 C6.05577604,2.66666667 7.40305338,1 10.041832,1 C12.6806107,1 14,2.66666667 14,6" id="Path" stroke="#737F8B" stroke-width="2"></path>
+    </g>
+</svg>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="e51b809c-62f9-4236-88ef-afaa51bbb277">
+  <question epoch="1617055438382">How can a domain member become a moderator?</question>
+  <answer content-type="text/html" type="DEFAULT">Sign in to Katie, select the dashboard of the domain, select the member you want to become a Member and enable "Moderator" for this member.</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="domain_configuration"/>
+</qa>

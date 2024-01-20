@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="f07de5d0-194a-4a28-bfe7-966e2395772f">
+  <question epoch="1592168735172">Wie wird das Wetter heute?</question>
+  <answer content-type="text/html" type="DEFAULT">Siehe https://www.nzz.ch/wetter/wetter-heute</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

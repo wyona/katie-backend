@@ -1,0 +1,276 @@
+li {
+	list-style-type: none;
+}
+
+input:focus, select:focus, textarea:focus, button:focus {
+	outline: none;
+}
+
+html {	
+}
+
+body {
+  font-size: 16px;
+}
+
+a {
+  color: #0099cc;
+  /*color: #9FE5FF;*/
+  text-decoration: none;
+}
+
+#katie-logo {
+  margin: 0 auto 0;
+  margin-bottom: 70px;
+  display: block;
+  width: 18em;
+}
+
+#log_line {
+	margin: 0 auto 0;
+	display: block;
+	text-align: center;
+        color: #0a1117;
+}
+
+.para {
+	margin: 0 auto 0;
+	display: block;
+	text-align: center;
+        color: #0a1117;
+}
+
+#send_email {
+	margin: 0 auto 0;
+	display: block;
+	text-align: center;
+        color: #0a1117;
+}
+
+#required-input-container {
+	width: 100%;
+	height: auto;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+}
+
+.form-input {
+	font-size: 1.1em;
+	font-family: "Avenir Next Demi Bold";
+	/*color: #ef5d7d;*/
+	color: #f24f73;
+	text-align: center;
+	border: .1em solid #FF87A1;
+	border-radius: .8em;
+	width: 30em;
+	height: 4em;
+	margin-bottom: 1em;
+	margin-top: 1em;
+}
+.form-input::placeholder {
+	font-family: "Avenir Next Demi Bold";
+	color: #f24f73;
+}
+
+#submitted_question {
+        font-size: 1.1em;
+	font-family: "Avenir Next Demi Bold";
+	/*color: #ef5d7d;*/
+	color: #f24f73;
+	text-align: center;
+	border: .1em solid #FF87A1;
+	border-radius: .8em;
+	width: 30em;
+	height: 4em;
+	margin-bottom: 1em;
+	margin-top: 1em;
+}
+
+#email {
+        font-size: 1.1em;
+	font-family: "Avenir Next Demi Bold";
+	/*color: #ef5d7d;*/
+	color: #f24f73;
+	text-align: center;
+	border: .1em solid #FF87A1;
+	border-radius: .8em;
+	width: 15em;
+	height: 4em;
+	margin-bottom: 1em;
+	margin-top: 1em;
+}
+#email::placeholder {
+	font-family: "Avenir Next Demi Bold";
+	color: #f24f73;
+}
+
+#search-form-only {
+  /*border: .1em solid blue;*/
+  width: 100%;
+  overflow: auto;
+}
+
+#search-and-email-form {
+  /*border: .1em solid blue;*/
+  width: 100%;
+  overflow: auto;
+}
+
+#response_answer {
+  /*border: .1em solid blue;*/
+  text-align: center;
+  margin: 10px;
+  color: #0a1117;
+}
+
+.row {
+  height: 50px;
+  /*border: .1em solid red;*/
+/*
+  background: pink;
+*/
+}
+
+#search-and-email-form div.time_v2 {
+  /*border: .1em solid green;*/
+  width: 45%;
+  float: left;
+  text-align: right;
+  height: 50px;
+  line-height: 50px;
+}
+
+#search-and-email-form div.time_v2 span {
+  /*background: grey;*/
+  color: #f24f73;
+}
+
+#search-and-email-form div.icon_v2 {
+  /*border: .1em solid yellow;*/
+  width: 10%;
+  float: left;
+  text-align: center;
+  height: 50px;
+  line-height: 50px;
+}
+
+#search-and-email-form div.desc_v2 {
+  /*border: .1em solid pink;*/
+  width: auto;
+  float: left;
+  text-align: left;
+  height: 50px;
+  line-height: 50px;
+}
+
+#search-and-email-form div.desc_v2 span {
+  /*background: lightblue;*/
+  color: #0a1117;
+}
+
+div.panel {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.2s ease-out;
+}
+#optional-input-container {
+	width: 100%;
+	height: auto;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+}
+
+/* Get answer button */
+#input-button {
+	font-size: 1.1em;
+	cursor: pointer;
+	display: block;
+	width: 15em;
+	height: 4em;
+	border: none;
+	border-radius: .8em;
+	margin-right: auto;
+	margin-left: auto;
+	margin-top: 1em;
+	background:  #0099cc;
+	/*background: #9FE5FF;*/
+}
+#input-button p {
+	font-family: "Avenir Next Demi Bold";
+	color: #E1F7FF;
+}
+
+/* resubmit button */
+#send-button {
+	font-size: 1.1em;
+	cursor: pointer;
+	display: block;
+	width: 15em;
+	height: 4em;
+	border: none;
+	border-radius: .8em;
+	margin-right: auto;
+	margin-left: auto;
+	margin-top: 1em;
+	background:  #0099cc;
+	/*background: #9FE5FF;*/
+}
+#send-button p {
+	font-family: "Avenir Next Demi Bold";
+	color: #E1F7FF;
+}
+
+#copyright {
+	-webkit-user-select: none;        
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+	text-align: center;
+	margin-bottom: 1em;
+	margin-top: 2em;
+}
+#copyright p {
+	font-family: "Avenir Next Ultra Light";
+	color: #0a1117;
+	display: inline-block;
+}
+
+#loaderDiv {
+   display: none;
+   position: absolute;
+   transform: translateX(-50%);
+   left: 50%;
+   top: 50%;
+   height:60px;
+   width:60px;
+   margin:0px auto;
+   -webkit-animation: rotation .6s infinite linear;
+   -moz-animation: rotation .6s infinite linear;
+   -o-animation: rotation .6s infinite linear;
+   animation: rotation .6s infinite linear;
+   border-left:6px solid rgba(0,174,239,.15);
+   border-right:6px solid rgba(0,174,239,.15);
+   border-bottom:6px solid rgba(0,174,239,.15);
+   border-top:6px solid rgba(0,174,239,.8);
+   border-radius:100%;
+}
+
+@-webkit-keyframes rotation {
+   from {-webkit-transform: rotate(0deg);}
+   to {-webkit-transform: rotate(359deg);}
+}
+@-moz-keyframes rotation {
+   from {-moz-transform: rotate(0deg);}
+   to {-moz-transform: rotate(359deg);}
+}
+@-o-keyframes rotation {
+   from {-o-transform: rotate(0deg);}
+   to {-o-transform: rotate(359deg);}
+}
+@keyframes rotation {
+   from {transform: rotate(0deg);}
+   to {transform: rotate(359deg);}
+}

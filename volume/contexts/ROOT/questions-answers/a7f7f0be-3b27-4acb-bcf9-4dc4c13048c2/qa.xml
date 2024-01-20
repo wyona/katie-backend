@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="a7f7f0be-3b27-4acb-bcf9-4dc4c13048c2">
+  <question>how many legs does a horse have?</question>
+  <answer content-type="text/html" type="DEFAULT">A horse has four legs.</answer>
+  <source email="willacbfs002@mailinator.com"/>
+  <no-faq/>
+</qa>

@@ -1,0 +1,24 @@
+<html>
+<head>
+  <title>Redirect ...</title>
+
+<script type="text/javascript">
+function setRedirectLink() {
+  var url = window.location.href;
+  //alert("DEBUG: URL: " + url);
+  var queryString = url.substring(url.indexOf("/read-answer.html") + 17);
+  //alert("DEBUG: Query string: " + queryString);
+
+  var redirectLinkElem = document.getElementById("redirect");
+  //redirectLinkElem.href="http://localhost:4200/#/read-answer" + queryString;
+  redirectLinkElem.href="/#/read-answer" + queryString;
+
+  //window.location.href="http://localhost:4200/#/read-answer" + queryString;
+  window.location.href="/#/read-answer" + queryString;
+}
+</script>
+</head>
+<body onload="setRedirectLink()">
+Redirect to <a href="/#/read-answer" id="redirect">Katie</a> ...
+</body>
+</html>

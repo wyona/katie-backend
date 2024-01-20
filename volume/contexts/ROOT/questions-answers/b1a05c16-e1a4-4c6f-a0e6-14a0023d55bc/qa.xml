@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="b1a05c16-e1a4-4c6f-a0e6-14a0023d55bc">
+  <question epoch="1617055302401">Where is my data located?</question>
+  <answer content-type="text/html" type="DEFAULT">With Katie cloud, you are the owner of the data that you provide for storing and hosting in Katie cloud. We do not share your data with third parties, we use your data to provide only the services you have chosen.
+
+If you leave the Katie cloud or your subscription expires, Katie follows strict standards for removing data from its systems.
+
+With Katie on-premises you have full control of your data and are responsible yourself to backup and protect it.
+</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="data_privacy"/>
+</qa>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="dc9f3ce8-1c89-4c2d-9597-54a4cfc6186a">
+  <question>What is the age of Donald Trump?</question>
+  <answer content-type="text/html" type="DEFAULT">
+                                                        Donald Trump, the president of the US is currently 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <ak-exec xmlns="">com.wyona.katie.answers.DateOfBirth#getAgeByDateOfBirth('1946.06.14')</ak-exec>
+                                                         years old.
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

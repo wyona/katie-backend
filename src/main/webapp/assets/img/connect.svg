@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="169px" height="65px" viewBox="0 0 169 65" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60.1 (88133) - https://sketch.com -->
+    <title>connect</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD-input" transform="translate(-635.000000, -785.000000)">
+            <g id="connect" transform="translate(635.500000, 785.500000)">
+                <path d="M56.0328909,26.0781626 C51.3712241,26.0423968 49.0403907,28.0245139 49.0403907,32.0245139 C49.0403907,36.0245139 51.3712241,38.0529746 56.0328909,38.109896 L33.1954138,38 L33.1954138,26 L56.0328909,26.0781626 Z" id="Rectangle" fill="#F0B300"></path>
+                <polygon id="Rectangle" fill="#FFD559" points="48.0403907 0.0245138967 56 9.09494702e-13 56.0328909 26.0781626 48.0403907 26.0245139"></polygon>
+                <polygon id="Rectangle" fill="#FFD559" points="48.0403907 37.9463513 56 37.9218374 56.0328909 64 48.0403907 63.9463513"></polygon>
+                <path d="M0,0 L48,0 L48,26 C42.6935938,26.0163426 40.0403907,28.0245139 40.0403907,32.0245139 C40.0403907,36.0245139 42.7070574,38.0245139 48.0403907,38.0245139 L48,64 L0,64 L0,0 Z" id="Rectangle" fill="#FFBE00"></path>
+                <path d="M112.040913,0 L160.040913,0 L160.040913,64 L112.040913,64 L112.032891,38 C106.699558,38 104.032891,36 104.032891,32 C104.032891,28 106.699558,26 112.032891,26 L112.040913,0 Z" id="Rectangle" fill="#142680"></path>
+                <rect id="Rectangle" fill="#6672AC" x="160.040913" y="0" width="8" height="64"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

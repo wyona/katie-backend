@@ -1,0 +1,161 @@
+{
+	"info": {
+		"_postman_id": "c2e6e71c-bc32-486c-bf49-c88e2299ff26",
+		"name": "AskKatie",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Question Classification",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://qcapi.harishmadabushi.com/?question=what means the word stupid?&auth=29dkcmxwel",
+					"protocol": "http",
+					"host": [
+						"qcapi",
+						"harishmadabushi",
+						"com"
+					],
+					"path": [
+						""
+					],
+					"query": [
+						{
+							"key": "question",
+							"value": "what means the word stupid?"
+						},
+						{
+							"key": "auth",
+							"value": "29dkcmxwel"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Slack Team Information",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://slack.com/api/team.info?token=xoxb-11111111111-1111111111111-jjjjjjjjjjjjjjjjjjjjjjjj&team=T01848J69AP",
+					"protocol": "https",
+					"host": [
+						"slack",
+						"com"
+					],
+					"path": [
+						"api",
+						"team.info"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "xoxb-11111111111-1111111111111-jjjjjjjjjjjjjjjjjjjjjjjj"
+						},
+						{
+							"key": "team",
+							"value": "T01848J69AP"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Slack: Send question to expert",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018A7XUWSY%22%2C%22username%22%3A%22michael.wechner%22%2C%22name%22%3A%22michael.wechner%22%2C%22team_id%22%3A%22T01848J69AP%22%7D%2C%22api_app_id%22%3A%22A0184KMLJJE%22%2C%22token%22%3A%22hoMub0zJ8kMXIxgqFgrDIc3x%22%2C%22container%22%3A%7B%22type%22%3A%22message%22%2C%22message_ts%22%3A%221603538136.001200%22%2C%22channel_id%22%3A%22C01BG53KWLA%22%2C%22is_ephemeral%22%3Afalse%7D%2C%22trigger_id%22%3A%221474848295696.1276290213363.4c34937cc46bd94decf466ce73b6e77d%22%2C%22team%22%3A%7B%22id%22%3A%22T01848J69AP%22%2C%22domain%22%3A%22wyonaworkspace%22%7D%2C%22channel%22%3A%7B%22id%22%3A%22C01BG53KWLA%22%2C%22name%22%3A%22test-katie-by-michael%22%7D%2C%22message%22%3A%7B%22bot_id%22%3A%22B018B5MRHFW%22%2C%22type%22%3A%22message%22%2C%22text%22%3A%22Sorry%2C+I+don%27t+have+an+answer.+Can+anyone+else+help%3F%22%2C%22user%22%3A%22U018505QFA6%22%2C%22ts%22%3A%221603538136.001200%22%2C%22team%22%3A%22T01848J69AP%22%2C%22blocks%22%3A%5B%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%22Sgo%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Sorry%2C+I+don%27t+have+an+answer.+Can+anyone+else+help%3F%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%22eK2k%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Answer+not+helpful%3F%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22actions%22%2C%22block_id%22%3A%22f%5C%2FXG%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22send_question_to_expert%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Send+question+to+expert+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22What+is+the+colour+of+the+kitchen+table%3F%22%7D%2C%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22answer_question%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Answer+question+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22What+is+the+colour+of+the+kitchen+table%3F%22%7D%5D%7D%2C%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%223gRIS%22%2C%22text%22%3A%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22Manage+questions+and+answers+%3Chttp%3A%5C%2F%5C%2Flocalhost%3A4200%5C%2F%23%5C%2Fdomain%5C%2Fdf9f42a1-5697-47f0-909d-3f4b88d9baf6%7CView+Katie+domain+...%3E%22%2C%22verbatim%22%3Afalse%7D%7D%5D%7D%2C%22response_url%22%3A%22https%3A%5C%2F%5C%2Fhooks.slack.com%5C%2Factions%5C%2FT01848J69AP%5C%2F1451005617394%5C%2FTNID1WjkfXPAsUPg3x3UF2Dp%22%2C%22actions%22%3A%5B%7B%22action_id%22%3A%22send_question_to_expert%22%2C%22block_id%22%3A%22f%5C%2FXG%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Send+question+to+expert+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22What+is+the+colour+of+the+kitchen+table%3F%22%2C%22type%22%3A%22button%22%2C%22action_ts%22%3A%221603538473.572698%22%7D%5D%7D"
+				},
+				"url": {
+					"raw": "http://localhost:7070/api/v1/slack/interactivity",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v1",
+						"slack",
+						"interactivity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Slack: Ask question",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"api_app_id\": \"string\",\n  \"authed_users\": [\n    \"string\"\n  ],\n  \"challenge\": \"string\",\n  \"event\": {\n    \"channel\": \"C01BG53KWLA\",\n    \"subtype\": \"string\",\n    \"text\": \"What time is it?\",\n    \"type\": \"message\",\n    \"user\": \"U018505QFA6\"\n  },\n  \"event_id\": \"string\",\n  \"securityToken\": \"string\",\n  \"team_id\": \"T01848J69AP\",\n  \"token\": \"hoMub0zJ8kMXIxgqFgrDIc3x\",\n  \"type\": \"event_callback\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:7070/api/v1/slack/events",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v1",
+						"slack",
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Slack: Log into Katie",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018A7XUWSY%22%2C%22username%22%3A%22michael.wechner%22%2C%22name%22%3A%22michael.wechner%22%2C%22team_id%22%3A%22T01848J69AP%22%7D%2C%22api_app_id%22%3A%22A0184KMLJJE%22%2C%22token%22%3A%22hoMub0zJ8kMXIxgqFgrDIc3x%22%2C%22container%22%3A%7B%22type%22%3A%22message%22%2C%22message_ts%22%3A%221603656334.000100%22%2C%22channel_id%22%3A%22C01BG53KWLA%22%2C%22is_ephemeral%22%3Afalse%7D%2C%22trigger_id%22%3A%221437277775719.1276290213363.c7f5d9b30c4c199b3805fe9a68b89870%22%2C%22team%22%3A%7B%22id%22%3A%22T01848J69AP%22%2C%22domain%22%3A%22wyonaworkspace%22%7D%2C%22channel%22%3A%7B%22id%22%3A%22C01BG53KWLA%22%2C%22name%22%3A%22test-katie-by-michael%22%7D%2C%22message%22%3A%7B%22bot_id%22%3A%22B018B5MRHFW%22%2C%22type%22%3A%22message%22%2C%22text%22%3A%22Sorry%2C+I+don%27t+have+an+answer.+Can+anyone+else+help%3F%22%2C%22user%22%3A%22U018505QFA6%22%2C%22ts%22%3A%221603656334.000100%22%2C%22team%22%3A%22T01848J69AP%22%2C%22blocks%22%3A%5B%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%22B1Yyh%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Sorry%2C+I+don%27t+have+an+answer.+Can+anyone+else+help%3F%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%22BRX%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Answer+not+helpful%3F%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22actions%22%2C%22block_id%22%3A%22zww%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22send_question_to_expert%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Send+question+to+expert+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22What+time+is+it%3F%22%7D%2C%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22answer_question%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Answer+question+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22What+time+is+it%3F%22%7D%5D%7D%2C%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%22Zhby%22%2C%22text%22%3A%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22Manage+questions+and+answers+%28%3Chttp%3A%5C%2F%5C%2Flocalhost%3A7070%5C%2F%23%5C%2Fdomain%5C%2Fcda213d9-21f7-4877-8438-428735937cda%7CKatie%3E%29%22%2C%22verbatim%22%3Afalse%7D%7D%2C%7B%22type%22%3A%22actions%22%2C%22block_id%22%3A%2282FNc%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22login%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Log+into+Katie+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22TODO%22%7D%5D%7D%5D%7D%2C%22response_url%22%3A%22https%3A%5C%2F%5C%2Fhooks.slack.com%5C%2Factions%5C%2FT01848J69AP%5C%2F1452224996771%5C%2F77BPloemi9ziPzziYhvWVIdR%22%2C%22actions%22%3A%5B%7B%22action_id%22%3A%22login%22%2C%22block_id%22%3A%2282FNc%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Log+into+Katie+...%22%2C%22emoji%22%3Afalse%7D%2C%22value%22%3A%22TODO%22%2C%22type%22%3A%22button%22%2C%22action_ts%22%3A%221603656473.671209%22%7D%5D%7D"
+				},
+				"url": {
+					"raw": "http://localhost:7070/api/v1/slack/interactivity",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v1",
+						"slack",
+						"interactivity"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

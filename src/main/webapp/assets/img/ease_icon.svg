@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="34px" viewBox="0 0 26 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>ease_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD---Home" transform="translate(-286.000000, -1573.000000)" stroke-width="2">
+            <g id="proposition_item" transform="translate(287.000000, 1574.000000)">
+                <g id="ease_icon">
+                    <path d="M11.8312318,25.7560976 C16.2386923,25.7560976 22.4091371,20.2743185 23.5844599,12.3408895 C24.7597827,4.40746055 17.7078459,0 11.8312318,0 C5.95461774,0 -0.803488425,4.40746055 0.0780036841,12.3408895 C0.959495793,20.2743185 7.42377126,25.7560976 11.8312318,25.7560976 Z" id="Path-17" stroke="#C9D0DA"></path>
+                    <path d="M8.99523274,19.244119 C9.68899967,20.2847694 10.6429292,20.8050946 11.8570214,20.8050946 C13.0711135,20.8050946 14.025043,20.2847694 14.71881,19.244119" id="Path-18" stroke="#142680" stroke-linecap="round"></path>
+                    <path d="M5.87328152,14.0487805 C6.39360672,13.2682927 6.91393192,12.8780488 7.43425713,12.8780488 C7.95458233,12.8780488 8.47490753,13.2682927 8.99523274,14.0487805" id="Path-19" stroke="#142680" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M14.71881,14.0487805 C15.2391352,13.2682927 15.7594604,12.8780488 16.2797856,12.8780488 C16.8001108,12.8780488 17.320436,13.2682927 17.8407612,14.0487805" id="Path-19" stroke="#142680" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M6,27.8159966 C4.90596971,28.1398034 3.83930304,28.5842479 2.8,29.1493299 C1.76069696,29.7144119 0.827363623,30.6033008 0,31.8159966" id="Path-20" stroke="#C9D0DA" stroke-linecap="round"></path>
+                    <path d="M23.7140427,27.8159966 C22.6200124,28.1398034 21.5533458,28.5842479 20.5140427,29.1493299 C19.4747397,29.7144119 18.5414063,30.6033008 17.7140427,31.8159966" id="Path-20" stroke="#C9D0DA" stroke-linecap="round" transform="translate(20.714043, 29.815997) scale(-1, 1) translate(-20.714043, -29.815997) "></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

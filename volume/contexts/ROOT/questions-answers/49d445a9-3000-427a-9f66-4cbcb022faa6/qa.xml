@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="49d445a9-3000-427a-9f66-4cbcb022faa6">
+  <question epoch="1616346452558">Wie kann ich Katie zu meinem Slack Workspace / Channel hinzufügen?</question>
+  <answer content-type="text/html" modified="1705527872009" type="DEFAULT">
+    <p xmlns="">
+                                                Siehe die Anleitung unter 
+      
+        
+      
+        
+      
+        
+      <a href="https://app.katie.qa/slack.html" rel="noopener" target="_blank">https://app.katie.qa/slack.html</a>
+    </p>
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="de" topic-id="slack_integration"/>
+</qa>

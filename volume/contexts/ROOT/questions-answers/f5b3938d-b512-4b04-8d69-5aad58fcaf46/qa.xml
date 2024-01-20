@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="f5b3938d-b512-4b04-8d69-5aad58fcaf46">
+  <question>How is the weather?</question>
+  <answer content-type="text/html" type="DEFAULT">See https://www.nzz.ch/wetter/wetter-heute</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

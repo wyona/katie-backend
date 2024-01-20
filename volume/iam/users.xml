@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<users xmlns="http://www.wyona.com/askkatie/1.0.0">
+  <user uuid="c0646e06-16f3-4c41-a7a0-2d1dbc10a67d">
+    <username>superadmin</username>
+    <role>ADMIN</role>
+    <email>contact@wyona.com</email>
+    <password encoding="bcrypt">$2a$10$kjuV8Rn1zcIseKCE4z7KauUSikk4jyvs/Jeb75uxNBEsWWe/vhhf6</password>
+    <firstname>Superadmin</firstname>
+    <lastname>User</lastname>
+    <language>en</language>
+  </user>
+</users>

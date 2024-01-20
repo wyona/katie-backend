@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="ad2f8819-3d1a-4f37-966b-0fae8be7f81c">
+  <question epoch="1617055373906">What are the requirements to install Katie on-premises?</question>
+  <answer content-type="text/html" type="DEFAULT">Verify that you have Docker Compose installed, whereas also see https://docs.docker.com/compose/install/?fbclid=IwAR2m8Iy4-2vFPHwH0shiljJNc6cohQQsyX6d733b3N440_sELtoyF5qqpnE</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="on-premises"/>
+</qa>

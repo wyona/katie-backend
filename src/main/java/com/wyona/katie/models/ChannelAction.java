@@ -1,0 +1,23 @@
+package com.wyona.katie.models;
+  
+/**
+ *
+ */
+public enum ChannelAction {
+
+    LOGIN,
+    ANSWER_QUESTION,
+    SEND_QUESTION_TO_EXPERT,
+    IMPROVE_CORRECT_ANSWER,
+    ENTER_BETTER_ANSWER,
+    SEND_BETTER_ANSWER,
+    SEE_MORE_ANSWERS,
+    THUMB_UP,
+    THUMB_DOWN,
+    MORE_INFO,
+    GET_PROTECTED_ANSWER,
+    REQUEST_INVITATION,
+    REQUEST_BECOME_MEMBER,
+    CREATE_DOMAIN,
+    CONNECT_DOMAIN
+}

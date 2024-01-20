@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="ffb2bfd2-9618-4e8b-bb4d-e0f2424513a5">
+  <question>How old is</question>
+  <answer content-type="text/html" type="DEFAULT">
+    <ak-exec xmlns="">com.wyona.katie.answers.StringUtil#echo(ak-entity:person_name)</ak-exec>
+                                                         is currently 
+    
+    
+    
+    
+    
+    
+    
+    <ak-exec xmlns="">com.wyona.katie.answers.DateOfBirth#getAgeByPersonName(ak-entity:person_name)</ak-exec>
+                                                         years old.
+  
+
+  
+
+  
+
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <permissions>
+    <user id="TODO_2"/>
+  </permissions>
+  <no-faq/>
+</qa>

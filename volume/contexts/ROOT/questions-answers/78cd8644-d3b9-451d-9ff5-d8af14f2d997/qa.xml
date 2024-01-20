@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="78cd8644-d3b9-451d-9ff5-d8af14f2d997">
+  <question epoch="1598438976132">Is my data safe with Katie?</question>
+  <answer content-type="text/html" type="DEFAULT">Your data stored with Katie is encrypted during transfer from your device. You can even use client-side encryption when providing answers. Client-side encryption ensures that data that are stored in the cloud can only be viewed on the client side of the exchange. Also Katie can be installed on computers on the premises of your organization.</answer>
+  <source email="test20200824.1@mailinator.com"/>
+  <no-faq/>
+</qa>

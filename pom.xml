@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.5.12</version> <!-- See https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent --> <!-- IMPORTANT: Also check/comment log4j2.version below and run "mvn dependency:tree > dependencies.txt" -->
+    </parent>
+
+<!-- INFO: Use for Tomcat -->
+    <packaging>war</packaging>
+<!-- INFO: Use for Docker
+    <packaging>jar</packaging>
+-->
+
+    <groupId>com.wyona</groupId>
+    <artifactId>askkatie-webapp</artifactId>
+    <!--<version>1.353.0</version>-->
+    <version>1.353.0-SNAPSHOT</version>
+
+    <repositories>
+      <!-- INFO: Contains Lucene 9.0.0-SNAPSHOT and katie-ai-1.0.0-SNAPSHOT -->
+      <repository>
+        <id>wyona</id>
+        <url>https://maven2.wyona.org/</url>
+      </repository>
+      <!-- INFO: Contains discord4j 3.3.0-SNAPSHOT -->
+      <repository>
+        <id>oss.sonatype.org-snapshot</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
+    </repositories>
+
+    <dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.cloud</groupId>
+          <artifactId>libraries-bom</artifactId>
+          <version>5.1.0</version>
+          <type>pom</type>
+          <scope>import</scope>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+<!--
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
+        </dependency>
+-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency> <!-- INFO: See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+
+        <!-- INFO: DNS Resolution Problem at start on Apple M1 -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>4.1.82.Final</version>
+            <classifier>osx-aarch_64</classifier>
+        </dependency>
+
+        <!-- Swagger: http://127.0.0.1:7070/swagger-ui/ -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+        </dependency>
+<!-- TODO: Upgrade to https://www.baeldung.com/junit-5
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.1</version>
+        </dependency>
+-->
+
+        <!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+<!-- TODO: Upgrade (https://javaee.github.io/javamail/)
+        <dependency>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>javax.mail</artifactId>
+          <version>1.6.2</version>
+        </dependency>
+-->
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
+        <!-- @Size and @NotNull annotations ... also @NotEmpty -->
+<!--
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>5.2.1.Final</version>
+        </dependency>
+-->
+
+        <!-- Slf4j -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+
+        <!-- TextRazor NER SDK, see https://github.com/TextRazor/textrazor-java -->
+        <dependency>
+            <groupId>com.textrazor</groupId>
+            <artifactId>textrazor</artifactId>
+            <version>1.0.9</version>
+        </dependency>
+
+        <!-- Google NLP, also for NER, see https://cloud.google.com/natural-language/docs/reference/libraries#client-libraries-install-java -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-language</artifactId>
+        </dependency>
+
+        <!-- https://search.maven.org/artifact/com.google.apis/google-api-services-gmail -->
+        <dependency>
+          <groupId>com.google.apis</groupId>
+          <artifactId>google-api-services-gmail</artifactId>
+          <!--<version>v1-rev20220404-2.0.0</version>-->
+          <!--<version>v1-rev20220404-1.32.1</version>-->
+          <!--<version>v1-rev20210614-1.31.0</version>-->
+          <!--<version>v1-rev20200110-1.30.8</version>-->
+          <version>v1-rev110-1.25.0</version>
+        </dependency>
+
+        <dependency>
+          <groupId>com.google.api-client</groupId>
+          <artifactId>google-api-client-gson</artifactId>
+          <version>2.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.amithkoujalgi</groupId>
+            <artifactId>ollama4j</artifactId>
+            <version>1.0.44</version>
+        </dependency>
+<!--
+        <dependency>
+            <groupId>org.wyona</groupId>
+            <artifactId>ollama4j</artifactId>
+            <version>1.0.43-SNAPSHOT</version>
+        </dependency>
+-->
+
+        <!-- JSON String to Java Object Array using JSON-B -->
+        <dependency>
+            <groupId>javax.json.bind</groupId>
+            <artifactId>javax.json.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <version>1.0.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.1.4</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- TODO: See src/main/java/com/erkigsnek/webapp/controllers/v2/FAQControllerV2.java#importFAQ(...) -->
+<!--
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+-->
+
+        <!-- Elasticsearch -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>rest</artifactId>
+            <version>5.5.1</version>
+        </dependency>
+
+        <!-- JWT: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+        <!-- io.jsonwebtoken is using javax/xml/bind/DatatypeConverter which is not part of Java 11 or greater, therefore we have to add jaxb-xjc -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>6.0.8</version>
+        </dependency>
+
+        <!-- INFO: Necessary for HTML to (Discord) Markdown converter, see https://github.com/furstenheim/copy-down -->
+        <dependency>
+          <groupId>io.github.furstenheim</groupId>
+          <artifactId>copy_down</artifactId>
+          <version>1.1</version>
+        </dependency>
+        <!-- INFO: Necessary for HTML to Slack mrkdwn converter, see https://github.com/wyona/html2mrkdwn -->
+        <dependency>
+          <groupId>org.wyona.html2mrkdwn</groupId>
+          <artifactId>html2mrkdwn</artifactId>
+          <version>1.0.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.wyona</groupId>
+          <artifactId>katie-ai</artifactId>
+          <version>1.0.0</version>
+          <!--<version>1.0.1-SNAPSHOT</version>-->
+        </dependency>
+        <dependency>
+          <groupId>org.jsoup</groupId>
+          <artifactId>jsoup</artifactId>
+          <version>1.14.2</version>
+        </dependency>
+
+        <!-- INFO: Generate library by cloning https://github.com/wyona/triton-client and running maven according to https://github.com/wyona/triton-client/tree/main/src/java -->
+        <dependency>
+          <groupId>org.wyona.triton.client</groupId>
+          <artifactId>java-api</artifactId>
+          <version>0.0.1</version>
+        </dependency>
+
+       <dependency>
+         <groupId>ai.djl</groupId>
+         <artifactId>api</artifactId>
+         <version>0.22.1</version>
+       </dependency>
+       <!-- https://github.com/deepjavalibrary/djl/tree/master/extensions/tokenizers#installation -->
+       <dependency>
+         <groupId>ai.djl.huggingface</groupId>
+         <artifactId>tokenizers</artifactId>
+         <version>0.22.1</version>
+       </dependency>
+
+
+<!--
+        <dependency>
+            <groupId>io.github.crew102</groupId>
+            <artifactId>rapidrake</artifactId>
+            <version>0.1.4</version>
+        </dependency>
+-->
+
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <!-- INFO: xml-apis must bee exluded, because otherwise it will not work when using Eclipse as IDE -->
+        <!-- WARN: Including tika parsers standard package creates various runtime issues (also see https://wyona.atlassian.net/browse/BAC-148), in particular re DocumentBuilder (see XMLService) -->
+<!--
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+            <version>2.5.0</version>
+        </dependency>
+-->
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-facet</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-suggest</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-highlighter</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>technology.semi.weaviate</groupId>
+            <artifactId>client</artifactId>
+            <version>2.2.2</version>
+<!--
+            <version>3.1.0</version>
+-->
+        </dependency>
+
+        <!-- Slack SDK -->
+        <dependency>
+            <groupId>com.slack.api</groupId>
+            <artifactId>slack-api-client</artifactId>
+            <version>1.21.2</version>
+        </dependency>
+
+        <!-- https://github.com/NeilMadden/salty-coffee -->
+        <dependency>
+            <groupId>software.pando.crypto</groupId>
+            <artifactId>salty-coffee</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-core</artifactId>
+            <version>${discord.version}</version>
+        </dependency>
+        <!-- TODO: Actually the rest implementation should be loaded automatically, https://github.com/Discord4J/example-projects/blob/master/maven-spring-bot/pom.xml -->
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-rest</artifactId>
+            <version>${discord.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.27</version>
+        </dependency>
+    </dependencies>
+
+    <properties>
+      <!--<java.version>1.8</java.version>-->
+      <h2.version>1.4.197</h2.version>
+      <jackson.version>2.12.2</jackson.version>
+      <lucene.version>9.9.1</lucene.version> <!-- IMPORTANT: Also update subclass of default Lucene Codec inside com/erkigsnek/webapp/services/LuceneCodecFactory.java ... -->
+      <!--<lucene.version>9.5.0-SNAPSHOT</lucene.version>-->
+      <!-- IMPORTANT: Remove log4j version when upgrading Spring Boot version and Spring Boot has a recent log4j dependency -->
+      <log4j2.version>2.17.1</log4j2.version>
+      <!--<discord.version>3.2.2</discord.version>-->
+      <discord.version>3.3.0-SNAPSHOT</discord.version>
+    </properties>
+
+<build>
+    <plugins>
+      <!-- INFO: Needed to change jar file, in order to work inside docker -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <!-- Add build info to actuator / info endpoint -->
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <source>11</source>
+                <target>11</target>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+</project>

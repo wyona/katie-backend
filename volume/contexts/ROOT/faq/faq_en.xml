@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<faq-by-topic xmlns="http://www.wyona.com/askkatie/1.0.0">
+  <topic id="katie_4_faq">
+    <title>FAQ Integration</title>
+    <icon code="f2b5" name="slack"/>
+    <questions>
+      <qna id="597178eb-112a-40c0-893d-b643a4f08447"/>
+    </questions>
+  </topic>
+  <topic id="slack_integration">
+    <title>Slack Integration</title>
+    <icon code="f2b5" name="slack"/>
+    <questions>
+      <qna id="e758807e-0eb1-4755-9cfe-deee4f707a02"/>
+      <qna id="2d039616-12a8-4b82-a439-a389eaed18a9"/>
+    </questions>
+  </topic>
+  <topic id="ms_teams_integration">
+    <title>MS Teams Integration</title>
+    <icon code="f2b5" name="ms_teams"/>
+    <questions>
+      <qna id="9eaf4cd0-781c-4dea-9aa2-0f794863cffe"/>
+    </questions>
+  </topic>
+  <topic id="data_privacy">
+    <title>Data Privacy</title>
+    <icon code="f2b5" name="ms_teams"/>
+    <questions>
+      <qna id="b1a05c16-e1a4-4c6f-a0e6-14a0023d55bc"/>
+    </questions>
+  </topic>
+  <topic id="access_control">
+    <title>Access Control</title>
+    <icon code="f2b5" name="ms_teams"/>
+    <questions>
+      <qna id="77ab9e70-0885-49cf-b05e-753786c45c9d"/>
+    </questions>
+  </topic>
+  <topic id="on-premises">
+    <title>On-premises</title>
+    <icon code="f2b5" name="ms_teams"/>
+    <questions>
+      <qna id="ad2f8819-3d1a-4f37-966b-0fae8be7f81c"/>
+      <qna id="d34e0f3c-ca27-4a54-b22d-ac8bc22d1b6b"/>
+    </questions>
+  </topic>
+  <topic id="domain_configuration">
+    <title>Domain / Knowledge Base Configuration</title>
+    <icon code="f2b5" name="ms_teams"/>
+    <questions>
+      <qna id="36277e09-62d9-4549-a649-b08bed5841df"/>
+      <qna id="45595eb6-1f95-4123-aa17-959ea2e24673"/>
+      <qna id="e51b809c-62f9-4236-88ef-afaa51bbb277"/>
+      <qna id="beb5ce56-f4b9-419d-af09-d5edbd188f49"/>
+    </questions>
+  </topic>
+</faq-by-topic>

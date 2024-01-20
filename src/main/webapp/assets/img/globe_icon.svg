@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icons/ globe_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/-globe_icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Oval" fill="#737F8B" cx="16" cy="16" r="16"></circle>
+        <circle id="Oval" stroke="#F5F7FA" stroke-width="2" cx="16" cy="16" r="13"></circle>
+        <line x1="2" y1="16" x2="30" y2="16" id="Path-2" stroke="#F5F7FA" stroke-width="2"></line>
+        <ellipse id="Oval" stroke="#F5F7FA" stroke-width="2" cx="16" cy="16" rx="7" ry="13"></ellipse>
+    </g>
+</svg>

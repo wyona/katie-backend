@@ -1,0 +1,321 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 21px;
+    color: #1c1c1c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+footer {
+    padding-top: 48px;
+    padding-bottom: 48px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.logo {
+    height: 150px;
+}
+
+/* SPACING */
+
+.spacing--mt--1 {
+    margin-top: 96px;
+}
+
+.spacing--mt--2 {
+    margin-top: 64px;
+}
+
+.spacing--mt--3 {
+    margin-top: 48px;
+}
+
+.spacing--ml--3 {
+    margin-left: 48px;
+}
+
+.spacing--mr--3 {
+    margin-right: 48px;
+}
+
+.spacing--mt--4 {
+    margin-top: 32px;
+}
+
+.spacing--mt--5 {
+    margin-top: 24px;
+}
+
+.spacing--ml--5 {
+    margin-left: 24px;
+}
+
+.spacing--pl--5 {
+    padding-left: 24px;
+}
+
+.spacing--mt--6 {
+    margin-top: 16px;
+}
+
+.spacing--mt--7 {
+    margin-top: 12px;
+}
+
+/* TYPOGRAPHY */
+
+p {
+    margin: 0;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.text-align--center {
+    text-align: center;
+}
+
+.font-weight--500 {
+    font-weight: 500;
+}
+
+.heading--display--1 {
+    font-size: 128px;
+}
+
+.heading--display--2 {
+    font-size: 64px;
+}
+
+.heading--display--3 {
+    font-size: 48px;
+}
+
+.heading--display--4 {
+    font-size: 32px;
+}
+
+/* COLOR */
+
+.color--dark-grey {
+    color: #575757;
+}
+
+.bg--white-grey {
+    background-color: #f5f5f5;
+}
+
+.color--white {
+    color: white;
+}
+
+.color--blue {
+    color: #1173E4FF;
+}
+
+.bg--blue {
+    background-color: #1173E4FF;
+}
+
+/* GRID */
+
+.text-length {
+    max-width: 1000px;
+    width: 100%;
+}
+
+/* BUTTON */
+
+button {
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
+    font-size: 21px;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+    padding-left: 0;
+    background: transparent;
+    transition: opacity .5s;
+}
+
+/* BUTTON--FILLED*/
+.button--filled {
+    text-decoration: none;
+    height: 4rem;
+    padding: 0 2.4rem;
+    border-radius: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.button--filled.bg--blue:hover {
+    background-color: #1366C5FF;
+}
+
+/* GENERIC */
+
+.flex {
+    display: flex;
+}
+
+.flex--justify-content--center {
+    justify-content: center;
+}
+
+.flex--align-items--center {
+    align-items: center;
+}
+
+.flex-direction--column {
+    flex-direction: column;
+}
+
+.divider {
+    width: 2px;
+    height: 100px;
+    background-color: #b9b9b9;
+}
+
+.grid {
+    padding-left: 64px;
+    padding-right: 64px;
+}
+
+.basic-grid {
+    display: grid;
+    gap: 64px;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.card {
+    padding: 48px;
+    /*background-color: #FF90BF;*/
+    border: 2px solid #ffa6cc;
+    border-radius: 32px;
+    /*-webkit-box-shadow: 0px 4px 0px 4px #ffa6cc;
+    box-shadow: 0px 4px 0px 4px #ffa6cc;*/
+}
+
+.text-decoration--none {
+    text-decoration: none;
+}
+
+.list-style--none {
+    list-style: none;
+}
+
+.michael {
+    width: 200px;
+}
+
+ul {
+    padding: 0;
+    list-style: disc;
+}
+
+.width--100 {
+    width: 100%;
+}
+
+.job__item {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 0;
+}
+
+.job__item__description {
+}
+
+@media only screen and (max-width: 1080px) {
+    body {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 16px;
+    }
+
+    .heading--display--1 {
+        font-size: 64px;
+    }
+
+    .heading--display--2 {
+        font-size: 48px;
+    }
+
+    .heading--display--3 {
+        font-size: 32px;
+    }
+
+    .heading--display--4 {
+        font-size: 24px;
+    }
+
+    .logo {
+        height: 80px;
+    }
+
+    .grid {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .basic-grid {
+        gap: 32px;
+    }
+
+    .spacing--mt--1 {
+        margin-top: 64px;
+    }
+
+    .spacing--mt--2 {
+        margin-top: 48px;
+    }
+
+    .spacing--mt--3 {
+        margin-top: 32px;
+    }
+
+    .spacing--ml--3 {
+        margin-left: 32px;
+    }
+
+    .spacing--mr--3 {
+        margin-right: 32px;
+    }
+
+    .spacing--mt--4 {
+        margin-top: 24px;
+    }
+
+    .spacing--mt--5 {
+        margin-top: 16px;
+    }
+
+
+
+    .basic-grid {
+        gap: 48px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+        padding: 24px;
+    }
+
+    .michael {
+        width: 150px;
+    }
+}

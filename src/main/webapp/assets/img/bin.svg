@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icon/bin</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Web---Backend-Dashboard" transform="translate(-413.000000, -164.000000)" stroke="#737F8B" stroke-width="2">
+            <g id="icon/bin" transform="translate(414.000000, 165.000000)">
+                <path d="M4.16666667,4.16666667 L4.16666667,17.1666667 C4.16666667,18.2712362 5.06209717,19.1666667 6.16666667,19.1666667 L13.8333333,19.1666667 C14.9379028,19.1666667 15.8333333,18.2712362 15.8333333,17.1666667 L15.8333333,4.16666667 L15.8333333,4.16666667" id="Path-26"></path>
+                <path d="M6.66666667,4.16666667 L6.66666667,2.83333333 C6.66666667,1.72876383 7.56209717,0.833333333 8.66666667,0.833333333 L11.3333333,0.833333333 C12.4379028,0.833333333 13.3333333,1.72876383 13.3333333,2.83333333 L13.3333333,4.16666667 L13.3333333,4.16666667" id="Path-29"></path>
+                <line x1="19.1666667" y1="4.16666667" x2="0.833333333" y2="4.16666667" id="Path-28" stroke-linecap="round"></line>
+                <line x1="11.6666667" y1="9.16666667" x2="11.6666667" y2="14.1666667" id="Path-30" stroke-linecap="round"></line>
+                <line x1="8.33333333" y1="9.16666667" x2="8.33333333" y2="14.1666667" id="Path-31" stroke-linecap="round"></line>
+            </g>
+        </g>
+    </g>
+</svg>

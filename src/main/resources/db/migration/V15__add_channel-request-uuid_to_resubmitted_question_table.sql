@@ -1,0 +1,2 @@
+-- add new column CHANNEL_REQUEST_UUID
+alter table RESUBMITTED_QUESTION add CHANNEL_REQUEST_UUID varchar(100);

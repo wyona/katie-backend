@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="7da390ac-8e57-4d46-a9de-fe469f29f7c8">
+  <question epoch="1687727583212">Wann ist die nächste Kartonsammlung?</question>
+  <answer content-type="text/html" type="DEFAULT">
+    <p xmlns="">
+      <ak-exec>com.wyona.katie.answers.OpenERZ#getCalendarCardboard(ak-entity:number,'de')</ak-exec>
+    </p>
+  </answer>
+  <no-faq/>
+</qa>

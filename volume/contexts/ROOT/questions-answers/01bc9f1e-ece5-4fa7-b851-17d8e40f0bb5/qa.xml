@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="01bc9f1e-ece5-4fa7-b851-17d8e40f0bb5">
+  <question epoch="1613583555700">Where is Sils Maria?</question>
+  <answer content-type="text/html" type="DEFAULT">See https://de.wikipedia.org/wiki/Sils_im_Engadin/Segl</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

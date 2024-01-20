@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="3a14f0b4-0fec-44f7-9451-722c846ece0a">
+  <question epoch="1600976586015">What is the  expiry time of Slack's response_url?</question>
+  <answer content-type="text/html" type="DEFAULT">Slack's response_url is valid 30 minutes, whereas see https://api.slack.com/interactivity/handling</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+	<title>About Katie</title>
+	<link href="assets/styles/style.css" rel="stylesheet" type="text/css"/>
+	
+        <link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="mask-icon" href="assets/favicons/safari-pinned-tab.svg" color="#5bbad5"/>
+        <link type="text/css" rel="stylesheet" href="assets/font-awesome-4.6.1/css/font-awesome.min.css"/>
+
+<style>
+h2 {
+  font-size: 24px;
+}
+p {
+  font-size: 20px;
+}
+li {
+  font-size: 20px;
+  list-style-type: circle;
+}
+</style>
+</head>
+<body>
+	<a href="index.html"><img id="katie-logo" src="assets/img/katie_logo.svg"/></a>
+
+<h1>About Katie</h1>
+
+<h2>The core of Katie</h2>
+<p>
+A lot of knowledge only exists in the minds of people (e.g. employees of a company), neither documented nor shared otherwise,
+whereas many people are sharing their knowledge on channels such as Slack, Discord, MS Teams, Mailing lists, .... 
+<strong>Katie</strong> learns from these human conversations and makes this previously untapped knowledge accessible,
+for example by detecting and answering duplicated questions on the same or other channels.
+</p>
+
+<h2>Problem</h2>
+
+<ul>
+  <li>A lot of knowledge is in the heads of people only (e.g. employees of a company), neither documented nor shared otherwise</li>
+  <li>Knowledge which is not written down cannot get indexed and therefore not found by search engines</li>
+  <li>People find it difficult to document their knowledge and even if they document their knowledge, the documentation gets outdated very quickly</li>
+  <li>People don't like answering the same questions over and over again</li>
+  <li>Knowledge sharing does not scale well for groups of more than a certain size (e.g. 150 / Dunbar's number) of individuals and a certain number of messages exchanged</li>
+</ul>
+
+<h2>Solution</h2>
+
+<ul>
+  <li>People like to communicate (for example inside companies or collaborative communities, e.g. Open Source)
+    <ul>
+      <li>Exceptions: For example some researchers do not want to share knowledge, because of competition</li>
+    </ul>
+  </li>
+  <li>Self learning AI-Powered Question / Answer Service, integrated into existing communication platforms (email, chat, voice)
+    <ul>
+      <li>Recognize duplicated questions and find previous answers and learn from corrected / enhanced answers</li>
+      <li>Provide the expert for a particular question</li>
+    </ul>
+  </li>
+  <li>Think of Katie as an intelligent person working at a company/organization who knows all the answers for questions which have been asked by other employees/members so far and is continuously learning by listening to new questions and associated answers.</li>
+</ul>
+
+<h2>Basic Flow</h2>
+<p>
+<ul>
+  <li>Somebody asks a question and receives an answer</li>
+  <li>If the answer is good, then this was it already :-)</li>
+  <li>If the answer was not good enough, then one can submit the question to the "backoffice"</li>
+  <li>The backoffice tries to answer the question and notifies the person who asked the question</li>
+  <li>If the answer is good enough this time, then the "AI" will be trained and will be able to answer the same or similar question in the future</li>
+</ul>
+</p>
+
+<h2>About integration with communication platforms</h2>
+<p>
+Katie is a turn-key solution, which can be easily integrated with chat, email or any other form of communication.
+</p>
+
+<p>
+<a href="slack.html"><img alt="Add to Slack" height="40" width="139" src="assets/img/add_to_slack.png"/>&#160;</a>
+</p>
+
+<h2>About integration inside a mobile app</h2>
+<p>
+Katie provides a mobile SDK (Android and iOS), such that it can be easily integrated with any mobile app.
+The advantage of a personalized app is, that the user does not have to necessarily provide contact information, such as for example an email address, because the app itself with a unique identifier can be considered the contact (for example using websockets).
+</p>
+
+<h2>What is the difference between Katie and a chatbot</h2>
+<p>Katie is not a chatbot, but you can integrate Katie with chatbots.</p>
+<p>
+Katie answers questions using artificial and natural intelligence, but it is currently not intended for conversations. Natural conversations are much more complex than just detecting duplicated questions. Simple dialogs with clear intents, such as for example a restaurant reservation or initiate a phone call, work quite well already, but more complex conversations are much more difficult and users become frustrated and will eventually stop trying to have more complex conversations.
+</p>
+
+<h2>What is the difference between Katie and a conventional search engine</h2>
+
+<p>Katie lives inside human communication / collaboration channels, whereas the purpose of Katie is to learn and share knowledge.</p>
+
+<p>Please find below a simple example</p>
+
+<ul>
+  <li>Human 1: "When was Michael born?"</li>
+  <li>Human 2: "Michael was born on February 16, 1969."</li>
+  <li>Human 3: "What is the age of Michael?"</li>
+  <li>Katie: "Michael is 53 years old."</li>
+</ul>
+
+<h2>NLP / NLU</h2>
+
+<ul>
+  <li>Detect question / question classification</li>
+  <li>Autocompletion</li>
+  <li>NER - Named Entity Recognition</li>
+  <li>Similarity Search (Question Encoding, Answer/Context Encoding)</li>
+  <li>Knowledge graph</li>
+</ul>
+
+<h3>Detect questions</h3>
+<p>Recognize whether a "message/sentence" is a question or contains a question</p>
+
+<h3>Question classification</h3>
+<p>
+  <ul>
+    <li>QUESTION_OPINION: "What do you think about the new president?"</li>
+    <li>QUESTION_KNOWLEDGE: "When died Alexander von Humboldt?"</li>
+    <li>QUESTION_RHETORICAL: "I trusted this person, how could I be so stupid?"</li>
+  </ul>
+</p>
+
+<h3>Detect similar questions</h3>
+<p>Checking whether a submitted question is similar to an already trained question/answer tuple and if matches, then return the previous answer</p>
+
+<p>Original (previous) question: "What are the first names of Michael's mommy and daddy?"</p>
+<p>Similar (current) question: "Can you tell me the names of Michael's father and mother?"</p>
+
+<h3>Intent recognition and NER</h3>
+<p>For example for questions like "How old is Michael?" which then allows us to execute queries (e.g. using SPARQL or SQL)</p>
+
+<p>Intent "getAgeOf" and named entity Person="Michael": <code>getAgeOf(Person) { return getYearsBetweenDates(currentDate, getDateOfBirth(Person));}</code></p>
+
+<h3>No answer available or exists</h3>
+<p>For example "When will Michael die?"</p>
+
+<h2>REST Interfaces</h2>
+<p>
+<a href="swagger-ui/">API</a>
+</p>
+
+<h2>Specification</h2>
+<p>
+<a href="https://www.yulup.com/en/projects/7925c422-a3c3-4cc7-ad7f-f3d4bc7b8568/bdd-scenarios.html">BDD Scenarios</a>
+</p>
+
+<h2>Architecture</h2>
+<p>
+<ul>
+  <li><a href="Katie-Poster-A0.pdf">Main components</a></li>
+  <li><a href="Katie-Overview_20230130_v2.svg">Technical overview</a></li>
+  <!--<li><a href="Katie-Overview_20230130_v2.drawio">Technical overview</a></li>-->
+</ul>
+</p>
+
+<h2>Health check endpoint</h2>
+<p>
+<a href="/actuator/health">Health check endpoint</a>
+</p>
+
+<h2>Open Knowledge</h2>
+<p>
+See various examples of open knowledge bases <a href="public-knowledge.html">here</a>.
+</p>
+<p>
+The integration of Cohere's Grounded QA is described <a href="grounded-qa-integration.html">here</a>.
+</p>
+
+<h2>Contact</h2>
+<p>
+<a href="mailto:contact@wyona.com?subject=Regarding Katie ...">contact@wyona.com</a>
+</p>
+
+</body>
+<footer>
+		<div id="copyright">
+			<p>Copyright &#169;</p>
+                        <p>
+                        <script type="text/javascript">
+                                     document.write(new Date().getFullYear());
+                        </script>
+                        </p>
+			<p><a href="about.html">Katie</a></p>
+		</div>
+	</footer>
+</html>

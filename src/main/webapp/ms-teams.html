@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+	<title>Katie - Unlock the knowledge inside your MS Teams channels</title>
+	<link href="assets/styles/style.css" rel="stylesheet" type="text/css"/>
+	
+        <link rel="icon" type="image/png" href="favicon.ico"/>
+	<link rel="mask-icon" href="assets/favicons/safari-pinned-tab.svg" color="#5bbad5"/>
+        <link type="text/css" rel="stylesheet" href="assets/font-awesome-4.6.1/css/font-awesome.min.css"/>
+
+<style>
+h2 {
+  font-size: 24px;
+}
+p {
+  font-size: 20px;
+}
+li {
+  font-size: 20px;
+  list-style-type: circle;
+}
+</style>
+</head>
+<body>
+	<a href="index.html"><img id="katie-logo" src="assets/img/katie_logo.svg"/></a>
+
+<h2>Unlock the knowledge inside your MS Teams channels</h2>
+
+<p>
+Your MS Teams channels are full with knowledge.
+</p>
+
+<p>
+With Katie’s powerful synergy of artificial and natural intelligence, your team can transfer and retain knowledge more efficiently - no more answering the same questions, no more corporate brain drain, effective workplace collaboration.
+</p>
+
+<h2>How does Katie work inside a MS Teams channel?</h2>
+
+<ul>
+  <li>A team member asks a question inside a MS Teams channel, for example <em>"What is the mobile phone number of Katie?"</em> or <em>"Who can recommend a good neuropsychologist?"</em></li>
+  <li>Katie will analyze the question, for example check whether it is a duplicated question and might has been answered before</li>
+  <li>If Katie is able to provide a good answer, then this was it already :-) otherwise please continue reading ...</li>
+  <li>If Katie does not know the answer or if Katie's answer was not helpful or not correct ...
+    <ul>
+      <li>... then with a click of a button Katie can forward the question to an expert affiliated with the MS Teams channel</li>
+      <li>... and when the expert or a teammate is answering the question or correcting Katie's answer, then Katie will learn from the expert's or the teammate's answer and will be able to answer the same or a similar question next time.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+Consider Katie as a human being who is eager to learn, but with a much better memory and never being impatient :-)
+</p>
+
+<a id="install-katie">
+<h2>Install Katie MS Teams App and start asking questions</h2>
+</a>
+
+<ul>
+  <li>Download the <a href="Katie.zip">zip file</a> of the Katie MS Teams App ...</li>
+  <li>Click on the menu "Teams apps" inside <a href="https://admin.teams.microsoft.com/policies/manage-apps">Microsoft Teams admin center</a>.</li>
+  <li>Click on "Upload new app"</li>
+  <li>Select the zip file which you have downloaded above</li>
+  <li>Click on "Add" </li>
+      <li>Start talking to Katie :-)
+        <ul>
+          <li>Either from within a team channel, whereas please make sure to use <a href="https://learn.microsoft.com/de-de/microsoftteams/platform/resources/troubleshoot#my-bot-doesnt-get-my-message-in-a-channel" target="_blank">@Katie</a> to address Katie when asking a question. In order to make Katie available in one of your MS Teams channels, click on the "Apps" icon inside the MS Teams menu on the left hand side, select the Katie App and click on the dropdown menu to add Katie to one of your channels. (WARNING: Make sure to remove a previously to this team added Katie App by clicking "Manage team", click on the tab "Apps" and remove the previously installed Katie App.)</li>
+          <li>Or chat directly with Katie, whereas no <strong>@katie</strong> necessary when asking a question. If your MS Teams user Id is not registered yet with Katie, then Katie will tell you to request an invitation for registration and that your user should get added as member to a Katie domain.</li>
+        </ul>
+  </li>
+</ul>
+
+<h2>Create your own Katie MS Teams App</h2>
+
+<p>See overview <a href="https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/teams-developer-portal">https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/teams-developer-portal</a></p>
+
+<ul>
+  <li>Create <a href="https://github.com/wyona/katie-backend#ms-teams-app">Katie App</a> using <a href="https://dev.teams.microsoft.com/" target="_blank">Microsoft Developer Portal for Teams</a></li>
+  <li>Connect this newly created Katie App with an Azure Bot Resource inside Azure Portal which has the Katie endpoint (https://app.katie.qa/api/v1/microsoft/message) configured
+    <ul>
+      <li>Make sure that <a href="https://docs.microsoft.com/en-us/azure/bot-service/bot-service-manage-settings?view=azure-bot-service-4.0&tabs=userassigned#application-id-and-password">Microsoft App Id and Password</a> are configured accordingly inside Katie (see "Technical Documentation" below), such that Katie can send responses to the Bot inside Azure</li>
+    </ul>
+  </li>
+  <li>Download Katie App and save it as zip file</li>
+  <li>Install Katie App in your MS Teams using the just created zip file, whereas follow the steps above "Install Katie MS Teams App ..."</li>
+</ul>
+
+<h2>Create and configure "Azure Bot" resource</h2>
+
+<ul>
+  <li>Login to Azure Portal <a href="https://portal.azure.com">https://portal.azure.com</a> ...</li>
+  <li>Click on "Create a resource"</li>
+  <li>Search for "Azure Bot" and select it</li>
+  <li>Make sure to select "Multi Tenant" or "Single Tenant" for Type of App</li>
+  <li>Once the resource is created, click on "Configuration" and then click on "Manage" next to "Microsoft App ID" in order to generate an App Password</li>
+  <li>Click on "Configuration" and set the messaging endpoing, e.g. "https://app.katie.qa/api/v1/microsoft/message"</li>
+  <li>Click on "Channels" and enable the MS Teams channel</li>
+</ul>
+
+<h2>Architecture</h2>
+
+<pre>
+MS Teams Client (Katie MS Teams App installed)  <-->  Microsoft Azure Portal (Azure Bot)  <--> Katie (<a href="/swagger-ui/#/microsoft-bot-controller/handleEventsUsingPOST">https://app.katie.qa/api/v1/microsoft/message</a>)
+</pre>
+
+<h2>Technical Documentation</h2>
+
+<ul>
+  <li><a href="/swagger-ui/#/microsoft-bot-controller/handleEventsUsingPOST_1" target="_blank">Receiving MS Teams messages</a></li>
+  <li><a href="/swagger-ui/">Katie API</a></li>
+  <li>Configuring Microsoft App Id (ms.client.id) and Password (ms.client.secret) inside application.properties or docker-compose.yml in order to return answers back to Azure Portal / MS Teams
+    <ul>
+      <li>Client Id: Select "Azure Bot" resource and click under "Settings" on "Configuration". There you will see the "Microsoft App ID" which you can use as Client Id.</li>
+      <li>Client Secret: Click on the link "Manage Password" (next to "Microsoft App ID") and add a "New registration" for your "Azure Bot" resource. Once the "New registration" is created, you can click under "Manage" on "Certificates & secrets" and create a "Client secret".</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Contact</h2>
+<p>
+<a href="mailto:contact@wyona.com?subject=Regarding Katie ...">contact@wyona.com</a>
+</p>
+
+</body>
+<footer>
+		<div id="copyright">
+			<p>Copyright &#169;</p>
+                        <p>
+                        <script type="text/javascript">
+                                     document.write(new Date().getFullYear());
+                        </script>
+                        </p>
+			<p><a href="about.html">Katie</a></p>
+		</div>
+	</footer>
+</html>

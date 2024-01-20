@@ -1,0 +1,2 @@
+-- add new column CHANNEL_TYPE (UNDEFINED, EMAIL, FCM_TOKEN, SLACK, MS_TEAMS)
+alter table RESUBMITTED_QUESTION add CHANNEL_TYPE varchar(20) not null default 'UNDEFINED';

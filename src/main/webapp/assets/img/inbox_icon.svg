@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icon/inbox_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icon/inbox_icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2">
+            <rect id="Rectangle" stroke="#142680" stroke-width="2" x="1" y="1" width="18" height="18"></rect>
+            <path d="M20,13.3333333 L20,18 C20,19.1045695 19.1045695,20 18,20 L2,20 C0.8954305,20 6.25798147e-16,19.1045695 0,18 L0,13.3333333 L6.66666667,13.3333333 L6.66666667,13.3333333 C6.66666667,15.1742825 8.15905083,16.6666667 10,16.6666667 C11.8409492,16.6666667 13.3333333,15.1742825 13.3333333,13.3333333 L20,13.3333333 Z" id="Combined-Shape" fill="#142680"></path>
+        </g>
+    </g>
+</svg>

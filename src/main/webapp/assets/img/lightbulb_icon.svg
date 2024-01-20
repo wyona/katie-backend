@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="37px" height="34px" viewBox="0 0 37 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>lightbulb_icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD---Home" transform="translate(-286.000000, -1317.000000)" stroke-width="2">
+            <g id="proposition_item" transform="translate(287.000000, 1318.000000)">
+                <g id="lightbulb_icon">
+                    <path d="M14.3901352,28.8328311 C14.3901352,30.5535397 15.7850452,31.9484497 17.5057538,31.9484497 C19.2264625,31.9484497 20.6213725,30.5535397 20.6213725,28.8328311 L20.6213725,28.8328311 L20.6213725,28.8328311" id="Path-22" stroke="#142680" stroke-linecap="round"></path>
+                    <path d="M17.5057538,1.88235294 C23.7433228,1.88235294 28.7998715,6.93890165 28.7998715,13.1764706 C28.7998715,17.1434046 26.7546826,20.6326592 23.6612006,22.6473384 C23.4951288,22.7554952 23.3260359,22.8594023 23.154076,22.9589055 L23.1528127,26.2352941 C23.1528127,27.3398636 22.2573822,28.2352941 21.1528127,28.2352941 L13.858695,28.2352941 C12.7541255,28.2352941 11.858695,27.3398636 11.858695,26.2352941 L11.8588896,22.9597489 C8.4829628,21.0069705 6.2116362,17.3569689 6.2116362,13.1764706 C6.2116362,6.93890165 11.2681849,1.88235294 17.5057538,1.88235294 Z" id="Combined-Shape" stroke="#142680"></path>
+                    <line x1="22.0587333" y1="23.318838" x2="18.621482" y2="23.318838" id="Path-24" stroke="#142680" stroke-linecap="round"></line>
+                    <line x1="28.2395217" y1="1.86729967" x2="29.7706616" y2="0.772373607" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(29.005092, 1.319837) scale(-1, 1) rotate(80.568755) translate(-29.005092, -1.319837) "></line>
+                    <line x1="32.7295251" y1="14.2333395" x2="34.2606651" y2="13.1384134" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(33.495095, 13.685876) scale(-1, 1) rotate(215.568755) translate(-33.495095, -13.685876) "></line>
+                    <line x1="29.1877567" y1="23.3953685" x2="30.7188966" y2="22.3004425" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(29.953327, 22.847905) scale(-1, 1) rotate(-9.431245) translate(-29.953327, -22.847905) "></line>
+                    <line x1="4.29261109" y1="23.3953685" x2="5.82375103" y2="22.3004425" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(5.058181, 22.847905) scale(-1, 1) rotate(80.568755) translate(-5.058181, -22.847905) "></line>
+                    <line x1="0.750842626" y1="14.2333395" x2="2.28198256" y2="13.1384134" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(1.516413, 13.685876) scale(-1, 1) rotate(35.568755) translate(-1.516413, -13.685876) "></line>
+                    <line x1="5.24084607" y1="1.86729967" x2="6.77198601" y2="0.772373607" id="Path-23" stroke="#FFBE00" stroke-linecap="round" transform="translate(6.006416, 1.319837) scale(-1, 1) rotate(-9.431245) translate(-6.006416, -1.319837) "></line>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

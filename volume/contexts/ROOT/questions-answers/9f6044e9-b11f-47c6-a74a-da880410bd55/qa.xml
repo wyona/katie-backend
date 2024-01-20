@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="9f6044e9-b11f-47c6-a74a-da880410bd55">
+  <question epoch="1598360604074">Why can't I change the issue status in redmine of a particular tracker?</question>
+  <answer content-type="text/html" type="DEFAULT">One has to set a tracker workflow, see for example https://www.redmineup.com/pages/help/redmine/set-tracker-workflow</answer>
+  <source email="michi@wyona.com"/>
+  <no-faq/>
+</qa>

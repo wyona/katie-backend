@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="ad7c1da7-22a3-4995-adeb-0cf4236d98a1">
+  <question>How does a Corona test work?</question>
+  <answer content-type="text/html" type="DEFAULT">See https://www.sciencemag.org/news/2020/03/standard-coronavirus-test-if-available-works-well-can-new-diagnostics-help-pandemic#</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

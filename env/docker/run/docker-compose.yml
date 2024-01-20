@@ -1,0 +1,40 @@
+version: "3.3"
+services:
+  katie:
+    image: wyona/katie:1.352.0
+    #image: wyona/katie:1.353.0
+    #image: 4d047c16cdb9
+    #image: ${DOCKER_IMAGE_TAG}
+    container_name: katie
+    restart: always
+    volumes:
+      - /TODO_REPLACE_DIRECTORY_PATH/katie/volume:/ask-katie
+      #- /Users/michaelwechner/local/katie/volume:/ask-katie
+      #- /home/wyona/local/katie/volume:/ask-katie
+    environment:
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=INFO
+      #- LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+      - NEW_CONTEXT_MAIL_BODY_HOST=http://localhost:8044
+      # Outgoing mail server configuration
+      - APP_MAIL_HOST=mail.wyona.com
+      - APP_MAIL_PORT=587
+      - APP_MAIL_USERNAME=TODO
+      - APP_MAIL_PASSWORD=TODO
+      # Set to false when using self-signed certificate
+      - APP_MAIL_SMTP_STARTTLS_ENABLED=true
+      # Defaul mail addresses
+      - MAIL_DEFAULT_ADMIN_EMAIL_ADDRESS=contact@wyona.com
+      - MAIL_DEFAULT_SENDER_EMAIL_ADDRESS=Katie <contact@wyona.com>
+      # Sentence BERT configuration
+      - SBERT_SCHEME=https
+      - SBERT_HOSTNAME=sbert.katie.qa
+      - SBERT_PORT=443
+      - SBERT_BASIC_AUTH_USERNAME=TODO
+      - SBERT_BASIC_AUTH_PASSWORD=TODO
+      # Discord https://app.katie.qa/discord.html
+      - DISCORD_ENABLED=false
+      - DISCORD_BOT_TOKEN=TODO
+      # Question classification implementation
+      - QC_IMPLEMENTATION=OPEN_NLP
+    ports:
+      - 8044:8080

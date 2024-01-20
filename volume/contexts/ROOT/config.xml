@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<context id="ROOT" name="Root Domain" xmlns="http://www.wyona.com/askkatie/1.0.0">
+
+  <moderation answers-must-be-approved="false" inform-user="false"/>
+
+  <index-search-pipeline score-threshold="0.09" analyze-messages-ask-rest-api="false" completion-impl="UNSET" consider-human-feedback="false" generate-complete-answers="false" re-rank-answers="false" re-rank-impl="SBERT" search-enabled="true"/>
+
+  <ner impl="MOCK"/>
+  <!--<ner impl="FLAIR"/>-->
+
+<!--
+  <sbert>
+    <corpus_id>3fa85f64-5717-4562-b3fc-2c963f66afa6</corpus_id>
+  </sbert>
+-->
+
+<!--
+  <elasticsearch>
+    <index>askkatie_ROOT</index>
+  </elasticsearch>
+-->
+
+<!--
+  <deeppavlov>
+    <base_url>https://deeppavlov.wyona.com</base_url>
+<!++ INFO: Localhost does not work when running AskKatie as Docker, unless you run DeepPavlov within the same Docker (network)
+    <base_url>http://127.0.0.1:5000</base_url>
+++>
+    <!++ INFO: When running AskKatie as Docker, then make sure to mount the directory "/deeppavlov" ++>
+    <data_path container="docker">/deeppavlov/faq_school_en.csv</data_path>
+<!++
+    <data_path container="tomcat">/Users/michaelwechner/src/wyona/wyona/ask-katie/deeppavlov/faq_school_en.csv</data_path>
+++>
+  </deeppavlov>
+-->
+
+  <mail>
+<!--
+    # INFO: Production Environment
+    <body host="https://askkatie.wyona.com"/>
+
+    # INFO: When running as Docker (see README.txt)
+    <body host="http://127.0.0.1:7070"/>
+
+    # INFO: When running inside IDEA like for example IntelliJ
+    <body host="http://127.0.0.1:8080"/>
+-->
+    <!-- INFO: When running angular frontend separately using Node.js -->
+    <body host="http://127.0.0.1:4200"/>
+
+<!--
+    <deep_link>https://askkatie.wyona.com/read-answer.html</deep_link>
+-->
+    <deep_link>http://localhost:7070/read-answer.html</deep_link>
+
+    <subject_tag>AskKatie</subject_tag>
+    <sender_email>Katie ROOT KB &lt;no-reply@ukatie.com&gt;</sender_email>
+
+    <!--<imap hostname="mx2.wyona.com" port="993" username="REPLACE" password="REPLACE"/>-->
+    <!--<imap hostname="imap.gmail.com" port="993" username="REPLACE@gmail.com" password="REPLACE"/>-->
+    <gmail credentials="google/katie-360121-d549df70ff6c.json" username="michael.wechner@ukatie.com"/> <!-- INFO: See Google service account of michael.wechner@ukatie.com (https://console.cloud.google.com/iam-admin/serviceaccounts, https://myaccount.google.com/u/2/permissions) -->
+
+    <match reply-to="michael.wechner@wyona.com"/>
+    <!--<match reply-to="dev@nlpcraft.apache.org"/>-->
+    <!--<match reply-to="users@httpd.apache.org"/>-->
+  </mail>
+  
+  <slack answer-question-button-enabled="true" improve-answer-button-enabled="true" login-katie-button-enabled="true" send-expert-button-enabled="true" subdomain=""/>
+
+  <iam answers-generally-protected="false"/>
+</context>

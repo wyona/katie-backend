@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="36277e09-62d9-4549-a649-b08bed5841df">
+  <question epoch="1617055408690">What is an Expert?</question>
+  <answer content-type="text/html" type="DEFAULT">An Expert is a person which gets notified when a user asked a question and the answer by Katie was not helpful. The Expert will try to answer the question and send it to the user. Katie will learn this answer, such that when somebody will be asking the same question again in the future, Katie will be able to provide a helpful answer.</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="domain_configuration"/>
+</qa>

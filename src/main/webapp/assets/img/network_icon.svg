@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>network_illustration</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Web" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD---Home" transform="translate(-287.000000, -997.000000)">
+            <g id="proposition_item" transform="translate(287.000000, 997.000000)">
+                <g id="network_illustration">
+                    <line x1="15.8229167" y1="16.6666667" x2="3.22916667" y2="28.6666667" id="Path-11" stroke="#C9D0DA" stroke-width="2"></line>
+                    <line x1="15.8229167" y1="16.6666667" x2="16.7916667" y2="29.3333333" id="Path-12" stroke="#C9D0DA" stroke-width="2"></line>
+                    <line x1="15.8229167" y1="16.6666667" x2="28.4166667" y2="21.6666667" id="Path-13" stroke="#C9D0DA" stroke-width="2"></line>
+                    <line x1="15.8229167" y1="16.6666667" x2="28.09375" y2="3.33333333" id="Path-14" stroke="#C9D0DA" stroke-width="2"></line>
+                    <line x1="15.8229167" y1="16.6666667" x2="3.22916667" y2="6.66666667" id="Path-15" stroke="#C9D0DA" stroke-width="2"></line>
+                    <ellipse id="Oval" fill="#142680" cx="15.8229167" cy="16.6666667" rx="4.84375" ry="5"></ellipse>
+                    <ellipse id="Oval" fill="#142680" cx="3.22916667" cy="28.6666667" rx="3.22916667" ry="3.33333333"></ellipse>
+                    <ellipse id="Oval" fill="#142680" cx="16.7916667" cy="29.3333333" rx="2.58333333" ry="2.66666667"></ellipse>
+                    <ellipse id="Oval" fill="#142680" cx="28.4166667" cy="21.6666667" rx="2.58333333" ry="2.66666667"></ellipse>
+                    <ellipse id="Oval" fill="#142680" cx="28.09375" cy="3.33333333" rx="3.22916667" ry="3.33333333"></ellipse>
+                    <ellipse id="Oval" fill="#142680" cx="3.22916667" cy="6.66666667" rx="3.22916667" ry="3.33333333"></ellipse>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

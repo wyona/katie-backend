@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<webhooks xmlns="http://www.wyona.com/askkatie/1.0.0">
+  <webhook id="7n0RWa" payload-url="http://127.0.0.1:8080/api/ask" content-type="application/json" enabled="true"/>
+  <webhook id="nrCAsq" payload-url="https://postman-echo.com/post" content-type="application/json" enabled="true" api-key="1234"/>
+  <webhook id="gQ9esA" payload-url="https://ukatie.com/postreceive" content-type="application/json" enabled="false"/>
+</webhooks>

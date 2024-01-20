@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="beb5ce56-f4b9-419d-af09-d5edbd188f49">
+  <question epoch="1617055420188">How can a domain member become an expert?</question>
+  <answer content-type="text/html" type="DEFAULT">Sign in to Katie, select the dashboard of the domain, select the member you want to become an Expert and enable "Expert" for this member.</answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="domain_configuration"/>
+</qa>

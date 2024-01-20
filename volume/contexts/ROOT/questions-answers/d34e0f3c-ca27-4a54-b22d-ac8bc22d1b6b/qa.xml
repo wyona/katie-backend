@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="d34e0f3c-ca27-4a54-b22d-ac8bc22d1b6b">
+  <question epoch="1617055360335">How can I install Katie on-premises?</question>
+  <answer content-type="text/html" modified="1705527808873" type="DEFAULT">
+    <p xmlns="">
+                                                Please see 
+      
+        
+      
+        
+      
+        
+      <a href="https://github.com/wyona/katie-backend/tree/main#quickstart" rel="noopener" target="_blank">https://github.com/wyona/katie-backend/tree/main#quickstart</a>
+    </p>
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="on-premises"/>
+</qa>

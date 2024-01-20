@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>eye_icon_strike</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M2.5,3.94643104 L19.4705627,20.9169938" id="path-1"></path>
+    </defs>
+    <g id="eye_icon_strike" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M12,5 C8.01224122,5 4.44378523,7.39886393 1.21317491,11.9994355 C4.44333235,16.6008316 8.01198817,19 12,19 C15.9877588,19 19.5562148,16.6011361 22.7868251,12.0005645 C19.5566677,7.39916838 15.9880118,5 12,5 Z" id="Path-10" stroke="#737F8B" stroke-width="2" fill="#FFFFFF"></path>
+        <circle id="Oval" stroke="#737F8B" stroke-width="2" cx="12" cy="12" r="4"></circle>
+        <line x1="3.89351011" y1="2.5" x2="20.8640729" y2="19.4705627" id="Line" stroke="#FFFFFF" stroke-width="2"></line>
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Line" stroke="#737F8B" stroke-width="2" xlink:href="#path-1"></use>
+    </g>
+</svg>

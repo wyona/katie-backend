@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="35ed2110-b90f-4a9c-9571-e4d05898fc90">
+  <question>What time is it?</question>
+  <answer content-type="text/html" type="DEFAULT">
+                                                        The current time is 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <ak-exec xmlns="">com.wyona.katie.answers.Time#getTime()</ak-exec>
+                                                        , whereas also see https://www.timeanddate.com/
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <no-faq/>
+</qa>

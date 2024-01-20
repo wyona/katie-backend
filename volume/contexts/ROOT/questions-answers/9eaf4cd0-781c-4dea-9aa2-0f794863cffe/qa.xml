@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qa xmlns="http://www.wyona.com/askkatie/1.0.0" is_trained="true" uuid="9eaf4cd0-781c-4dea-9aa2-0f794863cffe">
+  <question epoch="1617054572802">How can I add Katie to MS Teams?</question>
+  <answer content-type="text/html" modified="1705527699838" type="DEFAULT">
+    <p xmlns="">
+                                                Please see 
+      
+        
+      
+        
+      
+        
+      <a href="https://app.katie.qa/ms-teams.html" rel="noopener" target="_blank">https://app.katie.qa/ms-teams.html</a>
+    </p>
+  </answer>
+  <source email="michael.wechner@wyona.com"/>
+  <faq language="en" topic-id="ms_teams_integration"/>
+</qa>
