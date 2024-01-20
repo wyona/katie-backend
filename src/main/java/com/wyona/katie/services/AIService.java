@@ -43,6 +43,8 @@ public class AIService {
     private QueryServiceQuestionAnswerImpl queryServiceImpl;
     @Autowired
     private KatieQuestionAnswerImpl katieImpl;
+    @Autowired
+    private AzureAISearchImpl azureAISearchImpl;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -611,6 +613,8 @@ public class AIService {
             return queryServiceImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             return katieImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+            return azureAISearchImpl;
         } else {
             return luceneImpl;
         }

@@ -1717,6 +1717,8 @@ public class ContextService {
             domain.setQueryServiceUrl(aiServiceBaseUrl);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.ELASTICSEARCH)) {
             domain.setElasticsearchIndex(aiServiceBaseUrl);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {

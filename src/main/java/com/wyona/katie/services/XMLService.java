@@ -123,6 +123,7 @@ public class XMLService {
     private static final String CONTEXT_WEAVIATE_THRESHOLD_ATTR = "certainty-threshold";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
+    private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
 
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_TAG = "sbert-lucene";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
@@ -1400,6 +1401,13 @@ public class XMLService {
             doc.getDocumentElement().appendChild(katieSearchElement);
         }
 
+        // INFO: Azure AI Search implementation
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+            Element azureAISearchEl = doc.createElement(CONTEXT_AZURE_AI_SEARCH_TAG);
+            // TODO
+            doc.getDocumentElement().appendChild(azureAISearchEl);
+        }
+
         // INFO: Generic query service
         if (ddqi.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE) && context.getQueryServiceUrl() != null) {
             Element qsElement = doc.createElement(CONTEXT_QUERY_SERVICE_TAG);
@@ -1569,6 +1577,7 @@ public class XMLService {
         String nerImpl = getAttributeStringValue(doc, CONTEXT_NER_TAG, CONTEXT_NER_IMPL_ATTR, null);
 
         Element katieSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_SEARCH_TAG);
+        Element azureAISearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_AZURE_AI_SEARCH_TAG);
 
         // INFO: Query service configuration
         String qsQueryUrl = null;
@@ -1779,6 +1788,9 @@ public class XMLService {
         domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT); // INFO: Set LUCENE_DEFAULT implementation by default
         if (katieSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
+        }
+        if (azureAISearchEl != null) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
         }
         if (qsQueryUrl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.QUERY_SERVICE);
