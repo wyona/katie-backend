@@ -1,24 +1,15 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.ai.FeatureModel;
-import com.wyona.katie.ai.FeatureModelKeywordsImpl;
-import com.wyona.katie.ai.Memory;
-import com.wyona.katie.ai.MemoryImpl;
-
 import com.wyona.katie.models.*;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;
 
 /**
- * Katie AI based question answer implementation
+ * https://learn.microsoft.com/en-us/azure/search/
  */
 @Slf4j
 @Component
