@@ -1,10 +1,17 @@
 package com.wyona.katie.handlers;
 
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.search.documents.indexes.SearchIndexClient;
+import com.azure.search.documents.indexes.SearchIndexClientBuilder;
+import com.azure.search.documents.indexes.models.SearchField;
+import com.azure.search.documents.indexes.models.SearchFieldDataType;
+import com.azure.search.documents.indexes.models.SearchIndex;
 import com.wyona.katie.models.*;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -14,6 +21,9 @@ import java.util.ArrayList;
 @Slf4j
 @Component
 public class AzureAISearchImpl implements QuestionAnswerHandler {
+
+    private static final String ENDPOINT = "TODO";
+    private static final String ADMIN_KEY = "TODO";
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -26,7 +36,15 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) {
-        log.info("Azure AI Search implementation: Create tenant ...");
+        log.info("Azure AI Search implementation: Create index ...");
+
+        List<SearchField> searchFields = Arrays.asList(
+                new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
+        );
+        SearchIndex searchIndex = new SearchIndex("katie" + domain.getId(), searchFields);
+        SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
+        SearchIndex indexFromService = searchIndexClient.createIndex(searchIndex);
+
         return null; 
     }
 

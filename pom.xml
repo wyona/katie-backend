@@ -289,6 +289,11 @@
           <!--<version>1.0.1-SNAPSHOT</version>-->
         </dependency>
         <dependency>
+          <groupId>com.azure</groupId>
+          <artifactId>azure-search-documents</artifactId>
+          <version>11.6.1</version>
+        </dependency>
+        <dependency>
           <groupId>org.jsoup</groupId>
           <artifactId>jsoup</artifactId>
           <version>1.14.2</version>
