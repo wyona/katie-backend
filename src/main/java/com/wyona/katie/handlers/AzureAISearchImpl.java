@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 /**
  * https://learn.microsoft.com/en-us/azure/search/
+ * https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/search/azure-search-documents/src/samples
  */
 @Slf4j
 @Component
@@ -38,6 +39,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
     public String createTenant(Context domain) {
         log.info("Azure AI Search implementation: Create index ...");
 
+        // INFO: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/search/azure-search-documents/src/samples/java/com/azure/search/documents/indexes/CreateIndexExample.java
         List<SearchField> searchFields = Arrays.asList(
                 new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
         );
