@@ -7,6 +7,7 @@ import com.azure.search.documents.indexes.models.SearchField;
 import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.SearchIndex;
 import com.wyona.katie.models.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +24,14 @@ import java.util.ArrayList;
 @Component
 public class AzureAISearchImpl implements QuestionAnswerHandler {
 
-    private static final String ENDPOINT = "TODO";
-    private static final String ADMIN_KEY = "TODO";
+    @Value("${azure.ai.search.endpoint}")
+    private String ENDPOINT;
+
+    @Value("${azure.ai.search.admin.key}")
+    private String ADMIN_KEY;
+
+    @Value("${azure.ai.search.query.key}")
+    private String QUERY_KEY;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -41,13 +48,16 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
 
         // INFO: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/search/azure-search-documents/src/samples/java/com/azure/search/documents/indexes/CreateIndexExample.java
         List<SearchField> searchFields = Arrays.asList(
+                new SearchField("id", SearchFieldDataType.STRING).setKey(true),
                 new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
         );
-        SearchIndex searchIndex = new SearchIndex("katie" + domain.getId(), searchFields);
+        String indexName = "katie20240121"; // TODO
+        //String indexName = "katie" + domain.getId(); // TODO: No dashes permitted
+        SearchIndex searchIndex = new SearchIndex(indexName, searchFields);
         SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
         SearchIndex indexFromService = searchIndexClient.createIndex(searchIndex);
 
-        return null; 
+        return indexName;
     }
 
     /**
