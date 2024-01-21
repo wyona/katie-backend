@@ -10,7 +10,9 @@
 
 <strong>Katie</strong> can be connected with all your applications and data repositories, like for example Websites, Confluence, SharePoint, OneNote, Outlook, Supabase, Directus, Discourse, etc.
 
-<strong>Katie</strong> is based on state of the art AI and supports embedding and large language models of your choice. By default <strong>Katie</strong> uses [Apache Lucene](https://lucene.apache.org/) for full text and vector search, but it is also integrated with [Weaviate](https://weaviate.io), [Elasticsearch](https://www.elastic.co), [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/), etc.
+<strong>Katie</strong> is based on state of the art AI and supports embedding and large language models of your choice.
+
+By default, <strong>Katie</strong> uses [Apache Lucene](https://lucene.apache.org/) for full text and vector search, but it also integrates with [Weaviate](https://weaviate.io), [Elasticsearch](https://www.elastic.co), [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/), etc.
 
 ## Quickstart
 
