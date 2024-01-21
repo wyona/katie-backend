@@ -1,11 +1,15 @@
 package com.wyona.katie.handlers;
 
 import com.azure.core.credential.AzureKeyCredential;
+import com.azure.search.documents.SearchClient;
+import com.azure.search.documents.SearchClientBuilder;
+import com.azure.search.documents.SearchDocument;
 import com.azure.search.documents.indexes.SearchIndexClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.azure.search.documents.indexes.models.SearchField;
 import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.SearchIndex;
+import com.azure.search.documents.models.SearchResult;
 import com.wyona.katie.models.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,6 +38,9 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
     @Value("${azure.ai.search.query.key}")
     private String QUERY_KEY;
 
+    private static final String ID = "id";
+    private static final String TEXT = "text";
+
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
@@ -55,8 +62,8 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
 
         // INFO: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/search/azure-search-documents/src/samples/java/com/azure/search/documents/indexes/CreateIndexExample.java
         List<SearchField> searchFields = Arrays.asList(
-                new SearchField("id", SearchFieldDataType.STRING).setKey(true),
-                new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
+                new SearchField(ID, SearchFieldDataType.STRING).setKey(true),
+                new SearchField(TEXT, SearchFieldDataType.STRING).setSearchable(true)
         );
         SearchIndex searchIndex = new SearchIndex(indexName, searchFields);
         SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
@@ -78,6 +85,11 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      */
     public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
         log.warn("TODO: Delete/train is just a workaround, implement retrain by itself");
+        if (delete(qna.getUuid(), domain)) {
+            train(qna, domain, indexAlternativeQuestions);
+        } else {
+            log.warn("QnA with UUID '" + qna.getUuid() + "' was not deleted and therefore was not retrained!");
+        }
     }
 
     /**
@@ -113,6 +125,29 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
         log.info("Get answer(s) from Katie implementation for question '" + question + "' ...");
 
         List<Hit> answers = new ArrayList<Hit>();
+
+        // INFO: https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/search/azure-search-documents#querying
+        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(QUERY_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        for (SearchResult result : searchClient.search(question)) {
+            SearchDocument doc = result.getDocument(SearchDocument.class);
+            String id = (String) doc.get(ID);
+            String text = (String) doc.get(TEXT);
+            double score = 0; // TODO
+
+            log.info("Katie Id of found document: " + id);
+
+            String orgQuestion = null;
+            Date dateAnswered = null;
+            Date dateAnswerModified = null;
+            Date dateOriginalQuestionSubmitted = null;
+
+            String _answer = Answer.AK_UUID_COLON + id;
+            ContentType answerContentType = null;
+
+            String uuid = id;
+            Answer answer = new Answer(question, _answer, answerContentType,null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, orgQuestion, dateOriginalQuestionSubmitted, true, null, true, null);
+            answers.add(new Hit(answer, score));
+        }
 
         return answers.toArray(new Hit[0]);
     }
