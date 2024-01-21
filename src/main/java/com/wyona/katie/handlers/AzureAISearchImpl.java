@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -51,13 +52,14 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
                 new SearchField("id", SearchFieldDataType.STRING).setKey(true),
                 new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
         );
-        String indexName = "katie20240121"; // TODO
-        //String indexName = "katie" + domain.getId(); // TODO: No dashes permitted
+        String indexName = "katie" + new Date().getTime();
+        //String indexName = "katie" + domain.getId(); // INFO: No dashes permitted by Azure AI Search
         SearchIndex searchIndex = new SearchIndex(indexName, searchFields);
         SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
         SearchIndex indexFromService = searchIndexClient.createIndex(searchIndex);
 
-        return indexName;
+        return indexFromService.getName();
+        //return indexName;
     }
 
     /**

@@ -121,6 +121,7 @@ public class XMLService {
     private static final String CONTEXT_KNOWLEDGE_GRAPH_TAG = "knowledge-graph";
     private static final String CONTEXT_WEAVIATE_TAG = "weaviate";
     private static final String CONTEXT_WEAVIATE_THRESHOLD_ATTR = "certainty-threshold";
+    private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
@@ -1404,7 +1405,7 @@ public class XMLService {
         // INFO: Azure AI Search implementation
         if (ddqi.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             Element azureAISearchEl = doc.createElement(CONTEXT_AZURE_AI_SEARCH_TAG);
-            // TODO
+            azureAISearchEl.setAttribute(CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR, context.getAzureAISearchIndexName());
             doc.getDocumentElement().appendChild(azureAISearchEl);
         }
 
@@ -1791,6 +1792,7 @@ public class XMLService {
         }
         if (azureAISearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
+            domain.setAzureAISearchIndexName(azureAISearchEl.getAttribute(CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR));
         }
         if (qsQueryUrl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.QUERY_SERVICE);

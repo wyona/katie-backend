@@ -634,14 +634,15 @@ public class AIService {
     }
 
     /**
-     * Delete all QnAs
+     * Delete all QnAs from index
      * @param domain Domain associated with QnAs
      */
-    public void delete(Context domain) {
+    public void clean(Context domain) {
         QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(domain.getDetectDuplicatedQuestionImpl());
         answerQuestionImpl.deleteTenant(domain);
         try {
-            answerQuestionImpl.createTenant(domain);
+            String indexNameOrUrl = answerQuestionImpl.createTenant(domain);
+            // TODO: Save indexNameOrUrl, see ContextService#reindex(...)
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

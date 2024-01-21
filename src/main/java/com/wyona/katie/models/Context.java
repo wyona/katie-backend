@@ -43,6 +43,8 @@ public class Context {
     private String weaviateQueryUrl;
     private float weaviateCertaintyThreshold;
 
+    private String azureAISearchIndexName;
+
     private String knowledgeGraphQueryUrl;
     private String elasticsearchIndex;
 
@@ -505,6 +507,20 @@ public class Context {
         } else {
             return null;
         }
+    }
+
+    /**
+     *
+     */
+    public void setAzureAISearchIndexName(String azureAISearchIndexName) {
+        this.azureAISearchIndexName = azureAISearchIndexName;
+    }
+
+    /**
+     *
+     */
+    public String getAzureAISearchIndexName() {
+        return azureAISearchIndexName;
     }
 
     /**

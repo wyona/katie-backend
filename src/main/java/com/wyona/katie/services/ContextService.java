@@ -1718,6 +1718,7 @@ public class ContextService {
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+            domain.setAzureAISearchIndexName(aiServiceBaseUrl);
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.ELASTICSEARCH)) {
             domain.setElasticsearchIndex(aiServiceBaseUrl);
@@ -4035,11 +4036,10 @@ public class ContextService {
             uuids[i] = qnas[i].getUuid();
         }
 
-        aiService.delete(domain);
+        aiService.clean(domain);
 
         deleteQnAsFromFAQ(domain, uuids);
         deleteQnAsFromStorage(domain, uuids);
-
 
         File urlsBaseDir = domain.getURLsDataPath();
         log.info("Try to delete urls base dir: " + urlsBaseDir.getAbsolutePath());
