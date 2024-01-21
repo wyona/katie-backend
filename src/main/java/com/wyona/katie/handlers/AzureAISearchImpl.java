@@ -45,7 +45,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
     public void deleteTenant(Context domain) {
         String indexName = domain.getAzureAISearchIndexName();
         log.info("Azure AI Search implementation: Delete index '" + indexName + "' ...");
-        SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
+        SearchIndexClient searchIndexClient = getSearchIndexClient(domain);
         searchIndexClient.deleteIndex(indexName);
 
     }
@@ -64,7 +64,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
                 new SearchField(TEXT, SearchFieldDataType.STRING).setSearchable(true)
         );
         SearchIndex searchIndex = new SearchIndex(indexName, searchFields);
-        SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
+        SearchIndexClient searchIndexClient = getSearchIndexClient(domain);
         SearchIndex indexFromService = searchIndexClient.createIndex(searchIndex);
 
         return indexFromService.getName();
@@ -80,7 +80,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
 
         IndexDocumentsBatch<AzureAISearchDoc> batch = new IndexDocumentsBatch<>();
         batch.addUploadActions(Collections.singletonList(new AzureAISearchDoc().setId(qna.getUuid()).setText(qna.getQuestion() + " " + qna.getAnswer())));
-        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        SearchClient searchClient = getSearchClient(domain);
         searchClient.indexDocuments(batch);
     }
 
@@ -111,7 +111,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      */
     public boolean delete(String uuid, Context domain) {
         log.info("Delete QnA '" + uuid + "' ...");
-        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        SearchClient searchClient = getSearchClient(domain);
 
         //IndexDocumentsBatch<AzureAISearchDoc> batch = new IndexDocumentsBatch<>();
         //batch.addDeleteActions(Collections.singletonList(new AzureAISearchDoc().setId(uuid)));
@@ -139,7 +139,7 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
         List<Hit> answers = new ArrayList<Hit>();
 
         // INFO: https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/search/azure-search-documents#querying
-        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(QUERY_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        SearchClient searchClient = getSearchClient(domain);
         for (SearchResult result : searchClient.search(question)) {
             SearchDocument doc = result.getDocument(SearchDocument.class);
             String id = (String) doc.get(ID);
@@ -162,5 +162,24 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
         }
 
         return answers.toArray(new Hit[0]);
+    }
+
+    /**
+     *
+     */
+    private SearchClient getSearchClient(Context domain) {
+        // TODO: Get ENDPOINT and ADMIN_KEY and QUERY_KEY from domain config
+        if (false) { // TODO: For query use QUERY_KEY
+            return new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(QUERY_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        }
+        return new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+    }
+
+    /**
+     *
+     */
+    private SearchIndexClient getSearchIndexClient(Context domain) {
+        // TODO: Get ENDPOINT and ADMIN_KEY from domain config
+        return new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
     }
 }
