@@ -38,22 +38,26 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
     public void deleteTenant(Context domain) {
-        log.info("Azure AI Search implementation: Delete tenant ...");
+        String indexName = domain.getAzureAISearchIndexName();
+        log.info("Azure AI Search implementation: Delete index '" + indexName + "' ...");
+        SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
+        searchIndexClient.deleteIndex(indexName);
+
     }
 
     /**
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) {
-        log.info("Azure AI Search implementation: Create index ...");
+        String indexName = "katie" + new Date().getTime();
+        //String indexName = "katie" + domain.getId(); // INFO: No dashes permitted by Azure AI Search
+        log.info("Azure AI Search implementation: Create index '" + indexName + "' ...");
 
         // INFO: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/search/azure-search-documents/src/samples/java/com/azure/search/documents/indexes/CreateIndexExample.java
         List<SearchField> searchFields = Arrays.asList(
                 new SearchField("id", SearchFieldDataType.STRING).setKey(true),
                 new SearchField("text", SearchFieldDataType.STRING).setSearchable(true)
         );
-        String indexName = "katie" + new Date().getTime();
-        //String indexName = "katie" + domain.getId(); // INFO: No dashes permitted by Azure AI Search
         SearchIndex searchIndex = new SearchIndex(indexName, searchFields);
         SearchIndexClient searchIndexClient = new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
         SearchIndex indexFromService = searchIndexClient.createIndex(searchIndex);
