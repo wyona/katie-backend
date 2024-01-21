@@ -6,6 +6,7 @@ import com.azure.search.documents.SearchClientBuilder;
 import com.azure.search.documents.SearchDocument;
 import com.azure.search.documents.indexes.SearchIndexClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
+import com.azure.search.documents.indexes.models.IndexDocumentsBatch;
 import com.azure.search.documents.indexes.models.SearchField;
 import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.SearchIndex;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * https://learn.microsoft.com/en-us/azure/search/
@@ -77,7 +75,13 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context domain, boolean indexAlternativeQuestions) {
+        // INFO: https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/search/azure-search-documents#adding-documents-to-your-index
         log.info("Index QnA: " + qna.getQuestion() + " | " + qna.getUuid());
+
+        IndexDocumentsBatch<AzureAISearchDoc> batch = new IndexDocumentsBatch<>();
+        batch.addUploadActions(Collections.singletonList(new AzureAISearchDoc().setId(qna.getUuid()).setText(qna.getQuestion() + " " + qna.getAnswer())));
+        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        searchClient.indexDocuments(batch);
     }
 
     /**
@@ -106,8 +110,16 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#delete(String, Context)
      */
     public boolean delete(String uuid, Context domain) {
-        // TODO
-        return false;
+        log.info("Delete QnA '" + uuid + "' ...");
+        SearchClient searchClient = new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+
+        //IndexDocumentsBatch<AzureAISearchDoc> batch = new IndexDocumentsBatch<>();
+        //batch.addDeleteActions(Collections.singletonList(new AzureAISearchDoc().setId(uuid)));
+        //searchClient.indexDocuments(batch);
+
+        Iterable<AzureAISearchDoc> docs = Collections.singletonList(new AzureAISearchDoc().setId(uuid));
+        searchClient.deleteDocuments(docs);
+        return true;
     }
 
     /**
