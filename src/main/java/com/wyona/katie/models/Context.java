@@ -44,6 +44,7 @@ public class Context {
     private float weaviateCertaintyThreshold;
 
     private String azureAISearchIndexName;
+    private String azureAISearchEndpoint;
 
     private String knowledgeGraphQueryUrl;
     private String elasticsearchIndex;
@@ -521,6 +522,20 @@ public class Context {
      */
     public String getAzureAISearchIndexName() {
         return azureAISearchIndexName;
+    }
+
+    /**
+     * @param endpoint Azure AI Search endpoint, e.g. https://katie.search.windows.net
+     */
+    public void setAzureAISearchEndpoint(String endpoint) {
+        this.azureAISearchEndpoint = endpoint;
+    }
+
+    /**
+     *
+     */
+    public String getAzureAISearchEndpoint() {
+        return azureAISearchEndpoint;
     }
 
     /**

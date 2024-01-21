@@ -1382,6 +1382,13 @@ public class ContextService {
                 throw new Exception("No query service base URL provided!");
             }
         }
+        if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+            if (queryServiceBaseUrl != null) {
+                domain.setAzureAISearchEndpoint(queryServiceBaseUrl.trim());
+            } else {
+                throw new Exception("No Azure AI Search endpoint prvided");
+            }
+        }
 
         String aiServiceBaseUrl = aiService.createTenant(domain, detectDuplicatedQuestionsImpl);
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);

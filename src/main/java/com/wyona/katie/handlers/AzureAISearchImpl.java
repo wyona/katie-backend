@@ -27,9 +27,6 @@ import java.util.*;
 @Component
 public class AzureAISearchImpl implements QuestionAnswerHandler {
 
-    @Value("${azure.ai.search.endpoint}")
-    private String ENDPOINT;
-
     @Value("${azure.ai.search.admin.key}")
     private String ADMIN_KEY;
 
@@ -170,9 +167,9 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
     private SearchClient getSearchClient(Context domain) {
         // TODO: Get ENDPOINT and ADMIN_KEY and QUERY_KEY from domain config
         if (false) { // TODO: For query use QUERY_KEY
-            return new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(QUERY_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+            return new SearchClientBuilder().endpoint(domain.getAzureAISearchEndpoint()).credential(new AzureKeyCredential(QUERY_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
         }
-        return new SearchClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
+        return new SearchClientBuilder().endpoint(domain.getAzureAISearchEndpoint()).credential(new AzureKeyCredential(ADMIN_KEY)).indexName(domain.getAzureAISearchIndexName()).buildClient();
     }
 
     /**
@@ -180,6 +177,6 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
      */
     private SearchIndexClient getSearchIndexClient(Context domain) {
         // TODO: Get ENDPOINT and ADMIN_KEY from domain config
-        return new SearchIndexClientBuilder().endpoint(ENDPOINT).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
+        return new SearchIndexClientBuilder().endpoint(domain.getAzureAISearchEndpoint()).credential(new AzureKeyCredential(ADMIN_KEY)).buildClient();
     }
 }
