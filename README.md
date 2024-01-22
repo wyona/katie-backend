@@ -63,7 +63,7 @@ Optionally you can run Katie with an outgoing proxy configuration enabled (https
 * Click on "Add Configuration..."
     * Click "+" to add new configuration: Spring Boot
     * Set Name, e.g. "Katie"
-    * Main class: com.erkigsnek.webapp.Server
+    * Main class: com.wyona.katie.Server
     * Environment, JRE: /Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
     * Active profiles: dev
         * Optional: Set environment variable SPRING_PROFILES_ACTIVE=dev
@@ -90,7 +90,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 *(WINDOWS) Your volume.base.path MUST be absolute like for example: "G:/katie/katie-backend/volume". If you want to start the app in any other configuration, for example prod, don't forget to change the volume.base.path from "/katie-backend/volume" to "./katie-backend/volume"
 * Click on "Run | Run configurations..."
     * Click "New launch configuration" to add new configuration: Spring Boot
-    * Main class: com.erkigsnek.webapp.Server
+    * Main class: com.wyona.katie.Server
     * !!! Select Profile dev
 
 * Apply configuration and run
@@ -151,7 +151,7 @@ Create / migrate Database on startup of Katie web app
 
 * pom.xml (flyway dependency)
 * src/main/resources/application.properties (flyway and h2 configuration, volume/askkatie-h2.mv.db)
-* src/main/java/com/erkigsnek/webapp/config/DataSourceConfig.java
+* src/main/java/com/wyona/katie/config/DataSourceConfig.java
 * SQL Scripts: src/main/resources/db/migration
 
 When running Katie as Docker
@@ -181,6 +181,14 @@ Access database from command line (WARN: Might not work properly when database i
     * select * from REMEMBERME;
     * quit
 
+When you encounter an error like "Migration checksum mismatch for migration version 28.3", then the reason is that the migration script src/main/resources/db/migration/V28_3__alter_question_table.sql has been modified, for example because the script comment at the top got updated.
+If this modification is not relevant, then you can fix the database by replacing the previous checksum (Applied to database) by the new checksum (Resolved locally)
+
+* select * from "flyway_schema_history";
+* update "flyway_schema_history" set "checksum" = '-1714955084' where "version" = '28.3';
+
+and the startup should work again.
+
 ## Update Angular Frontend
 
 * git clone git@github.com:wyona/katie-expert-frontend-angular.git
@@ -204,7 +212,7 @@ Update the version in the following files:
 
 Basic configuration: src/main/resources/application.properties
 
-Implementation: src/main/java/com/erkigsnek/webapp/handlers/ElasticsearchQuestionAnswerImpl.java
+Implementation: src/main/java/com/wyona/katie/handlers/ElasticsearchQuestionAnswerImpl.java
 
 List all indices https://elasticsearch-vt.wyona.com/_cat/indices
 Get all hits of a particular index: E.g. https://elasticsearch-vt.wyona.com/askkatie_1b3805a8-84db-452d-ae00-b13755686d30/_search
