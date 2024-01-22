@@ -31,7 +31,7 @@ The <strong>Katie</strong> backend webapp is based on Spring Boot and to build a
 
 * JDK: 11
     * https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html
-* Maven version: 3.8.6 or higher (IMPORTANT: Please double check Maven .m2/settings.xml)
+* Maven version: 3.9.6 or higher (IMPORTANT: Please double check Maven .m2/settings.xml)
     * https://maven.apache.org/download.cgi
     * https://maven.apache.org/install.html
 
