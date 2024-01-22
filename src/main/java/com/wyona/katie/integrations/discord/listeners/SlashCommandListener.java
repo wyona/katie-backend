@@ -30,7 +30,7 @@ public class SlashCommandListener {
     }
 
     /**
-     * Handle Slash command, e.g. "/ask" or "/ping"
+     * Handle Slash command, e.g. "/invite" or "/ask" or "/ping"
      */
     public Mono<Void> handle(ChatInputInteractionEvent event) {
         log.info("Handle Discord slash command event '" + event.getCommandName() + "' ...");
