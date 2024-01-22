@@ -19,6 +19,9 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Ask question
+ */
 @Slf4j
 @Component
 public class AskCommand implements SlashCommand {
@@ -31,7 +34,7 @@ public class AskCommand implements SlashCommand {
 
     @Override
     public String getName() {
-        return "ask";
+        return "ask"; // INFO: Also see src/main/resources/discord/commands/ask.json
     }
 
     @Override
