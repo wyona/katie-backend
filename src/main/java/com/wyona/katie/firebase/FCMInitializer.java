@@ -22,11 +22,15 @@ public class FCMInitializer {
     @PostConstruct
     public void initialize() {
         try {
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())).build();
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                log.info("Firebase application has been initialized");
+            if (new ClassPathResource(firebaseConfigPath).exists()) {
+                FirebaseOptions options = new FirebaseOptions.Builder()
+                        .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())).build();
+                if (FirebaseApp.getApps().isEmpty()) {
+                    FirebaseApp.initializeApp(options);
+                    log.info("Firebase application has been initialized");
+                }
+            } else {
+                log.warn("No such Firebase configuration '" + firebaseConfigPath + "'");
             }
         } catch (IOException e) {
             log.error(e.getMessage());
