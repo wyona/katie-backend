@@ -32,6 +32,8 @@ public class InviteCommand implements SlashCommand {
         String guildId = event.getInteraction().getGuildId().get().asString();
         String channelId = event.getInteraction().getChannelId().asString();
 
+        // TODO: Check whether channel already connected with Katie domain
+
         // TODO: Add buttons
         ActionRow buttons = getButtons(guildId, channelId, "en");
         //client.get().getChannelById(Snowflake.of(channelId)).ofType(MessageChannel.class).flatMap(channel -> channel.createMessage(msg).withMessageReference(Snowflake.of(msgId)).withComponents(buttons)).subscribe();
