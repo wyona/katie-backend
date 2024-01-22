@@ -4,11 +4,14 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+/**
+ * Test command
+ */
 @Component
 public class PingCommand implements SlashCommand {
     @Override
     public String getName() {
-        return "ping";
+        return "ping"; // INFO: Also see src/main/resources/discord/commands/ping.json
     }
 
     @Override
