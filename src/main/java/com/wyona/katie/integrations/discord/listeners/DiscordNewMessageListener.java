@@ -26,7 +26,7 @@ import java.util.*;
 @Component
 public class DiscordNewMessageListener extends CommonMessageSender {
 
-    protected static final String DELIMITER = ":";
+    public static final String DELIMITER = ":";
 
     private final int ANSWER_MAX_LENGTH = 2000;
 
@@ -139,14 +139,8 @@ public class DiscordNewMessageListener extends CommonMessageSender {
                         domainService.saveThreadMessage(domainService.getContext(discordEvent.getDomainId()), discordEvent.getChannelId(), discordEvent.getChannelRequestId(), "" + channelId, message.getContent());
                         return Mono.empty();
                     } else {
-                        log.warn("Discord guild / channel '" + guildId + " / " + channelId + "' does not seem to be connected with a Katie domain!");
-
-                        // TODO: Add buttons
-                        ActionRow buttons = getButtons(guildId, channelId, "en");
-                        //client.get().getChannelById(Snowflake.of(channelId)).ofType(MessageChannel.class).flatMap(channel -> channel.createMessage(msg).withMessageReference(Snowflake.of(msgId)).withComponents(buttons)).subscribe();
-
-                        String msg = messageSource.getMessage("hi.my.name.is.katie.ask.create.connect.domain", null, new Locale("en")) + " (Guild Id: " + guildId + ", Channel Id: " + channelId + ")";
-                        return message.getChannel().flatMap(channel -> channel.createMessage(Utils.convertToMarkdown(msg)));
+                        log.warn("Discord guild / channel '" + guildId + " / " + channelId + "' does not seem to be connected with a Katie domain! Use the '/invite' command to invite Katie into channel ...");
+                        return Mono.empty();
                     }
                 } else {
                     log.warn("Neither Katie Domain Id available nor does it seem to be a thread message: " + message.getContent());
@@ -264,18 +258,5 @@ public class DiscordNewMessageListener extends CommonMessageSender {
     private String getDomainId(String guildId, long channelId) {
         log.info("Get Katie domain for discord guild id '" + guildId + "' and channel id '" + channelId + "' ...");
         return dataRepositoryService.getDomainIdForDiscordGuildChannel(guildId, Long.toString(channelId));
-    }
-
-    /**
-     *
-     */
-    private ActionRow getButtons(String guildId, long channelId, String language) {
-        String createNewDomain = messageSource.getMessage("create.new.domain", null, Utils.getLocale(language)) + " ...";
-        String connectWithExistingDomain = messageSource.getMessage("connect.with.existing.domain", null, Utils.getLocale(language)) + " ...";
-
-        Button createNewDomainButton = Button.primary(ChannelAction.CREATE_DOMAIN.toString() + DiscordNewMessageListener.DELIMITER + guildId + DiscordNewMessageListener.DELIMITER + channelId, createNewDomain);
-        Button connectWithExistingDomainButton = Button.primary(ChannelAction.CONNECT_DOMAIN.toString() + DiscordNewMessageListener.DELIMITER + guildId + DiscordNewMessageListener.DELIMITER + channelId, connectWithExistingDomain);
-
-        return ActionRow.of(createNewDomainButton, connectWithExistingDomainButton);
     }
 }
