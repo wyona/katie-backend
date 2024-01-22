@@ -45,6 +45,7 @@ public class Context {
 
     private String azureAISearchIndexName;
     private String azureAISearchEndpoint;
+    private String azureAISearchAdminKey;
 
     private String knowledgeGraphQueryUrl;
     private String elasticsearchIndex;
@@ -536,6 +537,20 @@ public class Context {
      */
     public String getAzureAISearchEndpoint() {
         return azureAISearchEndpoint;
+    }
+
+    /**
+     *
+     */
+    public void setAzureAISearchAdminKey(String adminKey) {
+        this.azureAISearchAdminKey = adminKey;
+    }
+
+    /**
+     *
+     */
+    public String getAzureAISearchAdminKey() {
+        return azureAISearchAdminKey;
     }
 
     /**

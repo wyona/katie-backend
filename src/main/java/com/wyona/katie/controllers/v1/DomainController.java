@@ -1218,6 +1218,8 @@ public class DomainController {
             @RequestParam(value = "impl", required = true) DetectDuplicatedQuestionImpl searchImpl,
             @ApiParam(name = "query-service-url", value = "Query service base URL (e.g. http://localhost:8383/api/v2) or Azure AI Search endpoint (e.g. https://katie.search.windows.net)", required = false)
             @RequestParam(value = "query-service-url", required = false) String queryServiceBaseUrl,
+            @ApiParam(name = "query-service-token", value = "Query service Token / Key / Secret", required = false)
+            @RequestParam(value = "query-service-token", required = false) String queryServiceToken,
             @ApiParam(name = "embedding-impl", value = "Embedding implementation",required = false)
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
             @ApiParam(name = "api-token", value = "Embedding implementation API token",required = false)
@@ -1285,7 +1287,7 @@ public class DomainController {
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
 
-        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, embeddingImpl, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
+        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
 
         /* INFO: Delay response to test frontend spinner
         try {

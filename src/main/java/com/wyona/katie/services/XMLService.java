@@ -122,6 +122,7 @@ public class XMLService {
     private static final String CONTEXT_WEAVIATE_TAG = "weaviate";
     private static final String CONTEXT_WEAVIATE_THRESHOLD_ATTR = "certainty-threshold";
     private static final String CONTEXT_AZURE_AI_SEARCH_ENDPOINT_ATTR = "endpoint";
+    private static final String CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR = "admin-key";
     private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
@@ -1407,6 +1408,7 @@ public class XMLService {
         if (ddqi.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             Element azureAISearchEl = doc.createElement(CONTEXT_AZURE_AI_SEARCH_TAG);
             azureAISearchEl.setAttribute(CONTEXT_AZURE_AI_SEARCH_ENDPOINT_ATTR, context.getAzureAISearchEndpoint());
+            azureAISearchEl.setAttribute(CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR, context.getAzureAISearchAdminKey());
             azureAISearchEl.setAttribute(CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR, context.getAzureAISearchIndexName());
             doc.getDocumentElement().appendChild(azureAISearchEl);
         }
@@ -1795,6 +1797,7 @@ public class XMLService {
         if (azureAISearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
             domain.setAzureAISearchEndpoint(azureAISearchEl.getAttribute(CONTEXT_AZURE_AI_SEARCH_ENDPOINT_ATTR));
+            domain.setAzureAISearchAdminKey(azureAISearchEl.getAttribute(CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR));
             domain.setAzureAISearchIndexName(azureAISearchEl.getAttribute(CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR));
         }
         if (qsQueryUrl != null) {

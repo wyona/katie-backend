@@ -1262,6 +1262,7 @@ public class ContextService {
      * @param domainId Domain Id
      * @param detectDuplicatedQuestionsImpl New detect duplicated question implementation
      * @param queryServiceBaseUrl Query service base URL when the "query service implementation" is set
+     * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param apiToken Embedding implementation API token
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
@@ -1270,7 +1271,7 @@ public class ContextService {
      * @param userId Id of signed in user
      */
     @Async
-    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, EmbeddingsImpl embeddingImpl, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
+    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
         if (existsReindexLock(domainId)) {
             String existingProcessId = getReindexProcessId(domainId);
             log.warn("Reindexing of domain '" + domainId + "' already in progress (Process Id: " + existingProcessId + "), therefore no other reindex process will be started.");
@@ -1298,7 +1299,7 @@ public class ContextService {
          */
 
         try {
-            reindex(domainId, detectDuplicatedQuestionsImpl, queryServiceBaseUrl, embeddingImpl, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
+            reindex(domainId, detectDuplicatedQuestionsImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -1349,6 +1350,7 @@ public class ContextService {
      * @param domainId Domain Id
      * @param detectDuplicatedQuestionsImpl New detect duplicated question implementation
      * @param queryServiceBaseUrl Query service base URL when the "query service implementation" is set
+     * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param apiToken Embedding implementation API token
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
@@ -1356,7 +1358,7 @@ public class ContextService {
      * @param processId Background process UUID
      * @param throttleTimeInMillis Time in milliseconds to throttle re-indexing, because OpenAI, Cohere, etc. do have rate limits
      */
-    protected void reindex(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, EmbeddingsImpl embeddingImpl, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
+    protected void reindex(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
         Context domain = getContext(domainId);
         log.info("Reindex domain '" + domainId + "' and replace current index implementation '" + domain.getDetectDuplicatedQuestionImpl() + "' by '" + detectDuplicatedQuestionsImpl+ "' ...");
 
@@ -1377,6 +1379,7 @@ public class ContextService {
         if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             if (queryServiceBaseUrl != null) {
                 domain.setQueryServiceUrl(queryServiceBaseUrl.trim());
+                // TODO: Add queryServiceToken
                 log.info("Query service base URL: " + domain.getQueryServiceUrl()); // INFO: Will be used as aiServiceBaseUrl below
             } else {
                 throw new Exception("No query service base URL provided!");
@@ -1385,6 +1388,7 @@ public class ContextService {
         if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             if (queryServiceBaseUrl != null) {
                 domain.setAzureAISearchEndpoint(queryServiceBaseUrl.trim());
+                domain.setAzureAISearchAdminKey(queryServiceToken);
             } else {
                 throw new Exception("No Azure AI Search endpoint prvided");
             }
