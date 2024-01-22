@@ -1,6 +1,6 @@
 {
     "name": "ask",
-    "description": "Answers question",
+    "description": "Ask and answer question",
     "options": [
         {
             "name": "question",
