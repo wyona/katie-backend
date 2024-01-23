@@ -1,8 +1,8 @@
 version: "3.3"
 services:
   katie:
-    image: wyona/katie:1.352.0
-    #image: wyona/katie:1.353.0
+    image: wyona/katie:1.353.0
+    #image: wyona/katie:1.354.0
     #image: 4d047c16cdb9
     #image: ${DOCKER_IMAGE_TAG}
     container_name: katie
