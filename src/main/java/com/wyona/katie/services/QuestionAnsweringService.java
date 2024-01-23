@@ -228,7 +228,8 @@ public class QuestionAnsweringService {
             ra.setQuestionUUID(logEntryUUID);
 
             if (true) { // TODO: Make configurable per request, similar to "requestedAnswerContentType"
-                if (contextService.existsDataObject(ra.getUuid(), domain)) {
+                // INFO: Answers from external sources  do not have a UUID (e.g. when using query service, e.g. https://connector-grounded-qa.ukatie.com/api/v2)
+                if (ra.getUuid() != null && contextService.existsDataObject(ra.getUuid(), domain)) {
                     DataObjectMetaInformation dataObjectMeta = contextService.getDataObjectMetaInformation(ra.getUuid(), domain);
                     log.info("Content type of data object: " + dataObjectMeta.getContentType());
                     if (ContentType.fromString(dataObjectMeta.getContentType()).equals(ContentType.APPLICATION_JSON)) {
