@@ -52,7 +52,7 @@
     <name>Taskforce on Nature-related Financial Disclosures</name>
     <grounded-qa site-url="https://tnfd.global" url="http://localhost:5007">
       <!--<grounded-qa url="http://localhost:5007" topic="Weaviate">-->
-      <!--<grounded-qa url="https://grounded-qa.ukatie.com">-->
+      <!--<grounded-qa url="https://grounded-qa.katie.qa">-->
     </grounded-qa>
   </ks>
   <ks connector="ENERGIS" enabled="false" id="a638238f-k582-4b04-8d69-5tnd58fcaf46">
