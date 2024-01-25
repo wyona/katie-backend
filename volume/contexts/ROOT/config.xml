@@ -55,7 +55,7 @@
     <deep_link>http://localhost:7070/read-answer.html</deep_link>
 
     <subject_tag>AskKatie</subject_tag>
-    <sender_email>Katie ROOT KB &lt;no-reply@ukatie.com&gt;</sender_email>
+    <sender_email>Katie ROOT KB &lt;no-reply@wyona.com&gt;</sender_email>
 
     <!--<imap hostname="mx2.wyona.com" port="993" username="REPLACE" password="REPLACE"/>-->
     <!--<imap hostname="imap.gmail.com" port="993" username="REPLACE@gmail.com" password="REPLACE"/>-->
