@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.exceptions.UserAlreadyMemberException;
 import com.wyona.katie.models.faq.TopicVisibility;
 import com.wyona.katie.models.faq.FAQ;
@@ -2536,6 +2537,7 @@ public class ContextService {
         Answer qna = getQnA(null, uuid, domain);
 
         if (qna != null) {
+            rating.setQnauuid(qna.getUuid());
 
             PermissionStatus permissionStatus = null;
 
@@ -2559,6 +2561,7 @@ public class ContextService {
 
             qna.addRating(rating);
             saveRating(domain, uuid, qna);
+            saveRating(domain, rating, Utils.convertHtmlToPlainText(qna.getAnswer()));
             dataRepositoryService.updateStatusOfResubmittedQuestion(uuid, StatusResubmittedQuestion.STATUS_ANSWER_RATED);
 
             analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
@@ -3378,15 +3381,53 @@ public class ContextService {
     }
 
     /**
-     * Save rating
+     * Save rating connected with a particular QnA
      * @oaram domain Domain QnA is associated with
      * @oaram uuid UUID of QnA associated with rating
      * @param qna QnA data
      */
-    public void saveRating(Context domain, String uuid, Answer qna) {
+    private void saveRating(Context domain, String uuid, Answer qna) {
         log.info("Save rating for QnA with UUID '" + uuid + "' ...");
 
         xmlService.saveRatings(qna, domain.getRatingsXmlFilePath(uuid));
+    }
+
+    /**
+     * @param domain Knowledge base where question was asked
+     * @param rating Rating of answer for question asked
+     * @param answer Plain text answer
+     */
+    private void saveRating(Context domain, Rating rating, String answer) {
+        log.info("Save rating of answer '" + rating.getQnauuid() + "' for question '" + rating.getQuestionuuid() + "' ...");
+
+        long time = new Date().getTime();
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("human-question", rating.getUserquestion());
+        if (rating.getRating() < 5) {
+            rootNode.put("rejected-answer", answer);
+        } else {
+            rootNode.put("choosen-answer", answer);
+        }
+        ObjectNode metaNode = mapper.createObjectNode();
+        rootNode.put("meta", metaNode);
+        metaNode.put("rating", rating.getRating());
+        metaNode.put("epoch-time", time);
+        metaNode.put("question-uuid", rating.getQuestionuuid());
+        metaNode.put("qna-uuid", rating.getQnauuid());
+        metaNode.put("human-feedback", rating.getFeedback());
+        metaNode.put("user-email", rating.getEmail());
+        metaNode.put("foreign-id", "TODO");
+
+        try {
+            if (!domain.getRatingsDirectory().isDirectory()) {
+                domain.getRatingsDirectory().mkdir();
+            }
+            mapper.writeValue(new File(domain.getRatingsDirectory(), time + ".json"), rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
