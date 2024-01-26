@@ -3443,6 +3443,25 @@ public class ContextService {
     }
 
     /**
+     * Get ratings of answers of a particular domain
+     */
+    public Rating[] getRatings(String domainId) throws Exception {
+        List<Rating> ratings = new ArrayList<>();
+
+        Context domain = getDomain(domainId);
+        File ratingsDir = domain.getRatingsDirectory();
+        File[] ratingFiles = ratingsDir.listFiles();
+        ObjectMapper mapper = new ObjectMapper();
+        for (File ratingFile : ratingFiles ) {
+            //Rating rating = mapper.readValue(ratingFile, Rating.class);
+            JsonNode rootNode = mapper.readTree(ratingFile);
+            Rating rating = new Rating();
+            ratings.add(rating);
+        }
+
+        return ratings.toArray(new Rating[0]);
+    }
+    /**
      * @param channelRequestId Channel request Id, e.g. "3139c14f-ae63-4fc4-abe2-adceb67988af"
      * @param threadId Thread Id, e.g. "1084254275661725697" in the case of Discord or "C045ZFM7PUH-1678626022.589689" in the case of Slack
      * @param message Thread message, e.g. "Michael has 3 sons"
