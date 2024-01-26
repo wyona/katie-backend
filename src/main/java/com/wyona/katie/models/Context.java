@@ -444,6 +444,13 @@ public class Context {
     }
 
     /**
+     * @return path of directory containing ratings of answers of a particular domain
+     */
+    public File getRatingsDirectory() {
+        return new File(getContextDirectory(), "ratings");
+    }
+
+    /**
      * @return path of directory, which contains embedding vectors
      */
     public File getQnAEmbeddingsPath(String uuid) {
