@@ -2510,6 +2510,7 @@ public class ContextService {
     public void thumbUpDown(AskedQuestion askedQuestion, boolean thumbUp, Context domain) throws Exception {
         if (askedQuestion.getAnswerUUID() != null) {
             Rating rating = new Rating();
+            rating.setQuestionuuid(askedQuestion.getUUID());
             rating.setQnauuid(askedQuestion.getAnswerUUID());
             rating.setUserquestion(askedQuestion.getQuestion());
             rating.setDate(new Date());
