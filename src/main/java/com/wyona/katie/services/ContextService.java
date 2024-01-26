@@ -2512,6 +2512,7 @@ public class ContextService {
             Rating rating = new Rating();
             rating.setQnauuid(askedQuestion.getAnswerUUID());
             rating.setUserquestion(askedQuestion.getQuestion());
+            rating.setDate(new Date());
 
             if (thumbUp) {
                 rating.setRating(10);
@@ -3400,8 +3401,6 @@ public class ContextService {
     private void saveRating(Context domain, Rating rating, String answer) {
         log.info("Save rating of answer '" + rating.getQnauuid() + "' for question '" + rating.getQuestionuuid() + "' ...");
 
-        long time = new Date().getTime();
-
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("human-question", rating.getUserquestion());
@@ -3413,18 +3412,28 @@ public class ContextService {
         ObjectNode metaNode = mapper.createObjectNode();
         rootNode.put("meta", metaNode);
         metaNode.put("rating", rating.getRating());
-        metaNode.put("epoch-time", time);
+        if (rating.getDate() != null) {
+            metaNode.put("epoch-time", rating.getDate().getTime());
+        }
         metaNode.put("question-uuid", rating.getQuestionuuid());
         metaNode.put("qna-uuid", rating.getQnauuid());
         metaNode.put("human-feedback", rating.getFeedback());
         metaNode.put("user-email", rating.getEmail());
-        metaNode.put("client-message-id", "TODO");
+        try {
+            AskedQuestion askedQuestion = dataRepositoryService.getQuestionByUUID(rating.getQuestionuuid());
+            if (askedQuestion.getClientMessageId() != null) {
+                metaNode.put("client-message-id", askedQuestion.getClientMessageId());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         try {
             if (!domain.getRatingsDirectory().isDirectory()) {
                 domain.getRatingsDirectory().mkdir();
             }
-            mapper.writeValue(new File(domain.getRatingsDirectory(), time + ".json"), rootNode);
+            String ratingFilename = UUID.randomUUID().toString() + ".json";
+            mapper.writeValue(new File(domain.getRatingsDirectory(), ratingFilename), rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
