@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 //import java.security.Principal;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -127,6 +128,15 @@ public class QuestionsController {
                         return new ResponseEntity<>(new com.wyona.katie.models.Error(errorMessage, "NO_SUCH_CHANNEL_TYPE_IMPLEMENTED"), HttpStatus.BAD_REQUEST);
                     }
 
+                    Rating rating = new Rating();
+                    rating.setQuestionuuid(question.getUUID());
+                    rating.setQnauuid(question.getAnswerUUID());
+                    rating.setUserquestion(question.getQuestion());
+                    rating.setEmail(question.getUsername()); // TODO
+                    rating.setDate(new Date());
+                    rating.setRating(10);
+                    contextService.rateAnswer(question.getAnswerUUID(), contextService.getDomain(domainId), rating);
+
                     return new ResponseEntity<>(question, HttpStatus.OK);
                 } else {
                     log.warn("Moderation status is not '" + ModerationStatus.NEEDS_APPROVAL + "', but '" + question.getModerationStatus() + "', therefore cannot be approved!");
@@ -214,6 +224,16 @@ public class QuestionsController {
             if (contextService.isMemberOrAdmin(domainId)) {
                 dataRepoService.updateModerationStatus(qid, ModerationStatus.DISCARDED);
                 analyticsService.logAnswerDiscarded(domainId, question.getChannelType());
+
+                Rating rating = new Rating();
+                rating.setQuestionuuid(question.getUUID());
+                rating.setQnauuid(question.getAnswerUUID());
+                rating.setUserquestion(question.getQuestion());
+                rating.setEmail(question.getUsername()); // TODO
+                rating.setDate(new Date());
+                rating.setRating(0);
+                contextService.rateAnswer(question.getAnswerUUID(), contextService.getDomain(domainId), rating);
+
                 return new ResponseEntity<>(question, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
