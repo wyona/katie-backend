@@ -2528,13 +2528,13 @@ public class ContextService {
 
     /**
      * Rate answer to question (either sent by user or part of QnA)
-     * @param uuid UUID of QnA which was used as answer to the question of user
+     * @param qnaUuid UUID of QnA which was used as answer to the question of user
      * @param domain Domain associated with QnA
      * @param rating Rating of user, also containing question of user when available
      * @return rated answer
      */
-    public Answer rateAnswer(String uuid, Context domain, Rating rating) throws Exception {
-        Answer qna = getQnA(null, uuid, domain);
+    public Answer rateAnswer(String qnaUuid, Context domain, Rating rating) throws Exception {
+        Answer qna = getQnA(null, qnaUuid, domain);
 
         if (qna != null) {
             rating.setQnauuid(qna.getUuid());
@@ -2560,9 +2560,9 @@ public class ContextService {
              */
 
             qna.addRating(rating);
-            saveRating(domain, uuid, qna);
+            saveRating(domain, qna);
             saveRating(domain, rating, Utils.convertHtmlToPlainText(qna.getAnswer()));
-            dataRepositoryService.updateStatusOfResubmittedQuestion(uuid, StatusResubmittedQuestion.STATUS_ANSWER_RATED);
+            dataRepositoryService.updateStatusOfResubmittedQuestion(qnaUuid, StatusResubmittedQuestion.STATUS_ANSWER_RATED);
 
             analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
 
@@ -2570,27 +2570,27 @@ public class ContextService {
             if (rating.getUserquestion() != null) {
                 askedQuestion = rating.getUserquestion();
                 if (domain.getConsiderHumanFeedback()) {
-                    aiService.indexHumanFeedback(askedQuestion, uuid, domain, rating.getRating(), signedInUser);
+                    aiService.indexHumanFeedback(askedQuestion, qnaUuid, domain, rating.getRating(), signedInUser);
                 }
             }
 
             User[] experts = getExperts(domain.getId(), false);
             for (User expert: experts) {
-                sendNotificationReRating(domain, uuid, expert.getId(), askedQuestion);
+                sendNotificationReRating(domain, qnaUuid, expert.getId(), askedQuestion);
             }
             if (qna.getRespondentId() != null) {
                 if (!isExpert(qna.getRespondentId(), experts)) {
-                    sendNotificationReRating(domain, uuid, qna.getRespondentId(), askedQuestion);
+                    sendNotificationReRating(domain, qnaUuid, qna.getRespondentId(), askedQuestion);
                 } else {
                     log.info("Author '" + qna.getRespondentId() + "' already notified as expert.");
                 }
             } else {
-                log.info("No author available for domain / QnA '" + domain.getId() + " / " + uuid + "'.");
+                log.info("No author available for domain / QnA '" + domain.getId() + " / " + qnaUuid + "'.");
             }
 
             return qna;
         } else {
-            log.error("No such such QnA: " + domain.getId() + " / " + uuid);
+            log.error("No such such QnA: " + domain.getId() + " / " + qnaUuid);
             return null;
         }
     }
@@ -3383,16 +3383,16 @@ public class ContextService {
     /**
      * Save rating connected with a particular QnA
      * @oaram domain Domain QnA is associated with
-     * @oaram uuid UUID of QnA associated with rating
-     * @param qna QnA data
+     * @param qna QnA connected with rating
      */
-    private void saveRating(Context domain, String uuid, Answer qna) {
-        log.info("Save rating for QnA with UUID '" + uuid + "' ...");
+    private void saveRating(Context domain, Answer qna) {
+        log.info("Save rating for QnA with UUID '" + qna.getUuid() + "' ...");
 
-        xmlService.saveRatings(qna, domain.getRatingsXmlFilePath(uuid));
+        xmlService.saveRatings(qna, domain.getRatingsXmlFilePath(qna.getUuid()));
     }
 
     /**
+     * Save rating per domain
      * @param domain Knowledge base where question was asked
      * @param rating Rating of answer for question asked
      * @param answer Plain text answer
@@ -3418,7 +3418,7 @@ public class ContextService {
         metaNode.put("qna-uuid", rating.getQnauuid());
         metaNode.put("human-feedback", rating.getFeedback());
         metaNode.put("user-email", rating.getEmail());
-        metaNode.put("foreign-id", "TODO");
+        metaNode.put("client-message-id", "TODO");
 
         try {
             if (!domain.getRatingsDirectory().isDirectory()) {
