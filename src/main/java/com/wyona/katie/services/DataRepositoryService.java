@@ -1306,7 +1306,7 @@ public class DataRepositoryService {
     }
 
     /**
-     * Get particular question by UUID from database
+     * Get particular asked question by UUID from database
      * @param qid Question Id, e.g. "ded394f8-4a63-42a7-9180-20d8f4875662"
      */
     public AskedQuestion getQuestionByUUID(String qid) throws Exception {
@@ -1384,6 +1384,7 @@ public class DataRepositoryService {
 
             ChannelType channelType = ChannelType.valueOf(rs.getString(QUESTION_CHANNEL_TYPE));
             String channelRequestId = rs.getString(QUESTION_CHANNEL_REQUEST_ID);
+            String clientMessageId = rs.getString(QUESTION_CLIENT_MESSAGE_ID);
 
             // INFO: Re Backwards compatibility: When offset was not recorded yet, then the DB value is null and getInt() returns 0
             int offset_results = rs.getInt(QUESTION_OFFSET_RESULTS);
@@ -1391,6 +1392,9 @@ public class DataRepositoryService {
             List<String> classifications = getClassifications(rs.getString(QUESTION_CLASSIFICATIONS));
 
             askedQuestion = new AskedQuestion(uuid, qDomainId, question, classifications, remoteAddress, new Date(epochTimestamp), username, qnaUUID, score, scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset_results);
+            if (clientMessageId != null) {
+                askedQuestion.setClientMessageId(clientMessageId);
+            }
         }
         rs.close();
         stmt.close();
