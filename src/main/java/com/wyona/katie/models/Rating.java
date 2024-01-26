@@ -2,6 +2,8 @@ package com.wyona.katie.models;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Date;
+
 /**
  *
  */
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Rating {
 
     private int rating;
+    private Date date;
     private String feedback;
     private String userQuestion;
     private String questionUuid;
@@ -22,6 +25,7 @@ public class Rating {
      */
     public Rating() {
         this.rating = -1;
+        this.date = null;
         this.feedback = null;
         this.userQuestion = null;
         this.questionUuid = null;
@@ -114,5 +118,19 @@ public class Rating {
      */
     public int getRating() {
         return rating;
+    }
+
+    /**
+     * @param date Date of rating
+     */
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    /**
+     * @return date of rating
+     */
+    public Date getDate() {
+        return date;
     }
 }
