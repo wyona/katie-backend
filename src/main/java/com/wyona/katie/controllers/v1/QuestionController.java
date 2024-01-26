@@ -1076,6 +1076,8 @@ public class QuestionController {
                 rating.setUserquestion(rating.getUserquestion().substring(0, 299));
             }
 
+            rating.setDate(new Date());
+
             String qnaUUID = askedQuestion.getAnswerUUID();
             if (qnaUUID != null) {
                 Context domain = contextService.getContext(domainid);
@@ -1143,6 +1145,8 @@ public class QuestionController {
             log.warn("User question should not be set!");
             rating.setUserquestion(null);
         }
+
+        rating.setDate(new Date());
 
         if (rating.getEmail() != null && !rating.getEmail().isEmpty()) {
             log.info("User provided email: " + rating.getEmail());
