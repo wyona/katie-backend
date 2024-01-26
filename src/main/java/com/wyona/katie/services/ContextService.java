@@ -2513,6 +2513,7 @@ public class ContextService {
             rating.setQuestionuuid(askedQuestion.getUUID());
             rating.setQnauuid(askedQuestion.getAnswerUUID());
             rating.setUserquestion(askedQuestion.getQuestion());
+            rating.setEmail(askedQuestion.getUsername()); // TODO
             rating.setDate(new Date());
 
             if (thumbUp) {
