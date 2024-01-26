@@ -3434,6 +3434,7 @@ public class ContextService {
             if (!domain.getRatingsDirectory().isDirectory()) {
                 domain.getRatingsDirectory().mkdir();
             }
+            // INFO: Multiple users can rate the same question / answer pair, therefore each rating requires a unique id
             String ratingFilename = UUID.randomUUID().toString() + ".json";
             mapper.writeValue(new File(domain.getRatingsDirectory(), ratingFilename), rootNode);
         } catch (Exception e) {
