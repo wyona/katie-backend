@@ -25,9 +25,6 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class WeaviateWikipediaSearchConnector implements Connector {
 
-    @Value("${cohere.key}")
-    private String cohereKey;
-
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
      */
@@ -49,13 +46,13 @@ public class WeaviateWikipediaSearchConnector implements Connector {
 
         log.info("Request body: " + bodyRequest.toString());
 
-        String baseUrl = "https://cohere-demo.weaviate.network"; // TODO: Get from knowledge source meta
+        String baseUrl = ksMeta.getWeaviateWikipediaSearchUrl();
         String requestUrl = baseUrl + "/v1/graphql";
 
         log.info("Post query to " + requestUrl);
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = getHttpHeaders();
+        HttpHeaders headers = getHttpHeaders(ksMeta);
         headers.set("Content-Type", "application/json; charset=UTF-8");
         HttpEntity<String> request = new HttpEntity<String>(bodyRequest.toString(), headers);
 
@@ -102,14 +99,14 @@ public class WeaviateWikipediaSearchConnector implements Connector {
     /**
      *
      */
-    private HttpHeaders getHttpHeaders() {
+    private HttpHeaders getHttpHeaders(KnowledgeSourceMeta ksMeta) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json;odata=verbose");
 
-        String token = "76320a90-53d8-42bc-b41d-678647c6672e"; // TODO: Get from knowledge source meta
+        String token = ksMeta.getWeaviateWikipediaSearchKey();
         try {
             headers.setBearerAuth(token);
-            headers.set("X-Cohere-Api-Key", cohereKey); // https://github.com/cohere-ai/notebooks/blob/main/notebooks/Wikipedia_search_demo_cohere_weaviate.ipynb
+            headers.set("X-Cohere-Api-Key", ksMeta.getWeaviateWikipediaSearchCohereKey()); // https://github.com/cohere-ai/notebooks/blob/main/notebooks/Wikipedia_search_demo_cohere_weaviate.ipynb
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

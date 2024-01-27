@@ -174,6 +174,13 @@ public class KnowledgeSourceXMLFileService {
                     }
                 }
 
+                if (connector.equals(KnowledgeSourceConnector.WEAVIATE_WIKIPEDIA_SEARCH)) {
+                    Element weaviateWikipediaSearchEl = xmlService.getDirectChildByTagName(ksEl, "weaviate-wikipedia-search");
+                    ksMeta.setWeaviateWikipediaSearchUrl(weaviateWikipediaSearchEl.getAttribute("url"));
+                    ksMeta.setWeaviateWikipediaSearchKey(weaviateWikipediaSearchEl.getAttribute("weaviate-key"));
+                    ksMeta.setGetWeaviateWikipediaSearchCohereKey(weaviateWikipediaSearchEl.getAttribute("cohere-key"));
+                }
+
                 if (connector.equals(KnowledgeSourceConnector.WEBSITE)) {
                     Element websiteEl = xmlService.getDirectChildByTagName(ksEl, WEBSITE_TAG);
 
