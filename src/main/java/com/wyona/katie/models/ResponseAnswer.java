@@ -226,7 +226,11 @@ public class ResponseAnswer {
      *
      */
     public String[] getClassifications() {
-        return classifications.toArray(new String[0]);
+        if (classifications != null) {
+            return classifications.toArray(new String[0]);
+        } else {
+            return null;
+        }
     }
 
     /**
