@@ -359,7 +359,9 @@ public class QuestionAnsweringService {
         // INFO: Get answers from thirdy party data sources, e.g. Sharepoint or Confluence
         Hit[] thirdPartyHits = getThirdPartyAnswers(analyzedQuestion, domain.getId(), limit);
         if (thirdPartyHits.length > 0) {
-            log.info("TODO: Merge results sets, for example based on normalized confidence score or use re-ranking algorithm");
+            log.info("TODO: Merge results sets, for example based on normalized confidence score or RFF (Reciprocal Rank Fusion) or use re-ranking algorithm");
+            // https://medium.com/@sowmiyajaganathan/hybrid-search-with-re-ranking-ff120c8a426d
+            // https://medium.com/@sowmiyajaganathan/hybrid-search-with-re-ranking-ff120c8a426d
             for (Hit hit : thirdPartyHits) {
                 hits.add(hit);
             }

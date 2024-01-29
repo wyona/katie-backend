@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * TODO: Subclass this class for the various implementations
  */
 @Slf4j
 public class KnowledgeSourceMeta {
@@ -55,6 +55,10 @@ public class KnowledgeSourceMeta {
 
     private String sharepointSiteId;
     private String sharepointWebBaseUrl;
+
+    private String weaviateWikipediaSearchUrl;
+    private String weaviateWikipediaSearchKey;
+    private String weaviateWikipediaSearchCohereKey;
 
     private String configurationErrorMessage;
 
@@ -108,6 +112,10 @@ public class KnowledgeSourceMeta {
 
         this.sharepointSiteId = null;
         this.sharepointWebBaseUrl = null;
+
+        this.weaviateWikipediaSearchUrl = null;
+        this.weaviateWikipediaSearchKey = null;
+        this.weaviateWikipediaSearchCohereKey = null;
     }
 
     /**
@@ -580,6 +588,48 @@ public class KnowledgeSourceMeta {
      */
     public String getSharepointWebBaseUrl() {
         return sharepointWebBaseUrl;
+    }
+
+    /**
+     * @param weaviateWikipediaSearchUrl URL, e.g. https://cohere-demo.weaviate.network
+     */
+    public void setWeaviateWikipediaSearchUrl(String weaviateWikipediaSearchUrl) {
+        this.weaviateWikipediaSearchUrl = weaviateWikipediaSearchUrl;
+    }
+
+    /**
+     * @return request URL, e.g. https://cohere-demo.weaviate.network
+     */
+    public String getWeaviateWikipediaSearchUrl() {
+        return weaviateWikipediaSearchUrl;
+    }
+
+    /**
+     *
+     */
+    public void setWeaviateWikipediaSearchKey(String key) {
+        this.weaviateWikipediaSearchKey = key;
+    }
+
+    /**
+     *
+     */
+    public String getWeaviateWikipediaSearchKey() {
+        return weaviateWikipediaSearchKey;
+    }
+
+    /**
+     *
+     */
+    public void setGetWeaviateWikipediaSearchCohereKey(String key) {
+        this.weaviateWikipediaSearchCohereKey = key;
+    }
+
+    /**
+     *
+     */
+    public String getWeaviateWikipediaSearchCohereKey() {
+        return weaviateWikipediaSearchCohereKey;
     }
 
     /**
