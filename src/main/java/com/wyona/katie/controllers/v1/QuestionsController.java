@@ -714,8 +714,8 @@ public class QuestionsController {
                 }
                  */
 
-                Rating[] ratings = contextService.getRatings(domainId);
-                return new ResponseEntity<>(ratings, HttpStatus.OK);
+                HumanPreference[] preferences = contextService.getRatings(domainId);
+                return new ResponseEntity<>(preferences, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
             }

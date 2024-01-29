@@ -3403,28 +3403,37 @@ public class ContextService {
     private void saveRating(Context domain, Rating rating, String answer) {
         log.info("Save rating of answer '" + rating.getQnauuid() + "' for question '" + rating.getQuestionuuid() + "' ...");
 
+        HumanPreference humanPreference = new HumanPreference();
+        humanPreference.setHumanMessage(rating.getUserquestion());
+        if (rating.getRating() < 5) {
+            humanPreference.setRejectedAnswer(answer);
+        } else {
+            humanPreference.setChosenAnswer(answer);
+        }
+
+        // INFO: See HumanPreference.java
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
-        rootNode.put("human-question", rating.getUserquestion());
+        rootNode.put("humanMessage", rating.getUserquestion());
         if (rating.getRating() < 5) {
-            rootNode.put("rejected-answer", answer);
+            rootNode.put("rejectedAnswer", answer);
         } else {
-            rootNode.put("choosen-answer", answer);
+            rootNode.put("chosenAnswer", answer);
         }
         ObjectNode metaNode = mapper.createObjectNode();
         rootNode.put("meta", metaNode);
         metaNode.put("rating", rating.getRating());
         if (rating.getDate() != null) {
-            metaNode.put("epoch-time", rating.getDate().getTime());
+            metaNode.put("epochTime", rating.getDate().getTime());
         }
-        metaNode.put("question-uuid", rating.getQuestionuuid());
-        metaNode.put("qna-uuid", rating.getQnauuid());
-        metaNode.put("human-feedback", rating.getFeedback());
-        metaNode.put("user-email", rating.getEmail());
+        metaNode.put("questionUuid", rating.getQuestionuuid());
+        metaNode.put("qnaUuid", rating.getQnauuid());
+        metaNode.put("humanFeedback", rating.getFeedback());
+        metaNode.put("userEmail", rating.getEmail());
         try {
             AskedQuestion askedQuestion = dataRepositoryService.getQuestionByUUID(rating.getQuestionuuid());
             if (askedQuestion.getClientMessageId() != null) {
-                metaNode.put("client-message-id", askedQuestion.getClientMessageId());
+                metaNode.put("clientMessageId", askedQuestion.getClientMessageId());
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -3436,30 +3445,33 @@ public class ContextService {
             }
             // INFO: Multiple users can rate the same question / answer pair, therefore each rating requires a unique id
             String ratingFilename = UUID.randomUUID().toString() + ".json";
-            mapper.writeValue(new File(domain.getRatingsDirectory(), ratingFilename), rootNode);
+            File ratingFile = new File(domain.getRatingsDirectory(), ratingFilename);
+            mapper.writeValue(ratingFile, rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
     /**
-     * Get ratings of answers of a particular domain
+     * Get preferences / ratings of answers of a particular domain
      */
-    public Rating[] getRatings(String domainId) throws Exception {
-        List<Rating> ratings = new ArrayList<>();
+    public HumanPreference[] getRatings(String domainId) throws Exception {
+        List<HumanPreference> preferences = new ArrayList<>();
 
         Context domain = getDomain(domainId);
         File ratingsDir = domain.getRatingsDirectory();
         File[] ratingFiles = ratingsDir.listFiles();
         ObjectMapper mapper = new ObjectMapper();
-        for (File ratingFile : ratingFiles ) {
-            //Rating rating = mapper.readValue(ratingFile, Rating.class);
-            JsonNode rootNode = mapper.readTree(ratingFile);
-            Rating rating = new Rating();
-            ratings.add(rating);
+        if (ratingFiles != null) {
+            for (File ratingFile : ratingFiles) {
+                HumanPreference humanPreference = mapper.readValue(ratingFile, HumanPreference.class);
+                preferences.add(humanPreference);
+            }
+        } else {
+            log.warn("No preferences / ratings yet.");
         }
 
-        return ratings.toArray(new Rating[0]);
+        return preferences.toArray(new HumanPreference[0]);
     }
     /**
      * @param channelRequestId Channel request Id, e.g. "3139c14f-ae63-4fc4-abe2-adceb67988af"
