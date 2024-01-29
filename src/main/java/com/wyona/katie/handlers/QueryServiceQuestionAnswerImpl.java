@@ -25,7 +25,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Generic question/answer implementation connecting with a third-party query service using a standardized REST interface
+ * Question / Answer implementation connecting with a third-party query service using a custom Katie connector webapp, e.g. https://github.com/wyona/katie-weaviate/tree/master/katie-weaviate-connector
  */
 @Slf4j
 @Component
