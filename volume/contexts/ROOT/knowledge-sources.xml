@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <knowledge-sources xmlns="http://www.wyona.com/askkatie/1.0.0">
+  <ks connector="THIRD_PARTY_RAG" enabled="false" id="81n5738d-b512-4b04-8d69-5aad58frmv84">
+    <name>Third-party RAG Local</name>
+    <third-party-rag url="http://0.0.0.0:8000/chat">
+      <body content-type="application/json">{"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}</body>
+    </third-party-rag>
+  </ks>
   <ks connector="OUTLOOK" enabled="false" id="z2n3938d-v512-4b04-8d69-5aad58fcaf46">
     <name>KatieTest Outlook</name>
     <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" location="users/MichaelWechner@Wyona.onmicrosoft.com" scope="Mail.Read" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
