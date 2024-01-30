@@ -46,7 +46,7 @@ public class ThirdPartyRAGConnector implements Connector {
             log.info("Response: " + response);
             double score = 0.0;
             String url = null;
-            String _answer = response.toString();
+            String _answer = response.getBody();
             Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
             Hit hit = new Hit(answer, score);
             hits.add(hit);
