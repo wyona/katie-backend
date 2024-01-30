@@ -88,6 +88,8 @@ public class QuestionAnsweringService {
     @Autowired
     private WeaviateWikipediaSearchConnector weaviateWikipediaSearchConnector;
     @Autowired
+    private ThirdPartyRAGConnector thirdPartyRAGConnector;
+    @Autowired
     private DirectusConnector directusConnector;
     @Autowired
     private ConfluenceConnector confluenceConnector;
@@ -633,6 +635,8 @@ public class QuestionAnsweringService {
             return weaviateSiteSearchConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.WEAVIATE_WIKIPEDIA_SEARCH)) {
             return weaviateWikipediaSearchConnector;
+        } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.THIRD_PARTY_RAG)) {
+            return thirdPartyRAGConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.DIRECTUS)) {
             return directusConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.CONFLUENCE)) {

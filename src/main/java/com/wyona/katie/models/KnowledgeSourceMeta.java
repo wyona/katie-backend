@@ -60,6 +60,9 @@ public class KnowledgeSourceMeta {
     private String weaviateWikipediaSearchKey;
     private String weaviateWikipediaSearchCohereKey;
 
+    private String thirdPartyRAGUrl;
+    private String thirdPartyRAGBody;
+
     private String configurationErrorMessage;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
@@ -116,6 +119,9 @@ public class KnowledgeSourceMeta {
         this.weaviateWikipediaSearchUrl = null;
         this.weaviateWikipediaSearchKey = null;
         this.weaviateWikipediaSearchCohereKey = null;
+
+        this.thirdPartyRAGUrl = null;
+        this.thirdPartyRAGBody = null;
     }
 
     /**
@@ -630,6 +636,34 @@ public class KnowledgeSourceMeta {
      */
     public String getWeaviateWikipediaSearchCohereKey() {
         return weaviateWikipediaSearchCohereKey;
+    }
+
+    /**
+     *
+     */
+    public void setThirdPartyRAGUrl(String thirdPartyRAGUrl) {
+        this.thirdPartyRAGUrl = thirdPartyRAGUrl;
+    }
+
+    /**
+     *
+     */
+    public String getThirdPartyRAGUrl() {
+        return thirdPartyRAGUrl;
+    }
+
+    /**
+     *
+     */
+    public void setGetThirdPartyRAGBody(String thirdPartyRAGBody) {
+        this.thirdPartyRAGBody = thirdPartyRAGBody;
+    }
+
+    /**
+     *
+     */
+    public String getGetThirdPartyRAGBody() {
+        return thirdPartyRAGBody;
     }
 
     /**

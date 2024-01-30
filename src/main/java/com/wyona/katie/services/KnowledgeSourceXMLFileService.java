@@ -181,6 +181,13 @@ public class KnowledgeSourceXMLFileService {
                     ksMeta.setGetWeaviateWikipediaSearchCohereKey(weaviateWikipediaSearchEl.getAttribute("cohere-key"));
                 }
 
+                if (connector.equals(KnowledgeSourceConnector.THIRD_PARTY_RAG)) {
+                    Element thirdPartyRAGEl = xmlService.getDirectChildByTagName(ksEl, "third-party-rag");
+                    ksMeta.setThirdPartyRAGUrl(thirdPartyRAGEl.getAttribute("url"));
+                    Element bodyEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "body");
+                    ksMeta.setGetThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
+                }
+
                 if (connector.equals(KnowledgeSourceConnector.WEBSITE)) {
                     Element websiteEl = xmlService.getDirectChildByTagName(ksEl, WEBSITE_TAG);
 
