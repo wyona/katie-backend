@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -75,12 +76,24 @@ public class ThirdPartyRAGConnector implements Connector {
 
              */
         } catch(HttpClientErrorException e) {
+            log.error(e.getMessage(), e);
             if (e.getRawStatusCode() == 403) {
-                log.error("Not authorized to access '" + requestUrl + "'!");
-            } else {
-                log.error(e.getMessage(), e);
+                Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie is not authorized to access third-party RAG service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
+                hits.add(hit);
             }
             // INFO: Do not return null
+        } catch(HttpServerErrorException e) {
+            log.error(e.getMessage(), e);
+            if (e.getRawStatusCode() == 500) {
+                Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie received an Internal Server Error from third-party RAG service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
+                hits.add(hit);
+            }
+            // INFO: Do not return null
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            // INFO: Do not return null
+            Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), e.getMessage()), 0.0);
+            hits.add(hit);
         }
 
         return hits.toArray(new Hit[0]);
@@ -92,6 +105,15 @@ public class ThirdPartyRAGConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         log.info("TODO: Implement");
         return null;
+    }
+
+    /**
+     *
+     */
+    private Answer getAnswerContainingErrorMsg(String question, String errorMsg) {
+        String url = null;
+        Answer answer = new Answer(question, errorMsg, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+        return answer;
     }
 
     /**
