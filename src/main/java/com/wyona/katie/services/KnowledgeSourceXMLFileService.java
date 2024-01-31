@@ -74,7 +74,7 @@ public class KnowledgeSourceXMLFileService {
             String name = xmlService.getDirectChildByTagName(ksEl, KNOWLEDGE_SOURCE_NAME_TAG).getTextContent();
             KnowledgeSourceConnector connector = KnowledgeSourceConnector.valueOf(ksEl.getAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR));
 
-            KnowledgeSourceMeta ksMeta = new KnowledgeSourceMeta(id, name, isEnabled, connector);
+            KnowledgeSourceMeta ksMeta = new KnowledgeSourceMeta(id, name, isEnabled, connector, domainId);
             if (ksEl.hasAttribute(KS_DATE_SYNCED_ATTR)) {
                 Date date = new Date(Long.parseLong(ksEl.getAttribute(KS_DATE_SYNCED_ATTR)));
                 ksMeta.setDateSyncedSuccessfully(date);

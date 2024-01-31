@@ -14,6 +14,7 @@ public class KnowledgeSourceMeta {
 
     private String id;
     private String name;
+    private String domainId;
     private boolean isEnabled;
     private KnowledgeSourceConnector connector;
     private Date dateSyncedSuccessfully;
@@ -76,10 +77,12 @@ public class KnowledgeSourceMeta {
      * @param id UUID
      * @param name Display name, e.g. "AXA-ARAG Sharepoint" or "Weaviate documentation website"
      * @param isEnabled True when knowledge source is enabled
+     * @param domainId Katie domain Id associated with knowledge source
      */
-    public KnowledgeSourceMeta(String id, String name, boolean isEnabled, KnowledgeSourceConnector connector) {
+    public KnowledgeSourceMeta(String id, String name, boolean isEnabled, KnowledgeSourceConnector connector, String domainId) {
         this.id = id;
         this.name = name;
+        this.domainId = domainId;
         this.isEnabled = isEnabled;
         this.connector = connector;
         this.dateSyncedSuccessfully = null;
@@ -143,6 +146,13 @@ public class KnowledgeSourceMeta {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     *
+     */
+    public String getDomainId() {
+        return domainId;
     }
 
     /**
