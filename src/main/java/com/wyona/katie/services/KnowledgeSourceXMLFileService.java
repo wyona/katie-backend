@@ -54,6 +54,8 @@ public class KnowledgeSourceXMLFileService {
     private static final String WEBSITE_CHUNK_SIZE_ATTR = "chunk-size";
     private static final String WEBSITE_CHUNK_OVERLAP_ATTR = "chunk-overlap";
 
+    private static final String THIRD_PARTY_RAG_TAG = "third-party-rag";
+
     /**
      * Get knowledge sources
      */
@@ -484,6 +486,39 @@ public class KnowledgeSourceXMLFileService {
         if (true) { // TODO
             websiteEl.setAttribute("extract-css-selector", "");
         }
+
+        File config = getKnowledgeSourcesConfig(domainId);
+        xmlService.save(doc, config);
+
+        return uuid;
+    }
+
+    /**
+     * Add third-party RAG knowledge source
+     * @return knowledge source Id
+     */
+    public String addThirdPartyRAG(String domainId, String name, String endpointUrl) throws Exception {
+        log.info("Add third-party RAG as knowledge source to domain '" + domainId + "' ...");
+        Document doc = getKnowledgeSourcesDocument(domainId);
+        if (doc == null) {
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+        }
+
+        Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
+        doc.getDocumentElement().appendChild(ksEl);
+        String uuid = UUID.randomUUID().toString();
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ID_ATTR, uuid);
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.THIRD_PARTY_RAG.toString());
+
+        Element nameEl = doc.createElement("name");
+        ksEl.appendChild(nameEl);
+        nameEl.setTextContent(name);
+
+        Element thirdPartyRagEl = doc.createElement(THIRD_PARTY_RAG_TAG);
+        ksEl.appendChild(thirdPartyRagEl);
+
+        thirdPartyRagEl.setAttribute("url", endpointUrl);
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);
