@@ -703,6 +703,19 @@ public class ContextService {
     }
 
     /**
+     * Add third-party RAG as knowledge source
+     */
+    public void addKnowledgeSourceThirdPartyRAG(String domainId, String name, String endpointUrl) throws Exception {
+        if (!isMemberOrAdmin(domainId)) {
+            log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        //Context domain = getContext(domainId);
+        String ksUUID = knowledgeSourceXMLFileService.addThirdPartyRAG(domainId, name, endpointUrl);
+    }
+
+    /**
      *
      */
     public void deleteKnowledgeSource(String domainId, String ksId) throws Exception {
@@ -2525,6 +2538,7 @@ public class ContextService {
             log.info("Rate answer of QnA '" + rating.getQnauuid() + "' to question '" + rating.getUserquestion() + "': " + rating.getRating());
             rateAnswer(rating.getQnauuid(), domain, rating);
         } else {
+            // TODO: Could also be a connector, e.g. third-party RAG connector
             log.warn("Answer does not have a UUID, because it was probably retrieved from a third-party retriever: " + domain.getQueryServiceUrl());
         }
     }
