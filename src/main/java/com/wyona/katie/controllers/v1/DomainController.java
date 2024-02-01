@@ -595,6 +595,36 @@ public class DomainController {
     }
 
     /**
+     * Add third-party RAG as knowledge source
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/third-party-rag", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Add third-party RAG as knowledge source")
+    public ResponseEntity<?> addKnowledgeSourceThirdPartyRAG(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Law Assistant RAG'",required = true)
+            @RequestParam(value = "name", required = true) String name,
+            @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = false)
+            @RequestParam(value = "endpoint-url", required = false) String endpointUrl,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            domainService.addKnowledgeSourceThirdPartyRAG(id, name, endpointUrl);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Delete a particular knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}", method = RequestMethod.DELETE, produces = "application/json")
