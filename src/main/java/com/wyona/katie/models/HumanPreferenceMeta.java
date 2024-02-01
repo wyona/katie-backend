@@ -11,6 +11,7 @@ import java.util.Date;
 @Slf4j
 public class HumanPreferenceMeta {
 
+    private String id;
     private Integer rating;
     private Long epochTime;
     private String questionUuid;
@@ -26,6 +27,20 @@ public class HumanPreferenceMeta {
     public HumanPreferenceMeta() {
         this.rating = null;
         this.epochTime = null;
+    }
+
+    /**
+     * @param id Id of rating / human feedback
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /**
+     * @return id of rating / human feedback
+     */
+    public String getId() {
+        return id;
     }
 
     /**

@@ -3437,6 +3437,8 @@ public class ContextService {
         }
         ObjectNode metaNode = mapper.createObjectNode();
         rootNode.put("meta", metaNode);
+        String uuid = UUID.randomUUID().toString();
+        metaNode.put("id", uuid);
         metaNode.put("rating", rating.getRating());
         if (rating.getDate() != null) {
             metaNode.put("epochTime", rating.getDate().getTime());
@@ -3459,7 +3461,7 @@ public class ContextService {
                 domain.getRatingsDirectory().mkdir();
             }
             // INFO: Multiple users can rate the same question / answer pair, therefore each rating requires a unique id
-            String ratingFilename = UUID.randomUUID().toString() + ".json";
+            String ratingFilename = uuid + ".json";
             File ratingFile = new File(domain.getRatingsDirectory(), ratingFilename);
             mapper.writeValue(ratingFile, rootNode);
         } catch (Exception e) {
