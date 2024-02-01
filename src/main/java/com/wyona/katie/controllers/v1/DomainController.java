@@ -606,6 +606,8 @@ public class DomainController {
             @RequestParam(value = "name", required = true) String name,
             @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = false)
             @RequestParam(value = "endpoint-url", required = false) String endpointUrl,
+            @ApiParam(name = "endpoint-payload", value = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false}", required = true)
+            @RequestBody String payload,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
@@ -613,7 +615,7 @@ public class DomainController {
         }
 
         try {
-            domainService.addKnowledgeSourceThirdPartyRAG(id, name, endpointUrl);
+            domainService.addKnowledgeSourceThirdPartyRAG(id, name, endpointUrl, payload);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());

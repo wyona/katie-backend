@@ -495,9 +495,10 @@ public class KnowledgeSourceXMLFileService {
 
     /**
      * Add third-party RAG knowledge source
+     * @param payload Payload sent to endpoint, e.g. {"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}
      * @return knowledge source Id
      */
-    public String addThirdPartyRAG(String domainId, String name, String endpointUrl) throws Exception {
+    public String addThirdPartyRAG(String domainId, String name, String endpointUrl, String payload) throws Exception {
         log.info("Add third-party RAG as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
@@ -517,8 +518,12 @@ public class KnowledgeSourceXMLFileService {
 
         Element thirdPartyRagEl = doc.createElement(THIRD_PARTY_RAG_TAG);
         ksEl.appendChild(thirdPartyRagEl);
-
         thirdPartyRagEl.setAttribute("url", endpointUrl);
+
+        Element bodyEl = doc.createElement("body");
+        thirdPartyRagEl.appendChild(bodyEl);
+        bodyEl.setAttribute("content-type", "application/json"); // TODO: Depending on payload
+        bodyEl.setTextContent(payload);
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);
