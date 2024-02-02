@@ -119,7 +119,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 * Tag image: docker tag katie wyona/katie:1.355.0
 * Push image to Docker Hub: docker login -u USERNAME -p PASSWORD docker.io && docker push wyona/katie:1.355.0
 * Run image:
-    * docker run -p 7070:8080 -v /Users/michaelwechner/src/katie-backend/volume:/ask-katie katie ("/ask-katie" is set inside application-prod.properties)
+    * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie ("/ask-katie" is set inside application-prod.properties)
     * docker run -p 7070:8080 katie (If you do not mount a volume, then Katie creates the necessary files and directories within the docker container, which gets reset upon restart though)
 * Open http://localhost:7070 inside your browser and login with U: superadmin, P: Katie1234%
 * REST interfaces: http://127.0.0.1:7070/swagger-ui/
@@ -139,7 +139,7 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 * sh build.sh
 * Check available Tomcat version at https://dlcdn.apache.org/tomcat/tomcat-8/ and update inside Dockerfile_Java11_Tomcat
 * Build image containing Tomcat: docker build -t katie-tomcat -f Dockerfile_Java11_Tomcat .
-* docker run -p 7070:8080 -v /Users/michaelwechner/src/katie-backend/volume:/ask-katie katie-tomcat
+* docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie-tomcat
 * http://localhost:7070/katie/
 
 ## API and Testing API
