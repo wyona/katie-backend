@@ -1,5 +1,7 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.*;
 import com.wyona.katie.models.discord.DiscordDomainMapping;
 import com.wyona.katie.models.discord.DiscordEvent;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.sql.*;
 
 import java.util.Date;
@@ -749,7 +752,7 @@ public class DataRepositoryService {
      * @param messageId Message Id sent by client together with question
      * @param remoteAddress Remote address of user
      * @param dateSubmitted Date question was submittedd
-     * @param domainId Domain Id
+     * @param domain Domain where question was asked
      *
      * @param username Username, whereas is null when user is not signed in
      * @param answerUUID UUID of answer found by Katie
@@ -764,10 +767,10 @@ public class DataRepositoryService {
      *
      * @return uuid of log entry
      */
-    public String logQuestion(String question, List<String> classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
+    public String logQuestion(String question, List<String> classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, double score, Double scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
         log.info("Log question (length: " + question.length() + ") ...");
 
-        question = sanitizeQuestion(question, domainId);
+        question = sanitizeQuestion(question, domain.getId());
         String _classifications = sanitizeClassifications(classifications);
 
         String uuid = java.util.UUID.randomUUID().toString();
@@ -780,9 +783,34 @@ public class DataRepositoryService {
             _scoreThreshold = scoreThreshold;
         }
 
-        insertQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domainId, username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        insertQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        saveQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
 
         return uuid;
+    }
+
+    /**
+     *
+     */
+    private void saveQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
+        if (!domain.getAskedQuestionsDirectory().isDirectory()) {
+            domain.getAskedQuestionsDirectory().mkdir();
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("uuid", uuid);
+        rootNode.put("domainId", domain.getId());
+        rootNode.put("question", question);
+        rootNode.put("answer", "TODO");
+
+        try {
+            String askedQuestionFilename = uuid + ".json";
+            File askedQuestionFile = new File(domain.getAskedQuestionsDirectory(), askedQuestionFilename);
+            mapper.writeValue(askedQuestionFile, rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
