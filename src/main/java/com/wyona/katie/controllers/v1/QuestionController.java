@@ -1079,18 +1079,9 @@ public class QuestionController {
             rating.setDate(new Date());
 
             String qnaUUID = askedQuestion.getAnswerUUID();
-            if (qnaUUID != null) {
-                Context domain = contextService.getContext(domainid);
-                Answer qna = contextService.rateAnswer(qnaUUID, domain, rating);
-                if (qna != null) {
-                    return new ResponseEntity<>(qna, HttpStatus.OK);
-                } else {
-                    return new ResponseEntity<>(new Error("No such QnA with UUID '" + qnaUUID + "'!", "NO_QNA_WITH_SUCH_UUID"), HttpStatus.NOT_FOUND);
-                }
-            } else {
-                log.error("TODO: Finish implementation rating answers from third-party sources!");
-                return new ResponseEntity<>(new Error("TODO: Finish implementation rating answers from third-party sources!", "NOT_IMPLEMENTED_YET"), HttpStatus.NOT_IMPLEMENTED);
-            }
+            Context domain = contextService.getContext(domainid);
+            Answer answer = contextService.rateAnswer(qnaUUID, domain, rating);
+            return new ResponseEntity<>(answer, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
@@ -1156,12 +1147,13 @@ public class QuestionController {
         try {
             Context domain = contextService.getDomain(domainid);
 
+            // TODO: Replace rateAnswer by rateQnA
             Answer qna = contextService.rateAnswer(uuid, domain, rating);
             if (qna != null) {
                 return new ResponseEntity<>(qna, HttpStatus.OK);
             } else {
                 log.error("No such QnA with UUID '" + uuid + "'!");
-                return new ResponseEntity<>(new Error("No such QnA with UUID '" + uuid + "'!", "NO_QNA_WITH_SUCH_UUID"), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new Error("No such QnA with UUID '" + uuid + "'!", "NOT_FOUND"), HttpStatus.NOT_FOUND);
             }
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
