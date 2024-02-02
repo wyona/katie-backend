@@ -2522,26 +2522,21 @@ public class ContextService {
      * @param thumbUp When set to true, then "thumb up" and when set to false, then "thumb down"
      */
     public void thumbUpDown(AskedQuestion askedQuestion, boolean thumbUp, Context domain) throws Exception {
-        if (askedQuestion.getAnswerUUID() != null) {
-            Rating rating = new Rating();
-            rating.setQuestionuuid(askedQuestion.getUUID());
-            rating.setQnauuid(askedQuestion.getAnswerUUID());
-            rating.setUserquestion(askedQuestion.getQuestion());
-            rating.setEmail(askedQuestion.getUsername()); // TODO
-            rating.setDate(new Date());
+        Rating rating = new Rating();
+        rating.setQuestionuuid(askedQuestion.getUUID());
+        rating.setQnauuid(askedQuestion.getAnswerUUID());
+        rating.setUserquestion(askedQuestion.getQuestion());
+        rating.setEmail(askedQuestion.getUsername()); // TODO
+        rating.setDate(new Date());
 
-            if (thumbUp) {
-                rating.setRating(10);
-            } else {
-                rating.setRating(0);
-            }
-
-            log.info("Rate answer of QnA '" + rating.getQnauuid() + "' to question '" + rating.getUserquestion() + "': " + rating.getRating());
-            rateAnswer(rating.getQnauuid(), domain, rating);
+        if (thumbUp) {
+            rating.setRating(10);
         } else {
-            // TODO: Could also be a connector, e.g. third-party RAG connector
-            log.warn("Answer does not have a UUID, because it was probably retrieved from a third-party retriever: " + domain.getQueryServiceUrl());
+            rating.setRating(0);
         }
+
+        log.info("Rate answer of QnA '" + rating.getQnauuid() + "' to question '" + rating.getUserquestion() + "': " + rating.getRating());
+        rateAnswer(rating.getQnauuid(), domain, rating);
     }
 
     /**
@@ -2552,24 +2547,30 @@ public class ContextService {
      * @return rated answer
      */
     public Answer rateAnswer(String qnaUuid, Context domain, Rating rating) throws Exception {
-        Answer qna = getQnA(null, qnaUuid, domain);
+        User signedInUser = authService.getUser(false, false);
+        if (signedInUser != null) {
+            log.debug("Signed in user: " + signedInUser.getUsername());
+            rating.setEmail(signedInUser.getEmail());
+        } else {
+            log.warn("User is not signed in!");
+        }
 
+        Answer qna = null;
+        if (qnaUuid != null) {
+            qna = getQnA(rating.getUserquestion(), qnaUuid, domain);
+        }
+
+        // TODO
         if (qna != null) {
             rating.setQnauuid(qna.getUuid());
 
             PermissionStatus permissionStatus = null;
-
-            User signedInUser = authService.getUser(false, false);
             if (signedInUser != null) {
-                log.debug("Signed in user: " + signedInUser.getUsername());
                 permissionStatus = iamService.getPermissionStatus(qna, signedInUser.getUsername());
-                rating.setEmail(signedInUser.getEmail());
             } else {
-                log.warn("User is not signed in!");
                 permissionStatus = iamService.getPermissionStatus(qna, null);
             }
-
-            /* TODO: Authoriization check disabled temporarily
+            /* TODO: Authorization check disabled temporarily
             if (!iamService.isAuthorized(permissionStatus)) {
                 String msg = "User is not authorized to rate answer '" + domain.getId() + " / " + qna.getUuid() + "', because permission status is '" + permissionStatus + "'!";
                 log.warn(msg);
@@ -2608,8 +2609,11 @@ public class ContextService {
 
             return qna;
         } else {
-            log.error("No such such QnA: " + domain.getId() + " / " + qnaUuid);
-            return null;
+            log.warn("No such such QnA " + domain.getId() + " / " + qnaUuid + ", answer probably RAG based.");
+            String _answer = "TODO_ANSWER"; // rating.getQuestionuuid()
+            saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
+            Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
+            return answer;
         }
     }
 
