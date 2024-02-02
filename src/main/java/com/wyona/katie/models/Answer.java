@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * QnA
+ * Answer 2 asked / submitted question
  */
 @Slf4j
 public class Answer {
