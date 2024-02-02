@@ -779,6 +779,17 @@ public class DataRepositoryService {
         if (scoreThreshold != null) {
             _scoreThreshold = scoreThreshold;
         }
+
+        insertQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domainId, username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+
+        return uuid;
+    }
+
+    /**
+     * Add asked question to database
+     */
+    private void insertQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
+
         String sql = "INSERT INTO " + TABLE_QUESTION + " VALUES ('" + uuid + "' , '" + domainId + "', '" + question + "', '" + remoteAddress + "', '" + dateSubmitted.getTime() + "', " + addQuotes(username) + ", " + addQuotes(answerUUID) + ", " + addQuotes(permissionStatus.toString()) + ", " + addQuotes(moderationStatus) + ", '" + channelType + "', " + addQuotes(channelRequestId)+ ", " + offset + ", " + addQuotes(messageId) + ", " + addQuotes(_classifications) + ", " + score + ", " + _scoreThreshold + ")";
         log.info("Add question to database: " + sql);
 
@@ -795,8 +806,6 @@ public class DataRepositoryService {
 */
 
         insert(sql);
-
-        return uuid;
     }
 
     /**
