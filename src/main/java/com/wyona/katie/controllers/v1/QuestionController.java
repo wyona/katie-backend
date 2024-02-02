@@ -1077,10 +1077,10 @@ public class QuestionController {
             }
 
             rating.setDate(new Date());
+            rating.setQnauuid(askedQuestion.getAnswerUUID());
 
-            String qnaUUID = askedQuestion.getAnswerUUID();
             Context domain = contextService.getContext(domainid);
-            Answer answer = contextService.rateAnswer(qnaUUID, domain, rating);
+            Answer answer = contextService.rateAnswer(domain, rating);
             return new ResponseEntity<>(answer, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
@@ -1148,7 +1148,8 @@ public class QuestionController {
             Context domain = contextService.getDomain(domainid);
 
             // TODO: Replace rateAnswer by rateQnA
-            Answer qna = contextService.rateAnswer(uuid, domain, rating);
+            rating.setQnauuid(uuid);
+            Answer qna = contextService.rateAnswer(domain, rating);
             if (qna != null) {
                 return new ResponseEntity<>(qna, HttpStatus.OK);
             } else {

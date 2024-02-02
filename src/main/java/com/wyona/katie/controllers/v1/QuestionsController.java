@@ -135,7 +135,7 @@ public class QuestionsController {
                     rating.setEmail(question.getUsername()); // TODO
                     rating.setDate(new Date());
                     rating.setRating(10);
-                    contextService.rateAnswer(question.getAnswerUUID(), contextService.getDomain(domainId), rating);
+                    contextService.rateAnswer(domain, rating);
 
                     return new ResponseEntity<>(question, HttpStatus.OK);
                 } else {
@@ -232,7 +232,7 @@ public class QuestionsController {
                 rating.setEmail(question.getUsername()); // TODO
                 rating.setDate(new Date());
                 rating.setRating(0);
-                contextService.rateAnswer(question.getAnswerUUID(), contextService.getDomain(domainId), rating);
+                contextService.rateAnswer(contextService.getDomain(domainId), rating);
 
                 return new ResponseEntity<>(question, HttpStatus.OK);
             } else {

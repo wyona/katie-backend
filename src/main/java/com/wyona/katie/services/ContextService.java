@@ -2536,17 +2536,16 @@ public class ContextService {
         }
 
         log.info("Rate answer of QnA '" + rating.getQnauuid() + "' to question '" + rating.getUserquestion() + "': " + rating.getRating());
-        rateAnswer(rating.getQnauuid(), domain, rating);
+        rateAnswer(domain, rating);
     }
 
     /**
      * Rate answer to question (either sent by user or part of QnA)
-     * @param qnaUuid UUID of QnA which was used as answer to the question of user
      * @param domain Domain associated with QnA
      * @param rating Rating of user, also containing question of user when available
      * @return rated answer
      */
-    public Answer rateAnswer(String qnaUuid, Context domain, Rating rating) throws Exception {
+    public Answer rateAnswer(Context domain, Rating rating) throws Exception {
         User signedInUser = authService.getUser(false, false);
         if (signedInUser != null) {
             log.debug("Signed in user: " + signedInUser.getUsername());
@@ -2556,14 +2555,12 @@ public class ContextService {
         }
 
         Answer qna = null;
-        if (qnaUuid != null) {
-            qna = getQnA(rating.getUserquestion(), qnaUuid, domain);
+        if (rating.getQnauuid() != null) {
+            qna = getQnA(rating.getUserquestion(), rating.getQnauuid(), domain);
         }
 
         // TODO
         if (qna != null) {
-            rating.setQnauuid(qna.getUuid());
-
             PermissionStatus permissionStatus = null;
             if (signedInUser != null) {
                 permissionStatus = iamService.getPermissionStatus(qna, signedInUser.getUsername());
@@ -2581,7 +2578,7 @@ public class ContextService {
             qna.addRating(rating);
             saveRating(domain, qna);
             saveRating(domain, rating, Utils.convertHtmlToPlainText(qna.getAnswer()));
-            dataRepositoryService.updateStatusOfResubmittedQuestion(qnaUuid, StatusResubmittedQuestion.STATUS_ANSWER_RATED);
+            dataRepositoryService.updateStatusOfResubmittedQuestion(qna.getUuid(), StatusResubmittedQuestion.STATUS_ANSWER_RATED);
 
             analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
 
@@ -2589,27 +2586,27 @@ public class ContextService {
             if (rating.getUserquestion() != null) {
                 askedQuestion = rating.getUserquestion();
                 if (domain.getConsiderHumanFeedback()) {
-                    aiService.indexHumanFeedback(askedQuestion, qnaUuid, domain, rating.getRating(), signedInUser);
+                    aiService.indexHumanFeedback(askedQuestion, qna.getUuid(), domain, rating.getRating(), signedInUser);
                 }
             }
 
             User[] experts = getExperts(domain.getId(), false);
             for (User expert: experts) {
-                sendNotificationReRating(domain, qnaUuid, expert.getId(), askedQuestion);
+                sendNotificationReRating(domain, qna.getUuid(), expert.getId(), askedQuestion);
             }
             if (qna.getRespondentId() != null) {
                 if (!isExpert(qna.getRespondentId(), experts)) {
-                    sendNotificationReRating(domain, qnaUuid, qna.getRespondentId(), askedQuestion);
+                    sendNotificationReRating(domain, qna.getUuid(), qna.getRespondentId(), askedQuestion);
                 } else {
                     log.info("Author '" + qna.getRespondentId() + "' already notified as expert.");
                 }
             } else {
-                log.info("No author available for domain / QnA '" + domain.getId() + " / " + qnaUuid + "'.");
+                log.info("No author available for domain / QnA '" + domain.getId() + " / " + qna.getUuid() + "'.");
             }
 
             return qna;
         } else {
-            log.warn("No such such QnA " + domain.getId() + " / " + qnaUuid + ", answer probably RAG based.");
+            log.warn("Answer probably RAG based and not based on a particular QnA of the domain '" + domain.getId() + "'.");
             String _answer = "TODO_ANSWER"; // rating.getQuestionuuid()
             saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
             Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
