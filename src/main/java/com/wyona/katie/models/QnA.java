@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * QnA
+ * TODO: Improve naming and usage of QnA.java and Answer.java
  */
 public class QnA {
 
