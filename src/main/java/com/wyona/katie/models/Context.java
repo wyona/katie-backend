@@ -451,6 +451,13 @@ public class Context {
     }
 
     /**
+     * @return path of directory containing asked questions of a particular domain
+     */
+    public File getAskedQuestionsDirectory() {
+        return new File(getContextDirectory(), "asked-questions");
+    }
+
+    /**
      * @return path of directory, which contains embedding vectors
      */
     public File getQnAEmbeddingsPath(String uuid) {
