@@ -223,7 +223,7 @@ public class QuestionAnsweringService {
 
         String moderationStatus = getModerationStatus(domain, question, channelType, responseAnswers.size());
         // TODO: Log when score of top answer was below score threshold
-        String logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), usernameKatie, uuidFirstAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+        String logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidFirstAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
         //log.debug("Link to approve answer: " + getApproveAnswerLink(domain, logEntryUUID));
 
         for (ResponseAnswer ra: responseAnswers) {
