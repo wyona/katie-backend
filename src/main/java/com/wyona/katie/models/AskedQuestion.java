@@ -17,6 +17,7 @@ public class AskedQuestion implements Serializable {
     private String uuid;
     private String domainId;
     private String question;
+    private String answer;
     private List<String> classifications;
     private String remoteAddress;
     private Date timestamp;
@@ -163,6 +164,20 @@ public class AskedQuestion implements Serializable {
     }
 
     /**
+     * @param answer Actual answer (in particular when answer is not based on a QnA)
+     */
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
+
+    /**
+     *
+     */
+    public String getAnswer() {
+        return answer;
+    }
+
+    /**
      *
      */
     public List<String> getClassifications() {
@@ -179,8 +194,15 @@ public class AskedQuestion implements Serializable {
     /**
      * Get UUID of QnA / answer which was suggested by Katie
      */
-    public String getAnswerUUID() {
+    public String getQnaUuid() {
         return qnaUUID;
+    }
+
+    /**
+     *
+     */
+    public void setQnaUuid(String qnaUUID) {
+        this.qnaUUID = qnaUUID;
     }
 
     /**

@@ -658,7 +658,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         } else if (action.equals(ChannelAction.SEND_BETTER_ANSWER)) {
             String questionUuid = actionParts[1];
             try {
-                AskedQuestion askedQuestion = dataRepoService.getQuestionByUUID(questionUuid);
+                AskedQuestion askedQuestion = contextService.getAskedQuestionByUUID(questionUuid);
                 String[] args = new String[1];
                 args[0] = askedQuestion.getQuestion();
                 responseMsg.setText(messageSource.getMessage("thanks.for.better.answer", args, locale));
@@ -720,7 +720,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         } else if (action.equals(ChannelAction.THUMB_UP) || action.equals(ChannelAction.THUMB_DOWN)) {
             String questionUuid = actionParts[2];
             try {
-                AskedQuestion askedQuestion = dataRepoService.getQuestionByUUID(questionUuid);
+                AskedQuestion askedQuestion = contextService.getAskedQuestionByUUID(questionUuid);
 
                 if (action.equals(ChannelAction.THUMB_UP)) {
                     contextService.thumbUpDown(askedQuestion, true, domain);

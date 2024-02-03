@@ -1066,7 +1066,7 @@ public class QuestionController {
         }
 
         try {
-            AskedQuestion askedQuestion = dataRepoService.getQuestionByUUID(quuid);
+            AskedQuestion askedQuestion = contextService.getAskedQuestionByUUID(quuid);
 
             // INFO: We don't need the user question from the rating object, because we already have it using the question UUID
             rating.setUserquestion(askedQuestion.getQuestion());
@@ -1077,7 +1077,7 @@ public class QuestionController {
             }
 
             rating.setDate(new Date());
-            rating.setQnauuid(askedQuestion.getAnswerUUID());
+            rating.setQnauuid(askedQuestion.getQnaUuid());
 
             Context domain = contextService.getContext(domainid);
             Answer answer = contextService.rateAnswer(domain, rating);

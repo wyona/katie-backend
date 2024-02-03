@@ -98,7 +98,7 @@ public class QuestionsController {
         log.info("Approve answer of asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
                 if (question.getModerationStatus().equals(ModerationStatus.NEEDS_APPROVAL)) {
@@ -106,7 +106,7 @@ public class QuestionsController {
                     analyticsService.logAnswerApproved(domainId, question.getChannelType());
 
                     Context domain = contextService.getContext(domainId);
-                    Answer answer = contextService.getQnA(question.getQuestion(), question.getAnswerUUID(), domain);
+                    Answer answer = contextService.getQnA(question.getQuestion(), question.getQnaUuid(), domain);
 
                     // TODO: Analyze question?!
                     Sentence analyzedQuestion = new Sentence("", null, null);
@@ -130,7 +130,7 @@ public class QuestionsController {
 
                     Rating rating = new Rating();
                     rating.setQuestionuuid(question.getUUID());
-                    rating.setQnauuid(question.getAnswerUUID());
+                    rating.setQnauuid(question.getQnaUuid());
                     rating.setUserquestion(question.getQuestion());
                     rating.setEmail(question.getUsername()); // TODO
                     rating.setDate(new Date());
@@ -219,7 +219,7 @@ public class QuestionsController {
         log.info("Discard answer of asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
                 dataRepoService.updateModerationStatus(qid, ModerationStatus.DISCARDED);
@@ -227,7 +227,7 @@ public class QuestionsController {
 
                 Rating rating = new Rating();
                 rating.setQuestionuuid(question.getUUID());
-                rating.setQnauuid(question.getAnswerUUID());
+                rating.setQnauuid(question.getQnaUuid());
                 rating.setUserquestion(question.getQuestion());
                 rating.setEmail(question.getUsername()); // TODO
                 rating.setDate(new Date());
@@ -259,7 +259,7 @@ public class QuestionsController {
         log.info("Ignore answer of asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
                 dataRepoService.updateModerationStatus(qid, ModerationStatus.IGNORED);
@@ -289,11 +289,11 @@ public class QuestionsController {
         rememberMeService.tryAutoLogin(request, response);
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
                 if (contextService.existsQnA(uuid, contextService.getContext(domainId))) {
-                    log.info("Replace suggested answer '" + question.getAnswerUUID() + "' by new answer / QnA '" + uuid + "' ...");
+                    log.info("Replace suggested answer '" + question.getQnaUuid() + "' by new answer / QnA '" + uuid + "' ...");
                     dataRepoService.updateSuggestedAnswerUUID(qid, uuid);
                     analyticsService.logAnswerCorrected(domainId, question.getChannelType());
                     return new ResponseEntity<>(question, HttpStatus.OK);
@@ -331,7 +331,7 @@ public class QuestionsController {
         log.info("Get asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
 
@@ -364,7 +364,7 @@ public class QuestionsController {
         log.info("Get email containing asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (contextService.isMemberOrAdmin(domainId)) {
                 String emailId = dataRepoService.getEmailConversationValues(question.getChannelRequestId());
@@ -409,7 +409,7 @@ public class QuestionsController {
         log.info("Get thread messages of asked question '" + qid + "' ...");
 
         try {
-            AskedQuestion question = dataRepoService.getQuestionByUUID(qid);
+            AskedQuestion question = contextService.getAskedQuestionByUUID(qid);
             String domainId = question.getDomainId();
             if (signedInUser != null && contextService.isMemberOrAdmin(domainId, signedInUser)) {
                 log.info("Get all thread messages of asked question '" + qid + "' linked with domain '" + domainId + "' ...");

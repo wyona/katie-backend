@@ -2518,13 +2518,31 @@ public class ContextService {
     }
 
     /**
+     * Get particular asked question by UUID from database
+     * @param qid Question Id, e.g. "ded394f8-4a63-42a7-9180-20d8f4875662"
+     */
+    public AskedQuestion getAskedQuestionByUUID(String qid) throws Exception {
+        AskedQuestion askedQuestion = dataRepositoryService.getAskedQuestionByUUID(qid);
+
+        if (askedQuestion.getQnaUuid() == null) {
+            Context domain = getContext(askedQuestion.getDomainId());
+            AskedQuestion aq = dataRepositoryService.getAskedQuestionFromFS(qid, domain);
+            if (aq != null) {
+                askedQuestion.setAnswer(aq.getAnswer());
+            }
+        }
+
+        return askedQuestion;
+    }
+
+    /**
      * Rate answer to question using thumb up and down
      * @param thumbUp When set to true, then "thumb up" and when set to false, then "thumb down"
      */
     public void thumbUpDown(AskedQuestion askedQuestion, boolean thumbUp, Context domain) throws Exception {
         Rating rating = new Rating();
         rating.setQuestionuuid(askedQuestion.getUUID());
-        rating.setQnauuid(askedQuestion.getAnswerUUID());
+        rating.setQnauuid(askedQuestion.getQnaUuid());
         rating.setUserquestion(askedQuestion.getQuestion());
         rating.setEmail(askedQuestion.getUsername()); // TODO
         rating.setDate(new Date());
@@ -2607,7 +2625,7 @@ public class ContextService {
             return qna;
         } else {
             log.warn("Answer probably RAG based and not based on a particular QnA of the domain '" + domain.getId() + "'.");
-            String _answer = "TODO_ANSWER"; // rating.getQuestionuuid()
+            String _answer = getAskedQuestionByUUID(rating.getQuestionuuid()).getAnswer();
             saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
             Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
             return answer;
@@ -3449,7 +3467,7 @@ public class ContextService {
         metaNode.put("humanFeedback", rating.getFeedback());
         metaNode.put("userEmail", rating.getEmail());
         try {
-            AskedQuestion askedQuestion = dataRepositoryService.getQuestionByUUID(rating.getQuestionuuid());
+            AskedQuestion askedQuestion = getAskedQuestionByUUID(rating.getQuestionuuid());
             if (askedQuestion.getClientMessageId() != null) {
                 metaNode.put("clientMessageId", askedQuestion.getClientMessageId());
             }
@@ -3462,8 +3480,7 @@ public class ContextService {
                 domain.getRatingsDirectory().mkdir();
             }
             // INFO: Multiple users can rate the same question / answer pair, therefore each rating requires a unique id
-            String ratingFilename = uuid + ".json";
-            File ratingFile = new File(domain.getRatingsDirectory(), ratingFilename);
+            File ratingFile = dataRepositoryService.getRatingFile(uuid, domain);
             mapper.writeValue(ratingFile, rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

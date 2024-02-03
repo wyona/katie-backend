@@ -784,8 +784,8 @@ public class DataRepositoryService {
             _scoreThreshold = scoreThreshold;
         }
 
-        insertQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
-        saveQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, answer, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        insertAskedQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        saveAskedQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, answer, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
 
         return uuid;
     }
@@ -797,7 +797,7 @@ public class DataRepositoryService {
      * @param answerUUID UUID of answer / QnA
      * @param answer Actual answer (in particular when answer is not based on a QnA)
      */
-    private void saveQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
+    private void saveAskedQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
         if (!domain.getAskedQuestionsDirectory().isDirectory()) {
             domain.getAskedQuestionsDirectory().mkdir();
         }
@@ -808,12 +808,11 @@ public class DataRepositoryService {
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
         rootNode.put("question", question);
-        rootNode.put("qnaUUID", answerUUID);
+        rootNode.put("qnaUuid", answerUUID);
         rootNode.put("answer", answer);
 
         try {
-            String askedQuestionFilename = uuid + ".json";
-            File askedQuestionFile = new File(domain.getAskedQuestionsDirectory(), askedQuestionFilename);
+            File askedQuestionFile = getAskedQuestionFile(uuid, domain);
             mapper.writeValue(askedQuestionFile, rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -823,7 +822,7 @@ public class DataRepositoryService {
     /**
      * Add asked question to database
      */
-    private void insertQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
+    private void insertAskedQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
 
         String sql = "INSERT INTO " + TABLE_QUESTION + " VALUES ('" + uuid + "' , '" + domainId + "', '" + question + "', '" + remoteAddress + "', '" + dateSubmitted.getTime() + "', " + addQuotes(username) + ", " + addQuotes(answerUUID) + ", " + addQuotes(permissionStatus.toString()) + ", " + addQuotes(moderationStatus) + ", '" + channelType + "', " + addQuotes(channelRequestId)+ ", " + offset + ", " + addQuotes(messageId) + ", " + addQuotes(_classifications) + ", " + score + ", " + _scoreThreshold + ")";
         log.info("Add question to database: " + sql);
@@ -1353,11 +1352,11 @@ public class DataRepositoryService {
      * Get particular asked question by UUID from database
      * @param qid Question Id, e.g. "ded394f8-4a63-42a7-9180-20d8f4875662"
      */
-    public AskedQuestion getQuestionByUUID(String qid) throws Exception {
+    protected AskedQuestion getAskedQuestionByUUID(String qid) throws Exception {
         StringBuilder sql = new StringBuilder("Select * from " + TABLE_QUESTION + " where UUID='" + qid + "'");
         log.info("Try to get question from database: " + sql);
 
-        AskedQuestion askedQuestion = getAskedQuestion(sql.toString());
+        AskedQuestion askedQuestion = getAskedQuestionFromDB(sql.toString());
 
         if (askedQuestion == null) {
             String msg = "No question with UUID '" + qid + "'!";
@@ -1376,7 +1375,7 @@ public class DataRepositoryService {
         StringBuilder sql = new StringBuilder("Select * from " + TABLE_QUESTION + " where " + QUESTION_CHANNEL_REQUEST_ID + "='" + id + "'");
         log.info("Try to get question from database: " + sql);
 
-        AskedQuestion askedQuestion = getAskedQuestion(sql.toString());
+        AskedQuestion askedQuestion = getAskedQuestionFromDB(sql.toString());
 
         if (askedQuestion == null) {
             throw new Exception("No question with Channel Request Id '" + id + "'!");
@@ -1393,7 +1392,7 @@ public class DataRepositoryService {
         StringBuilder sql = new StringBuilder("Select * from " + TABLE_QUESTION + " where " + QUESTION_CLIENT_MESSAGE_ID + "='" + id + "'");
         log.info("Try to get question from database: " + sql);
 
-        AskedQuestion askedQuestion = getAskedQuestion(sql.toString());
+        AskedQuestion askedQuestion = getAskedQuestionFromDB(sql.toString());
 
         if (askedQuestion == null) {
             throw new Exception("No question with Client Message Id '" + id + "'!");
@@ -1403,9 +1402,39 @@ public class DataRepositoryService {
     }
 
     /**
+     * @param uuid UUID of asked question
+     * @param domain Domain where question was asked
+     */
+    protected AskedQuestion getAskedQuestionFromFS(String uuid, Context domain) {
+        File aqFile = getAskedQuestionFile(uuid, domain);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            AskedQuestion aq = mapper.readValue(aqFile, AskedQuestion.class);
+            return aq;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     *
+     */
+    protected File getAskedQuestionFile(String uuid, Context domain) {
+        return new File(domain.getAskedQuestionsDirectory(), uuid + ".json");
+    }
+
+    /**
+     *
+     */
+    protected File getRatingFile(String uuid, Context domain) {
+        return new File(domain.getRatingsDirectory(), uuid + ".json");
+    }
+
+    /**
      * Get a specific asked question
      */
-    private AskedQuestion getAskedQuestion(String sql) throws Exception {
+    private AskedQuestion getAskedQuestionFromDB(String sql) throws Exception {
         Class.forName(driverClassName);
         Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
         Statement stmt = conn.createStatement();

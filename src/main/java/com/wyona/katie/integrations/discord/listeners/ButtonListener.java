@@ -70,8 +70,8 @@ public class ButtonListener extends CommonMessageSender {
 
         AskedQuestion askedQuestion = null;
         try {
-            askedQuestion = dataRepositoryService.getQuestionByUUID(questionUuid);
-            log.info("Asked question: " + askedQuestion.getAnswerUUID());
+            askedQuestion = domainService.getAskedQuestionByUUID(questionUuid);
+            log.info("Asked question: " + askedQuestion.getQuestion());
         } catch (Exception e) {
             // INFO: Several Katie servers can be registered with a channel. When a user clicks on a button, then all servers will receive a request, but only the server which generated the answer and generated the question UUID will be able to handle the request.
             log.error(e.getMessage());

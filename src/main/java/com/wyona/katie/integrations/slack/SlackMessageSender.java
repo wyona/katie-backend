@@ -819,7 +819,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         try {
             Context domain = domainService.getDomain(teamId, channelId);
             String questionUuid = interaction.getActions().get(0).getValue();
-            AskedQuestion askedQuestion = dataRepoService.getQuestionByUUID(questionUuid);
+            AskedQuestion askedQuestion = contextService.getAskedQuestionByUUID(questionUuid);
             Locale locale = Locale.ENGLISH; // TODO
             if (actionId.equals(ChannelAction.THUMB_UP)) {
                 contextService.thumbUpDown(askedQuestion, true, domain);
