@@ -203,15 +203,21 @@ public class QuestionAnsweringService {
         }
 
         // INFO: Get UUID and permission status of top answer to log this information
-        String uuidFirstAnswer = null;
+        String uuidTopAnswer = null;
+        String answerTopAnswer = null;
         double scoreTopAnswer = -1;
         PermissionStatus permissionStatusFirstAnswer = PermissionStatus.UNKNOWN;
         if (responseAnswers.size() > 0) {
-            ResponseAnswer firstAnswer = (ResponseAnswer)responseAnswers.get(0);
-            uuidFirstAnswer = firstAnswer.getUuid();
-            scoreTopAnswer = firstAnswer.getScore();
-            log.info("QnA UUID of first answer: " + uuidFirstAnswer);
-            permissionStatusFirstAnswer = firstAnswer.getPermissionStatus();
+            ResponseAnswer topAnswer = (ResponseAnswer)responseAnswers.get(0);
+            uuidTopAnswer = topAnswer.getUuid();
+            answerTopAnswer = topAnswer.getAnswer();
+            if (uuidTopAnswer != null) {
+                log.info("QnA UUID of top answer: " + uuidTopAnswer);
+            } else {
+                log.info("Top answer is not based on QnA.");
+            }
+            scoreTopAnswer = topAnswer.getScore();
+            permissionStatusFirstAnswer = topAnswer.getPermissionStatus();
         } else {
             log.info("No answers found by search implementation.");
         }
@@ -223,7 +229,7 @@ public class QuestionAnsweringService {
 
         String moderationStatus = getModerationStatus(domain, question, channelType, responseAnswers.size());
         // TODO: Log when score of top answer was below score threshold
-        String logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidFirstAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+        String logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidTopAnswer, answerTopAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
         //log.debug("Link to approve answer: " + getApproveAnswerLink(domain, logEntryUUID));
 
         for (ResponseAnswer ra: responseAnswers) {

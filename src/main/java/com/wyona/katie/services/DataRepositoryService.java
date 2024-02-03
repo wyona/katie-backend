@@ -755,7 +755,8 @@ public class DataRepositoryService {
      * @param domain Domain where question was asked
      *
      * @param username Username, whereas is null when user is not signed in
-     * @param answerUUID UUID of answer found by Katie
+     * @param answerUUID UUID of answer / QnA found by Katie
+     * @param answer Actual answer sent back to client / user (only necessary, when answer is not based on a QnA)
      * @param score Score of answer, e.g. 0.7549
      * @param scoreThreshold Score threshold, e.g. 0.73 when configured and null otherwise
      * @param permissionStatus Permission status, e.g. answer is public or user does not have sufficient permissions
@@ -767,7 +768,7 @@ public class DataRepositoryService {
      *
      * @return uuid of log entry
      */
-    public String logQuestion(String question, List<String> classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, double score, Double scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
+    public String logQuestion(String question, List<String> classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
         log.info("Log question (length: " + question.length() + ") ...");
 
         question = sanitizeQuestion(question, domain.getId());
@@ -784,25 +785,31 @@ public class DataRepositoryService {
         }
 
         insertQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
-        saveQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        saveQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, answer, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
 
         return uuid;
     }
 
     /**
-     *
+     * Save asked question, including answer, etc.
+     * @param uuid UUID of question
+     * @param question Asked question
+     * @param answerUUID UUID of answer / QnA
+     * @param answer Actual answer (in particular when answer is not based on a QnA)
      */
-    private void saveQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
+    private void saveQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
         if (!domain.getAskedQuestionsDirectory().isDirectory()) {
             domain.getAskedQuestionsDirectory().mkdir();
         }
 
+        // TODO: See AskedQuestion.java
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
         rootNode.put("question", question);
-        rootNode.put("answer", "TODO");
+        rootNode.put("qnaUUID", answerUUID);
+        rootNode.put("answer", answer);
 
         try {
             String askedQuestionFilename = uuid + ".json";
