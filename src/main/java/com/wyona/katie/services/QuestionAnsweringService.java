@@ -106,6 +106,8 @@ public class QuestionAnsweringService {
     private AlephAlphaGenerate alephAlphaGenerate;
     @Autowired
     private MistralAIGenerate mistralAIGenerate;
+    @Autowired
+    private OllamaGenerate ollamaGenerate;
 
     @Value("${aft.implementation}")
     private String aftImpl;
@@ -115,6 +117,9 @@ public class QuestionAnsweringService {
 
     @Value("${openai.generate.model}")
     private String openAIModel;
+
+    @Value("${ollama.completion.model}")
+    private String ollamaModel;
 
     private static final String ANONYMOUS = "anonymous";
 
@@ -423,6 +428,9 @@ public class QuestionAnsweringService {
         } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_AI)) {
             generateProvider = mistralAIGenerate;
             model = mistralAIModel;
+        } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_OLLAMA)) {
+            generateProvider = ollamaGenerate;
+            model = ollamaModel;
         } else {
             log.error("No such completion implemention supported yet: " + domain.getCompletionImpl());
             return hits;
