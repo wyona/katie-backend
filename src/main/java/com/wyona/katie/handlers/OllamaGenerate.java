@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.models.PromptMessage;
 import io.github.amithkoujalgi.ollama4j.core.OllamaAPI;
 import io.github.amithkoujalgi.ollama4j.core.models.OllamaResult;
 import io.github.amithkoujalgi.ollama4j.core.utils.Options;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 /**
  *
@@ -27,9 +30,9 @@ public class OllamaGenerate implements GenerateProvider {
     private String ollamaBasicAuthPassword;
 
     /**
-     * @see GenerateProvider#getCompletion(String, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
-    public String getCompletion(String prompt, String model, Double temperature, String apiKey) throws Exception {
+    public String getCompletion(List<PromptMessage> promptMessages, String model, Double temperature, String apiKey) throws Exception {
         log.info("Complete prompt using Ollama completion API (" + ollamaHost + ") ...");
 
         String completedText = null;
@@ -45,7 +48,7 @@ public class OllamaGenerate implements GenerateProvider {
             optionsBuilder = optionsBuilder.setTemperature(temperature.floatValue());
         }
         Options options = optionsBuilder.build();
-        OllamaResult result = ollamaAPI.ask(model, prompt, options);
+        OllamaResult result = ollamaAPI.ask(model, promptMessages.get(0).getContent(), options);
         completedText = result.getResponse();
 
         return completedText;

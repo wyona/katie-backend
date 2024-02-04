@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.PromptMessage;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
+
 /**
  *
  */
@@ -27,9 +30,9 @@ public class MistralAIGenerate implements GenerateProvider {
     private String mistralAIHost;
 
     /**
-     * @see GenerateProvider#getCompletion(String, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
-    public String getCompletion(String prompt, String model, Double temperature, String mistralAIKey) throws Exception {
+    public String getCompletion(List<PromptMessage> promptMessages, String model, Double temperature, String mistralAIKey) throws Exception {
         log.info("Complete prompt using Mistral AI chat completion ...");
 
         String completedText = null;
@@ -45,17 +48,12 @@ public class MistralAIGenerate implements GenerateProvider {
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
 
-            // TODO: https://cookbook.openai.com/examples/azure/chat_with_your_own_data
-            // TODO: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
-
-            ObjectNode systemMessageNode = mapper.createObjectNode();
-            systemMessageNode.put("role", "system");
-            // TODO
-
-            ObjectNode userMessageNode = mapper.createObjectNode();
-            userMessageNode.put("role", "user");
-            userMessageNode.put("content", prompt);
-            messages.add(userMessageNode);
+            for (PromptMessage msg : promptMessages) {
+                ObjectNode messageNode = mapper.createObjectNode();
+                messageNode.put("role", msg.getRole());
+                messageNode.put("content", msg.getContent());
+                messages.add(messageNode);
+            }
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(mistralAIKey);

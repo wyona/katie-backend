@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.PromptMessage;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
+
 /**
  *
  */
@@ -26,9 +29,9 @@ public class AlephAlphaGenerate implements GenerateProvider {
     private String alephAlphaHost;
 
     /**
-     * @see GenerateProvider#getCompletion(String, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
-    public String getCompletion(String prompt, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
+    public String getCompletion(List<PromptMessage> promptMessages, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
         log.info("Complete prompt using Aleph Alpha completion ...");
 
         String completedText = null;
@@ -37,7 +40,7 @@ public class AlephAlphaGenerate implements GenerateProvider {
             // INFO: See https://docs.aleph-alpha.com/api/complete/
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(alephAlphaToken);
-            HttpEntity<String> request = new HttpEntity<String>(getRequestBody(prompt, alephAlphaModel), headers);
+            HttpEntity<String> request = new HttpEntity<String>(getRequestBody(promptMessages.get(0).getContent(), alephAlphaModel), headers);
 
             String requestUrl = alephAlphaHost + "/complete";
             log.info("Get completion: " + requestUrl);

@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.CompletionImpl;
+import com.wyona.katie.models.PromptMessage;
 import com.wyona.katie.services.Utils;
 import com.wyona.katie.models.CompletionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,16 +59,17 @@ public class LLMReRank implements ReRankProvider {
         GenerateProvider generateOpenAI = openAIGenerate;
 
         int item_number_none_of_the_answers = answers.length + 1;
-        String prompt = getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers);
-        log.info("Prompt: " + prompt);
+        List<PromptMessage> promptMessages = new ArrayList<>();
+        promptMessages.add(new PromptMessage("user", getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
+        log.info("Prompt: " + promptMessages.get(0).getContent());
         try {
             String completedText = null;
             if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-                completedText = generateMistralCloud.getCompletion(prompt, mistralAIModel, temperature, mistralAIKey);
+                completedText = generateMistralCloud.getCompletion(promptMessages, mistralAIModel, temperature, mistralAIKey);
             } else if (completionImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
-                completedText = generateOllama.getCompletion(prompt, ollamaModel, temperature, null);
+                completedText = generateOllama.getCompletion(promptMessages, ollamaModel, temperature, null);
             } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
-                completedText = generateOpenAI.getCompletion(prompt, openAIModel, temperature, openAIKey);
+                completedText = generateOpenAI.getCompletion(promptMessages, openAIModel, temperature, openAIKey);
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
                 return reRankedIndex.toArray(new Integer[0]);

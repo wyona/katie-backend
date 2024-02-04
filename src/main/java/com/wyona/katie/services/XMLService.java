@@ -127,6 +127,7 @@ public class XMLService {
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
+    private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
 
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_TAG = "sbert-lucene";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
@@ -1548,7 +1549,9 @@ public class XMLService {
     }
 
     /**
+     * Parse domain configuration
      * @param domainId Domain Id
+     * @return domain object
      */
     public Context parseContextConfig(String domainId) throws Exception {
         File config = null;
@@ -1768,7 +1771,14 @@ public class XMLService {
         Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled, reindexBackgroundProcessId);
         domain.setInformUserReNoAnswerAvailable(informUserReNoAnswerAvailable);
         domain.setReRankImpl(reRankImpl);
+
         domain.setCompletionImpl(generateImpl);
+        Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
+        if (generativePromptMessagesEl != null) {
+            // TODO: Get and set multiple prompt messages
+            domain.setCompletionPrompt("TODO");
+        }
+
         domain.setScoreThreshold(scoreThreshold);
         domain.setAnalyzeMessagesAskRestApi(analyzeMessagesAskRestApi);
 

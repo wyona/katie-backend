@@ -122,14 +122,16 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
         GenerateProvider generateMistralCloud = mistralAIGenerate;
         GenerateProvider generateOllama = ollamaGenerate;
 
+        List<PromptMessage> promptMessages = new ArrayList<>();
         String prompt = "Please split the following email into Salutation, Body and Signature and provide the response as JSON: \"" + message + "\"";
+        promptMessages.add(new PromptMessage("user", prompt));
         try {
             Double temperature = null;
             String completedText = null;
             if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-                completedText = generateMistralCloud.getCompletion(prompt, mistralAIModel, temperature, mistralAIKey);
+                completedText = generateMistralCloud.getCompletion(promptMessages, mistralAIModel, temperature, mistralAIKey);
             } else {
-                completedText = generateOllama.getCompletion(prompt, ollamaModel, temperature, null);
+                completedText = generateOllama.getCompletion(promptMessages, ollamaModel, temperature, null);
             }
 
             log.info("Completed text: " + completedText);
