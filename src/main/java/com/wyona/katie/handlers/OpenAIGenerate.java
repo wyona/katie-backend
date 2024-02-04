@@ -41,10 +41,15 @@ public class OpenAIGenerate implements GenerateProvider {
             requestBodyNode.put("model", openAIModel);
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
-            ObjectNode messageNode = mapper.createObjectNode();
-            messageNode.put("role", "user");
-            messageNode.put("content", prompt);
-            messages.add(messageNode);
+
+            ObjectNode systemMessageNode = mapper.createObjectNode();
+            systemMessageNode.put("role", "system");
+            // TODO
+
+            ObjectNode userMessageNode = mapper.createObjectNode();
+            userMessageNode.put("role", "user");
+            userMessageNode.put("content", prompt);
+            messages.add(userMessageNode);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(openAIKey);
