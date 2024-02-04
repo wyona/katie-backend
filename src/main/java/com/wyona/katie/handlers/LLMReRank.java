@@ -36,6 +36,8 @@ public class LLMReRank implements ReRankProvider {
     private OpenAIGenerate openAIGenerate;
     @Value("${openai.key}")
     private String openAIKey;
+    @Value("${openai.generate.model}")
+    private String openAIModel;
 
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
@@ -65,7 +67,7 @@ public class LLMReRank implements ReRankProvider {
             } else if (completionImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
                 completedText = generateOllama.getCompletion(prompt, ollamaModel, temperature, null);
             } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
-                completedText = generateOpenAI.getCompletion(prompt, "gpt-3.5-turbo", temperature, openAIKey);
+                completedText = generateOpenAI.getCompletion(prompt, openAIModel, temperature, openAIKey);
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
                 return reRankedIndex.toArray(new Integer[0]);

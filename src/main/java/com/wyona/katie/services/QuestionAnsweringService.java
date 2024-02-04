@@ -113,6 +113,9 @@ public class QuestionAnsweringService {
     @Value("${mistral.ai.completion.model}")
     private String mistralAIModel;
 
+    @Value("${openai.generate.model}")
+    private String openAIModel;
+
     private static final String ANONYMOUS = "anonymous";
 
     /**
@@ -416,7 +419,7 @@ public class QuestionAnsweringService {
             model = "luminous-base"; // TODO: Make configurable
         } else if (domain.getCompletionImpl().equals(CompletionImpl.OPENAI)) {
             generateProvider = openAIGenerate;
-            model = "gpt-3.5-turbo"; // TODO: Make configurable
+            model = openAIModel;
         } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_AI)) {
             generateProvider = mistralAIGenerate;
             model = mistralAIModel;
