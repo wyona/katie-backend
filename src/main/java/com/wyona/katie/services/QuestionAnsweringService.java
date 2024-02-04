@@ -121,6 +121,9 @@ public class QuestionAnsweringService {
     @Value("${ollama.completion.model}")
     private String ollamaModel;
 
+    @Value("${generative.ai.prompt}")
+    private String defaultPrompt;
+
     private static final String ANONYMOUS = "anonymous";
 
     /**
@@ -439,7 +442,7 @@ public class QuestionAnsweringService {
         try {
             if (hits.size() > 0) {
                 Answer qna = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
-                String prompt = getPrompt(question, qna.getAnswer(), qna.getUrl());
+                String prompt = getPrompt(domain, question, qna.getAnswer(), qna.getUrl());
 
                 // TODO: Domain specific API token, similar to domain.getEmbeddingsApiToken();
                 String apiToken = contextService.getApiToken(domain.getCompletionImpl());
@@ -473,13 +476,24 @@ public class QuestionAnsweringService {
     /**
      *
      */
-    private String getPrompt(Sentence question, String answer, String url) throws Exception {
-        // TODO: Get parametrized prompt from domain configuration
-        if (url != null) {
-            return "Bitte beantworte die folgende Frage \"" + question.getSentence() + "\" basierend auf dem Inhalt der folgenden Webseite " + url + " und dem folgenden Text Abschnitt daraus \"" + answer + "\"";
-        } else {
-            return "Bitte beantworte die folgende Frage \"" + question.getSentence() + "\" basierend auf dem folgenden Text Abschnitt \"" + answer + "\"";
+    private String getPrompt(Context domain, Sentence question, String context, String url) throws Exception {
+        String prompt = domain.getCompletionPrompt();
+        if (prompt == null) {
+            if (url != null) {
+                prompt = defaultPrompt; // TODO: Prompt containing URL variable
+            } else {
+                prompt = defaultPrompt; // INFO: No retrieval results available
+            }
         }
+
+        prompt = prompt.replaceAll("\\{\\{QUESTION\\}\\}", question.getSentence());
+        if (context != null) {
+            prompt = prompt.replaceAll("\\{\\{CONTEXT\\}\\}", context);
+        }
+        if (url != null) {
+            prompt = prompt.replaceAll("\\{\\{URL\\}\\}", url);
+        }
+        return prompt;
     }
 
     /**
