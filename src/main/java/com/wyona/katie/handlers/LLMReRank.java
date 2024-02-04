@@ -22,18 +22,20 @@ public class LLMReRank implements ReRankProvider {
 
     @Autowired
     private MistralAIGenerate mistralAIGenerate;
-
     @Value("${mistral.api.key}")
     private String mistralAIKey;
-
     @Value("${mistral.ai.completion.model}")
     private String mistralAIModel;
 
     @Autowired
     private OllamaGenerate ollamaGenerate;
-
     @Value("${ollama.completion.model}")
     private String ollamaModel;
+
+    @Autowired
+    private OpenAIGenerate openAIGenerate;
+    @Value("${openai.key}")
+    private String openAIKey;
 
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
@@ -51,6 +53,7 @@ public class LLMReRank implements ReRankProvider {
 
         GenerateProvider generateMistralCloud = mistralAIGenerate;
         GenerateProvider generateOllama = ollamaGenerate;
+        GenerateProvider generateOpenAI = openAIGenerate;
 
         int item_number_none_of_the_answers = answers.length + 1;
         String prompt = getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers);
@@ -59,10 +62,16 @@ public class LLMReRank implements ReRankProvider {
             String completedText = null;
             if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
                 completedText = generateMistralCloud.getCompletion(prompt, mistralAIModel, temperature, mistralAIKey);
-            } else {
+            } else if (completionImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
                 completedText = generateOllama.getCompletion(prompt, ollamaModel, temperature, null);
+            } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
+                completedText = generateOpenAI.getCompletion(prompt, "gpt-3.5-turbo", temperature, openAIKey);
+            } else {
+                log.error("Completion provider '" + completionImpl + "' not implemented yet!");
+                return reRankedIndex.toArray(new Integer[0]);
             }
 
+            //String completedText = "The best answer would be (1) Wo wurde Levi geboren? Levi wurde in Zürich geboren. This question asks for the place of Levi's birth, and the answer provides the specific location, which is Zürich. The other answer option (2) asks for the time of Levi's birth, which is not relevant to the given question. Thus, (3) None of the answers above is not the correct answer in this case.";
             //String completedText = "The question is written in German and appears to be a personal message, expressing emotions and inviting someone to join a \"virtual communication\" or world, described as a source of passion and joy. The given options are technical support questions and answers related to the University of Zürich (UZH).\n\nSince the question is not related to the options provided, the best answer is (7) \"None of the answers above.\"";
             //String completedText = "The given question 'Was sollen wir heute zum Abendessen machen?' (What should we have for dinner tonight?) is unrelated to the given list of question and answer pairs. Therefore, the best answer would be (7) None of the answers above.";
             //String completedText = "The given question 'Was sollen wir heute zum Abendessen machen?' (What should we have for dinner tonight?) is unrelated to the given list of question and answer pairs. Therefore, the best answer would be (7x) None of the answers above.";
