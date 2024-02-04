@@ -34,6 +34,7 @@ public class Context {
     private boolean analyzeMessagesAskRestApi = false;
     private ReRankImpl reRankImpl;
     private CompletionImpl generateImpl;
+    private String generatePrompt;
 
     private NerImpl nerImpl;
 
@@ -116,6 +117,7 @@ public class Context {
 
         this.reRankImpl = null;
         this.generateImpl = null;
+        this.generatePrompt = null;
 
         this.informUserReNoAnswerAvailable = false;
 
@@ -864,6 +866,20 @@ public class Context {
      */
     public void setCompletionImpl(CompletionImpl generateImpl) {
         this.generateImpl = generateImpl;
+    }
+
+    /**
+     * @return prompt, e.g. "Please answer the following '{{QUESTION}}' based on the following context '{{CONTEXT}}'."
+     */
+    public String getCompletionPrompt() {
+        return generatePrompt;
+    }
+
+    /**
+     *
+     */
+    public void setCompletionPrompt(String prompt) {
+        this.generatePrompt = prompt;
     }
 
     /**
