@@ -44,10 +44,18 @@ public class MistralAIGenerate implements GenerateProvider {
             }
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
-            ObjectNode messageNode = mapper.createObjectNode();
-            messageNode.put("role", "user");
-            messageNode.put("content", prompt);
-            messages.add(messageNode);
+
+            // TODO: https://cookbook.openai.com/examples/azure/chat_with_your_own_data
+            // TODO: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
+
+            ObjectNode systemMessageNode = mapper.createObjectNode();
+            systemMessageNode.put("role", "system");
+            // TODO
+
+            ObjectNode userMessageNode = mapper.createObjectNode();
+            userMessageNode.put("role", "user");
+            userMessageNode.put("content", prompt);
+            messages.add(userMessageNode);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(mistralAIKey);
