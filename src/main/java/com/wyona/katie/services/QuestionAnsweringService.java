@@ -92,6 +92,8 @@ public class QuestionAnsweringService {
     @Autowired
     private DirectusConnector directusConnector;
     @Autowired
+    private TOPdeskConnector topDeskConnector;
+    @Autowired
     private ConfluenceConnector confluenceConnector;
     @Autowired
     private CohereGroundedQAConnector cohereGroundedQAConnector;
@@ -693,6 +695,8 @@ public class QuestionAnsweringService {
             return thirdPartyRAGConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.DIRECTUS)) {
             return directusConnector;
+        } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.TOP_DESK)) {
+            return topDeskConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.CONFLUENCE)) {
             return confluenceConnector;
         } else if (knowledgeSourceConnector.equals(KnowledgeSourceConnector.GROUNDED_QA)) {

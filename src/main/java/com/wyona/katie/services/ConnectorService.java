@@ -44,6 +44,8 @@ public class ConnectorService {
     private SharepointConnector sharepointConnector;
     @Autowired
     private WebsiteConnector websiteConnector;
+    @Autowired
+    private TOPdeskConnector topDeskConnector;
 
     /**
      * Trigger third-party knowledge source synchronization in background
@@ -66,6 +68,8 @@ public class ConnectorService {
             // TODO
         } else if (ksc.equals(KnowledgeSourceConnector.SUPABASE)) {
             connector = supabaseConnector;
+        } else if (ksc.equals(KnowledgeSourceConnector.TOP_DESK)) {
+            connector = topDeskConnector;
         } else if (ksc.equals(KnowledgeSourceConnector.DISCOURSE)) {
             connector = discourseConnector;
         } else {

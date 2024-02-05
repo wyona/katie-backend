@@ -14,6 +14,7 @@ public enum KnowledgeSourceConnector {
     THIRD_PARTY_RAG,
     DIRECTUS,
     SUPABASE,
+    TOP_DESK,
     DISCOURSE,
     GROUNDED_QA,
     ENERGIS,
