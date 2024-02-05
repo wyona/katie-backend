@@ -131,6 +131,8 @@ public class XMLService {
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
+    private static final String CONTEXT_GEN_AI_PROMPT_MESSAGE_TAG = "msg";
+    private static final String CONTEXT_GEN_AI_PROMPT_MESSAGE_ROLE_ATTR = "role";
 
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_TAG = "sbert-lucene";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
@@ -1392,6 +1394,17 @@ public class XMLService {
         }
         doc.getDocumentElement().appendChild(indexSearchPipelineEl);
 
+        if (context.getPromptMessages().size() > 0) {
+            Element promptMessagesEl = doc.createElement(CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
+            doc.getDocumentElement().appendChild(promptMessagesEl);
+            for (PromptMessage msg : context.getPromptMessages()) {
+                Element promptMsgEl = doc.createElement(CONTEXT_GEN_AI_PROMPT_MESSAGE_TAG);
+                promptMsgEl.setAttribute(CONTEXT_GEN_AI_PROMPT_MESSAGE_ROLE_ATTR, msg.getRole().toString());
+                promptMsgEl.setTextContent(msg.getContent());
+                promptMessagesEl.appendChild(promptMsgEl);
+            }
+        }
+
         if (context.getNerImpl() != null && !context.getNerImpl().equals(NerImpl.DO_NOT_ANALYZE)) {
             Element nerElement = doc.createElement(CONTEXT_NER_TAG);
             nerElement.setAttribute(CONTEXT_NER_IMPL_ATTR, "" + context.getNerImpl());
@@ -1780,11 +1793,11 @@ public class XMLService {
         Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
         if (generativePromptMessagesEl != null) {
             List<PromptMessage> promptMessages = new ArrayList<>();
-            NodeList pmsgs = generativePromptMessagesEl.getElementsByTagName("msg");
+            NodeList pmsgs = generativePromptMessagesEl.getElementsByTagName(CONTEXT_GEN_AI_PROMPT_MESSAGE_TAG);
             if (pmsgs !=  null && pmsgs.getLength() > 0) {
                 for (int i = 0; i < pmsgs.getLength(); i++) {
                     Element pmsg = ((Element)pmsgs.item(i));
-                    promptMessages.add(new PromptMessage(PromptMessageRole.fromString(pmsg.getAttribute("role")), pmsg.getFirstChild().getTextContent()));
+                    promptMessages.add(new PromptMessage(PromptMessageRole.fromString(pmsg.getAttribute(CONTEXT_GEN_AI_PROMPT_MESSAGE_ROLE_ATTR)), pmsg.getFirstChild().getTextContent()));
                 }
             }
             domain.setPromptMessages(promptMessages);
