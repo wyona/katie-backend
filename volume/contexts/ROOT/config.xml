@@ -6,7 +6,7 @@
 
   <index-search-pipeline score-threshold="0.09" analyze-messages-ask-rest-api="false" completion-impl="UNSET" consider-human-feedback="false" generate-complete-answers="false" re-rank-answers="false" re-rank-impl="SBERT" search-enabled="true"/>
 
-<!--
+<!-- See for example https://www.pinecone.io/blog/rag-study/
   <generative-prompt-messages>
     <msg role="user">Use the following pieces of context to answer the user question. This context retrieved from a knowledge base and you should use only the facts from the context to answer.Your answer must be based on the context. If the context not contain the answer, just say that 'I don't know', don't try to make up an answer, use the context. Don't address the context directly, but use it to answer the user question like it's your own knowledge.
 Answer in short, use up to 10 words. Context: {{CONTEXT}}</msg>
