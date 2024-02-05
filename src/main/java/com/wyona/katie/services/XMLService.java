@@ -65,6 +65,9 @@ public class XMLService {
     @Value("${re_rank.implementation}")
     private ReRankImpl reRankDefaultImpl;
 
+    @Value("${re_rank.llm.impl}")
+    private CompletionImpl reRankLLMDefaultImpl;
+
     // TODO: Make configurable
     private CompletionImpl completionDefaultImpl = CompletionImpl.UNSET;
 
@@ -1771,6 +1774,7 @@ public class XMLService {
         Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled, reindexBackgroundProcessId);
         domain.setInformUserReNoAnswerAvailable(informUserReNoAnswerAvailable);
         domain.setReRankImpl(reRankImpl);
+        domain.setReRankLLMImpl(reRankLLMDefaultImpl); // TODO: Make configurable
 
         domain.setCompletionImpl(generateImpl);
         Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);

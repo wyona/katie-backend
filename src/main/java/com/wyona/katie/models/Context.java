@@ -34,6 +34,7 @@ public class Context {
 
     private boolean analyzeMessagesAskRestApi = false;
     private ReRankImpl reRankImpl;
+    private CompletionImpl reRankLLMImpl;
     private CompletionImpl generateImpl;
     private List<PromptMessage> promptMessages;
 
@@ -117,6 +118,7 @@ public class Context {
         this.useGenerativeAI = useGenerativeAI;
 
         this.reRankImpl = null;
+        this.reRankLLMImpl = null;
         this.generateImpl = null;
         this.promptMessages = new ArrayList<>();
 
@@ -853,6 +855,20 @@ public class Context {
      */
     public void setReRankImpl(ReRankImpl reRankImpl) {
         this.reRankImpl = reRankImpl;
+    }
+
+    /**
+     *
+     */
+    public void setReRankLLMImpl(CompletionImpl impl) {
+        this.reRankLLMImpl = impl;
+    }
+
+    /**
+     *
+     */
+    public CompletionImpl getReRankLLMImpl() {
+        return this.reRankLLMImpl;
     }
 
     /**
