@@ -468,6 +468,10 @@ public class QuestionAnsweringService {
                 if (false) { // TODO: Make configurable
                     newAnswer.append("<p>Prompt: " + promptMessages.get(0).getContent() + "</p>");
                 }
+                if (hits.size() == 0) {
+                    // TODO: Make the sentence below optional and configurable
+                    newAnswer.append("<p>NOTE: The search query (retrieval component) did not return any results, so the answer is based only on the knowledge of the LLM</p>");
+                }
 
                 if (topAnswer != null) {
                     hits.get(0).getAnswer().setAnswer(newAnswer.toString());
