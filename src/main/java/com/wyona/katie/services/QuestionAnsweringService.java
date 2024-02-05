@@ -418,6 +418,7 @@ public class QuestionAnsweringService {
 
     /**
      * Use Generative AI to generate / complete answer based on retrieved hits
+     * @param hits Retrieval results
      */
     private List<Hit> generateAnswer(Sentence question, Context domain, List<Hit> hits) {
         GenerateProvider generateProvider = null;
@@ -440,9 +441,18 @@ public class QuestionAnsweringService {
         }
 
         try {
-            if (hits.size() > 0) {
-                Answer qna = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
-                List<PromptMessage> promptMessages = getPromptMessages(domain, question, qna.getAnswer(), qna.getUrl());
+            if (hits.size() >= 0) { // TODO: When there are no retrieval results, then use different prompt, resp. make usage of LLM optional
+                Answer topAnswer = null;
+                String context = null;
+                String url = null;
+                if (hits.size() > 0) {
+                    topAnswer = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
+                    context = topAnswer.getAnswer();
+                    url = topAnswer.getUrl();
+                } else {
+                    log.warn("No retrieval results / hits available, therefore get knowledge from LLM '" + domain.getCompletionImpl() + "' itself ...");
+                }
+                List<PromptMessage> promptMessages = getPromptMessages(domain, question, context, url);
 
                 // TODO: Domain specific API token, similar to domain.getEmbeddingsApiToken();
                 String apiToken = contextService.getApiToken(domain.getCompletionImpl());
@@ -459,13 +469,17 @@ public class QuestionAnsweringService {
                     newAnswer.append("<p>Prompt: " + promptMessages.get(0).getContent() + "</p>");
                 }
 
-                hits.get(0).getAnswer().setAnswer(newAnswer.toString());
-
-                if (qna!= null && qna.getUrl() != null) {
-                    hits.get(0).getAnswer().setUrl(qna.getUrl());
+                if (topAnswer != null) {
+                    hits.get(0).getAnswer().setAnswer(newAnswer.toString());
+                    if (url != null) {
+                        hits.get(0).getAnswer().setUrl(url);
+                    }
+                } else {
+                    Answer llmAnswer = new Answer(question.getSentence(), newAnswer.toString(), null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
+                    hits.add(new Hit(llmAnswer, 0));
                 }
             } else {
-                log.info("No hits available.");
+                log.info("No hits available, therefore do not ask LLM '" + domain.getCompletionImpl() + "' to generate answer.");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
