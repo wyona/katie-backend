@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.CompletionImpl;
 import com.wyona.katie.models.PromptMessage;
+import com.wyona.katie.models.PromptMessageRole;
 import com.wyona.katie.services.Utils;
 import com.wyona.katie.models.CompletionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class LLMReRank implements ReRankProvider {
 
         int item_number_none_of_the_answers = answers.length + 1;
         List<PromptMessage> promptMessages = new ArrayList<>();
-        promptMessages.add(new PromptMessage("user", getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
         try {
             String completedText = null;

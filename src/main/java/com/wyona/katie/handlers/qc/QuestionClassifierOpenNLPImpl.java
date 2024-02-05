@@ -124,7 +124,7 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
 
         List<PromptMessage> promptMessages = new ArrayList<>();
         String prompt = "Please split the following email into Salutation, Body and Signature and provide the response as JSON: \"" + message + "\"";
-        promptMessages.add(new PromptMessage("user", prompt));
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, prompt));
         try {
             Double temperature = null;
             String completedText = null;

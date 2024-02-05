@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO: Consider renaming it to Domain
@@ -34,7 +35,7 @@ public class Context {
     private boolean analyzeMessagesAskRestApi = false;
     private ReRankImpl reRankImpl;
     private CompletionImpl generateImpl;
-    private String generatePrompt;
+    private List<PromptMessage> promptMessages;
 
     private NerImpl nerImpl;
 
@@ -117,7 +118,7 @@ public class Context {
 
         this.reRankImpl = null;
         this.generateImpl = null;
-        this.generatePrompt = null;
+        this.promptMessages = new ArrayList<>();
 
         this.informUserReNoAnswerAvailable = false;
 
@@ -871,15 +872,15 @@ public class Context {
     /**
      * @return prompt, e.g. "Please answer the following '{{QUESTION}}' based on the following context '{{CONTEXT}}'."
      */
-    public String getCompletionPrompt() {
-        return generatePrompt;
+    public List<PromptMessage> getPromptMessages() {
+        return promptMessages;
     }
 
     /**
      *
      */
-    public void setCompletionPrompt(String prompt) {
-        this.generatePrompt = prompt;
+    public void setPromptMessages(List<PromptMessage> promptMessages) {
+        this.promptMessages = promptMessages;
     }
 
     /**

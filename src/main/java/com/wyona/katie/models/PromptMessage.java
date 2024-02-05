@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PromptMessage {
 
-    private String role;
+    private PromptMessageRole role;
     private String content;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
@@ -22,7 +22,7 @@ public class PromptMessage {
     /**
      *
      */
-    public PromptMessage(String role, String content) {
+    public PromptMessage(PromptMessageRole role, String content) {
         this.role = role;
         this.content = content;
     }
@@ -30,14 +30,14 @@ public class PromptMessage {
     /**
      * @param role Role, e.g. "system", "user", "assistant"
      */
-    public void setRole(String role) {
+    public void setRole(PromptMessageRole role) {
         this.role = role;
     }
 
     /**
      *
      */
-    public String getRole() {
+    public PromptMessageRole getRole() {
         return role;
     }
 

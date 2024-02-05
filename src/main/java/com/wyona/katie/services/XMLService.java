@@ -1775,8 +1775,15 @@ public class XMLService {
         domain.setCompletionImpl(generateImpl);
         Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
         if (generativePromptMessagesEl != null) {
-            // TODO: Get and set multiple prompt messages
-            domain.setCompletionPrompt("TODO");
+            List<PromptMessage> promptMessages = new ArrayList<>();
+            NodeList pmsgs = generativePromptMessagesEl.getElementsByTagName("msg");
+            if (pmsgs !=  null && pmsgs.getLength() > 0) {
+                for (int i = 0; i < pmsgs.getLength(); i++) {
+                    Element pmsg = ((Element)pmsgs.item(i));
+                    promptMessages.add(new PromptMessage(PromptMessageRole.fromString(pmsg.getAttribute("role")), pmsg.getFirstChild().getTextContent()));
+                }
+            }
+            domain.setPromptMessages(promptMessages);
         }
 
         domain.setScoreThreshold(scoreThreshold);

@@ -442,8 +442,7 @@ public class QuestionAnsweringService {
         try {
             if (hits.size() > 0) {
                 Answer qna = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
-                List<PromptMessage> promptMessages = new ArrayList<>();
-                promptMessages.add(new PromptMessage("user", getPrompt(domain, question, qna.getAnswer(), qna.getUrl())));
+                List<PromptMessage> promptMessages = getPromptMessages(domain, question, qna.getAnswer(), qna.getUrl());
 
                 // TODO: Domain specific API token, similar to domain.getEmbeddingsApiToken();
                 String apiToken = contextService.getApiToken(domain.getCompletionImpl());
@@ -477,24 +476,27 @@ public class QuestionAnsweringService {
     /**
      *
      */
-    private String getPrompt(Context domain, Sentence question, String context, String url) throws Exception {
-        String prompt = domain.getCompletionPrompt();
-        if (prompt == null) {
+    private List<PromptMessage> getPromptMessages(Context domain, Sentence question, String context, String url) throws Exception {
+        List<PromptMessage> promptMessages = domain.getPromptMessages();
+        if (promptMessages.size() == 0) {
             if (url != null) {
-                prompt = defaultPrompt; // TODO: Prompt containing URL variable
+                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPrompt)); // TODO: Prompt containing URL variable
             } else {
-                prompt = defaultPrompt; // INFO: No retrieval results available
+                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPrompt)); // INFO: No retrieval results available
             }
         }
 
-        prompt = prompt.replaceAll("\\{\\{QUESTION\\}\\}", question.getSentence());
-        if (context != null) {
-            prompt = prompt.replaceAll("\\{\\{CONTEXT\\}\\}", context);
+        for (PromptMessage msg : promptMessages) {
+            msg.setContent(msg.getContent().replaceAll("\\{\\{QUESTION\\}\\}", question.getSentence()));
+            if (context != null) {
+                msg.setContent(msg.getContent().replaceAll("\\{\\{CONTEXT\\}\\}", context));
+            }
+            if (url != null) {
+                msg.setContent(msg.getContent().replaceAll("\\{\\{URL\\}\\}", url));
+            }
         }
-        if (url != null) {
-            prompt = prompt.replaceAll("\\{\\{URL\\}\\}", url);
-        }
-        return prompt;
+
+        return promptMessages;
     }
 
     /**

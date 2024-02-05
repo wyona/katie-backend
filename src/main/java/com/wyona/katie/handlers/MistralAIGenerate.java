@@ -50,7 +50,7 @@ public class MistralAIGenerate implements GenerateProvider {
 
             for (PromptMessage msg : promptMessages) {
                 ObjectNode messageNode = mapper.createObjectNode();
-                messageNode.put("role", msg.getRole());
+                messageNode.put("role", msg.getRole().toString());
                 messageNode.put("content", msg.getContent());
                 messages.add(messageNode);
             }
