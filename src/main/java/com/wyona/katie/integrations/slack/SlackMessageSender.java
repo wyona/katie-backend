@@ -327,7 +327,13 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else if (actionId.equals(ChannelAction.REQUEST_INVITATION)) {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Send", BLOCK_ID_BETTER_ANSWER, "Bessere Antwort", "Was waere eine bessere Antwort?", "Please make sure ...", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            Locale locale = new Locale("en");
+            String title = messageSource.getMessage("provide.better.answer", null, locale);
+            String inputLabel = messageSource.getMessage("better.answer", null, locale);
+            String placeholder = messageSource.getMessage("what.would.be.helpful.answer", null, locale);
+            String askedQuestion = interaction.getActions().get(0).getValue();
+            String inputHint = "Asked question: " + askedQuestion; // TODO
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), title, "Send", BLOCK_ID_BETTER_ANSWER, inputLabel, placeholder, inputHint, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
@@ -594,7 +600,7 @@ public class SlackMessageSender extends CommonMessageSender  {
 
         modal.append(",{");
         modal.append("\"block_id\": \"" + BLOCK_ID_CHANNEL_ID + "\",");
-        //modal.append("\"type\": \"input\","); // TODO: According to Slack support one has to set input instead section, but does not seem to work
+        //modal.append("\"type\": \"input\","); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
         modal.append("\"type\": \"section\",");
         modal.append("\"text\": {");
         modal.append("\"type\": \"plain_text\",");
