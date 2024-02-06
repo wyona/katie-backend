@@ -303,6 +303,9 @@ public class SlackMessageSender extends CommonMessageSender  {
             answer = new SlackAnswer(addQnAAction(interaction), FORMAT_MARKDOWN);
         } else if (actionId.equals(ChannelAction.REQUEST_INVITATION)) {
             answer = requestInvitation(interaction);
+        } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Connect", BLOCK_ID_EMAIL, "Besserte Antwort", "Was waere eine bessere Antwort?", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
             String[] parts = interaction.getActions().get(0).getValue().split(ACTION_CREATE_DOMAIN_SEPARATOR);
@@ -510,6 +513,7 @@ public class SlackMessageSender extends CommonMessageSender  {
 
     /**
      * https://api.slack.com/surfaces/modals
+     * @param title Title of Modal
      */
     private String getSlackModal(String callbackId, String title, String submitLabel, String blockId, String inputLabel, String placeholder, String hint, String channelId) {
         StringBuilder modal = new StringBuilder();
@@ -1270,6 +1274,10 @@ public class SlackMessageSender extends CommonMessageSender  {
             SlackActionElement elementSendToExpert = new SlackActionElement(messageSource.getMessage("send.question.to.expert", null, Locale.ENGLISH), Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.SEND_QUESTION_TO_EXPERT);
             sAnswer.addElement(elementSendToExpert);
             getActionElement(mapper, elementsNode, elementSendToExpert);
+
+            SlackActionElement elementProvideBetterAnswer = new SlackActionElement(messageSource.getMessage("provide.better.answer", null, Locale.ENGLISH), Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.ENTER_BETTER_ANSWER);
+            sAnswer.addElement(elementProvideBetterAnswer);
+            getActionElement(mapper, elementsNode, elementProvideBetterAnswer);
         }
 
         if (answerAvailable) {
