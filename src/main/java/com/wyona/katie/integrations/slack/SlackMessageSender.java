@@ -66,11 +66,6 @@ public class SlackMessageSender extends CommonMessageSender  {
     private static final String CHANNEL_VIEW_CONNECT_DOMAIN = "connect_domain";
     private static final String CHANNEL_VIEW_CREATE_DOMAIN = "create_domain";
 
-    private static final String BLOCK_ID_CHANNEL_ID = "channel_id";
-    private static final String BLOCK_ID_DOMAIN_ID = "domain_id";
-    private static final String BLOCK_ID_EMAIL = "email"; // See view.getState().getValues().getEmail()
-    private static final String BLOCK_ID_BETTER_ANSWER = "email"; // See view.getState().getValues().getBetteranswer()
-
     private static final String USERNAME_KATIE = "Katie";
 
     @Value("${slack.number.of.questions.limit}")
@@ -260,8 +255,8 @@ public class SlackMessageSender extends CommonMessageSender  {
                 String questionUuid = "TODO";
 
                 // TODO: Replace getEmail() by getBetterAnswer()
-                SlackNodeEmail emailNode = view.getState().getValues().getEmail(); // BLOCK_ID_BETTER_ANSWER
-                String betterAnswer = emailNode.getSingle_line_input().getValue();
+                SlackNodeBetteranswer betterAnswerNode = view.getState().getValues().getBetteranswwer();
+                String betterAnswer = betterAnswerNode.getSingle_line_input().getValue();
 
                 saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer);
 
@@ -272,7 +267,7 @@ public class SlackMessageSender extends CommonMessageSender  {
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
-                SlackNodeEmail emailNode = view.getState().getValues().getEmail(); // BLOCK_ID_EMAIL
+                SlackNodeEmail emailNode = view.getState().getValues().getEmail();
                 String email = emailNode.getSingle_line_input().getValue();
                 SlackAnswer answer = createDomainAction(teamId, channelId, interaction.getUser().getId(), email);
                 slackClientService.send(embedAnswerIntoJSON(answer, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
@@ -333,7 +328,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             String placeholder = messageSource.getMessage("what.would.be.helpful.answer", null, locale);
             String askedQuestion = interaction.getActions().get(0).getValue();
             String inputHint = "Asked question: " + askedQuestion; // TODO
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), title, "Send", BLOCK_ID_BETTER_ANSWER, inputLabel, placeholder, inputHint, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), title, "Send", SlackViewStateValues.BLOCK_ID_BETTER_ANSWER, inputLabel, placeholder, inputHint, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
@@ -343,7 +338,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             String _inviterUserId = parts[2];
             answer = createDomainAction(_teamId, _channelId, _inviterUserId, "TODO:email");
              */
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CREATE_DOMAIN, "Create Domain", "Connect", BLOCK_ID_EMAIL, "Your email address", "Valid email address, e.g. katie@wyona.com", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CREATE_DOMAIN, "Create Domain", "Connect", SlackViewStateValues.BLOCK_ID_EMAIL, "Your email address", "Valid email address, e.g. katie@wyona.com", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CONNECT_DOMAIN)) {
             log.info("Channel Id: " + channelId);
@@ -351,7 +346,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             if (mapping != null) {
                 answer = new SlackAnswer("Team / channel '" + teamId + " / " + channelId + "' already connected with domain '" + mapping.getDomainId() + "', whereas connecting status is '" + mapping.getStatus() + "'.", FORMAT_MARKDOWN);
             } else {
-                slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CONNECT_DOMAIN, "Connect Domain", "Connect", BLOCK_ID_DOMAIN_ID, "Katie Domain Id", "Domain Id, e.g. f319131a-837a-42a6-8108-3b7z0bc1b8e4", "Copy domain Id from settings of your existing Katie domain.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+                slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CONNECT_DOMAIN, "Connect Domain", "Connect", SlackViewStateValues.BLOCK_ID_DOMAIN_ID, "Katie Domain Id", "Domain Id, e.g. f319131a-837a-42a6-8108-3b7z0bc1b8e4", "Copy domain Id from settings of your existing Katie domain.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
                 return;
             }
         } else {
@@ -599,7 +594,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         modal.append("}"); // END
 
         modal.append(",{");
-        modal.append("\"block_id\": \"" + BLOCK_ID_CHANNEL_ID + "\",");
+        modal.append("\"block_id\": \"" + SlackViewStateValues.BLOCK_ID_CHANNEL_ID + "\",");
         //modal.append("\"type\": \"input\","); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
         modal.append("\"type\": \"section\",");
         modal.append("\"text\": {");
