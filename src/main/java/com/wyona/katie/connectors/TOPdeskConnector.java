@@ -88,10 +88,57 @@ public class TOPdeskConnector implements Connector {
      * @see Connector#update(Context, KnowledgeSourceMeta, WebhookPayload, String)
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
-        log.info("TODO: Implement");
+        WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
+        String incidentId = pl.getIncidentId();
+
+        log.info("Update incident '" + incidentId + "' ...");
+
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/I-240131-0203";
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/I-240205-0956/progresstrail";
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+        log.info("Request URL: " + requestUrl);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = getHttpHeaders(ksMeta);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        try {
+            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.info("JSON response: " + bodyNode);
+
+            /*
+            JsonNode dataNode = bodyNode.get("data");
+            JsonNode getNode = dataNode.get("Get");
+            JsonNode articlesNode = getNode.get("Articles");
+            if (articlesNode.isArray()) {
+                for (int i = 0; i < articlesNode.size(); i++) {
+                    JsonNode resultNode = articlesNode.get(i);
+                    String _answer = resultNode.get("title").asText() + " --- " + resultNode.get("text").asText();
+                    String url = resultNode.get("url").asText();
+                    JsonNode additionalNode = resultNode.get("_additional");
+                    double score = additionalNode.get("distance").asDouble();
+                    Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                    Hit hit = new Hit(answer, score);
+                    hits.add(hit);
+                }
+            }
+            */
+        } catch(HttpClientErrorException e) {
+            log.error(e.getMessage(), e);
+            if (e.getRawStatusCode() == 403) {
+            }
+            // INFO: Do not return null
+        } catch(HttpServerErrorException e) {
+            log.error(e.getMessage(), e);
+            if (e.getRawStatusCode() == 500) {
+            }
+            // INFO: Do not return null
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            // INFO: Do not return null
+        }
+
         return null;
     }
 
@@ -110,9 +157,6 @@ public class TOPdeskConnector implements Connector {
     private HttpHeaders getHttpHeaders(KnowledgeSourceMeta ksMeta) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
-
-        // INFO: https://developers.topdesk.com/tutorial.html see "Create an application password"
-        //headers.set("Authorization", "Bearer TOKEN");
 
         headers.setBasicAuth(ksMeta.getTopDeskUsername(), ksMeta.getTopDeskAPIPassword());
 

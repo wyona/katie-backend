@@ -715,6 +715,33 @@ public class DomainController {
     }
 
     /**
+     * Trigger a particular TOPdesk based knowledge source by a webhook
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Trigger a particular TOPdesk based knowledge source by a webhook")
+    public ResponseEntity<?> triggerKnowledgeSourceTOPdesk(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @PathVariable(value = "ks-id", required = true) String ksId,
+            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by TOPdesk", required = true)
+            @RequestBody WebhookPayloadTOPdesk payload,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        // TODO: Check security token
+
+        String processId = UUID.randomUUID().toString();
+        String userId = authenticationService.getUserId();
+        connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.TOP_DESK, id, ksId, payload, processId, userId);
+
+        return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+    }
+
+    /**
      * Trigger a particular Discourse based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
