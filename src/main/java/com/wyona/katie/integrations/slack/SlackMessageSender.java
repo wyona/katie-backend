@@ -24,7 +24,6 @@ import com.wyona.katie.integrations.slack.services.DomainService;
 import org.springframework.scheduling.annotation.Async;
 
 import java.io.StringWriter;
-import java.net.URLEncoder;
 import java.util.*;
 
 import freemarker.template.Template;
@@ -1627,8 +1626,9 @@ public class SlackMessageSender extends CommonMessageSender  {
     private String getLink(String url, String text) {
         try {
             url = url.replaceAll(" ", "+");
-            log.info("Spaces replaced: " + url);
-            log.info("Encoded URL: " + URLEncoder.encode(url, "UTF-8"));
+            log.debug("Spaces replaced: " + url);
+            // INFO: URLEncoder.encode(url, "UTF-8") would also replace ":" by %3A and "/" by %2F etc.
+            //log.info("Encoded URL: " + URLEncoder.encode(url, "UTF-8"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
