@@ -6,6 +6,10 @@
       <body content-type="application/json">{"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}</body>
     </third-party-rag>
   </ks>
+  <ks connector="TOP_DESK" enabled="false" id="432d418c-6672-4422-b8b9-abb5fe3ceb94">
+    <name>TOPdesk Test</name>
+    <topdesk base-url="https://DOMAIN" username="REPLACE" password="REPLACE"/>
+  </ks>
   <ks connector="OUTLOOK" enabled="false" id="z2n3938d-v512-4b04-8d69-5aad58fcaf46">
     <name>KatieTest Outlook</name>
     <microsoft-graph client-id="046d7c6c-REPLACE" client-secret="REPLACE" location="users/MichaelWechner@Wyona.onmicrosoft.com" scope="Mail.Read" tenant="c5dce9b8-8095-444d-9730-5ccb69b43413"/>
