@@ -620,13 +620,13 @@ public class SlackMessageSender extends CommonMessageSender  {
         accessoryNode.put("action_id", "select_id");
         accessoryNode.put("type", "channels_select");
         accessoryNode.put("response_url_enabled", true); // https://api.slack.com/surfaces/modals/using#modal_response_url
+        accessoryNode.put("initial_channel", channelId);
         ObjectNode dropdownPlaceholderNode = mapper.createObjectNode();
         dropdownBlockNode.put("placeholder", dropdownPlaceholderNode);
         dropdownPlaceholderNode.put("type", "plain_text");
         dropdownPlaceholderNode.put("text", "Select a channel");
 
         return rootNode.toString();
-
         /*
         StringBuilder modal = new StringBuilder();
 
