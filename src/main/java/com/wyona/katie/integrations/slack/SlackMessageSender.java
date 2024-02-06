@@ -628,8 +628,9 @@ public class SlackMessageSender extends CommonMessageSender  {
         dropdownPlaceholderNode.put("type", "plain_text");
         dropdownPlaceholderNode.put("text", "Select a channel");
 
-        return rootNode.toString();
-        /*
+        log.info("ObjectMapper: " + rootNode.toString());
+        //return rootNode.toString();
+
         StringBuilder modal = new StringBuilder();
 
         modal.append("{");
@@ -717,8 +718,9 @@ public class SlackMessageSender extends CommonMessageSender  {
         modal.append("]");
         modal.append("}");
 
+        log.info("StringBuilder: " + modal.toString());
+
         return modal.toString();
-        */
     }
 
     /**
