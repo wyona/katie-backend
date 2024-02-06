@@ -24,6 +24,7 @@ import com.wyona.katie.integrations.slack.services.DomainService;
 import org.springframework.scheduling.annotation.Async;
 
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.*;
 
 import freemarker.template.Template;
@@ -1621,9 +1622,16 @@ public class SlackMessageSender extends CommonMessageSender  {
     }
 
     /**
-     * Get link in markdown format
+     * Get link in mrkdwn format (https://api.slack.com/reference/surfaces/formatting#linking-urls)
      */
     private String getLink(String url, String text) {
+        try {
+            url = url.replaceAll(" ", "+");
+            log.info("Spaces replaced: " + url);
+            log.info("Encoded URL: " + URLEncoder.encode(url, "UTF-8"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
         //return "[" + text + "](" + url + ")"; // INFO: MS Teams is using this markdown format, which does not work with Slack
         return "<" + url + "|" + text + ">";
     }
@@ -1651,7 +1659,7 @@ public class SlackMessageSender extends CommonMessageSender  {
     }
 
     /**
-     *
+     * Get link to a particular Katie domain
      */
     private String getKatieDomainLink(String linkText, Context domain, String jwtToken) {
         if (jwtToken != null) {
