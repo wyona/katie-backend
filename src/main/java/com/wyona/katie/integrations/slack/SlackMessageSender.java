@@ -581,6 +581,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ArrayNode blocksNode = mapper.createArrayNode();
         rootNode.put("blocks", blocksNode);
 
+        // INFO: Input block
         ObjectNode inputBlockNode = mapper.createObjectNode();
         blocksNode.add(inputBlockNode);
         inputBlockNode.put("type", "input");
@@ -606,11 +607,12 @@ public class SlackMessageSender extends CommonMessageSender  {
         hintNode.put("type", FORMAT_PLAIN_TEXT);
         hintNode.put("text", hint);
 
+        // INFO: Dropdown block
         ObjectNode dropdownBlockNode = mapper.createObjectNode();
         blocksNode.add(dropdownBlockNode);
-        inputBlockNode.put("type", "section");
-        //inputBlockNode.put("type", "input"); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
-        inputBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_CHANNEL_ID);
+        dropdownBlockNode.put("type", "section");
+        //dropdownBlockNode.put("type", "input"); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
+        dropdownBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_CHANNEL_ID);
         ObjectNode textNode = mapper.createObjectNode();
         dropdownBlockNode.put("text", textNode);
         textNode.put("type", "plain_text");
