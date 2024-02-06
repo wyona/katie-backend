@@ -257,8 +257,14 @@ public class SlackMessageSender extends CommonMessageSender  {
                 // TODO: Replace getEmail() by getBetterAnswer()
                 SlackNodeBetteranswer betterAnswerNode = view.getState().getValues().getBetteranswwer();
                 String betterAnswer = betterAnswerNode.getSingle_line_input().getValue();
+                String relevantUrl = "https://todo.todo";
 
-                saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer);
+                try {
+                    saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer, relevantUrl);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    // TODO: Return exception message back to Slack
+                }
 
                 String[] args = new String[1];
                 args[0] = "TODO"; //askedQuestion.getQuestion();
@@ -280,12 +286,25 @@ public class SlackMessageSender extends CommonMessageSender  {
     }
 
     /**
-     *
+     * @param answer Better answer
      */
-    private void saveBetterAnswer(String questionUUID, String teamId, String channelId, String answer) {
-        // TODO
+    private void saveBetterAnswer(String questionUUID, String teamId, String channelId, String answer, String relevantUrl) throws Exception {
         log.info("TODO: Save better answer: " + answer);
-        //contextService.notifyExpertsToApproveProvidedAnswer(newQnA, domain, askedQuestion);
+        Context domain = domainService.getDomain(teamId, channelId);
+        String askedQuestion = "TODO"; // TODO: Use questionUUID
+
+        ContentType contentType = null;
+        List<String> classifications  = new ArrayList<String>();
+        Date dateAnswered = new Date();
+        Date dateAnswerModified = dateAnswered;
+        Date dateOriginalQuestionSubmitted = dateAnswered;
+        boolean isPublic = false;
+        User user = authService.getUser(false, false);
+        Answer newQnA = new Answer(null, answer, contentType, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
+        contextService.addQuestionAnswer(newQnA, domain);
+        contextService.train(new QnA(newQnA), domain, true);
+
+        contextService.notifyExpertsToApproveProvidedAnswer(newQnA.getUuid(), domain, askedQuestion);
     }
 
     /**

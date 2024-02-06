@@ -675,7 +675,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 Answer newQnA = new Answer(null, betterAnswer, contentType, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
                 contextService.addQuestionAnswer(newQnA, domain);
                 contextService.train(new QnA(newQnA), domain, true);
-                contextService.notifyExpertsToApproveProvidedAnswer(newQnA, domain, askedQuestion);
+                contextService.notifyExpertsToApproveProvidedAnswer(newQnA.getUuid(), domain, askedQuestion.getQuestion());
             } catch (Exception e) {
                 responseMsg.setText("Exception: " + e.getMessage());
                 log.error(e.getMessage(), e);

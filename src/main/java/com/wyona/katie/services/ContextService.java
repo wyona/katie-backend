@@ -248,11 +248,11 @@ public class ContextService {
 
     /**
      * Notify experts to approve better answer
-     * @param qna QnA with better answer
+     * @param qnaUUID UUID of QnA with better answer
      * @param domain Domain associated with
      * @param askedQuestion Asked question which received wrong answer
      */
-    public void notifyExpertsToApproveProvidedAnswer(Answer qna, Context domain, AskedQuestion askedQuestion) {
+    public void notifyExpertsToApproveProvidedAnswer(String qnaUUID, Context domain, String askedQuestion) {
         try {
             String[] emailsTo = getMailNotificationAddresses(domain.getId());
             if (emailsTo.length == 0) {
@@ -261,7 +261,7 @@ public class ContextService {
             for (int i = 0; i < emailsTo.length; i++) {
                 // TODO: Get language of Backend Team Member and send notification accordingly
                 String backendTeamMemberLanguage = "en";
-                String body = getApproveBetterAnswerNotificationBody(domain, qna.getUuid(), askedQuestion.getQuestion(), backendTeamMemberLanguage);
+                String body = getApproveBetterAnswerNotificationBody(domain, qnaUUID, askedQuestion, backendTeamMemberLanguage);
                 mailerService.send(emailsTo[i], domain.getMailSenderEmail(), "[" + domain.getMailSubjectTag() + "] Please approve better answer ...", body, true);
             }
         } catch(Exception e) {
@@ -2694,7 +2694,7 @@ public class ContextService {
     /**
      * Generate email text to approve better answer
      * @param domain
-     * @param uuid
+     * @param uuid UUID of new QnA
      * @param askedQuestion
      * @param userLanguage
      * @return
