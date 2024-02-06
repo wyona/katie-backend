@@ -1250,12 +1250,6 @@ public class SlackMessageSender extends CommonMessageSender  {
             sAnswer.addElement(elementImproveOrCorrectAnswer);
         }
 
-        SlackActionElement elementAnswerQuestion = null;
-        if (domain.getSlackConfiguration().getButtonAnswerQuestionEnabled()) {
-            elementAnswerQuestion = new SlackActionElement("Answer question ...", Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.ANSWER_QUESTION);
-            sAnswer.addElement(elementAnswerQuestion);
-        }
-
         //getBlocks(sAnswer);
 
         // INFO: Start Blocks
@@ -1311,6 +1305,8 @@ public class SlackMessageSender extends CommonMessageSender  {
                 // TODO
             }
             if (domain.getSlackConfiguration().getButtonAnswerQuestionEnabled()) {
+                SlackActionElement elementAnswerQuestion = new SlackActionElement("Answer question ...", Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.ANSWER_QUESTION);
+                sAnswer.addElement(elementAnswerQuestion);
                 getActionElement(mapper, elementsNode, elementAnswerQuestion);
             }
         }
