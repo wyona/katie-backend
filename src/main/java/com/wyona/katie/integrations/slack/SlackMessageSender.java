@@ -68,7 +68,7 @@ public class SlackMessageSender extends CommonMessageSender  {
 
     private static final String BLOCK_ID_CHANNEL_ID = "channel_id";
     private static final String BLOCK_ID_DOMAIN_ID = "domain_id";
-    private static final String BLOCK_ID_EMAIL = "email";
+    private static final String BLOCK_ID_EMAIL = "email"; // See view.getState().getValues().getEmail()
 
     private static final String USERNAME_KATIE = "Katie";
 
@@ -255,6 +255,13 @@ public class SlackMessageSender extends CommonMessageSender  {
             if (view.getCallback_id().equals(CHANNEL_VIEW_CONNECT_DOMAIN)) {
                 connectTeamChannelWithDomain(teamId, slackUserId, interaction);
                 // TODO: Move sending of message here
+            } else if (view.getCallback_id().equals(ChannelAction.SEND_BETTER_ANSWER.toString())) {
+                String[] args = new String[1];
+                args[0] = "TODO"; //askedQuestion.getQuestion();
+                String _answer = messageSource.getMessage("thanks.for.better.answer", args, new Locale("en"));
+                SlackAnswer answer = new SlackAnswer(_answer, FORMAT_MARKDOWN);
+                log.info("Answer: " + _answer);
+                slackClientService.send(embedAnswerIntoJSON(answer, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
                 SlackNodeEmail emailNode = view.getState().getValues().getEmail(); // BLOCK_ID_EMAIL
@@ -304,7 +311,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else if (actionId.equals(ChannelAction.REQUEST_INVITATION)) {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Connect", BLOCK_ID_EMAIL, "Besserte Antwort", "Was waere eine bessere Antwort?", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Send", "betteranswer", "Bessere Antwort", "Was waere eine bessere Antwort?", "Please make sure ...", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
@@ -513,7 +520,11 @@ public class SlackMessageSender extends CommonMessageSender  {
 
     /**
      * https://api.slack.com/surfaces/modals
-     * @param title Title of Modal
+     * @param title Title of Modal, e.g. "Provide better answer"
+     * @param submitLabel Label of submit button, e.g. "Submit better answer"
+     * @param inputLabel Label of input field, e.g. "Bessere Antwort"
+     * @param placeholder Placeholder of input field, e.g. "What would be a better answer?"
+     * @param hint Hint of input field, e.g. "Please make sure ..."
      */
     private String getSlackModal(String callbackId, String title, String submitLabel, String blockId, String inputLabel, String placeholder, String hint, String channelId) {
         StringBuilder modal = new StringBuilder();
