@@ -254,7 +254,6 @@ public class SlackMessageSender extends CommonMessageSender  {
             } else if (view.getCallback_id().equals(ChannelAction.SEND_BETTER_ANSWER.toString())) {
                 String questionUuid = "TODO";
 
-                // TODO: Replace getEmail() by getBetterAnswer()
                 SlackNodeBetteranswer betterAnswerNode = view.getState().getValues().getBetteranswwer();
                 String betterAnswer = betterAnswerNode.getSingle_line_input().getValue();
                 String relevantUrl = "https://todo.todo";
@@ -564,6 +563,71 @@ public class SlackMessageSender extends CommonMessageSender  {
      * @param hint Hint of input field, e.g. "Please make sure ..."
      */
     private String getSlackModal(String callbackId, String title, String submitLabel, String blockId, String inputLabel, String placeholder, String hint, String channelId) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("type", "modal");
+        rootNode.put("callback_id", callbackId);
+
+        ObjectNode titleNode = mapper.createObjectNode();
+        rootNode.put("title", titleNode);
+        titleNode.put("type", FORMAT_PLAIN_TEXT);
+        titleNode.put("text", title);
+
+        ObjectNode submitNode = mapper.createObjectNode();
+        rootNode.put("submit", submitNode);
+        submitNode.put("type", FORMAT_PLAIN_TEXT);
+        submitNode.put("text", submitLabel);
+
+        ArrayNode blocksNode = mapper.createArrayNode();
+        rootNode.put("blocks", blocksNode);
+
+        ObjectNode inputBlockNode = mapper.createObjectNode();
+        blocksNode.add(inputBlockNode);
+        inputBlockNode.put("type", "input");
+        inputBlockNode.put("block_id", blockId);
+
+        ObjectNode elementNode = mapper.createObjectNode();
+        inputBlockNode.put("element", elementNode);
+        elementNode.put("type", "plain_text_input");
+        elementNode.put("action_id", "single_line_input");
+        //elementNode.put("response_url_enabled", true);
+        ObjectNode placeholderNode = mapper.createObjectNode();
+        elementNode.put("placeholder", placeholderNode);
+        placeholderNode.put("type", FORMAT_PLAIN_TEXT);
+        placeholderNode.put("text", placeholder);
+
+        ObjectNode labelNode = mapper.createObjectNode();
+        inputBlockNode.put("label", labelNode);
+        labelNode.put("type", FORMAT_PLAIN_TEXT);
+        labelNode.put("text", inputLabel);
+
+        ObjectNode hintNode = mapper.createObjectNode();
+        inputBlockNode.put("hint", hintNode);
+        hintNode.put("type", FORMAT_PLAIN_TEXT);
+        hintNode.put("text", hint);
+
+        ObjectNode dropdownBlockNode = mapper.createObjectNode();
+        blocksNode.add(dropdownBlockNode);
+        inputBlockNode.put("type", "section");
+        //inputBlockNode.put("type", "input"); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
+        inputBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_CHANNEL_ID);
+        ObjectNode textNode = mapper.createObjectNode();
+        dropdownBlockNode.put("text", textNode);
+        textNode.put("type", "plain_text");
+        textNode.put("text", "Pick a channel from the dropdown list");
+        ObjectNode accessoryNode = mapper.createObjectNode();
+        dropdownBlockNode.put("accessory", accessoryNode);
+        accessoryNode.put("action_id", "select_id");
+        accessoryNode.put("type", "channels_select");
+        accessoryNode.put("response_url_enabled", true); // https://api.slack.com/surfaces/modals/using#modal_response_url
+        ObjectNode dropdownPlaceholderNode = mapper.createObjectNode();
+        dropdownBlockNode.put("placeholder", dropdownPlaceholderNode);
+        dropdownPlaceholderNode.put("type", "plain_text");
+        dropdownPlaceholderNode.put("text", "Select a channel");
+
+        return rootNode.toString();
+
+        /*
         StringBuilder modal = new StringBuilder();
 
         modal.append("{");
@@ -633,28 +697,26 @@ public class SlackMessageSender extends CommonMessageSender  {
         modal.append("}");
         modal.append("}");
 
-        /*
-        modal.append(",{");
-        modal.append("\"block_id\": \"my_block_id\",");
-        modal.append("\"type\": \"input\",");
-        modal.append("\"optional\": true,");
-        modal.append("\"label\": {");
-        modal.append("\"type\": \"plain_text\",");
-        modal.append("\"text\": \"Select a channel to post the result on\",");
-        modal.append("},");
-        modal.append("\"element\": {");
-        modal.append("\"action_id\": \"my_action_id\",");
-        modal.append("\"type\": \"conversations_select\",");
-        modal.append("\"response_url_enabled\": true,");
-        modal.append("}");
-        modal.append("}");
-
-         */
+        //modal.append(",{");
+        //modal.append("\"block_id\": \"my_block_id\",");
+        //modal.append("\"type\": \"input\",");
+        //modal.append("\"optional\": true,");
+        //modal.append("\"label\": {");
+        //modal.append("\"type\": \"plain_text\",");
+        //modal.append("\"text\": \"Select a channel to post the result on\",");
+        //modal.append("},");
+        //modal.append("\"element\": {");
+        //modal.append("\"action_id\": \"my_action_id\",");
+        //modal.append("\"type\": \"conversations_select\",");
+        //modal.append("\"response_url_enabled\": true,");
+        //modal.append("}");
+        //modal.append("}");
 
         modal.append("]");
         modal.append("}");
 
         return modal.toString();
+        */
     }
 
     /**
