@@ -1222,34 +1222,6 @@ public class SlackMessageSender extends CommonMessageSender  {
         // TODO: Use getBlocks(SlackAnswer)
         SlackAnswer sAnswer = new SlackAnswer(answer, FORMAT_MARKDOWN);
 
-        SlackActionElement elementThumbUp = null;
-        if (domain.getSlackConfiguration().getButtonSendToExpertEnabled() && topAnswer != null) { // TODO
-            String questionUuid = topAnswer.getQuestionUUID();
-            String correct = messageSource.getMessage("correct.answer", null, Locale.ENGLISH);
-            elementThumbUp = new SlackActionElement(Emoji.THUMB_UP + " " + correct, questionUuid, ChannelAction.THUMB_UP);
-            sAnswer.addElement(elementThumbUp);
-        }
-
-        SlackActionElement elementThumbDown = null;
-        if (domain.getSlackConfiguration().getButtonSendToExpertEnabled() && topAnswer != null) { // TODO
-            String questionUuid = topAnswer.getQuestionUUID();
-            String wrong = messageSource.getMessage("wrong.answer", null, Locale.ENGLISH);
-            elementThumbDown = new SlackActionElement(Emoji.THUMB_DOWN + " " + wrong, questionUuid, ChannelAction.THUMB_DOWN);
-            sAnswer.addElement(elementThumbDown);
-        }
-
-        SlackActionElement elementSendToExpert = null;
-        if (domain.getSlackConfiguration().getButtonSendToExpertEnabled()) {
-            elementSendToExpert = new SlackActionElement(messageSource.getMessage("send.question.to.expert", null, Locale.ENGLISH), Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.SEND_QUESTION_TO_EXPERT);
-            sAnswer.addElement(elementSendToExpert);
-        }
-
-        SlackActionElement elementImproveOrCorrectAnswer = null;
-        if (domain.getSlackConfiguration().getButtonImproveAnswerEnabled()) {
-            elementImproveOrCorrectAnswer = new SlackActionElement(messageSource.getMessage("improve.answer", null, Locale.ENGLISH), uuid + ACTION_IMPROVE_CORRECT_ANSWER_SEPARATOR + Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.IMPROVE_CORRECT_ANSWER);
-            sAnswer.addElement(elementImproveOrCorrectAnswer);
-        }
-
         //getBlocks(sAnswer);
 
         // INFO: Start Blocks
@@ -1280,8 +1252,23 @@ public class SlackMessageSender extends CommonMessageSender  {
 
         if (domain.getSlackConfiguration().getButtonSendToExpertEnabled()) {
             // TODO: Check whether experts are configured for this domain
-            getActionElement(mapper, elementsNode, elementThumbUp);
-            getActionElement(mapper, elementsNode, elementThumbDown);
+            if (topAnswer != null) { // TODO
+                String questionUuid = topAnswer.getQuestionUUID();
+                String correct = messageSource.getMessage("correct.answer", null, Locale.ENGLISH);
+                SlackActionElement elementThumbUp = new SlackActionElement(Emoji.THUMB_UP + " " + correct, questionUuid, ChannelAction.THUMB_UP);
+                sAnswer.addElement(elementThumbUp);
+                getActionElement(mapper, elementsNode, elementThumbUp);
+            }
+            if (topAnswer != null) { // TODO
+                String questionUuid = topAnswer.getQuestionUUID();
+                String wrong = messageSource.getMessage("wrong.answer", null, Locale.ENGLISH);
+                SlackActionElement elementThumbDown = new SlackActionElement(Emoji.THUMB_DOWN + " " + wrong, questionUuid, ChannelAction.THUMB_DOWN);
+                sAnswer.addElement(elementThumbDown);
+                getActionElement(mapper, elementsNode, elementThumbDown);
+            }
+
+            SlackActionElement elementSendToExpert = new SlackActionElement(messageSource.getMessage("send.question.to.expert", null, Locale.ENGLISH), Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.SEND_QUESTION_TO_EXPERT);
+            sAnswer.addElement(elementSendToExpert);
             getActionElement(mapper, elementsNode, elementSendToExpert);
         }
 
@@ -1296,6 +1283,8 @@ public class SlackMessageSender extends CommonMessageSender  {
             } else {
                 if (domain.getSlackConfiguration().getButtonImproveAnswerEnabled()) {
                     log.info("User '" + slackUserId + "' has sufficient permissions to improve or correct answer: " + permissionStatus);
+                    SlackActionElement elementImproveOrCorrectAnswer = new SlackActionElement(messageSource.getMessage("improve.answer", null, Locale.ENGLISH), uuid + ACTION_IMPROVE_CORRECT_ANSWER_SEPARATOR + Utils.escapeDoubleQuotes(analyzedMessage.getMessage()), ChannelAction.IMPROVE_CORRECT_ANSWER);
+                    sAnswer.addElement(elementImproveOrCorrectAnswer);
                     getActionElement(mapper, elementsNode, elementImproveOrCorrectAnswer);
                 }
             }
