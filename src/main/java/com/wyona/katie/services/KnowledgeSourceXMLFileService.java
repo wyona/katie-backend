@@ -190,6 +190,13 @@ public class KnowledgeSourceXMLFileService {
                     ksMeta.setGetThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
                 }
 
+                if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
+                    Element topDeskEl = xmlService.getDirectChildByTagName(ksEl, "topdesk");
+                    ksMeta.setTopDeskBaseUrl(topDeskEl.getAttribute("base-url"));
+                    ksMeta.setTopDeskUsername(topDeskEl.getAttribute("username"));
+                    ksMeta.setTopDeskAPIPassword(topDeskEl.getAttribute("password"));
+                }
+
                 if (connector.equals(KnowledgeSourceConnector.WEBSITE)) {
                     Element websiteEl = xmlService.getDirectChildByTagName(ksEl, WEBSITE_TAG);
 
