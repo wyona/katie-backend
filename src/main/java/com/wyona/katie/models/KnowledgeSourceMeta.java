@@ -64,6 +64,10 @@ public class KnowledgeSourceMeta {
     private String thirdPartyRAGUrl;
     private String thirdPartyRAGBody;
 
+    private String topDeskBaseUrl;
+    private String topDeskUsername;
+    private String topDeskAPIPassword;
+
     private String configurationErrorMessage;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
@@ -125,6 +129,10 @@ public class KnowledgeSourceMeta {
 
         this.thirdPartyRAGUrl = null;
         this.thirdPartyRAGBody = null;
+
+        this.topDeskBaseUrl = null;
+        this.topDeskUsername = null;
+        this.topDeskAPIPassword = null;
     }
 
     /**
@@ -674,6 +682,48 @@ public class KnowledgeSourceMeta {
      */
     public String getGetThirdPartyRAGBody() {
         return thirdPartyRAGBody;
+    }
+
+    /**
+     *
+     */
+    public void setTopDeskBaseUrl(String url) {
+        this.topDeskBaseUrl = url;
+    }
+
+    /**
+     *
+     */
+    public String getTopDeskBaseUrl() {
+        return topDeskBaseUrl;
+    }
+
+    /**
+     *
+     */
+    public void setTopDeskUsername(String username) {
+        this.topDeskUsername = username;
+    }
+
+    /**
+     *
+     */
+    public String getTopDeskUsername() {
+        return topDeskUsername;
+    }
+
+    /**
+     * @param password TOPdesk API / Application password (https://developers.topdesk.com/tutorial.html)
+     */
+    public void setTopDeskAPIPassword(String password) {
+        this.topDeskAPIPassword = password;
+    }
+
+    /**
+     * @return TOPdesk API / Application password (https://developers.topdesk.com/tutorial.html)
+     */
+    public String getTopDeskAPIPassword() {
+        return topDeskAPIPassword;
     }
 
     /**
