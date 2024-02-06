@@ -2608,19 +2608,7 @@ public class ContextService {
                 }
             }
 
-            User[] experts = getExperts(domain.getId(), false);
-            for (User expert: experts) {
-                sendNotificationReRating(domain, qna.getUuid(), expert.getId(), askedQuestion);
-            }
-            if (qna.getRespondentId() != null) {
-                if (!isExpert(qna.getRespondentId(), experts)) {
-                    sendNotificationReRating(domain, qna.getUuid(), qna.getRespondentId(), askedQuestion);
-                } else {
-                    log.info("Author '" + qna.getRespondentId() + "' already notified as expert.");
-                }
-            } else {
-                log.info("No author available for domain / QnA '" + domain.getId() + " / " + qna.getUuid() + "'.");
-            }
+            sendNotificationsReRating(domain, askedQuestion, qna.getUuid(), qna.getRespondentId());
 
             return qna;
         } else {
@@ -2628,21 +2616,48 @@ public class ContextService {
             String _answer = getAskedQuestionByUUID(rating.getQuestionuuid()).getAnswer();
             saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
             Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
+
+            sendNotificationsReRating(domain, rating.getUserquestion(), null, null);
+
             return answer;
         }
     }
 
     /**
+     * Send notifications that a user provided feedback re an answer
+     * @param uuid UUID of QnA when answer is based on QnA and null otherwise
+     */
+    private void sendNotificationsReRating(Context domain, String askedQuestion, String uuid, String respondentId) throws Exception {
+        User[] experts = getExperts(domain.getId(), false);
+        for (User expert: experts) {
+            sendNotificationReRating(domain, uuid, expert.getId(), askedQuestion);
+        }
+        if (respondentId != null) {
+            if (!isExpert(respondentId, experts)) {
+                sendNotificationReRating(domain, uuid, respondentId, askedQuestion);
+            } else {
+                log.info("Author '" + respondentId + "' already notified as expert.");
+            }
+        } else {
+            log.info("No author available for domain / QnA '" + domain.getId() + " / " + uuid + "'.");
+        }
+    }
+
+    /**
      * Send notification that a user provided feedback re an answer
+     * @param uuid UUID of QnA
      * @param userId Id of user to be notified
      */
-    public void sendNotificationReRating(Context domain, String uuid, String userId, String askedQuestion) {
+    private void sendNotificationReRating(Context domain, String uuid, String userId, String askedQuestion) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
                 log.info("Notify user '" + user.getEmail() + "' (" + user.getLanguage() + "), that user has provided feedback re answer '" + uuid + "' ...");
                 String email = user.getEmail();
-                String body = getFeedbackNotificationBody(domain, uuid, askedQuestion, user.getLanguage());
+                String body = "A user has provided feedback for the answer to the question '" + askedQuestion + "'"; // TODO
+                if (uuid != null) {
+                    body = getFeedbackNotificationBody(domain, uuid, askedQuestion, user.getLanguage());
+                }
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.answer", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
             } else {
