@@ -12,7 +12,6 @@ public class SlackViewStateValues {
     private SlackNodeChannelId channelId;
     private SlackNodeEmail email;
 
-
     /**
      *
      */

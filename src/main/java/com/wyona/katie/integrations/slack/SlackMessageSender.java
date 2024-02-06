@@ -69,6 +69,7 @@ public class SlackMessageSender extends CommonMessageSender  {
     private static final String BLOCK_ID_CHANNEL_ID = "channel_id";
     private static final String BLOCK_ID_DOMAIN_ID = "domain_id";
     private static final String BLOCK_ID_EMAIL = "email"; // See view.getState().getValues().getEmail()
+    private static final String BLOCK_ID_BETTER_ANSWER = "email"; // See view.getState().getValues().getBetteranswer()
 
     private static final String USERNAME_KATIE = "Katie";
 
@@ -256,12 +257,19 @@ public class SlackMessageSender extends CommonMessageSender  {
                 connectTeamChannelWithDomain(teamId, slackUserId, interaction);
                 // TODO: Move sending of message here
             } else if (view.getCallback_id().equals(ChannelAction.SEND_BETTER_ANSWER.toString())) {
+                String questionUuid = "TODO";
+
+                // TODO: Replace getEmail() by getBetterAnswer()
+                SlackNodeEmail emailNode = view.getState().getValues().getEmail(); // BLOCK_ID_BETTER_ANSWER
+                String betterAnswer = emailNode.getSingle_line_input().getValue();
+
+                saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer);
+
                 String[] args = new String[1];
                 args[0] = "TODO"; //askedQuestion.getQuestion();
-                String _answer = messageSource.getMessage("thanks.for.better.answer", args, new Locale("en"));
-                SlackAnswer answer = new SlackAnswer(_answer, FORMAT_MARKDOWN);
-                log.info("Answer: " + _answer);
-                slackClientService.send(embedAnswerIntoJSON(answer, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
+                String _answerBackSlack = messageSource.getMessage("thanks.for.better.answer", args, new Locale("en"));
+                SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
+                slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
                 SlackNodeEmail emailNode = view.getState().getValues().getEmail(); // BLOCK_ID_EMAIL
@@ -274,6 +282,14 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else {
             log.warn("No such interaction type '" + type + "' supported!");
         }
+    }
+
+    /**
+     *
+     */
+    private void saveBetterAnswer(String questionUUID, String teamId, String channelId, String answer) {
+        // TODO
+        log.info("TODO: Save better answer: " + answer);
     }
 
     /**
@@ -311,7 +327,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else if (actionId.equals(ChannelAction.REQUEST_INVITATION)) {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Send", "betteranswer", "Bessere Antwort", "Was waere eine bessere Antwort?", "Please make sure ...", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), "Provide better answer", "Send", BLOCK_ID_BETTER_ANSWER, "Bessere Antwort", "Was waere eine bessere Antwort?", "Please make sure ...", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
