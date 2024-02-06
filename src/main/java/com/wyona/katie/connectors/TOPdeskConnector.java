@@ -17,7 +17,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
- *
+ * TOPdesk Connector
  */
 @Slf4j
 @Component
@@ -31,7 +31,7 @@ public class TOPdeskConnector implements Connector {
         List<Hit> hits = new ArrayList<Hit>();
 
         // INFO: https://developers.topdesk.com/explorer/?page=general#/search/get_search
-        String requestUrl = "https://DOMAIN/tas/api/search?query=Passwort";
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/search?index=incidents&query=" + question.getSentence();
         log.info("Request URL: " + requestUrl);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -43,7 +43,7 @@ public class TOPdeskConnector implements Connector {
             JsonNode bodyNode = response.getBody();
             log.info("JSON response: " + bodyNode);
 
-/*
+            /*
             JsonNode dataNode = bodyNode.get("data");
             JsonNode getNode = dataNode.get("Get");
             JsonNode articlesNode = getNode.get("Articles");
@@ -59,8 +59,7 @@ public class TOPdeskConnector implements Connector {
                     hits.add(hit);
                 }
             }
-
-             */
+            */
         } catch(HttpClientErrorException e) {
             log.error(e.getMessage(), e);
             if (e.getRawStatusCode() == 403) {
@@ -90,6 +89,9 @@ public class TOPdeskConnector implements Connector {
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         log.info("TODO: Implement");
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/I-240131-0203";
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/I-240205-0956/progresstrail";
         return null;
     }
 
@@ -112,7 +114,7 @@ public class TOPdeskConnector implements Connector {
         // INFO: https://developers.topdesk.com/tutorial.html see "Create an application password"
         //headers.set("Authorization", "Bearer TOKEN");
 
-        //headers.setBasicAuth("USERNAME", "PASSWORD");
+        headers.setBasicAuth(ksMeta.getTopDeskUsername(), ksMeta.getTopDeskAPIPassword());
 
         return headers;
     }
