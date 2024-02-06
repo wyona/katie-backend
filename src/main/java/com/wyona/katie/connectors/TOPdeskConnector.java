@@ -94,8 +94,8 @@ public class TOPdeskConnector implements Connector {
         log.info("Update incident '" + incidentId + "' ...");
 
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         log.info("Request URL: " + requestUrl);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -107,23 +107,25 @@ public class TOPdeskConnector implements Connector {
             JsonNode bodyNode = response.getBody();
             log.info("JSON response: " + bodyNode);
 
-            /*
-            JsonNode dataNode = bodyNode.get("data");
-            JsonNode getNode = dataNode.get("Get");
-            JsonNode articlesNode = getNode.get("Articles");
-            if (articlesNode.isArray()) {
-                for (int i = 0; i < articlesNode.size(); i++) {
-                    JsonNode resultNode = articlesNode.get(i);
-                    String _answer = resultNode.get("title").asText() + " --- " + resultNode.get("text").asText();
-                    String url = resultNode.get("url").asText();
-                    JsonNode additionalNode = resultNode.get("_additional");
-                    double score = additionalNode.get("distance").asDouble();
-                    Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                    Hit hit = new Hit(answer, score);
-                    hits.add(hit);
+            boolean visibleReplies = false;
+            if (bodyNode.isArray()) {
+                for (int i = 0; i < bodyNode.size(); i++) {
+                    JsonNode entryNode = bodyNode.get(i);
+                    boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
+                    if (!invisibleForCaller) {
+                        if (entryNode.has("memoText")) {
+                            visibleReplies = true;
+                            String _answer = entryNode.get("memoText").asText();
+                            log.info("Response to user: " + _answer);
+                            Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                        }
+                    }
+                }
+
+                if (!visibleReplies) {
+                    log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                 }
             }
-            */
         } catch(HttpClientErrorException e) {
             log.error(e.getMessage(), e);
             if (e.getRawStatusCode() == 403) {
