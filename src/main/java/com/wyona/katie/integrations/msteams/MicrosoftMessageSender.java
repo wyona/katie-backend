@@ -79,6 +79,9 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     private QuestionAnalyzerService questionAnalyzerService;
 
     @Autowired
+    private WebhooksService webhooksService;
+
+    @Autowired
     private ContextService contextService;
 
     @Autowired
@@ -675,7 +678,11 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 Answer newQnA = new Answer(null, betterAnswer, contentType, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
                 contextService.addQuestionAnswer(newQnA, domain);
                 contextService.train(new QnA(newQnA), domain, true);
+
                 contextService.notifyExpertsToApproveProvidedAnswer(newQnA.getUuid(), domain, askedQuestion.getQuestion());
+
+                String channelRequestId = null;
+                webhooksService.deliver(WebhookTriggerEvent.BETTER_ANSWER_PROVIDED, domain.getId(), newQnA.getUuid(), newQnA.getOriginalquestion(), newQnA.getAnswer(), newQnA.getAnswerContentType(), null, channelRequestId);
             } catch (Exception e) {
                 responseMsg.setText("Exception: " + e.getMessage());
                 log.error(e.getMessage(), e);

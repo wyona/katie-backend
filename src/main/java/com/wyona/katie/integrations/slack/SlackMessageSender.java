@@ -99,6 +99,9 @@ public class SlackMessageSender extends CommonMessageSender  {
     private NamedEntityRecognitionService nerService;
 
     @Autowired
+    private WebhooksService webhooksService;
+
+    @Autowired
     private ContextService contextService;
 
     @Autowired
@@ -294,18 +297,20 @@ public class SlackMessageSender extends CommonMessageSender  {
         Context domain = domainService.getDomain(teamId, channelId);
         String askedQuestion = "TODO"; // TODO: Use questionUUID
 
-        ContentType contentType = null;
         List<String> classifications  = new ArrayList<String>();
         Date dateAnswered = new Date();
         Date dateAnswerModified = dateAnswered;
         Date dateOriginalQuestionSubmitted = dateAnswered;
         boolean isPublic = false;
         User user = authService.getUser(false, false);
-        Answer newQnA = new Answer(null, answer, contentType, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
+        Answer newQnA = new Answer(null, answer, ContentType.TEXT_PLAIN, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
         contextService.addQuestionAnswer(newQnA, domain);
         contextService.train(new QnA(newQnA), domain, true);
 
         contextService.notifyExpertsToApproveProvidedAnswer(newQnA.getUuid(), domain, askedQuestion);
+
+        String channelRequestId = null;
+        webhooksService.deliver(WebhookTriggerEvent.BETTER_ANSWER_PROVIDED, domain.getId(), newQnA.getUuid(), newQnA.getOriginalquestion(), newQnA.getAnswer(), newQnA.getAnswerContentType(), null, channelRequestId);
     }
 
     /**

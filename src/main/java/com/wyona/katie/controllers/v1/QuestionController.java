@@ -829,7 +829,7 @@ public class QuestionController {
                         log.error("Neither email nor FCM token nor channel type provided!");
                     }
 
-                    webhooksService.deliver(qna.getContextId(), qna.getUuid(), qna.getQuestion(), qna.getAnswer(), ContentType.TEXT_HTML, qna.getEmail(), qna.getChannelRequestId());
+                    webhooksService.deliver(WebhookTriggerEvent.SEND_ANSWER_TO_RESUBMITTED_QUESTION_TO_USER, qna.getContextId(), qna.getUuid(), qna.getQuestion(), qna.getAnswer(), ContentType.TEXT_HTML, qna.getEmail(), qna.getChannelRequestId());
 
                     dataRepoService.updateStatusOfResubmittedQuestion(uuid, StatusResubmittedQuestion.STATUS_ANSWER_SENT);
                     qna = dataRepoService.getResubmittedQuestion(uuid, false);

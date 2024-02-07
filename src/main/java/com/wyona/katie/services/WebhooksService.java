@@ -3,10 +3,7 @@ package com.wyona.katie.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.models.ContentType;
-import com.wyona.katie.models.Context;
-import com.wyona.katie.models.ResubmittedQuestion;
-import com.wyona.katie.models.Webhook;
+import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +31,16 @@ public class WebhooksService {
     /**
      *
      */
-    public void deliver(String domainId, String uuid, String question, String answer, ContentType contentType, String email, String channelRequestId) {
+    public void deliver(WebhookTriggerEvent event, String domainId, String uuid, String question, String answer, ContentType contentType, String email, String channelRequestId) {
         try {
-            // TODO: Check for which events would you like to trigger a webhook?
             Webhook[] webhooks = domainService.getWebhooks(domainId);
             if (webhooks != null && webhooks.length > 0) {
-                String echoData = dataRepoService.getWebhookEchoData(channelRequestId);
+                String echoData = null;
+                if (channelRequestId != null) {
+                    echoData = dataRepoService.getWebhookEchoData(channelRequestId);
+                }
                 for (Webhook webhook: webhooks) {
-                    if (webhook.getEnabled()) {
+                    if (webhook.getEnabled()) { // TODO: Check for which events would you like to trigger a webhook?
                         deliver(webhook, domainId, uuid, question, answer, contentType, email, echoData);
                     }
                 }
