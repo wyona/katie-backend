@@ -341,13 +341,8 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else if (actionId.equals(ChannelAction.REQUEST_INVITATION)) {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
-            Locale locale = new Locale("en");
-            String title = messageSource.getMessage("provide.better.answer", null, locale);
-            String inputLabel = messageSource.getMessage("better.answer", null, locale);
-            String placeholder = messageSource.getMessage("what.would.be.helpful.answer", null, locale);
             String askedQuestion = interaction.getActions().get(0).getValue();
-            String inputHint = "Asked question: " + askedQuestion; // TODO
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(ChannelAction.SEND_BETTER_ANSWER.toString(), title, "Send", SlackViewStateValues.BLOCK_ID_BETTER_ANSWER, inputLabel, placeholder, inputHint, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getBetterAnswerModal(askedQuestion, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
@@ -357,7 +352,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             String _inviterUserId = parts[2];
             answer = createDomainAction(_teamId, _channelId, _inviterUserId, "TODO:email");
              */
-            slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CREATE_DOMAIN, "Create Domain", "Connect", SlackViewStateValues.BLOCK_ID_EMAIL, "Your email address", "Valid email address, e.g. katie@wyona.com", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            slackClientService.send(getView(interaction.getTrigger_id(), getCreateConnectDomainModal(CHANNEL_VIEW_CREATE_DOMAIN, "Create Domain", "Connect", SlackViewStateValues.BLOCK_ID_EMAIL, "Your email address", "Valid email address, e.g. katie@wyona.com", "Please make sure that you use an email which can be verified by yourself.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CONNECT_DOMAIN)) {
             log.info("Channel Id: " + channelId);
@@ -365,7 +360,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             if (mapping != null) {
                 answer = new SlackAnswer("Team / channel '" + teamId + " / " + channelId + "' already connected with domain '" + mapping.getDomainId() + "', whereas connecting status is '" + mapping.getStatus() + "'.", FORMAT_MARKDOWN);
             } else {
-                slackClientService.send(getView(interaction.getTrigger_id(), getSlackModal(CHANNEL_VIEW_CONNECT_DOMAIN, "Connect Domain", "Connect", SlackViewStateValues.BLOCK_ID_DOMAIN_ID, "Katie Domain Id", "Domain Id, e.g. f319131a-837a-42a6-8108-3b7z0bc1b8e4", "Copy domain Id from settings of your existing Katie domain.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+                slackClientService.send(getView(interaction.getTrigger_id(), getCreateConnectDomainModal(CHANNEL_VIEW_CONNECT_DOMAIN, "Connect Domain", "Connect", SlackViewStateValues.BLOCK_ID_DOMAIN_ID, "Katie Domain Id", "Domain Id, e.g. f319131a-837a-42a6-8108-3b7z0bc1b8e4", "Copy domain Id from settings of your existing Katie domain.", channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
                 return;
             }
         } else {
@@ -556,13 +551,114 @@ public class SlackMessageSender extends CommonMessageSender  {
 
     /**
      * https://api.slack.com/surfaces/modals
+     */
+    private String getBetterAnswerModal(String askedQuestion, String channelId) {
+        Locale locale = new Locale("en");
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("type", "modal");
+        rootNode.put("callback_id", ChannelAction.SEND_BETTER_ANSWER.toString());
+
+        ObjectNode titleNode = mapper.createObjectNode();
+        rootNode.put("title", titleNode);
+        titleNode.put("type", FORMAT_PLAIN_TEXT);
+        titleNode.put("text", messageSource.getMessage("provide.better.answer", null, locale));
+
+        ObjectNode submitNode = mapper.createObjectNode();
+        rootNode.put("submit", submitNode);
+        submitNode.put("type", FORMAT_PLAIN_TEXT);
+        submitNode.put("text", "Send");
+
+        ArrayNode blocksNode = mapper.createArrayNode();
+        rootNode.put("blocks", blocksNode);
+
+        // INFO: Better answer block
+        ObjectNode inputBlockNode = mapper.createObjectNode();
+        blocksNode.add(inputBlockNode);
+        inputBlockNode.put("type", "input");
+        inputBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_BETTER_ANSWER);
+
+        ObjectNode elementNode = mapper.createObjectNode();
+        inputBlockNode.put("element", elementNode);
+        elementNode.put("type", "plain_text_input");
+        elementNode.put("action_id", "single_line_input");
+        //elementNode.put("response_url_enabled", true);
+        ObjectNode placeholderNode = mapper.createObjectNode();
+        elementNode.put("placeholder", placeholderNode);
+        placeholderNode.put("type", FORMAT_PLAIN_TEXT);
+        placeholderNode.put("text", messageSource.getMessage("what.would.be.helpful.answer", null, locale));
+
+        ObjectNode labelNode = mapper.createObjectNode();
+        inputBlockNode.put("label", labelNode);
+        labelNode.put("type", FORMAT_PLAIN_TEXT);
+        labelNode.put("text", messageSource.getMessage("better.answer", null, locale));
+
+        ObjectNode hintNode = mapper.createObjectNode();
+        inputBlockNode.put("hint", hintNode);
+        hintNode.put("type", FORMAT_PLAIN_TEXT);
+        hintNode.put("text", "Asked question: " + askedQuestion); // TODO
+
+        // INFO: Relevant URL block
+        ObjectNode relevantUrlBlockNode = mapper.createObjectNode();
+        blocksNode.add(relevantUrlBlockNode);
+        relevantUrlBlockNode.put("type", "input");
+        relevantUrlBlockNode.put("block_id", "relevanturl"); // TODO
+
+        ObjectNode urlElementNode = mapper.createObjectNode();
+        relevantUrlBlockNode.put("element", urlElementNode);
+        urlElementNode.put("type", "plain_text_input");
+        urlElementNode.put("action_id", "single_line_input");
+        //urlElementNode.put("response_url_enabled", true);
+        ObjectNode urlPlaceholderNode = mapper.createObjectNode();
+        urlElementNode.put("placeholder", urlPlaceholderNode);
+        urlPlaceholderNode.put("type", FORMAT_PLAIN_TEXT);
+        urlPlaceholderNode.put("text", "Relevant URL"); // TODO
+
+        ObjectNode urlLabelNode = mapper.createObjectNode();
+        relevantUrlBlockNode.put("label", urlLabelNode);
+        urlLabelNode.put("type", FORMAT_PLAIN_TEXT);
+        urlLabelNode.put("text", "Relevant URL"); // TODO
+
+        ObjectNode urlHintNode = mapper.createObjectNode();
+        relevantUrlBlockNode.put("hint", urlHintNode);
+        urlHintNode.put("type", FORMAT_PLAIN_TEXT);
+        urlHintNode.put("text", "Relevant URL, e.g. https://todo.todo"); // TODO
+
+        // INFO: Dropdown block
+        ObjectNode dropdownBlockNode = mapper.createObjectNode();
+        blocksNode.add(dropdownBlockNode);
+        dropdownBlockNode.put("type", "section");
+        //dropdownBlockNode.put("type", "input"); // TODO: According to Slack support, one has to set input instead section, but does not seem to work
+        dropdownBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_CHANNEL_ID);
+        ObjectNode textNode = mapper.createObjectNode();
+        dropdownBlockNode.put("text", textNode);
+        textNode.put("type", "plain_text");
+        textNode.put("text", "Pick a channel from the dropdown list");
+        ObjectNode accessoryNode = mapper.createObjectNode();
+        dropdownBlockNode.put("accessory", accessoryNode);
+        accessoryNode.put("action_id", "select_id");
+        accessoryNode.put("type", "channels_select");
+        accessoryNode.put("response_url_enabled", true); // https://api.slack.com/surfaces/modals/using#modal_response_url
+        accessoryNode.put("initial_channel", channelId);
+        ObjectNode dropdownPlaceholderNode = mapper.createObjectNode();
+        accessoryNode.put("placeholder", dropdownPlaceholderNode);
+        dropdownPlaceholderNode.put("type", "plain_text");
+        dropdownPlaceholderNode.put("text", "Select a channel");
+
+        //log.info("ObjectMapper: " + rootNode.toString());
+        return rootNode.toString();
+    }
+
+    /**
+     * https://api.slack.com/surfaces/modals
      * @param title Title of Modal, e.g. "Provide better answer"
      * @param submitLabel Label of submit button, e.g. "Submit better answer"
      * @param inputLabel Label of input field, e.g. "Bessere Antwort"
      * @param placeholder Placeholder of input field, e.g. "What would be a better answer?"
      * @param hint Hint of input field, e.g. "Please make sure ..."
      */
-    private String getSlackModal(String callbackId, String title, String submitLabel, String blockId, String inputLabel, String placeholder, String hint, String channelId) {
+    private String getCreateConnectDomainModal(String callbackId, String title, String submitLabel, String blockId, String inputLabel, String placeholder, String hint, String channelId) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("type", "modal");
@@ -628,10 +724,10 @@ public class SlackMessageSender extends CommonMessageSender  {
         dropdownPlaceholderNode.put("type", "plain_text");
         dropdownPlaceholderNode.put("text", "Select a channel");
 
-        log.info("ObjectMapper: " + rootNode.toString());
+        //log.info("ObjectMapper: " + rootNode.toString());
         return rootNode.toString();
 
-        /*
+        /* OBSOLETE
         StringBuilder modal = new StringBuilder();
 
         modal.append("{");
