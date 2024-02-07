@@ -12,11 +12,13 @@ public class SlackViewStateValues {
     private SlackNodeChannelId channelId;
     private SlackNodeEmail email;
     private SlackNodeBetteranswer betterAnswer;
+    private SlackNodeRelevanturl relevanturl;
 
     public static final String BLOCK_ID_CHANNEL_ID = "channel_id";
     public static final String BLOCK_ID_DOMAIN_ID = "domain_id";
     public static final String BLOCK_ID_EMAIL = "email";
     public static final String BLOCK_ID_BETTER_ANSWER = "betteranswer";
+    public static final String BLOCK_ID_RELEVANT_URL = "relevanturl";
 
     /**
      *
@@ -64,6 +66,20 @@ public class SlackViewStateValues {
      */
     public SlackNodeBetteranswer getBetteranswwer() {
         return betterAnswer;
+    }
+
+    /**
+     *
+     */
+    public void setRelevanturl(SlackNodeRelevanturl relevanturl) {
+        this.relevanturl = relevanturl;
+    }
+
+    /**
+     *
+     */
+    public SlackNodeRelevanturl getRelevanturl() {
+        return relevanturl;
     }
 
     /**

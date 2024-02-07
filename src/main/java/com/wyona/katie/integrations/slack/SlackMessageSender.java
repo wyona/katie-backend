@@ -256,7 +256,9 @@ public class SlackMessageSender extends CommonMessageSender  {
 
                 SlackNodeBetteranswer betterAnswerNode = view.getState().getValues().getBetteranswwer();
                 String betterAnswer = betterAnswerNode.getSingle_line_input().getValue();
-                String relevantUrl = "https://todo.todo";
+
+                SlackNodeRelevanturl relevantUrlNode = view.getState().getValues().getRelevanturl();
+                String relevantUrl = relevantUrlNode.getSingle_line_input().getValue();
 
                 try {
                     saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer, relevantUrl);
@@ -603,7 +605,8 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode relevantUrlBlockNode = mapper.createObjectNode();
         blocksNode.add(relevantUrlBlockNode);
         relevantUrlBlockNode.put("type", "input");
-        relevantUrlBlockNode.put("block_id", "relevanturl"); // TODO
+        relevantUrlBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_RELEVANT_URL);
+        relevantUrlBlockNode.put("optional", true);
 
         ObjectNode urlElementNode = mapper.createObjectNode();
         relevantUrlBlockNode.put("element", urlElementNode);
