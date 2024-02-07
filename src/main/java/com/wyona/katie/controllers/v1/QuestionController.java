@@ -829,15 +829,7 @@ public class QuestionController {
                         log.error("Neither email nor FCM token nor channel type provided!");
                     }
 
-                    Webhook[] webhooks = contextService.getWebhooks(qna.getContextId());
-                    if (webhooks != null && webhooks.length > 0) {
-                        String echoData = dataRepoService.getWebhookEchoData(qna.getChannelRequestId());
-                        for (Webhook webhook: webhooks) {
-                            if (webhook.getEnabled()) {
-                                webhooksService.deliver(webhook, qna, echoData);
-                            }
-                        }
-                    }
+                    webhooksService.deliver(qna.getContextId(), qna.getUuid(), qna.getQuestion(), qna.getAnswer(), ContentType.TEXT_HTML, qna.getEmail(), qna.getChannelRequestId());
 
                     dataRepoService.updateStatusOfResubmittedQuestion(uuid, StatusResubmittedQuestion.STATUS_ANSWER_SENT);
                     qna = dataRepoService.getResubmittedQuestion(uuid, false);
@@ -917,7 +909,7 @@ public class QuestionController {
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
-        String answerLink = contextService.getAnswerLink(question, domain);
+        String answerLink = contextService.getAnswerLink(question.getUuid(), question.getEmail(), domain);
 
         TemplateArguments tmplArgs = new TemplateArguments(domain, null);
         tmplArgs.add("question", question.getQuestion());
@@ -952,7 +944,7 @@ public class QuestionController {
             log.error(e.getMessage(), e);
         }
 
-        sb.append(contextService.getAnswerLink(question, context));
+        sb.append(contextService.getAnswerLink(question.getUuid(), question.getEmail(), context));
 /*
         sb.append("'" + question.getAnswer() + "'");
 */

@@ -3764,10 +3764,10 @@ public class ContextService {
     /**
      * Get link to QnA (TODO: Move this method to UtilService)
      */
-    public String getAnswerLink(ResubmittedQuestion question, Context domain) {
-        String answerLink = domain.getHost() + "/" + mailBodyAskKatieReadAnswerUrl + "?domain-id=" + question.getContextId() + "&uuid=" + question.getUuid();
-        if (question.getEmail() != null) {
-            answerLink = domain.getHost() + "/" + mailBodyAskKatieReadAnswerUrl + "?domain-id=" +question.getContextId() + "&uuid=" + question.getUuid() + "&username=" + question.getEmail();
+    public String getAnswerLink(String uuid, String email, Context domain) {
+        String answerLink = domain.getHost() + "/" + mailBodyAskKatieReadAnswerUrl + "?domain-id=" + domain.getId() + "&uuid=" + uuid;
+        if (email != null) {
+            answerLink = domain.getHost() + "/" + mailBodyAskKatieReadAnswerUrl + "?domain-id=" + domain.getId() + "&uuid=" + uuid + "&username=" + email;
         }
         return answerLink;
     }

@@ -3,6 +3,7 @@ package com.wyona.katie.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.ContentType;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.ResubmittedQuestion;
 import com.wyona.katie.models.Webhook;
@@ -25,16 +26,37 @@ public class WebhooksService {
 
     @Autowired
     private XMLService xmlService;
-
     @Autowired
     private ContextService domainService;
+    @Autowired
+    private DataRepositoryService dataRepoService;
+
+    /**
+     *
+     */
+    public void deliver(String domainId, String uuid, String question, String answer, ContentType contentType, String email, String channelRequestId) {
+        try {
+            // TODO: Check for which events would you like to trigger a webhook?
+            Webhook[] webhooks = domainService.getWebhooks(domainId);
+            if (webhooks != null && webhooks.length > 0) {
+                String echoData = dataRepoService.getWebhookEchoData(channelRequestId);
+                for (Webhook webhook: webhooks) {
+                    if (webhook.getEnabled()) {
+                        deliver(webhook, domainId, uuid, question, answer, contentType, email, echoData);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 
     /**
      * Deliver answer to client referenced by webhook
      * @param echoData Optional data to be sent to webhook, e.g. token containing custom information
      */
     @Async
-    public void deliver(Webhook webhook, ResubmittedQuestion qna, String echoData) {
+    public void deliver(Webhook webhook, String domainId, String uuid, String question, String answer, ContentType contentType, String email, String echoData) {
 
         // TEST: Uncomment lines below to test thread
 /*
@@ -56,8 +78,8 @@ public class WebhooksService {
             // TODO: Should answer also be delivered, when it was asked on Slack originally?
             // qna.getChannelRequestId()
             try {
-                Context domain = domainService.getContext(qna.getContextId());
-                body.put("content", "The question '" + qna.getQuestion() + "' has been answered by a human expert: " + domainService.getAnswerLink(qna, domain));
+                Context domain = domainService.getContext(domainId);
+                body.put("content", "The question '" + question + "' has been answered by a human expert: " + domainService.getAnswerLink(uuid, email, domain));
             } catch(Exception e) {
                 log.error(e.getMessage(), e);
                 body.put("content", e.getMessage());
@@ -65,10 +87,10 @@ public class WebhooksService {
         } else {
             log.info("Create payload for generic webhook ...");
             body.put("msgtype", "answer-to-question");
-            body.put("question", qna.getQuestion());
-            body.put("answer",qna.getAnswer());
-            body.put("contenttype","text/html"); // TODO: Get content type from QnA
-            body.put("formatted_answer", qna.getAnswer());
+            body.put("question", question);
+            body.put("answer", answer);
+            body.put("contenttype", contentType.toString());
+            body.put("formatted_answer", answer);
             if (echoData != null) {
                 body.put("echodata", echoData);
             }
@@ -95,7 +117,7 @@ public class WebhooksService {
 
         log.info("Status code: " + status);
         try {
-            xmlService.logWebhookDelivery(qna.getContextId(), webhook, status.value(), new java.util.Date().getTime());
+            xmlService.logWebhookDelivery(domainId, webhook, status.value(), new java.util.Date().getTime());
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
