@@ -626,7 +626,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode urlHintNode = mapper.createObjectNode();
         relevantUrlBlockNode.put("hint", urlHintNode);
         urlHintNode.put("type", FORMAT_PLAIN_TEXT);
-        urlHintNode.put("text", "Relevant URL, e.g. https://todo.todo"); // TODO
+        urlHintNode.put("text", "Relevant URL, e.g. https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de"); // TODO
 
         // INFO: Dropdown block
         ObjectNode dropdownBlockNode = mapper.createObjectNode();
