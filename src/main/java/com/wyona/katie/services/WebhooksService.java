@@ -51,21 +51,19 @@ public class WebhooksService {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
 
-        //StringBuilder sb = new StringBuilder("{");
         if (webhook.getPayloadURL().startsWith("https://discord")) {
+            log.info("Create payload for Discord webhook ...");
             // TODO: Should answer also be delivered, when it was asked on Slack originally?
             // qna.getChannelRequestId()
             try {
                 Context domain = domainService.getContext(qna.getContextId());
                 body.put("content", "The question '" + qna.getQuestion() + "' has been answered by a human expert: " + domainService.getAnswerLink(qna, domain));
-                //sb.append("\"content\":\"The question '" + qna.getQuestion() + "' has been answered: " + domainService.getAnswerLink(qna, domain) + "\"");
             } catch(Exception e) {
                 log.error(e.getMessage(), e);
                 body.put("content", e.getMessage());
-                //sb.append("\"content\":\"" + e.getMessage() + "\"");
-
             }
         } else {
+            log.info("Create payload for generic webhook ...");
             body.put("msgtype", "answer-to-question");
             body.put("question", qna.getQuestion());
             body.put("answer",qna.getAnswer());
@@ -74,24 +72,7 @@ public class WebhooksService {
             if (echoData != null) {
                 body.put("echodata", echoData);
             }
-            /*
-            sb.append("\"msgtype\":\"answer-to-question\"");
-            sb.append(",");
-            sb.append("\"question\":\"" + qna.getQuestion() + "\"");
-            sb.append(",");
-            sb.append("\"answer\":\"" + Utils.replaceNewLines(qna.getAnswer(), " ") + "\"");
-            sb.append(",");
-            sb.append("\"contenttype\":\"text/html\"");
-            sb.append(",");
-            sb.append("\"formatted_answer\":\"" + Utils.replaceNewLines(qna.getAnswer(), " ") + "\"");
-            if (echoData != null) {
-                sb.append(",");
-                sb.append("\"echodata\":\"" + echoData + "\"");
-            }
-
-             */
         }
-        //sb.append("}");
 
         log.info("Body: " + body.toString().trim());
 
@@ -102,7 +83,7 @@ public class WebhooksService {
             headers.set("Content-Type", "application/json; charset=UTF-8");
             HttpEntity<String> request = new HttpEntity<String>(body.toString(), headers);
 
-            log.info("Send request: " + webhook.getPayloadURL());
+            log.info("Send request to webhook: " + webhook.getPayloadURL());
             ResponseEntity<JsonNode> response = restTemplate.exchange(webhook.getPayloadURL(), HttpMethod.POST, request, JsonNode.class);
             status = response.getStatusCode();
             JsonNode bodyNode = response.getBody();
