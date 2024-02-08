@@ -1,5 +1,8 @@
 package com.wyona.katie.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Webhook
  */
@@ -9,6 +12,7 @@ public class Webhook {
     private String payloadURL;
     private String contentType;
     private boolean enabled;
+    private List<WebhookTriggerEvent> events;
 
     private String apiKey;
 
@@ -21,6 +25,7 @@ public class Webhook {
         this.payloadURL = payloadURL;
         this.contentType = "application/json";
         this.enabled = enabled;
+        this.events = new ArrayList<WebhookTriggerEvent>();
     }
 
     /**
@@ -77,6 +82,13 @@ public class Webhook {
      */
     public boolean getEnabled() {
         return enabled;
+    }
+
+    /**
+     *
+     */
+    public List<WebhookTriggerEvent> getEvents() {
+        return events;
     }
 
     /**

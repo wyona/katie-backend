@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Slf4j
 @Component
 public class WebhooksService {
@@ -40,7 +42,7 @@ public class WebhooksService {
                     echoData = dataRepoService.getWebhookEchoData(channelRequestId);
                 }
                 for (Webhook webhook: webhooks) {
-                    if (webhook.getEnabled()) { // TODO: Check for which events would you like to trigger a webhook?
+                    if (webhook.getEnabled() && isTriggeredByEvent(event, webhook)) {
                         deliver(webhook, domainId, uuid, question, answer, contentType, email, echoData);
                     }
                 }
@@ -48,6 +50,24 @@ public class WebhooksService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Check whether webhook is triggered only by a certain event
+     * @return true when webhook is triggered by event and false otherwise
+     */
+    private boolean isTriggeredByEvent(WebhookTriggerEvent event, Webhook webhook) {
+        List<WebhookTriggerEvent> events = webhook.getEvents();
+        boolean isTriggeredByEvent = true; // INFO: By default trigger webhook by every event
+        if (events.size() > 0) {
+            isTriggeredByEvent = false;
+            for (WebhookTriggerEvent e : events) {
+                if (event.equals(e)) {
+                    return true;
+                }
+            }
+        }
+        return isTriggeredByEvent;
     }
 
     /**
