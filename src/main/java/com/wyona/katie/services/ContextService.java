@@ -1084,6 +1084,7 @@ public class ContextService {
         webhook.setId(UUID.randomUUID().toString());
         webhook.setContentType("application/json");
         webhook.setEnabled(true);
+        // TODO: Set trigger events
 
         xmlService.addWebhook(domainId, webhook);
 
