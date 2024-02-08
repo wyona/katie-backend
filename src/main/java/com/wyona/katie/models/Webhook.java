@@ -94,6 +94,13 @@ public class Webhook {
     /**
      *
      */
+    public void add(WebhookTriggerEvent event) {
+        events.add(event);
+    }
+
+    /**
+     *
+     */
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
