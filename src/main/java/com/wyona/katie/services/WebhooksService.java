@@ -43,7 +43,8 @@ public class WebhooksService {
                 }
                 for (Webhook webhook: webhooks) {
                     if (webhook.getEnabled() && isTriggeredByEvent(event, webhook)) {
-                        deliver(webhook, domainId, uuid, question, answer, contentType, email, echoData);
+                        // TODO: msgType should depend on WebhookTriggerEvent value
+                        deliver(webhook, "answer-to-question", domainId, uuid, question, answer, contentType, email, echoData);
                     }
                 }
             }
@@ -72,10 +73,11 @@ public class WebhooksService {
 
     /**
      * Deliver answer to client referenced by webhook
+     * @param msgType For example "answer-to-question" or "better-answer"
      * @param echoData Optional data to be sent to webhook, e.g. token containing custom information
      */
     @Async
-    public void deliver(Webhook webhook, String domainId, String uuid, String question, String answer, ContentType contentType, String email, String echoData) {
+    public void deliver(Webhook webhook, String msgType, String domainId, String uuid, String question, String answer, ContentType contentType, String email, String echoData) {
 
         // TEST: Uncomment lines below to test thread
 /*
@@ -105,7 +107,7 @@ public class WebhooksService {
             }
         } else {
             log.info("Create payload for generic webhook ...");
-            body.put("msgtype", "answer-to-question");
+            body.put("msgtype", msgType);
             body.put("question", question);
             body.put("answer", answer);
             body.put("contenttype", contentType.toString());
