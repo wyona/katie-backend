@@ -972,6 +972,25 @@ public class XMLService {
 
             Webhook webhook = new Webhook(id, url, isEnabled);
 
+            if (webhookEl.hasAttribute("trigger-events")) {
+                String[] triggerEvents = webhookEl.getAttribute("trigger-events").split(",");
+                if (triggerEvents != null && triggerEvents.length > 0) {
+                    for (String triggerEvent : triggerEvents) {
+                        if (!triggerEvent.trim().isEmpty()) {
+                            log.debug("Trigger event: " + triggerEvent.trim());
+                            try {
+                                WebhookTriggerEvent event = WebhookTriggerEvent.valueOf(triggerEvent.trim());
+                                webhook.add(event);
+                            } catch (Exception e) {
+                                log.error(e.getMessage(), e);
+                            }
+                        } else {
+                            log.warn("Webhook '" + webhook.getId() + "' of Domain '" + domainId + "' contains empty trigger event!");
+                        }
+                    }
+                }
+            }
+
             if (webhookEl.hasAttribute("content-type")) {
                 webhook.setContentType(webhookEl.getAttribute("content-type"));
             }
