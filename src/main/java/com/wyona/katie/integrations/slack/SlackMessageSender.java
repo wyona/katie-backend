@@ -615,8 +615,9 @@ public class SlackMessageSender extends CommonMessageSender  {
 
         ObjectNode urlElementNode = mapper.createObjectNode();
         relevantUrlBlockNode.put("element", urlElementNode);
-        urlElementNode.put("type", "plain_text_input");
-        urlElementNode.put("action_id", "single_line_input");
+        urlElementNode.put("type", "url_text_input");
+        // TODO: "action_id":"url_text_input-action"
+        urlElementNode.put("action_id", "single_line_input"); // See com.wyona.katie.models.slack.SlackNodeRelevanturl#getSingle_line_input()
         //urlElementNode.put("response_url_enabled", true);
         ObjectNode urlPlaceholderNode = mapper.createObjectNode();
         urlElementNode.put("placeholder", urlPlaceholderNode);
