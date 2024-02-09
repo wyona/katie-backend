@@ -55,9 +55,13 @@ public class SlackController {
 
     @Value("${slack.client.id}")
     private String katieSlackClientId;
-
     @Value("${slack.client.secret}")
     private String katieSlackClientSecret;
+
+    @Value("${slack.custom.client.id}")
+    private String customSlackClientId;
+    @Value("${slack.custom.client.secret}")
+    private String customSlackClientSecret;
 
     @Value("${slack.access.token.endpoint}")
     private String tokenEndpointUrl;
@@ -238,6 +242,13 @@ public class SlackController {
 
             String clientId = katieSlackClientId; // TODO: Get client Id from "Redirect URL"
             String clientSecret = katieSlackClientSecret; // TODO: Get client secret for given client Id
+
+            // TODO: Hack to test whether additional custom apps can be connected
+            if (state != null && !state.isEmpty() && state.equals("custom")) {
+                clientId = customSlackClientId;
+                clientSecret = customSlackClientSecret;
+            }
+
             AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code, clientId, clientSecret);
             if (accessCredentials != null) {
                 //log.info("Bot access token: " + accessCredentials.getAccessTokeen());
