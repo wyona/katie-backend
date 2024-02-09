@@ -132,12 +132,13 @@ public class DataRepositoryService {
 
     /**
      * Update access/bearer token
+     * @param botUserId User Id of Katie bot, which is generated per Slack team/workspace
      */
-    public void updateSlackBearerToken(String teamId, String bearerToken, String userId) throws Exception {
-        log.info("Update access/bearer token of Slack team '" + teamId + "' ...");
+    public void updateSlackBearerToken(String teamId, String bearerToken, String botUserId) throws Exception {
+        log.info("Update access/bearer token of Slack team '" + teamId + "' and bot user Id '" + botUserId + "' ...");
 
         deleteSlackBearerToken(teamId);
-        addSlackBearerToken(teamId, bearerToken, userId);
+        addSlackBearerToken(teamId, bearerToken, botUserId);
 
         /*
         String sql = "Update " + TABLE_SLACK_TEAM_TOKEN_USERID + " set " + SLACK_BEARER_TOKEN + "='" + bearerToken + "', USER_ID='" + userId + "'  where SLACK_TEAM_ID = '" + teamId + "'";

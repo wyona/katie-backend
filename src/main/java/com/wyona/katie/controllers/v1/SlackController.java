@@ -255,7 +255,7 @@ public class SlackController {
                     log.info("No Katie domains exist yet for Slack team / channel '" + accessCredentials.getTeamId() + " / " + accessCredentials.getChannelId() + "'.");
                 }
 
-                domainService.updateSlackBotToken(accessCredentials.getTeamId(), accessCredentials.getAccessToken(), accessCredentials.getUserId());
+                domainService.updateSlackBotToken(accessCredentials.getTeamId(), accessCredentials.getAccessToken(), accessCredentials.getBotUserId());
             } else {
                 String errorMsg = "No access token received!";
                 log.error(errorMsg);
@@ -555,12 +555,12 @@ class AccessCredentials {
 
     String accessToken;
 
-    String userId;
+    String botUserId;
 
     /**
-     * @param userId User Id of Katie bot, which is generated per Slack team/workspace
+     * @param botUserId User Id of Katie bot, which is generated per Slack team/workspace
      */
-    public AccessCredentials(String teamId, String teamName, String channelId, String channelName, String accessToken, String userId) {
+    public AccessCredentials(String teamId, String teamName, String channelId, String channelName, String accessToken, String botUserId) {
         this.teamId = teamId;
         this.teamName = teamName;
 
@@ -569,7 +569,7 @@ class AccessCredentials {
 
         this.accessToken = accessToken;
 
-        this.userId = userId;
+        this.botUserId = botUserId;
     }
 
     /**
@@ -610,7 +610,7 @@ class AccessCredentials {
     /**
      * Get Katie bot user Id
      */
-    public String getUserId() {
-        return userId;
+    public String getBotUserId() {
+        return botUserId;
     }
 }
