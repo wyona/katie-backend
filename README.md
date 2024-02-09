@@ -242,10 +242,10 @@ Update Slack App configuration
 * Config "Request URL" (Menu: Interactivity & Shortcuts, Manifest: interactivity)
     * E.g. https://app.katie.qa/api/v1/slack/interactivity or https://askvt.wyona.com/api/v1/slack/interactivity or https://katie.jmc-software.com/api/v1/slack/interactivity
 
-* Config command (Manifest: slash_commands)
-    * /katie
-    * https://app.katie.qa/api/v1/slack/command/katie or https://askvt.wyona.com/api/v1/slack/command/katie or https://katie.jmc-software.com/api/v1/slack/command/katie
-    * Get help on how to use Katie
+* Config command (Menu: Slash Commands, Manifest: slash_commands)
+    * Command: /katie
+    * Request URL: https://app.katie.qa/api/v1/slack/command/katie or https://askvt.wyona.com/api/v1/slack/command/katie or https://katie.jmc-software.com/api/v1/slack/command/katie
+    * Short Description: Get help on how to use Katie
 
 * Add New Redirect URL (Menu: OAuth & Permissions, Manifest: redirect_urls)
     * E.g. https://app.katie.qa/api/v1/slack/oauth2-callback or https://askvt.wyona.com/api/v1/slack/oauth2-callback or https://katie.jmc-software.com/api/v1/slack/oauth2-callback
