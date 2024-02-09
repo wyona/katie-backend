@@ -240,15 +240,15 @@ Config values of (Basic Information) of your App
 Update Slack App configuration
 
 * Config "Request URL" (Menu: Interactivity & Shortcuts, Manifest: interactivity)
-    * E.g. https://app.katie.qa/api/v1/slack/interactivity or https://askvt.wyona.com/api/v1/slack/interactivity or https://katie.jmc-software.com/api/v1/slack/interactivity
+    * E.g. https://app.katie.qa/api/v1/slack/interactivity or https://MY.DOMAIN/api/v1/slack/interactivity
 
 * Config command (Menu: Slash Commands, Manifest: slash_commands)
     * Command: /katie
-    * Request URL: https://app.katie.qa/api/v1/slack/command/katie or https://askvt.wyona.com/api/v1/slack/command/katie or https://katie.jmc-software.com/api/v1/slack/command/katie
+    * Request URL: https://app.katie.qa/api/v1/slack/command/katie or https://MY.DOMAIN/api/v1/slack/command/katie
     * Short Description: Get help on how to use Katie
 
 * Add New Redirect URL (Menu: OAuth & Permissions, Manifest: redirect_urls)
-    * E.g. https://app.katie.qa/api/v1/slack/oauth2-callback or https://askvt.wyona.com/api/v1/slack/oauth2-callback or https://katie.jmc-software.com/api/v1/slack/oauth2-callback
+    * E.g. https://app.katie.qa/api/v1/slack/oauth2-callback or https://MY.DOMAIN/api/v1/slack/oauth2-callback
     * Bot Token scopes
         * channels:history
         * chat:write
