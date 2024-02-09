@@ -264,6 +264,8 @@ Update Slack App configuration
     * Bot Events scopes
         * message.channels
         * message.im
+    * User Events scopes
+        * message.im
 
 * Activate / Manage Distribution
     * E.g. https://slack.com/oauth/v2/authorize?client_id=1276290213363.2089707188626&scope=channels:history,commands,im:history,chat:write,incoming-webhook,team:read&user_scope=im:history
