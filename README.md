@@ -260,7 +260,7 @@ Update Slack App configuration
         * im:history (Permits direct communication with Katie)
 
 * Config Event Subscriptions (Manifest: event_subscriptions)
-    * E.g. https://app.katie.qa/api/v1/slack/events or https://askvt.wyona.com/api/v1/slack/events or https://katie.jmc-software.com/api/v1/slack/events
+    * E.g. https://app.katie.qa/api/v1/slack/events or https://MY.DOMAIN/api/v1/slack/events
     * Bot Events scopes
         * message.channels
         * message.im
