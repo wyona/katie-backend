@@ -54,10 +54,10 @@ public class SlackController {
     private String slackSigningSecrets;
 
     @Value("${slack.client.id}")
-    private String clientId;
+    private String katieSlackClientId;
 
     @Value("${slack.client.secret}")
-    private String clientSecret;
+    private String katieSlackClientSecret;
 
     @Value("${slack.access.token.endpoint}")
     private String tokenEndpointUrl;
@@ -236,7 +236,9 @@ public class SlackController {
             log.info("State: " + state);
             log.info("Code: " + code);
 
-            AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code);
+            String clientId = katieSlackClientId; // TODO: Get client Id from "Redirect URL"
+            String clientSecret = katieSlackClientSecret; // TODO: Get client secret for given client Id
+            AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code, clientId, clientSecret);
             if (accessCredentials != null) {
                 //log.info("Bot access token: " + accessCredentials.getAccessTokeen());
 
@@ -255,7 +257,9 @@ public class SlackController {
 
                 domainService.updateSlackBotToken(accessCredentials.getTeamId(), accessCredentials.getAccessToken(), accessCredentials.getUserId());
             } else {
-                log.error("No access token received!");
+                String errorMsg = "No access token received!";
+                log.error(errorMsg);
+                return new ResponseEntity<>(new Error(errorMsg, "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
             HttpHeaders headers = new HttpHeaders();
@@ -264,7 +268,7 @@ public class SlackController {
             return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "OAUTH_SLACK_FAILED"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -272,9 +276,11 @@ public class SlackController {
      * Get bot access token by sending a POST request to a token endpoint (see https://developers.google.com/identity/protocols/OpenIDConnect#exchangecode)
      * @param token_endpoint Token endpoint URL (https://slack.com/api/oauth.v2.access)
      * @param code Temporary authorization code in order to exchange for an access token, e.g. "40786315168.2889647873747.fra4c5e6e997127150223d1228d21439647775ze79a99762affe4a9fb10749e2"
+     * @param clientId Slack client Id
+     * @param clientSecret Slack client Secret
      * @return bot access token (https://api.slack.com/authentication/token-types#bot)
      */
-    private AccessCredentials getBotAccessToken(String token_endpoint, String code) {
+    private AccessCredentials getBotAccessToken(String token_endpoint, String code, String clientId, String clientSecret) {
         try {
             StringBuilder qs = new StringBuilder("?");
             qs.append("code=" + code);
