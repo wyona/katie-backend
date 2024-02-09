@@ -51,7 +51,13 @@ import java.util.Locale;
 public class SlackController {
 
     @Value("${slack.signature}")
-    private String slackSigningSecret;
+    private String slackSigningSecrets;
+
+    @Value("${slack.client.id}")
+    private String clientId;
+
+    @Value("${slack.client.secret}")
+    private String clientSecret;
 
     @Value("${slack.access.token.endpoint}")
     private String tokenEndpointUrl;
@@ -64,12 +70,6 @@ public class SlackController {
 
     @Value("${katie.redirect.landing.page}")
     private String redirectLandingPage;
-
-    @Value("${slack.client.id}")
-    private String clientId;
-
-    @Value("${slack.client.secret}")
-    private String clientSecret;
 
     @Autowired
     private SlackMessageSender messageSender;
@@ -496,7 +496,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
         }
 
         String xSlackSignature = request.getHeader("X-Slack-Signature");
-        return authenticationService.isSignatureValid(body, xSlackSignatureTimestamp, xSlackSignature, slackSigningSecret);
+        return authenticationService.isSignatureValid(body, xSlackSignatureTimestamp, xSlackSignature, slackSigningSecrets.split(","));
     }
 
     /**

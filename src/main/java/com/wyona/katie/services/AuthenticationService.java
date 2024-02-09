@@ -328,26 +328,29 @@ public class AuthenticationService {
      * @param body Raw request body
      * @param signatureTimestamp X-Slack-Request-Timestamp
      * @param signature X-Slack-Signature
-     * @param signingSecret Slack signing secret
+     * @param signingSecrets Array of Slack signing secrets
+     * @return true when signature is valid
      */
-    public boolean isSignatureValid(String body, String signatureTimestamp, String signature, String signingSecret) {
+    public boolean isSignatureValid(String body, String signatureTimestamp, String signature, String[] signingSecrets) {
         String basestring = "v0:" + signatureTimestamp + ":" + body;
 
-        String hex = null;
-        try {
-            hex = hashMac(basestring, signingSecret);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        for (String signingSecret : signingSecrets) {
+            String hex = null;
+            try {
+                hex = hashMac(basestring, signingSecret);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
+            String mySignature = "v0=" + hex;
+            log.info("... and compare my signature '" + mySignature + "' with X-Slack-Signature '" + signature + "' ...");
+            if (mySignature.equals(signature)) {
+                return true;
+            }
         }
 
-        String mySignature = "v0=" + hex;
-        log.info("... and compare my signature '" + mySignature + "' with X-Slack-Signature '" + signature + "' ...");
-        if (mySignature.equals(signature)) {
-            return true;
-        } else {
-            log.warn("Signatures do not match!");
-            return false;
-        }
+        log.warn("Signatures do not match!");
+        return false;
     }
 
     /**
