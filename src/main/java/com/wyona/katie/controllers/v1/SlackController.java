@@ -233,6 +233,8 @@ public class SlackController {
             @RequestParam(value = "state", required = false) String state,
             @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
             @RequestParam(value = "code", required = true) String code,
+            @ApiParam(name = "custom_client_id", value = "Custom Client ID",required = false)
+            @RequestParam(value = "custom_client_id", required = false) String customClientId,
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -244,9 +246,11 @@ public class SlackController {
             String clientSecret = katieSlackClientSecret; // TODO: Get client secret for given client Id
 
             // TODO: Hack to test whether additional custom apps can be connected
-            if (state != null && !state.isEmpty() && state.equals("custom")) {
+            if (customClientId != null && !customClientId.isEmpty() && customClientId.equals("custom")) {
                 clientId = customSlackClientId;
                 clientSecret = customSlackClientSecret;
+            } else {
+                log.info("No custom client ID provided, therefore use defaul client ID ...");
             }
 
             AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code, clientId, clientSecret);
