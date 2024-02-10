@@ -335,6 +335,7 @@ public class AuthenticationService {
         String basestring = "v0:" + signatureTimestamp + ":" + body;
 
         for (String signingSecret : signingSecrets) {
+            log.info("Try signing secret '" + signingSecret.substring(0, 3) + "..." + signingSecret.substring(signingSecret.length() - 3) + "' ...");
             String hex = null;
             try {
                 hex = hashMac(basestring, signingSecret);
