@@ -3,6 +3,7 @@ package com.wyona.katie.connectors;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -42,39 +43,26 @@ public class ThirdPartyRAGConnector implements Connector {
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
 
         try {
+            /*
             // INFO: Plain text response
             ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, String.class);
             log.info("Response: " + response);
-            double score = 0.0;
-            String url = null;
             String _answer = response.getBody();
-            Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-            Hit hit = new Hit(answer, score);
-            hits.add(hit);
 
+             */
 
-            /*
+            // INFO: JSON response
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
             log.info("JSON response: " + bodyNode);
-
             JsonNode dataNode = bodyNode.get("data");
-            JsonNode getNode = dataNode.get("Get");
-            JsonNode articlesNode = getNode.get("Articles");
-            if (articlesNode.isArray()) {
-                for (int i = 0; i < articlesNode.size(); i++) {
-                    JsonNode resultNode = articlesNode.get(i);
-                    String _answer = resultNode.get("title").asText() + " --- " + resultNode.get("text").asText();
-                    String url = resultNode.get("url").asText();
-                    JsonNode additionalNode = resultNode.get("_additional");
-                    double score = additionalNode.get("distance").asDouble();
-                    Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                    Hit hit = new Hit(answer, score);
-                    hits.add(hit);
-                }
-            }
+            String _answer = dataNode.get("content").asText();
 
-             */
+            double score = 0.0;
+            String url = null;
+            Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+            Hit hit = new Hit(answer, score);
+            hits.add(hit);
         } catch(HttpClientErrorException e) {
             log.error(e.getMessage(), e);
             if (e.getRawStatusCode() == 403) {
