@@ -155,6 +155,8 @@ public class JwtService {
      * Get private key to sign JWT
      */
     private PrivateKey getPrivateKey() throws Exception {
+        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
+
         String privateKeyContent = readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
 
         privateKeyContent = privateKeyContent.replaceAll("\\n", "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
