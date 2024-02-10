@@ -231,11 +231,11 @@ Create new App or update existing App:
 
 Update configuration parameters inside docker-compose.yml (overwriting parameters inside src/main/resources/application.properties and src/main/resources/secret-keys.properties)
 
-Config values of (Basic Information) of your App
+Config values of your App
 
-* SLACK_SIGNATURE (slack.signature)
-* SLACK_CLIENT_ID (slack.client.id)
-* SLACK_CLIENT_SECRET (slack.client.secret)
+* SLACK_SIGNATURE (slack.signature) (see Basic Information: Signing Secret)
+* SLACK_CLIENT_ID (slack.client.id) (see Basic Information: Client ID)
+* SLACK_CLIENT_SECRET (slack.client.secret) (see Basic Information: Client Secret)
 
 Update Slack App configuration
 
