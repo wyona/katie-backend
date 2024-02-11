@@ -58,8 +58,6 @@ public class SlackController {
     @Value("${slack.client.secret}")
     private String katieSlackClientSecret;
 
-    @Value("${slack.custom.client.id}")
-    private String customSlackClientId;
     @Value("${slack.custom.client.secret}")
     private String customSlackClientSecret;
 
@@ -246,11 +244,11 @@ public class SlackController {
             String clientSecret = katieSlackClientSecret; // TODO: Get client secret for given client Id
 
             // TODO: Hack to test whether additional custom apps can be connected
-            if (customClientId != null && !customClientId.isEmpty() && customClientId.equals("custom")) {
-                clientId = customSlackClientId;
-                clientSecret = customSlackClientSecret;
+            if (customClientId != null && !customClientId.isEmpty()) {
+                clientId = customClientId;
+                clientSecret = customSlackClientSecret; // TODO: Get based on customClientId
             } else {
-                log.info("No custom client ID provided, therefore use defaul client ID ...");
+                log.info("No custom client ID provided, therefore use default client ID ...");
             }
 
             AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code, clientId, clientSecret);
