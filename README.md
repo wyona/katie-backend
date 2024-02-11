@@ -221,13 +221,14 @@ Get all hits of a particular index: E.g. https://elasticsearch-vt.wyona.com/askk
 
 ## Slack App
 
-Also see https://app.katie.qa/slack.html
+You can add the official Katie Slack App to your Slack workspace by clicking on the button "Add to Slack" on the page https://app.katie.qa/slack.html
 
-Create new App or update existing App:
+The official Katie Slack App is configured at https://api.slack.com/apps/A0184KMLJJE (Workspace https://wyonaworkspace.slack.com)
 
-* Login to "Wyona Workspace" https://wyonaworkspace.slack.com
+If you want to create and use your own custom Slack App in order to connect with the Katie backend, then follow the instructions below:
+
+* Login to Slack
 * Create new App: https://api.slack.com/apps
-* Update existing App: https://api.slack.com/apps/A0184KMLJJE
 
 Update configuration parameters inside docker-compose.yml (overwriting parameters inside src/main/resources/application.properties and src/main/resources/secret-keys.properties)
 
