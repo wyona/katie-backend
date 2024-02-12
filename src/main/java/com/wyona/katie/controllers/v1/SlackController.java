@@ -1,7 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
 import com.wyona.katie.services.AuthenticationService;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import com.wyona.katie.integrations.slack.SlackMessageSender;
 import com.wyona.katie.integrations.slack.services.DomainService;
@@ -12,24 +11,15 @@ import com.wyona.katie.models.slack.SlackInteraction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.wyona.katie.models.Error;
-import com.wyona.katie.models.slack.SlackDomainMapping;
-import com.wyona.katie.models.slack.SlackEventWrapper;
-import com.wyona.katie.models.slack.SlackInteraction;
-import com.wyona.katie.integrations.slack.SlackMessageSender;
-import com.wyona.katie.integrations.slack.services.DomainService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -58,16 +48,8 @@ public class SlackController {
     @Value("${slack.client.secret}")
     private String katieSlackClientSecret;
 
-    @Value("${slack.custom.client.id}")
-    private String customSlackClientId;
     @Value("${slack.custom.client.secret}")
     private String customSlackClientSecret;
-
-    @Value("${slack.access.token.endpoint}")
-    private String tokenEndpointUrl;
-
-    @Value("${slack.redirect.uri}")
-    private String redirectUri;
 
     @Value("${new.context.mail.body.host}")
     private String katieHost;
@@ -227,14 +209,12 @@ public class SlackController {
      * OAuth2 callback for Slack
      */
     @RequestMapping(value = "/oauth2-callback", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="SLACK: OAuth2 callback for Slack")
+    @ApiOperation(value="SLACK: OAuth2 callback for Slack for default App")
     public ResponseEntity<?> oauth2CallbackSlack(
             @ApiParam(name = "state", value = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
             @RequestParam(value = "state", required = false) String state,
             @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
             @RequestParam(value = "code", required = true) String code,
-            @ApiParam(name = "custom_client_id", value = "Custom Client ID",required = false)
-            @RequestParam(value = "custom_client_id", required = false) String customClientId,
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -242,40 +222,7 @@ public class SlackController {
             log.info("State: " + state);
             log.info("Code: " + code);
 
-            String clientId = katieSlackClientId; // TODO: Get client Id from "Redirect URL"
-            String clientSecret = katieSlackClientSecret; // TODO: Get client secret for given client Id
-
-            // TODO: Hack to test whether additional custom apps can be connected
-            if (true) {
-                clientId = customSlackClientId;
-                clientSecret = customSlackClientSecret; // TODO: Get based on customClientId
-            } else {
-                log.info("No custom client ID provided, therefore use default client ID ...");
-            }
-
-            AccessCredentials accessCredentials = getBotAccessToken(tokenEndpointUrl, code, clientId, clientSecret);
-            if (accessCredentials != null) {
-                //log.info("Bot access token: " + accessCredentials.getAccessTokeen());
-
-                domainService.removeObsoleteMappings(accessCredentials.getTeamId(), false);
-
-                String[] domainIds = domainService.getDomainIds(accessCredentials.getTeamId());
-
-                // INFO: Maybe domain existed before, but got deleted by Katie administrator
-                // INFO: Do not create domain here actually, but only when Katie gets invited to a particular channel, but save access token
-
-                if (domainIds.length > 0) {
-                    log.info(domainIds.length + " Katie domains already exists for Slack team / channel '" + accessCredentials.getTeamId() + " / " + accessCredentials.getChannelId() + "'.");
-                } else {
-                    log.info("No Katie domains exist yet for Slack team / channel '" + accessCredentials.getTeamId() + " / " + accessCredentials.getChannelId() + "'.");
-                }
-
-                domainService.updateSlackBotToken(accessCredentials.getTeamId(), accessCredentials.getAccessToken(), accessCredentials.getBotUserId());
-            } else {
-                String errorMsg = "No access token received!";
-                log.error(errorMsg);
-                return new ResponseEntity<>(new Error(errorMsg, "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            domainService.updateSlackBotToken(katieSlackClientId, katieSlackClientSecret, code, state);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", redirectLandingPage);
@@ -288,71 +235,34 @@ public class SlackController {
     }
 
     /**
-     * Get bot access token by sending a POST request to a token endpoint (see https://developers.google.com/identity/protocols/OpenIDConnect#exchangecode)
-     * @param token_endpoint Token endpoint URL (https://slack.com/api/oauth.v2.access)
-     * @param code Temporary authorization code in order to exchange for an access token, e.g. "40786315168.2889647873747.fra4c5e6e997127150223d1228d21439647775ze79a99762affe4a9fb10749e2"
-     * @param clientId Slack client Id
-     * @param clientSecret Slack client Secret
-     * @return bot access token (https://api.slack.com/authentication/token-types#bot)
+     * OAuth2 callback for Slack for custom App
      */
-    private AccessCredentials getBotAccessToken(String token_endpoint, String code, String clientId, String clientSecret) {
-        try {
-            StringBuilder qs = new StringBuilder("?");
-            qs.append("code=" + code);
-            qs.append("&");
-            qs.append("client_id=" + clientId);
-            qs.append("&");
-            qs.append("client_secret=" + clientSecret);
-            qs.append("&");
-            qs.append("redirect_uri=" + redirectUri);
-            qs.append("&");
-            qs.append("grant_type=authorization_code");
+    @RequestMapping(value = "/oauth2-callback/{custom_client_id}", method = RequestMethod.GET, produces = "application/json")
+    @ApiOperation(value="SLACK: OAuth2 callback for Slack for custom App")
+    public ResponseEntity<?> oauth2CallbackSlackCustom(
+            @ApiParam(name = "state", value = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
+            @RequestParam(value = "state", required = false) String state,
+            @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
+            @RequestParam(value = "code", required = true) String code,
+            @ApiParam(name = "custom_client_id", value = "Custom Client ID",required = true)
+            @PathVariable(value = "custom_client_id", required = true) String customClientId,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-            //java.net.URL url = new java.net.URL(token_endpoint);
-            String requestUrl = token_endpoint + qs;
-            log.info("Get Access and Id Token from '" + requestUrl + "' ...");
+        try {
+            log.info("State: " + state);
+            log.info("Code: " + code);
+
+            String clientSecret = customSlackClientSecret; // TODO: Get based on customClientId
+            domainService.updateSlackBotToken(customClientId, clientSecret, code, state);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", "application/json");
-            headers.set("Content-Type", "application/json; charset=UTF-8");
-            headers.set("Accept-Charset", "UTF-8");
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            //HttpEntity<String> request = new HttpEntity<String>(body, headers);
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<JsonNode> response = restTemplate.postForEntity(requestUrl, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            //log.debug("Response JSON: " + bodyNode);
-            // {"ok":true,"app_id":"A0184KMLJJE","authed_user":{"id":"U018A7XUWSY","scope":"im:history","access_token":"TOKEN_P","token_type":"user"},"scope":"channels:history,commands,im:history,chat:write,incoming-webhook,team:read","token_type":"bot","access_token":"TOKEN_B","bot_user_id":"U018505QFA6","team":{"id":"T01848J69AP","name":"Wyona Workspace"},"enterprise":null,"incoming_webhook":{"channel":"#test-katie-by-michael","channel_id":"C01BG53KWLA","configuration_url":"https://wyonaworkspace.slack.com/services/B00000000","url":"https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"}}
+            headers.add("Location", redirectLandingPage);
 
-            String okStatus = bodyNode.get("ok").asText();
-            if (okStatus.equals("false")) {
-                String error = bodyNode.get("error").asText();
-                log.error(error);
-                return null;
-            }
-
-            String teamId = bodyNode.get("team").get("id").asText();
-            String teamName = bodyNode.get("team").get("name").asText();
-
-            String channelId = bodyNode.get("incoming_webhook").get("channel_id").asText();
-            String channelName = bodyNode.get("incoming_webhook").get("channel").asText();
-
-            String botAccessToken = bodyNode.get("access_token").asText();
-            //log.debug("Bot access token: " + botAccessToken);
-
-            String botUserId = bodyNode.get("bot_user_id").asText();
-            log.info("Bot user Id: " + botUserId);
-
-            String appId = bodyNode.get("app_id").asText();
-            log.info("App Id: " + appId);
-
-            String userId = bodyNode.get("authed_user").get("id").asText();
-            log.info("User Id: " + userId);
-
-            return new AccessCredentials(teamId, teamName, channelId, channelName, botAccessToken, botUserId);
+            return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return null;
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -554,78 +464,5 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
             log.error(e.getMessage(), e);
             return null;
         }
-    }
-}
-
-/**
- *
- */
-class AccessCredentials {
-
-    String teamId;
-    String teamName;
-
-    String channelId;
-    String channelName;
-
-    String accessToken;
-
-    String botUserId;
-
-    /**
-     * @param botUserId User Id of Katie bot, which is generated per Slack team/workspace
-     */
-    public AccessCredentials(String teamId, String teamName, String channelId, String channelName, String accessToken, String botUserId) {
-        this.teamId = teamId;
-        this.teamName = teamName;
-
-        this.channelId = channelId;
-        this.channelName = channelName;
-
-        this.accessToken = accessToken;
-
-        this.botUserId = botUserId;
-    }
-
-    /**
-     *
-     */
-    public String getTeamId() {
-        return teamId;
-    }
-
-    /**
-     *
-     */
-    public String getTeamName() {
-        return teamName;
-    }
-
-    /**
-     *
-     */
-    public String getChannelId() {
-        return channelId;
-    }
-
-    /**
-     *
-     */
-    public String getChannelName() {
-        return channelName;
-    }
-
-    /**
-     *
-     */
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    /**
-     * Get Katie bot user Id
-     */
-    public String getBotUserId() {
-        return botUserId;
     }
 }
