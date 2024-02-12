@@ -1,4 +1,4 @@
 [
-{"clientId":"1276290213363.1276667698626","clientSecrect":"REPLACE","signingSecret":"REPLACE"},
-{"clientId":"5221090696325.6633794494721","clientSecrect":"REPLACE","signingSecret":"REPLACE"}
+{"clientId":"1276290213363.1276667698626","clientSecret":"REPLACE","signingSecret":"REPLACE"},
+{"clientId":"5221090696325.6633794494721","clientSecret":"REPLACE","signingSecret":"REPLACE"}
 ]
