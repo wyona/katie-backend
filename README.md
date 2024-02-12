@@ -249,7 +249,7 @@ Update Slack App configuration
     * Short Description: Get help on how to use Katie
 
 * Add New Redirect URL (Menu: OAuth & Permissions, Manifest: redirect_urls)
-    * E.g. https://app.katie.qa/api/v1/slack/oauth2-callback or https://MY.DOMAIN/api/v1/slack/oauth2-callback
+    * E.g. https://app.katie.qa/api/v1/slack/oauth2-callback/SLACK_CLIENT_ID or https://MY.DOMAIN/api/v1/slack/oauth2-callback/SLACK_CLIENT_ID
     * Bot Token scopes
         * channels:history
         * chat:write
@@ -297,7 +297,7 @@ features:
       should_escape: false
 oauth_config:
   redirect_urls:
-    - https://app.katie.qa/api/v1/slack/oauth2-callback
+    - https://app.katie.qa/api/v1/slack/oauth2-callback/SLACK_CLIENT_ID
   scopes:
     user:
       - im:history
