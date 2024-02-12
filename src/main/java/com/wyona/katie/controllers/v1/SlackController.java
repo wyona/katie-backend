@@ -1,5 +1,8 @@
 package com.wyona.katie.controllers.v1;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wyona.katie.models.slack.SlackAppConfig;
 import com.wyona.katie.services.AuthenticationService;
 
 import com.wyona.katie.integrations.slack.SlackMessageSender;
@@ -28,8 +31,11 @@ import javax.json.bind.JsonbBuilder;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -40,16 +46,11 @@ import java.util.Locale;
 @RequestMapping(value = "/api/v1/slack") 
 public class SlackController {
 
-    @Value("${slack.signature}")
-    private String slackSigningSecrets;
+    @Value("${config.data_path}")
+    private String configDataPath;
 
     @Value("${slack.client.id}")
     private String katieSlackClientId;
-    @Value("${slack.client.secret}")
-    private String katieSlackClientSecret;
-
-    @Value("${slack.custom.client.secret}")
-    private String customSlackClientSecret;
 
     @Value("${new.context.mail.body.host}")
     private String katieHost;
@@ -222,7 +223,7 @@ public class SlackController {
             log.info("State: " + state);
             log.info("Code: " + code);
 
-            domainService.updateSlackBotToken(katieSlackClientId, katieSlackClientSecret, code, state);
+            domainService.updateSlackBotToken(katieSlackClientId, getClientSecret(katieSlackClientId), code, state);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", redirectLandingPage);
@@ -253,8 +254,7 @@ public class SlackController {
             log.info("State: " + state);
             log.info("Code: " + code);
 
-            String clientSecret = customSlackClientSecret; // TODO: Get based on customClientId
-            domainService.updateSlackBotToken(customClientId, clientSecret, code, state);
+            domainService.updateSlackBotToken(customClientId, getClientSecret(customClientId), code, state);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", redirectLandingPage);
@@ -264,6 +264,61 @@ public class SlackController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * @param clientId Slacke App Client ID
+     */
+    private String getClientSecret(String clientId) {
+        SlackAppConfig[] configs = getSlackConfigs(clientId);
+        for (SlackAppConfig config : configs) {
+            if (config.getClientId().equals(clientId)) {
+                return config.getClientSecret();
+            }
+        }
+        log.error("No config for Slack Client ID '" + clientId + "'!");
+        return null;
+    }
+
+    /**
+     * @param clientId Slacke App Client ID
+     */
+    private String[] getSigningSecret(String clientId) {
+        // TODO: Use clientId
+        List<String> signingSecrets = new ArrayList<>();
+        SlackAppConfig[] configs = getSlackConfigs(clientId);
+        for (SlackAppConfig config : configs) {
+            signingSecrets.add(config.getSigningSecret());
+        }
+        return signingSecrets.toArray(new String[0]);
+    }
+
+    /**
+     *
+     */
+    private SlackAppConfig[] getSlackConfigs(String clientId) {
+        List<SlackAppConfig> configs = new ArrayList<>();
+
+        File slackConfigFile = new File(configDataPath, "slack-apps.json");
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode rootNode = mapper.readTree(slackConfigFile);
+            if (rootNode.isArray()) {
+                for (int i = 0; i < rootNode.size(); i++) {
+                    JsonNode configNode = rootNode.get(i);
+                    SlackAppConfig config = new SlackAppConfig();
+                    config.setClientId(configNode.get("clientId").asText());
+                    config.setClientSecret(configNode.get("clientSecret").asText());
+                    config.setSigningSecret(configNode.get("signingSecret").asText());
+                    configs.add(config);
+                    log.info("Slack App Config: " + config);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return configs.toArray(new SlackAppConfig[0]);
     }
 
     /**
@@ -427,7 +482,8 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
         }
 
         String xSlackSignature = request.getHeader("X-Slack-Signature");
-        return authenticationService.isSignatureValid(body, xSlackSignatureTimestamp, xSlackSignature, slackSigningSecrets.split(","));
+        String[] slackAppsSigningSecrets = getSigningSecret("TODO");
+        return authenticationService.isSignatureValid(body, xSlackSignatureTimestamp, xSlackSignature, slackAppsSigningSecrets);
     }
 
     /**
