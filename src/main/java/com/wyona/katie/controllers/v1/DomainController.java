@@ -1281,6 +1281,8 @@ public class DomainController {
             @RequestParam(value = "query-service-token", required = false) String queryServiceToken,
             @ApiParam(name = "embedding-impl", value = "Embedding implementation",required = false)
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
+            @ApiParam(name = "embedding-model", value = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
+            @RequestParam(value = "embedding-model", required = false) String embeddingModel,
             @ApiParam(name = "api-token", value = "Embedding implementation API token",required = false)
             @RequestParam(value = "api-token", required = false) String apiToken,
             @ApiParam(name = "index-alternative-questions", value = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
@@ -1346,7 +1348,7 @@ public class DomainController {
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
 
-        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
+        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
 
         /* INFO: Delay response to test frontend spinner
         try {

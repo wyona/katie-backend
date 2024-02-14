@@ -368,7 +368,8 @@ public class BenchmarkService {
                 embeddingImpl = embeddingsDefaultImpl;
                 apiToken = contextService.getApiToken(embeddingImpl);
             }
-            contextService.reindex(domainId, searchImplementation, null, null, embeddingImpl, apiToken, indexAlternativeQuestions, true, processId, throttleTimeInMillis);
+            String embeddingModel = null; // TODO: Make configurable
+            contextService.reindex(domainId, searchImplementation, null, null, embeddingImpl, embeddingModel, apiToken, indexAlternativeQuestions, true, processId, throttleTimeInMillis);
             timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
