@@ -1766,7 +1766,7 @@ public class ContextService {
                 if (embeddingImpl.equals(EmbeddingsImpl.SBERT)) {
                     domain.setEmbeddingsModel(null);
                 } else {
-                    if (embeddingModel != null) {
+                    if (embeddingModel != null && !embeddingModel.isEmpty()) {
                         domain.setEmbeddingsModel(embeddingModel);
                     } else {
                         // INFO: Get default embedding model for embedding implementation
