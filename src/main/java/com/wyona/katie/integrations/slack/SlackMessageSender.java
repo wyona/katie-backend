@@ -255,8 +255,8 @@ public class SlackMessageSender extends CommonMessageSender  {
                 connectTeamChannelWithDomain(teamId, slackUserId, interaction);
                 // TODO: Move sending of message here
             } else if (view.getCallback_id().equals(ChannelAction.SEND_BETTER_ANSWER.toString())) {
-                String questionUuid = "TODO";
-
+                SlackNodeAskedquestion askedQuestionNode = view.getState().getValues().getAskedquestion();
+                String askedQuestion = askedQuestionNode.getSingle_line_input().getValue();
                 SlackNodeBetteranswer betterAnswerNode = view.getState().getValues().getBetteranswwer();
                 String betterAnswer = betterAnswerNode.getSingle_line_input().getValue();
 
@@ -264,7 +264,8 @@ public class SlackMessageSender extends CommonMessageSender  {
                 String relevantUrl = relevantUrlNode.getSingle_line_input().getValue();
 
                 try {
-                    saveBetterAnswer(questionUuid, teamId, channelId, betterAnswer, relevantUrl);
+                    String questionUuid = "TODO";
+                    saveBetterAnswer(questionUuid, teamId, channelId, askedQuestion, betterAnswer, relevantUrl);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     // TODO: Return exception message back to Slack
@@ -290,12 +291,12 @@ public class SlackMessageSender extends CommonMessageSender  {
     }
 
     /**
+     * @param askedQuestion Asked question (TOOD: Use questionUUID instead)
      * @param answer Better answer
      */
-    private void saveBetterAnswer(String questionUUID, String teamId, String channelId, String answer, String relevantUrl) throws Exception {
-        log.info("TODO: Save better answer: " + answer);
+    private void saveBetterAnswer(String questionUUID, String teamId, String channelId, String askedQuestion, String answer, String relevantUrl) throws Exception {
+        log.info("Save better answer: " + answer);
         Context domain = domainService.getDomain(teamId, channelId);
-        String askedQuestion = "TODO"; // TODO: Use questionUUID
 
         List<String> classifications  = new ArrayList<String>();
         Date dateAnswered = new Date();
@@ -580,29 +581,48 @@ public class SlackMessageSender extends CommonMessageSender  {
         ArrayNode blocksNode = mapper.createArrayNode();
         rootNode.put("blocks", blocksNode);
 
-        // INFO: Better answer block
-        ObjectNode inputBlockNode = mapper.createObjectNode();
-        blocksNode.add(inputBlockNode);
-        inputBlockNode.put("type", "input");
-        inputBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_BETTER_ANSWER);
+        // INFO: Asked question block
+        ObjectNode inputAskedQuestionBlockNode = mapper.createObjectNode();
+        blocksNode.add(inputAskedQuestionBlockNode);
+        inputAskedQuestionBlockNode.put("type", "input");
+        inputAskedQuestionBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_ASKED_QUESTION);
 
-        ObjectNode elementNode = mapper.createObjectNode();
-        inputBlockNode.put("element", elementNode);
-        elementNode.put("type", "plain_text_input");
-        elementNode.put("action_id", "single_line_input");
+        ObjectNode elementAskedQuestionNode = mapper.createObjectNode();
+        inputAskedQuestionBlockNode.put("element", elementAskedQuestionNode);
+        elementAskedQuestionNode.put("type", "plain_text_input");
+        elementAskedQuestionNode.put("action_id", "single_line_input");
+
+        // TODO: Set askedQuestion
+
+        ObjectNode labelAskedQuestionNode = mapper.createObjectNode();
+        inputAskedQuestionBlockNode.put("label", labelAskedQuestionNode);
+        labelAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
+        labelAskedQuestionNode.put("text", messageSource.getMessage("asked.question", null, locale));
+
+        // INFO: Better answer block
+        ObjectNode inputBetterAnswerBlockNode = mapper.createObjectNode();
+        blocksNode.add(inputBetterAnswerBlockNode);
+        inputBetterAnswerBlockNode.put("type", "input");
+        inputBetterAnswerBlockNode.put("block_id", SlackViewStateValues.BLOCK_ID_BETTER_ANSWER);
+
+        ObjectNode elementBetterAnswerNode = mapper.createObjectNode();
+        inputBetterAnswerBlockNode.put("element", elementBetterAnswerNode);
+        elementBetterAnswerNode.put("type", "plain_text_input");
+        elementBetterAnswerNode.put("action_id", "single_line_input");
+        elementBetterAnswerNode.put("multiline", true);
         //elementNode.put("response_url_enabled", true);
         ObjectNode placeholderNode = mapper.createObjectNode();
-        elementNode.put("placeholder", placeholderNode);
+        elementBetterAnswerNode.put("placeholder", placeholderNode);
         placeholderNode.put("type", FORMAT_PLAIN_TEXT);
         placeholderNode.put("text", messageSource.getMessage("what.would.be.helpful.answer", null, locale));
 
         ObjectNode labelNode = mapper.createObjectNode();
-        inputBlockNode.put("label", labelNode);
+        inputBetterAnswerBlockNode.put("label", labelNode);
         labelNode.put("type", FORMAT_PLAIN_TEXT);
         labelNode.put("text", messageSource.getMessage("better.answer", null, locale));
 
         ObjectNode hintNode = mapper.createObjectNode();
-        inputBlockNode.put("hint", hintNode);
+        inputBetterAnswerBlockNode.put("hint", hintNode);
         hintNode.put("type", FORMAT_PLAIN_TEXT);
         hintNode.put("text", "Asked question: " + askedQuestion); // TODO
 
