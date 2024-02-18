@@ -592,7 +592,11 @@ public class SlackMessageSender extends CommonMessageSender  {
         elementAskedQuestionNode.put("type", "plain_text_input");
         elementAskedQuestionNode.put("action_id", "single_line_input");
 
-        // TODO: Set askedQuestion
+        // TODO: Set askedQuestion as actual value and not just as placeholder
+        ObjectNode placeholderAskedQuestionNode = mapper.createObjectNode();
+        elementAskedQuestionNode.put("placeholder", placeholderAskedQuestionNode);
+        placeholderAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
+        placeholderAskedQuestionNode.put("text", askedQuestion);
 
         ObjectNode labelAskedQuestionNode = mapper.createObjectNode();
         inputAskedQuestionBlockNode.put("label", labelAskedQuestionNode);
