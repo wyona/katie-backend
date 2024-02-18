@@ -272,7 +272,7 @@ public class SlackMessageSender extends CommonMessageSender  {
                 }
 
                 String[] args = new String[1];
-                args[0] = "TODO"; //askedQuestion.getQuestion();
+                args[0] = askedQuestion;
                 String _answerBackSlack = messageSource.getMessage("thanks.for.better.answer", args, new Locale("en"));
                 SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
