@@ -592,7 +592,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         elementAskedQuestionNode.put("type", "plain_text_input");
         elementAskedQuestionNode.put("action_id", "single_line_input");
 
-        // TODO: Set askedQuestion as actual value and not just as placeholder
+        // TODO: Set askedQuestion as actual value and not just as placeholder and update hint below accordingly
         ObjectNode placeholderAskedQuestionNode = mapper.createObjectNode();
         elementAskedQuestionNode.put("placeholder", placeholderAskedQuestionNode);
         placeholderAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
@@ -606,7 +606,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode hintNode = mapper.createObjectNode();
         inputAskedQuestionBlockNode.put("hint", hintNode);
         hintNode.put("type", FORMAT_PLAIN_TEXT);
-        hintNode.put("text", "Please enter question as asked or feel free to enter a modified version: " + askedQuestion); // TODO
+        hintNode.put("text", "Please enter asked question or feel free to enter a modified version: " + askedQuestion);
 
         // INFO: Better answer block
         ObjectNode inputBetterAnswerBlockNode = mapper.createObjectNode();
