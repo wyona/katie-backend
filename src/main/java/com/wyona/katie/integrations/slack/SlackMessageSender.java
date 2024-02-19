@@ -603,6 +603,11 @@ public class SlackMessageSender extends CommonMessageSender  {
         labelAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
         labelAskedQuestionNode.put("text", messageSource.getMessage("asked.question", null, locale));
 
+        ObjectNode hintNode = mapper.createObjectNode();
+        inputAskedQuestionBlockNode.put("hint", hintNode);
+        hintNode.put("type", FORMAT_PLAIN_TEXT);
+        hintNode.put("text", "Please enter question as asked or feel free to enter a modified version: " + askedQuestion); // TODO
+
         // INFO: Better answer block
         ObjectNode inputBetterAnswerBlockNode = mapper.createObjectNode();
         blocksNode.add(inputBetterAnswerBlockNode);
@@ -624,11 +629,6 @@ public class SlackMessageSender extends CommonMessageSender  {
         inputBetterAnswerBlockNode.put("label", labelNode);
         labelNode.put("type", FORMAT_PLAIN_TEXT);
         labelNode.put("text", messageSource.getMessage("better.answer", null, locale));
-
-        ObjectNode hintNode = mapper.createObjectNode();
-        inputBetterAnswerBlockNode.put("hint", hintNode);
-        hintNode.put("type", FORMAT_PLAIN_TEXT);
-        hintNode.put("text", "Asked question: " + askedQuestion); // TODO
 
         // INFO: Relevant URL block
         ObjectNode relevantUrlBlockNode = mapper.createObjectNode();
