@@ -265,6 +265,8 @@ public class SlackMessageSender extends CommonMessageSender  {
 
                 try {
                     String questionUuid = "TODO";
+                    String privateMetadata = view.getPrivate_metadata();
+                    log.info("Private metadata: " + privateMetadata); // TODO: Get channel id and question UUID from private metadata
                     saveBetterAnswer(questionUuid, teamId, channelId, askedQuestion, betterAnswer, relevantUrl);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);

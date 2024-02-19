@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SlackView {
 
     private String callback_id;
+    private String privateMetadata;
     private String type;
     private SlackViewState state;
 
@@ -45,6 +46,20 @@ public class SlackView {
      */
     public String getCallback_id() {
         return callback_id;
+    }
+
+    /**
+     *
+     */
+    public void setPrivate_metadata(String privateMetadata) {
+        this.privateMetadata = privateMetadata;
+    }
+
+    /**
+     *
+     */
+    public String getPrivate_metadata() {
+        return privateMetadata;
     }
 
     /**
