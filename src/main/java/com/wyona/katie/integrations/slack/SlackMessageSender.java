@@ -53,6 +53,9 @@ import freemarker.template.Template;
 @Component
 public class SlackMessageSender extends CommonMessageSender  {
 
+    private static final String CHANNEL_ID = "channel_id";
+    private static final String QUESTION_UUID = "question_uuid";
+
     private static final String FORMAT_MARKDOWN = "mrkdwn";
     private static final String FORMAT_PLAIN_TEXT = "plain_text";
 
@@ -266,7 +269,13 @@ public class SlackMessageSender extends CommonMessageSender  {
                 try {
                     String questionUuid = "TODO";
                     String privateMetadata = view.getPrivate_metadata();
-                    log.info("Private metadata: " + privateMetadata); // TODO: Get channel id and question UUID from private metadata
+                    log.info("Private metadata: " + privateMetadata);
+                    if (privateMetadata.indexOf(CHANNEL_ID) >= 0) {
+                        log.info("TODO: Get channel Id from private metadata instead from selected channel ...");
+                    }
+                    if (privateMetadata.indexOf(QUESTION_UUID) >= 0) {
+                        log.info("TODO: Get question UUID from private metadata ...");
+                    }
                     saveBetterAnswer(questionUuid, teamId, channelId, askedQuestion, betterAnswer, relevantUrl);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -570,7 +579,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("type", "modal");
         rootNode.put("callback_id", ChannelAction.SEND_BETTER_ANSWER.toString());
-        rootNode.put("private_metadata","channel_id::" + channelId);
+        rootNode.put("private_metadata",CHANNEL_ID + "::" + channelId + "," + QUESTION_UUID + "::" + "TODO");
 
         ObjectNode titleNode = mapper.createObjectNode();
         rootNode.put("title", titleNode);
