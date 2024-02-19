@@ -221,7 +221,11 @@ public class SlackMessageSender extends CommonMessageSender  {
      */
     @Async
     public void sendInteractionResponse(SlackInteraction interaction) {
-        log.info("Send interaction response back to slack: " + interaction.getResponse_url());
+        if (interaction.getResponse_url() != null) {
+            log.info("Send interaction response back to Slack: " + interaction.getResponse_url());
+        } else {
+            log.info("Send interaction response back to Slack: " + postMessageURL);
+        }
 
         // TEST: Uncomment lines below to test thread
 /*
@@ -251,9 +255,14 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else if (type.equals("view_submission")) {
             SlackView view = interaction.getView();
 
+            String privateMetadata = view.getPrivate_metadata();
+            log.info("Private metadata: " + privateMetadata);
+            String channelId = getValueFromPrivateMetadata(privateMetadata, CHANNEL_ID);
+            log.info("Channel Id: " + channelId);
+
             String teamId = interaction.getUser().getTeam_id();
             if (view.getCallback_id().equals(CHANNEL_VIEW_CONNECT_DOMAIN)) {
-                connectTeamChannelWithDomain(teamId, slackUserId, interaction);
+                connectTeamChannelWithDomain(teamId, channelId, slackUserId, interaction);
                 // TODO: Move sending of message here
             } else if (view.getCallback_id().equals(ChannelAction.SEND_BETTER_ANSWER.toString())) {
                 SlackNodeAskedquestion askedQuestionNode = view.getState().getValues().getAskedquestion();
@@ -264,10 +273,6 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackNodeRelevanturl relevantUrlNode = view.getState().getValues().getRelevanturl();
                 String relevantUrl = relevantUrlNode.getSingle_line_input().getValue();
 
-                String privateMetadata = view.getPrivate_metadata();
-                log.info("Private metadata: " + privateMetadata);
-                String channelId = getValueFromPrivateMetadata(privateMetadata, CHANNEL_ID);
-                log.info("Channel Id: " + channelId);
                 String questionUuid = getValueFromPrivateMetadata(privateMetadata, QUESTION_UUID);
                 log.info("Question UUID: " + questionUuid);
 
@@ -284,11 +289,6 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
-                String privateMetadata = view.getPrivate_metadata();
-                log.info("Private metadata: " + privateMetadata);
-                String channelId = getValueFromPrivateMetadata(privateMetadata, CHANNEL_ID);
-                log.info("Channel Id: " + channelId);
-
                 // TODO: Get channel Id from private metadata
                 //SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
                 //String channelId = channelIdNode.getSelect_id().getSelected_channel();
@@ -438,16 +438,18 @@ public class SlackMessageSender extends CommonMessageSender  {
     /**
      * Request connection of Slack team/channel with Katie domain
      * @param teamId Slack team Id
+     * @param channelId Slack channel Id
      * @param userId Slack user Id
      * @param interaction TODO
      */
-    private void connectTeamChannelWithDomain(String teamId, String userId, SlackInteraction interaction) {
+    private void connectTeamChannelWithDomain(String teamId, String channelId, String userId, SlackInteraction interaction) {
         SlackView view = interaction.getView();
-        SlackNodeDomainId domainIdNode = view.getState().getValues().getDomain_id(); // BLOCK_ID_DOMAIN_ID
-        SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
 
+        SlackNodeDomainId domainIdNode = view.getState().getValues().getDomain_id(); // BLOCK_ID_DOMAIN_ID
         String domainId = domainIdNode.getSingle_line_input().getValue();
-        String channelId = channelIdNode.getSelect_id().getSelected_channel();
+
+        //SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
+        //String channelId = channelIdNode.getSelect_id().getSelected_channel();
 
         log.info("Connect domain '" + domainId + "' with team / channel '" + teamId + " / " + channelId + "'  ...");
 
