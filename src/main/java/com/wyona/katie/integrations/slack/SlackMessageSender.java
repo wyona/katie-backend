@@ -284,9 +284,14 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
+                String privateMetadata = view.getPrivate_metadata();
+                log.info("Private metadata: " + privateMetadata);
+                String channelId = getValueFromPrivateMetadata(privateMetadata, CHANNEL_ID);
+                log.info("Channel Id: " + channelId);
+
                 // TODO: Get channel Id from private metadata
-                SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
-                String channelId = channelIdNode.getSelect_id().getSelected_channel();
+                //SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
+                //String channelId = channelIdNode.getSelect_id().getSelected_channel();
 
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
                 SlackNodeEmail emailNode = view.getState().getValues().getEmail();
@@ -376,8 +381,8 @@ public class SlackMessageSender extends CommonMessageSender  {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
             String askedQuestion = interaction.getActions().get(0).getValue();
-            // TODO: Submit question UUID
-            slackClientService.send(getView(interaction.getTrigger_id(), getBetterAnswerModal(askedQuestion, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
+            String questionUUID = "TODO"; // TODO: Get question UUID from interaction
+            slackClientService.send(getView(interaction.getTrigger_id(), getBetterAnswerModal(questionUUID, askedQuestion, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
             /*
@@ -587,7 +592,7 @@ public class SlackMessageSender extends CommonMessageSender  {
     /**
      * https://api.slack.com/surfaces/modals
      */
-    private String getBetterAnswerModal(String askedQuestion, String channelId) {
+    private String getBetterAnswerModal(String questionUUID, String askedQuestion, String channelId) {
         Locale locale = new Locale("en");
 
         ObjectMapper mapper = new ObjectMapper();
@@ -595,7 +600,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         rootNode.put("type", "modal");
         rootNode.put("callback_id", ChannelAction.SEND_BETTER_ANSWER.toString());
         // INFO: See https://api.slack.com/surfaces/modals#view-object-fields
-        rootNode.put("private_metadata",CHANNEL_ID + "::" + channelId + "," + QUESTION_UUID + "::" + "TODO");
+        rootNode.put("private_metadata",CHANNEL_ID + "::" + channelId + "," + QUESTION_UUID + "::" + questionUUID);
 
         ObjectNode titleNode = mapper.createObjectNode();
         rootNode.put("title", titleNode);
@@ -722,6 +727,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("type", "modal");
         rootNode.put("callback_id", callbackId);
+        rootNode.put("private_metadata", CHANNEL_ID + "::" + channelId);
 
         ObjectNode titleNode = mapper.createObjectNode();
         rootNode.put("title", titleNode);
@@ -762,7 +768,8 @@ public class SlackMessageSender extends CommonMessageSender  {
         hintNode.put("type", FORMAT_PLAIN_TEXT);
         hintNode.put("text", hint);
 
-        // INFO: Dropdown block
+        /*
+        // INFO: Dropdown block to select channel
         ObjectNode dropdownBlockNode = mapper.createObjectNode();
         blocksNode.add(dropdownBlockNode);
         dropdownBlockNode.put("type", "section");
@@ -782,6 +789,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         accessoryNode.put("placeholder", dropdownPlaceholderNode);
         dropdownPlaceholderNode.put("type", "plain_text");
         dropdownPlaceholderNode.put("text", "Select a channel");
+         */
 
         //log.info("ObjectMapper: " + rootNode.toString());
         return rootNode.toString();
