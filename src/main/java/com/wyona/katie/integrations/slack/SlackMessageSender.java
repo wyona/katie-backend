@@ -250,8 +250,6 @@ public class SlackMessageSender extends CommonMessageSender  {
             handleAction(interaction);
         } else if (type.equals("view_submission")) {
             SlackView view = interaction.getView();
-            SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
-            String channelId = channelIdNode.getSelect_id().getSelected_channel();
 
             String teamId = interaction.getUser().getTeam_id();
             if (view.getCallback_id().equals(CHANNEL_VIEW_CONNECT_DOMAIN)) {
@@ -266,16 +264,14 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackNodeRelevanturl relevantUrlNode = view.getState().getValues().getRelevanturl();
                 String relevantUrl = relevantUrlNode.getSingle_line_input().getValue();
 
+                String privateMetadata = view.getPrivate_metadata();
+                log.info("Private metadata: " + privateMetadata);
+                String channelId = getValueFromPrivateMetadata(privateMetadata, CHANNEL_ID);
+                log.info("Channel Id: " + channelId);
+                String questionUuid = getValueFromPrivateMetadata(privateMetadata, QUESTION_UUID);
+                log.info("Question UUID: " + questionUuid);
+
                 try {
-                    String questionUuid = "TODO";
-                    String privateMetadata = view.getPrivate_metadata();
-                    log.info("Private metadata: " + privateMetadata);
-                    if (privateMetadata.indexOf(CHANNEL_ID) >= 0) {
-                        log.info("TODO: Get channel Id from private metadata instead from selected channel ...");
-                    }
-                    if (privateMetadata.indexOf(QUESTION_UUID) >= 0) {
-                        log.info("TODO: Get question UUID from private metadata ...");
-                    }
                     saveBetterAnswer(questionUuid, teamId, channelId, askedQuestion, betterAnswer, relevantUrl);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -288,6 +284,10 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
+                // TODO: Get channel Id from private metadata
+                SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
+                String channelId = channelIdNode.getSelect_id().getSelected_channel();
+
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
                 SlackNodeEmail emailNode = view.getState().getValues().getEmail();
                 String email = emailNode.getSingle_line_input().getValue();
@@ -299,6 +299,21 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else {
             log.warn("No such interaction type '" + type + "' supported!");
         }
+    }
+
+    /**
+     * @param privateMetadata Prviate metadata string, e.g. "channel_id::C056L19282H,question_uuid::TODO"
+     * @param key Key, e.g. "channel_id"
+     */
+    private String getValueFromPrivateMetadata(String privateMetadata, String key) {
+        String[] keyValues = privateMetadata.split(",");
+        for (String keyValue : keyValues) {
+            if (keyValue.startsWith(key)) {
+                return keyValue.substring(key.length() + 2); // INFO: The 2 is the length of the separator "::"
+            }
+        }
+        log.error("Private metadata '" + privateMetadata + "' does not contain key '" + key +"'!");
+        return null;
     }
 
     /**
@@ -607,12 +622,6 @@ public class SlackMessageSender extends CommonMessageSender  {
         elementAskedQuestionNode.put("action_id", "single_line_input");
         elementAskedQuestionNode.put("initial_value", askedQuestion);
 
-        // TODO: Set askedQuestion as actual value and not just as placeholder and update hint below accordingly
-        //ObjectNode placeholderAskedQuestionNode = mapper.createObjectNode();
-        //elementAskedQuestionNode.put("placeholder", placeholderAskedQuestionNode);
-        //placeholderAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
-        //placeholderAskedQuestionNode.put("text", askedQuestion);
-
         ObjectNode labelAskedQuestionNode = mapper.createObjectNode();
         inputAskedQuestionBlockNode.put("label", labelAskedQuestionNode);
         labelAskedQuestionNode.put("type", FORMAT_PLAIN_TEXT);
@@ -622,7 +631,6 @@ public class SlackMessageSender extends CommonMessageSender  {
         inputAskedQuestionBlockNode.put("hint", hintNode);
         hintNode.put("type", FORMAT_PLAIN_TEXT);
         hintNode.put("text", "Please feel free to enter a corrected / modified version of the asked question");
-        //hintNode.put("text", "Please enter asked question or feel free to enter a modified version: " + askedQuestion);
 
         // INFO: Better answer block
         ObjectNode inputBetterAnswerBlockNode = mapper.createObjectNode();
@@ -674,7 +682,8 @@ public class SlackMessageSender extends CommonMessageSender  {
         urlHintNode.put("type", FORMAT_PLAIN_TEXT);
         urlHintNode.put("text", "Relevant URL, e.g. https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de"); // TODO
 
-        // INFO: Dropdown block
+        /*
+        // INFO: Dropdown block to select a channel
         ObjectNode dropdownBlockNode = mapper.createObjectNode();
         blocksNode.add(dropdownBlockNode);
         dropdownBlockNode.put("type", "section");
@@ -694,6 +703,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         accessoryNode.put("placeholder", dropdownPlaceholderNode);
         dropdownPlaceholderNode.put("type", "plain_text");
         dropdownPlaceholderNode.put("text", "Select a channel");
+         */
 
         //log.info("ObjectMapper: " + rootNode.toString());
         return rootNode.toString();
