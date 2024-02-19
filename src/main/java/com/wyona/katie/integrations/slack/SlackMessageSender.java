@@ -350,6 +350,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             answer = requestInvitation(interaction);
         } else if (actionId.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
             String askedQuestion = interaction.getActions().get(0).getValue();
+            // TODO: Submit question UUID
             slackClientService.send(getView(interaction.getTrigger_id(), getBetterAnswerModal(askedQuestion, channelId)), "https://slack.com/api/views.open", dataRepoService.getSlackBearerTokenOfTeam(teamId));
             return;
         } else if (actionId.equals(ChannelAction.CREATE_DOMAIN)) {
@@ -567,6 +568,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("type", "modal");
         rootNode.put("callback_id", ChannelAction.SEND_BETTER_ANSWER.toString());
+        rootNode.put("private_metadata","channel_id::" + channelId);
 
         ObjectNode titleNode = mapper.createObjectNode();
         rootNode.put("title", titleNode);
