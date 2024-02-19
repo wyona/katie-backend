@@ -290,10 +290,6 @@ public class SlackMessageSender extends CommonMessageSender  {
                 SlackAnswer answerBackToSlack = new SlackAnswer(_answerBackSlack, FORMAT_MARKDOWN);
                 slackClientService.send(embedAnswerIntoJSON(answerBackToSlack, channelId), postMessageURL, dataRepoService.getSlackBearerTokenOfTeam(teamId));
             } else if (view.getCallback_id().equals(CHANNEL_VIEW_CREATE_DOMAIN)) {
-                // TODO: Get channel Id from private metadata
-                //SlackNodeChannelId channelIdNode = view.getState().getValues().getChannel_id(); // BLOCK_ID_CHANNEL_ID
-                //String channelId = channelIdNode.getSelect_id().getSelected_channel();
-
                 log.info("Create new Katie domain and connect with Slack team / channel '" + teamId + " / " + channelId + "'.");
                 SlackNodeEmail emailNode = view.getState().getValues().getEmail();
                 String email = emailNode.getSingle_line_input().getValue();
@@ -1666,11 +1662,15 @@ public class SlackMessageSender extends CommonMessageSender  {
             user = iamService.getUserByUsername(new Username(email), false, false);
         } else {
             log.info("Create Katie user with username '" + inviterUserId + "' and email '" + email + "' and add as member to new Katie domain '" + newDomain.getId() + "'.");
+            // TODO: WARNING: Check whether user account creation requires approval!!!
             user = iamService.createUser(new Username(inviterUserId), email, Role.USER, authService.generatePassword(8), true,"TODO", "TODO", "en", false);
         }
         contextService.addMember(user.getId(), true, false, RoleDomain.OWNER, newDomain.getId());
         // TODO: Send confirmation instead invitation
         contextService.sendInvitation(technicalUser, user.getEmail(), user.getUsername(), newDomain.getId());
+        
+        String domainURL = newDomain.getHost() + "/#/domain/" + newDomain.getId();
+        mailerService.notifyAdministrator("Slack user created new domain", "Slack user with email '" + email + "' created new Katie domain " + domainURL, null, false);
 
         String[] args = new String[3];
         args[0] = getKatieDomainLink("*" + newDomain.getId() + "*", newDomain, null); // TODO: Consider adding JWT token
