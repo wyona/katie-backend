@@ -222,6 +222,7 @@ public class SlackMessageSender extends CommonMessageSender  {
     @Async
     public void sendInteractionResponse(SlackInteraction interaction) {
         if (interaction.getResponse_url() != null) {
+            // TODO: When is this ever the case?!
             log.info("Send interaction response back to Slack: " + interaction.getResponse_url());
         } else {
             log.info("Send interaction response back to Slack: " + postMessageURL);
