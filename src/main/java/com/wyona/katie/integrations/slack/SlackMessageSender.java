@@ -579,6 +579,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("type", "modal");
         rootNode.put("callback_id", ChannelAction.SEND_BETTER_ANSWER.toString());
+        // INFO: See https://api.slack.com/surfaces/modals#view-object-fields
         rootNode.put("private_metadata",CHANNEL_ID + "::" + channelId + "," + QUESTION_UUID + "::" + "TODO");
 
         ObjectNode titleNode = mapper.createObjectNode();
