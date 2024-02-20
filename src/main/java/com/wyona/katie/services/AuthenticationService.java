@@ -325,7 +325,7 @@ public class AuthenticationService {
     /**
      * Check whether Slack signature is valid
      * https://api.slack.com/authentication/verifying-requests-from-slack
-     * @param body Raw request body
+     * @param body Raw request body, e.g. "payload=%7B%22type%22%3A%22block_actions%22...."
      * @param signatureTimestamp X-Slack-Request-Timestamp
      * @param signature X-Slack-Signature
      * @param signingSecrets Array of Slack signing secrets

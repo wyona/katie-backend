@@ -333,7 +333,7 @@ public class SlackController {
         String payload = getRequestBody(request); // WARNING: Request body can only be read once!
 
         if (!isSignatureValid(request, payload)) {
-            log.error("Signature is not valid!");
+            log.error("Signature of events request is not valid!");
             return new ResponseEntity<>(new Error("Signature invalid", "SIGNATURE_INVALID"), HttpStatus.BAD_REQUEST);
         }
 
@@ -384,7 +384,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
         String payload = getRequestBody(request); // INFO: The payload is URL encoded JSON, see https://api.slack.com/messaging/interactivity#components
 
         if (!isSignatureValid(request, payload)) {
-            log.error("Signature is not valid!");
+            log.error("Signature of interactivity request is not valid!");
             return new ResponseEntity<>(new Error("Signature invalid", "SIGNATURE_INVALID"), HttpStatus.BAD_REQUEST);
         }
 
@@ -418,7 +418,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
         String payload = getRequestBody(request);
 
         if (!isSignatureValid(request, payload)) {
-            log.error("Signature is not valid!");
+            log.error("Signature of command request is not valid!");
             return new ResponseEntity<>(new Error("Signature invalid", "SIGNATURE_INVALID"), HttpStatus.BAD_REQUEST);
         }
 
@@ -470,6 +470,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
     /**
      * Check whether signature is valid
      * https://api.slack.com/authentication/verifying-requests-from-slack
+     * @param body Raw request body, e.g. "payload=%7B%22type%22%3A%22block_actions%22...."
      * @return true when signature is valid and false otherwise
      */
     private boolean isSignatureValid(HttpServletRequest request, String body) {
@@ -507,6 +508,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
      *
      */
     private String getRequestBody(HttpServletRequest request) {
+        log.info("Get body of request '" + request.getRequestURI() + "' ...");
         StringBuilder body = new StringBuilder();
         try {
             BufferedReader bufferedReader = request.getReader();
@@ -515,6 +517,11 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
             while ((bytesRead = bufferedReader.read(charBuffer)) != -1) {
                 body.append(charBuffer, 0, bytesRead);
             }
+
+            if (body.toString().isEmpty()) {
+                log.warn("Request body is empty!");
+            }
+            
             return body.toString();
         } catch(Exception e) {
             log.error(e.getMessage(), e);
