@@ -519,9 +519,9 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
             }
 
             if (body.toString().isEmpty()) {
-                log.warn("Request body is empty!");
+                log.warn("Request body is empty! Make sure, that log level is not set to DEBUG, because when set to DEBUG, then Spring might consume the request body! See https://github.com/spring-projects/spring-framework/issues/28587");
             }
-            
+
             return body.toString();
         } catch(Exception e) {
             log.error(e.getMessage(), e);
