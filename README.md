@@ -230,7 +230,7 @@ If you want to create and use your own custom Slack App in order to connect with
 * Login to Slack
 * Create new App: https://api.slack.com/apps
 
-Update configuration parameters inside docker-compose.yml (overwriting parameters inside src/main/resources/application.properties and src/main/resources/secret-keys.properties)
+Update configuration parameters inside volume/config/slack-apps.json
 
 Config values of your App
 
