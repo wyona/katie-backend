@@ -13,6 +13,7 @@ services:
       #- /home/wyona/local/katie/volume:/ask-katie
     environment:
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=INFO
+      # WARNING: When setting log level to DEBUG, then Spring might consume the request body, which means the request body will not be available anymore for Katie! See https://github.com/spring-projects/spring-framework/issues/28587
       #- LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
       - NEW_CONTEXT_MAIL_BODY_HOST=http://localhost:8044
       # Outgoing mail server configuration
