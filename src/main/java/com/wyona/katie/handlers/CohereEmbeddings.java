@@ -49,7 +49,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(cohereKey);
-            HttpEntity<String> request = new HttpEntity<String>(getRequestBody(sentence, cohereModel, inputType), headers);
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, cohereModel, inputType), headers);
 
             String requestUrl = cohereHost + "/embed";
             log.info("Get embeddings: " + requestUrl);
@@ -59,7 +59,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
             JsonNode embeddingsNode = bodyNode.get("embeddings");
             if (embeddingsNode.isArray()) {
-                JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see getRequestBody(...))
+                JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see createRequestBody(...))
 
                 if (embeddingNode.isArray()) {
                     vector = new float[embeddingNode.size()];
@@ -98,7 +98,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     /**
      * @param inputType Cohere input type, e.g. "search_document", "search_query", "classification", "clustering"
      */
-    private String getRequestBody(String sentence, String cohereModel, String inputType) {
+    private String createRequestBody(String sentence, String cohereModel, String inputType) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
         body.put("model", cohereModel);

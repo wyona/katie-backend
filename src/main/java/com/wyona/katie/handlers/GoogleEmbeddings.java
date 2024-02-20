@@ -41,7 +41,7 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(apiToken);
-            HttpEntity<String> request = new HttpEntity<String>(getRequestBody(sentence, model), headers);
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, model), headers);
 
             // https://console.cloud.google.com/apis/dashboard?authuser=0&hl=de&project=katie-388014
             String requestUrl = googleHost + "/v1/projects/katie-388014/locations/us-central1/publishers/google/models/textembedding-gecko:predict";
@@ -78,7 +78,7 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
     /**
      *
      */
-    private String getRequestBody(String sentence, String model) {
+    private String createRequestBody(String sentence, String model) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
 

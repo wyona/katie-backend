@@ -40,7 +40,7 @@ public class AlephAlphaGenerate implements GenerateProvider {
             // INFO: See https://docs.aleph-alpha.com/api/complete/
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(alephAlphaToken);
-            HttpEntity<String> request = new HttpEntity<String>(getRequestBody(promptMessages.get(0).getContent(), alephAlphaModel), headers);
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(promptMessages.get(0).getContent(), alephAlphaModel), headers);
 
             String requestUrl = alephAlphaHost + "/complete";
             log.info("Get completion: " + requestUrl);
@@ -74,7 +74,7 @@ public class AlephAlphaGenerate implements GenerateProvider {
     /**
      *
      */
-    private String getRequestBody(String prompt, String alephAlphaModel) {
+    private String createRequestBody(String prompt, String alephAlphaModel) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
         body.put("model", alephAlphaModel);

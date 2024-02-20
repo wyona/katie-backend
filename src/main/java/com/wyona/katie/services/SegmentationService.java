@@ -263,7 +263,7 @@ public class SegmentationService {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = getHttpHeaders(ai21Key);
 
-        HttpEntity<String> request = new HttpEntity<String>(getRequestBody(text), headers);
+        HttpEntity<String> request = new HttpEntity<String>(createRequestBody(text), headers);
 
         String requestUrl = "https://api.ai21.com/studio/v1/segmentation";
         log.info("Get segmentation: " + requestUrl);
@@ -298,7 +298,7 @@ public class SegmentationService {
     /**
      *
      */
-    private String getRequestBody(String text) throws Exception  {
+    private String createRequestBody(String text) throws Exception  {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
         body.put("sourceType","TEXT");

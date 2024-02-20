@@ -39,7 +39,7 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(alephAlphaToken);
-            String requestBody = getRequestBody(sentence, alephAlphaModel);
+            String requestBody = createRequestBody(sentence, alephAlphaModel);
             log.info("Request body: " + requestBody);
             HttpEntity<String> request = new HttpEntity<String>(requestBody, headers);
 
@@ -78,7 +78,7 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
     /**
      *
      */
-    private String getRequestBody(String sentence, String alephAlphaModel) {
+    private String createRequestBody(String sentence, String alephAlphaModel) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
         body.put("model", alephAlphaModel);
