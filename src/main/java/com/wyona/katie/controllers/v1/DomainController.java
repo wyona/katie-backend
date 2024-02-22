@@ -604,8 +604,8 @@ public class DomainController {
             @PathVariable(value = "id", required = true) String id,
             @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Law Assistant RAG'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = false)
-            @RequestParam(value = "endpoint-url", required = false) String endpointUrl,
+            @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = true)
+            @RequestParam(value = "endpoint-url", required = true) String endpointUrl,
             @ApiParam(name = "endpoint-payload", value = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false}", required = true)
             @RequestBody String payload,
             HttpServletRequest request) {
