@@ -737,7 +737,7 @@ public class AIService {
     }
 
     /**
-     *
+     * Add QnA classifications as taxonomy entries
      */
     private void updateTaxonomyIndex(QnA qna, Context domain) throws Exception {
         log.info("Update taxonomy index ...");
