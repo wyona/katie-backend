@@ -443,11 +443,11 @@ public class AskController {
      * REST interface to autocomplete taxonomy term / return suggestions
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/suggest", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Complete taxonomy term / return suggestions")
+    @ApiOperation(value="Complete taxonomy term (e.g. birth) / return suggestions (e.g. birthdate, birthplace)")
     public ResponseEntity<?> completeTaxonomyEntry(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "incomplete-term", value = "Incomplete taxonomy term, e.g. 'birth'",required = true)
+            @ApiParam(name = "incomplete-term", value = "Incomplete taxonomy term, e.g. 'birth'", required = true)
             @RequestParam(value = "incomplete-term", required = true) String incompleteTerm,
             HttpServletRequest request, HttpServletResponse response) {
 
