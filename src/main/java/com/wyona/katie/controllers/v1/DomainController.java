@@ -1004,6 +1004,34 @@ public class DomainController {
     }
 
     /**
+     * Add multiple taxonomy entries
+     */
+    @RequestMapping(value = "/{id}/taxonomy/entries", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Add multiple taxomnomy entries, e.g. birthdate, birthplace")
+    public ResponseEntity<?> addTaxonomyEntries(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "entries", value = "Array of entries", required = true)
+            @RequestBody String[] entries,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            domainService.addTaxonomyEntries(id, entries);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get autocompletion entries of a particular domain
      */
     @RequestMapping(value = "/{id}/autocompletion/entries", method = RequestMethod.GET, produces = "application/json")
@@ -1035,7 +1063,7 @@ public class DomainController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1063,7 +1091,7 @@ public class DomainController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1091,7 +1119,7 @@ public class DomainController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1119,7 +1147,7 @@ public class DomainController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1145,7 +1173,7 @@ public class DomainController {
             return new ResponseEntity<>(urls, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1171,7 +1199,7 @@ public class DomainController {
             return new ResponseEntity<>(webhooks, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1199,7 +1227,7 @@ public class DomainController {
             return new ResponseEntity<>(webhookRequests, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1227,7 +1255,7 @@ public class DomainController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1255,7 +1283,7 @@ public class DomainController {
             return new ResponseEntity<>(webhook, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
