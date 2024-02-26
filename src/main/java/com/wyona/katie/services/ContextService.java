@@ -597,6 +597,20 @@ public class ContextService {
     }
 
     /**
+     * Add taxonomy entries
+     * @param values Array of taxonomy entries, e.g. "birthdate", "birthplace"
+     */
+    public void addTaxonomyEntries(String domainId, String[] values) throws Exception {
+        Context domain = getContext(domainId);
+
+        if (!isMemberOrAdmin(domainId)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        taxonomyService.addEntries(domain, values);
+    }
+
+    /**
      * Get autocompletion entries of a particular domain
      * @return array of autocompletion entries
      */
