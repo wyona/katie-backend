@@ -4,6 +4,7 @@
     <name>Third-party RAG Local</name>
     <third-party-rag url="http://0.0.0.0:8000/chat">
       <body content-type="application/json">{"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}</body>
+      <response json-pointer="/data/content"/>
     </third-party-rag>
   </ks>
   <ks connector="TOP_DESK" enabled="false" id="432d418c-6672-4422-b8b9-abb5fe3ceb94">
