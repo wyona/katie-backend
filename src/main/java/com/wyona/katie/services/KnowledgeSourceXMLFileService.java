@@ -187,7 +187,9 @@ public class KnowledgeSourceXMLFileService {
                     Element thirdPartyRAGEl = xmlService.getDirectChildByTagName(ksEl, "third-party-rag");
                     ksMeta.setThirdPartyRAGUrl(thirdPartyRAGEl.getAttribute("url"));
                     Element bodyEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "body");
-                    ksMeta.setGetThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
+                    ksMeta.setThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
+                    Element responseEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "response");
+                    ksMeta.setThirdPartyRAGResponseJsonPath(responseEl.getAttribute("json-pointer"));
                 }
 
                 if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
