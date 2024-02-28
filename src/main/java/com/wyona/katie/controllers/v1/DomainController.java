@@ -606,7 +606,9 @@ public class DomainController {
             @RequestParam(value = "name", required = true) String name,
             @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = true)
             @RequestParam(value = "endpoint-url", required = true) String endpointUrl,
-            @ApiParam(name = "endpoint-payload", value = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false}", required = true)
+            @ApiParam(name = "response-json-pointer", value = "Response JSON pointer, e.g. '/data/content' or '/response/docs/0/content_txt'", required = true)
+            @RequestParam(value = "response-json-pointer", required = true) String responseJsonPointer,
+            @ApiParam(name = "endpoint-payload", value = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false} or {\"query\" : \"{{QUESTION}}\"}", required = true)
             @RequestBody String payload,
             HttpServletRequest request) {
 
@@ -615,7 +617,7 @@ public class DomainController {
         }
 
         try {
-            domainService.addKnowledgeSourceThirdPartyRAG(id, name, endpointUrl, payload);
+            domainService.addKnowledgeSourceThirdPartyRAG(id, name, endpointUrl, payload, responseJsonPointer);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
