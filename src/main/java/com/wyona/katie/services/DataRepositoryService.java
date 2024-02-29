@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.*;
 import com.wyona.katie.models.discord.DiscordDomainMapping;
@@ -120,6 +121,31 @@ public class DataRepositoryService {
     private static final String STATUS = "STATUS";
 
     private static final String ROW_COUNT = "rowcount";
+
+    /**
+     * Write embedding into a file
+     * @param vector Embedding vector
+     */
+    public void saveEmbedding(float[] vector, String text, File file) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode rootNode = objectMapper.createObjectNode();
+
+        rootNode.put("text", text);
+
+        rootNode.put("length", UtilsService.getVectorLength(vector));
+
+        ArrayNode embeddingNode = objectMapper.createArrayNode();
+        rootNode.put("embedding", embeddingNode);
+        for (float value : vector) {
+            embeddingNode.add(value);
+        }
+
+        try {
+            objectMapper.writeValue(file, rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 
     /**
      * Add access/bearer token
