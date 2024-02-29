@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;
 import com.wyona.katie.services.UtilsService;
@@ -38,6 +39,9 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
     @Autowired
     private LuceneCodecFactory luceneCodecFactory;
+
+    @Autowired
+    private DataRepositoryService dataRepoService;
 
     private static final String PATH_FIELD = "qna_uuid";
     private static final String VECTOR_FIELD = "vector";
@@ -186,24 +190,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         }
 
         File file = new File(embeddingDir, fieldName + ".json");
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode rootNode = objectMapper.createObjectNode();
-
-        rootNode.put("text", text);
-
-        rootNode.put("length", UtilsService.getVectorLength(vector));
-
-        ArrayNode embeddingNode = objectMapper.createArrayNode();
-        rootNode.put("embedding", embeddingNode);
-        for (float value : vector) {
-            embeddingNode.add(value);
-        }
-
-        try {
-            objectMapper.writeValue(file, rootNode);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        dataRepoService.saveEmbedding(vector, text, file);
     }
 
     /**
