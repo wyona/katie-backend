@@ -28,7 +28,7 @@ class QuestionAnalyzerServiceTest {
 
     private final String questionClassifierCertaintyThreshold = "0.55";
 
-    /***
+    /**
      * TODO: separate network service test and ? recognizer test. network test needs elaborate setup with emailing etc
      * Checks if input is recognized as a question
      */
