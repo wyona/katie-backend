@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.Context;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,21 @@ public class UtilsService {
         }
 
         return dotProduct;
+    }
+
+    /**
+     * https://en.wikipedia.org/wiki/Centroid#Determination
+     * https://en.wikipedia.org/wiki/Center_of_mass
+     */
+    public static FloatVector getCentroid(FloatVector[] vectors) {
+        FloatVector centroid = new FloatVector(vectors[0].getDimension());
+        for (FloatVector vector : vectors) {
+            centroid.add(vector);
+            //log.debug("Centroid: " + centroid);
+        }
+        centroid.scale(new Float(1.0/vectors.length).floatValue());
+
+        return centroid;
     }
 
     /**
