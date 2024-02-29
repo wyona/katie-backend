@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.*;
@@ -30,6 +31,9 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
     @Autowired
     private EmbeddingsService embeddingsService;
+
+    @Autowired
+    private DataRepositoryService dataRepoService;
 
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
 
@@ -97,6 +101,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         try {
             writer = new IndexWriter(getIndexDirectory(domain), iwc);
 
+            // TODO: Set UUID
             indexSampleAsVector(writer, "TODO", sample, domain);
 
             // writer.forceMerge(1);
@@ -116,13 +121,20 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         Field uuidField = new StringField(UUID_FIELD, uuid, Field.Store.YES);
         doc.add(uuidField);
 
-        Field ratingField = new StringField(LABEL_FIELD, "" + sample.getLabel(), Field.Store.YES);
-        doc.add(ratingField);
+        Field labelField = new StringField(LABEL_FIELD, "" + sample.getLabel(), Field.Store.YES);
+        doc.add(labelField);
 
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         float[] vector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+
+        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + sample.getLabel() + "/embeddings/");
+        if (!embeddingsDir.isDirectory()) {
+            embeddingsDir.mkdirs();
+        }
+        File file = new File(embeddingsDir, uuid + ".json");
+        dataRepoService.saveEmbedding(vector, sample.getText(), file);
 
         FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
         KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
@@ -130,6 +142,15 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
         log.info("Add vector with " + vector.length + " dimensions to Lucene index ...");
         writer.addDocument(doc);
+    }
+
+    /**
+     * Get centroid for a particular label
+     */
+    private FloatVector getCentroid(Context domain, int label) {
+        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + label + "/embeddings/");
+        // TODO: Read all embeddings and calculate Centroid
+        return null;
     }
 
     /**
