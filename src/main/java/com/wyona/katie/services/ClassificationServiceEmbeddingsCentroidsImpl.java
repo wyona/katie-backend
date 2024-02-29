@@ -46,7 +46,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      */
     public void train(TextItem[] samples) {
         for (TextItem sample : samples) {
-            log.info("Sample: " + sample.getText());
+            log.info("TODO: Train Sample: Text: " + sample.getText() + ", Label: " + sample.getLabel());
         }
     }
 
