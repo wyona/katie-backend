@@ -2901,6 +2901,18 @@ public class ContextService {
         saveQuestionAnswer(domain, uuid, qna);
         retrain(new QnA(qna), domain, true);
 
+        if (true) {
+            TextItem[] samples = new TextItem[1];
+            try {
+                // TODO: Set right label
+                int label = Integer.parseInt(classification);
+                samples[0] = new TextItem(qna.getAnswer(), label);
+                classificationService.train(samples);
+            } catch(Exception e) {
+                log.warn("Label '" + classification + "' is not an integer and therefore classifier cannot be trained!");
+            }
+        }
+
         return qna;
     }
 
