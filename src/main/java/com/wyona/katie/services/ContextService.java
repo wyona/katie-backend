@@ -723,15 +723,16 @@ public class ContextService {
     /**
      * Add third-party RAG as knowledge source
      * @param payload Payload sent to endpoint, e.g. {"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}
+     * @param jsonPointer Response JSON pointer, e.g. "/data/content"
      */
-    public void addKnowledgeSourceThirdPartyRAG(String domainId, String name, String endpointUrl, String payload) throws Exception {
+    public void addKnowledgeSourceThirdPartyRAG(String domainId, String name, String endpointUrl, String payload, String jsonPointer) throws Exception {
         if (!isMemberOrAdmin(domainId)) {
             log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
 
         //Context domain = getContext(domainId);
-        String ksUUID = knowledgeSourceXMLFileService.addThirdPartyRAG(domainId, name, endpointUrl, payload);
+        String ksUUID = knowledgeSourceXMLFileService.addThirdPartyRAG(domainId, name, endpointUrl, payload, jsonPointer);
     }
 
     /**

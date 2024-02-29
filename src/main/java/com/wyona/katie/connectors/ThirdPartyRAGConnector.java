@@ -1,14 +1,15 @@
 package com.wyona.katie.connectors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.models.*;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class ThirdPartyRAGConnector implements Connector {
         List<Hit> hits = new ArrayList<Hit>();
 
         // INFO: Use double curly braces for variables, e.g. {{QUESTION}}
-        String body = ksMeta.getGetThirdPartyRAGBody();
+        String body = ksMeta.getThirdPartyRAGBody();
         body = body.replaceAll("\\{\\{QUESTION\\}\\}", question.getSentence());
         log.info("Request body: " + body.toString());
 
@@ -42,25 +43,54 @@ public class ThirdPartyRAGConnector implements Connector {
         HttpHeaders headers = getHttpHeaders(ksMeta);
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
 
+        /* https://stackoverflow.com/questions/42938444/content-type-in-solr-responses
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setSupportedMediaTypes(Collections.singletonList(MediaType.ALL));
+        messageConverters.add(converter);
+        restTemplate.setMessageConverters(messageConverters);
+         */
+
         try {
-            /*
-            // INFO: Plain text response
-            ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, String.class);
-            log.info("Response: " + response);
-            String _answer = response.getBody();
+            String _answer = "<p>NO_ANSWER_AVAILABLE</p>";
+            JsonNode answerNode = null;
+            String jsonPath = ksMeta.getThirdPartyRAGResponseJsonPath();
 
-             */
+            // INFO: Process as plain text response
+            if (true) {
+                ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, String.class);
+                log.info("Plain text response: " + response);
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode bodyNode = mapper.readTree(response.getBody());
+                answerNode = bodyNode.at(jsonPath);
+            } else {
+                // INFO: JSON response
+                ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+                JsonNode bodyNode = response.getBody();
+                log.info("JSON response: " + bodyNode);
+                answerNode = bodyNode.at(jsonPath);
+            }
 
-            // INFO: JSON response
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("JSON response: " + bodyNode);
-            JsonNode dataNode = bodyNode.get("data");
-            String _answer = dataNode.get("content").asText();
+            if (answerNode != null) {
+                log.info("Answer node: " + answerNode.toString());
+                if (answerNode.isArray()) {
+                    _answer = "<div>";
+                    for (int i = 0; i < answerNode.size(); i++) {
+                        _answer = _answer + "<p>" + answerNode.get(i).asText() + "</p>";
+                    }
+                    _answer = _answer + "</div>";
+                } else {
+                    _answer = "<p>" +answerNode.asText() + "</p>";
+                }
+            } else {
+                log.error("No node available for json path '" + jsonPath + "'!");
+            }
+            log.info("Answer: " + _answer);
 
             double score = 0.0;
             String url = null;
-            Answer answer = new Answer(question.getSentence(), _answer, null, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+            ContentType contentType = ContentType.TEXT_HTML;
+            Answer answer = new Answer(question.getSentence(), _answer, contentType, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
             Hit hit = new Hit(answer, score);
             hits.add(hit);
         } catch(HttpClientErrorException e) {

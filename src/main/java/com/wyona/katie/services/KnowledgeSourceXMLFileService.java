@@ -55,6 +55,7 @@ public class KnowledgeSourceXMLFileService {
     private static final String WEBSITE_CHUNK_OVERLAP_ATTR = "chunk-overlap";
 
     private static final String THIRD_PARTY_RAG_TAG = "third-party-rag";
+    private static final String THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR = "json-pointer";
 
     /**
      * Get knowledge sources
@@ -184,10 +185,12 @@ public class KnowledgeSourceXMLFileService {
                 }
 
                 if (connector.equals(KnowledgeSourceConnector.THIRD_PARTY_RAG)) {
-                    Element thirdPartyRAGEl = xmlService.getDirectChildByTagName(ksEl, "third-party-rag");
+                    Element thirdPartyRAGEl = xmlService.getDirectChildByTagName(ksEl, THIRD_PARTY_RAG_TAG);
                     ksMeta.setThirdPartyRAGUrl(thirdPartyRAGEl.getAttribute("url"));
                     Element bodyEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "body");
-                    ksMeta.setGetThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
+                    ksMeta.setThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
+                    Element responseEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "response");
+                    ksMeta.setThirdPartyRAGResponseJsonPath(responseEl.getAttribute(THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR));
                 }
 
                 if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
@@ -505,7 +508,7 @@ public class KnowledgeSourceXMLFileService {
      * @param payload Payload sent to endpoint, e.g. {"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}
      * @return knowledge source Id
      */
-    public String addThirdPartyRAG(String domainId, String name, String endpointUrl, String payload) throws Exception {
+    public String addThirdPartyRAG(String domainId, String name, String endpointUrl, String payload, String jsonPointer) throws Exception {
         log.info("Add third-party RAG as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
@@ -531,6 +534,10 @@ public class KnowledgeSourceXMLFileService {
         thirdPartyRagEl.appendChild(bodyEl);
         bodyEl.setAttribute("content-type", "application/json"); // TODO: Depending on payload
         bodyEl.setTextContent(payload);
+
+        Element responseEl = doc.createElement("response");
+        thirdPartyRagEl.appendChild(responseEl);
+        responseEl.setAttribute(THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR, jsonPointer);
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);

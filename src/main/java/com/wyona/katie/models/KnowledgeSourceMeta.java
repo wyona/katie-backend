@@ -63,6 +63,7 @@ public class KnowledgeSourceMeta {
 
     private String thirdPartyRAGUrl;
     private String thirdPartyRAGBody;
+    private String thirdPartyRAGResponseJsonPath;
 
     private String topDeskBaseUrl;
     private String topDeskUsername;
@@ -129,6 +130,7 @@ public class KnowledgeSourceMeta {
 
         this.thirdPartyRAGUrl = null;
         this.thirdPartyRAGBody = null;
+        this.thirdPartyRAGResponseJsonPath = null;
 
         this.topDeskBaseUrl = null;
         this.topDeskUsername = null;
@@ -671,17 +673,33 @@ public class KnowledgeSourceMeta {
     }
 
     /**
-     *
+     * @param thirdPartyRAGBody RAG body, e.g. "{"query" : "{{QUESTION}}"}"
      */
-    public void setGetThirdPartyRAGBody(String thirdPartyRAGBody) {
+    public void setThirdPartyRAGBody(String thirdPartyRAGBody) {
         this.thirdPartyRAGBody = thirdPartyRAGBody;
     }
 
     /**
      *
      */
-    public String getGetThirdPartyRAGBody() {
+    public String getThirdPartyRAGBody() {
         return thirdPartyRAGBody;
+    }
+
+    /**
+     * Set JSON Pointer (https://www.rfc-editor.org/rfc/rfc6901)
+     * @param jsonPath JSON pointer, e.g. "/response/docs/0/content_txt" or "/data/content"
+     */
+    public void setThirdPartyRAGResponseJsonPath(String jsonPath) {
+        this.thirdPartyRAGResponseJsonPath = jsonPath;
+    }
+
+    /**
+     * Get JSON Pointer (https://www.rfc-editor.org/rfc/rfc6901)
+     * @return JSON pointer, e.g. "/response/docs/0/content_txt" or "/data/content"
+     */
+    public String getThirdPartyRAGResponseJsonPath() {
+        return thirdPartyRAGResponseJsonPath;
     }
 
     /**
