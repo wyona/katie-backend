@@ -2901,7 +2901,16 @@ public class ContextService {
         saveQuestionAnswer(domain, uuid, qna);
         retrain(new QnA(qna), domain, true);
 
-        if (true) {
+        trainClassifier(classification, qna, domain);
+
+        return qna;
+    }
+
+    /**
+     *
+     */
+    public void trainClassifier(String classification, Answer qna, Context domain) {
+        if (true) { // TODO: Make configurable
             TextItem[] samples = new TextItem[1];
             try {
                 // TODO: Set right label (e.g. "Managed Device Services, MacOS Clients" corresponds to "15")
@@ -2912,8 +2921,6 @@ public class ContextService {
                 log.warn("Label '" + classification + "' is not an integer and therefore classifier cannot be trained!");
             }
         }
-
-        return qna;
     }
 
     /**

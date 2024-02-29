@@ -155,6 +155,12 @@ public class QuestionController {
             boolean indexAlternativeQuestions = true; // TODO: Make configurable
             contextService.train(new QnA(newQnA), domain, indexAlternativeQuestions);
 
+            if (newQnA.getClassifications() != null) {
+                for (String label : newQnA.getClassifications()) {
+                    contextService.trainClassifier(label, newQnA, domain);
+                }
+            }
+
             return new ResponseEntity<>(body, HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);

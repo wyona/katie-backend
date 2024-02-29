@@ -26,7 +26,7 @@ public interface ClassificationService {
     public String[] getLabels(Context domain, int offset, int limit) throws Exception;
 
     /**
-     *
+     * Train classifier with samples (texts and labels)
      */
     public void train(Context domain, TextItem[] samples) throws Exception;
 }
