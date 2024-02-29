@@ -88,7 +88,9 @@ public class DomainController {
             if (questions != null & questions.length > 0) {
                 // INFO: See for example https://github.com/handav/nlp-in-javascript-with-natural/blob/master/7-classify/example1.js
                 for (AskedQuestion question : questions) {
-                    items.add(new TextItem(question.getQuestion(), 0)); // INFO: 0: question, 1: not a question
+                    // TODO: Set label
+                    int label = 0; // INFO: 0: question, 1: not a question
+                    items.add(new TextItem(question.getQuestion(), label));
                 }
                 return new ResponseEntity<>(items, HttpStatus.OK);
             } else {
