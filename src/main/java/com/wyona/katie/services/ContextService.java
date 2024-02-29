@@ -2904,7 +2904,7 @@ public class ContextService {
         if (true) {
             TextItem[] samples = new TextItem[1];
             try {
-                // TODO: Set right label
+                // TODO: Set right label (e.g. "Managed Device Services, MacOS Clients" corresponds to "15")
                 int label = Integer.parseInt(classification);
                 samples[0] = new TextItem(qna.getAnswer(), label);
                 classificationService.train(samples);
