@@ -28,5 +28,5 @@ public interface ClassificationService {
     /**
      *
      */
-    public void train(TextItem[] samples) throws Exception;
+    public void train(Context domain, TextItem[] samples) throws Exception;
 }

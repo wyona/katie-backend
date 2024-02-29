@@ -54,7 +54,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
      * @see HumanFeedbackHandler#indexHumanFeedback(String, String, Context, int, User)
      */
     public void indexHumanFeedback(String question, String answerUuid, Context domain, int rating, User user) throws Exception {
-        log.info("TODO: Index human feedback ...");
+        log.info("Index human feedback ...");
 
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());

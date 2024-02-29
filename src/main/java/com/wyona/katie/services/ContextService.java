@@ -2907,7 +2907,7 @@ public class ContextService {
                 // TODO: Set right label (e.g. "Managed Device Services, MacOS Clients" corresponds to "15")
                 int label = Integer.parseInt(classification);
                 samples[0] = new TextItem(qna.getAnswer(), label);
-                classificationService.train(samples);
+                classificationService.train(domain, samples);
             } catch(Exception e) {
                 log.warn("Label '" + classification + "' is not an integer and therefore classifier cannot be trained!");
             }
