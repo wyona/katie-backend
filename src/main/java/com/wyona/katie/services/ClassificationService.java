@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.wyona.katie.models.Context;
+import com.wyona.katie.models.TextItem;
 
 /**
  * Service to manage domain specific classifications
@@ -23,4 +24,9 @@ public interface ClassificationService {
      * @return array of labels
      */
     public String[] getLabels(Context domain, int offset, int limit) throws Exception;
+
+    /**
+     *
+     */
+    public void train(TextItem[] samples) throws Exception;
 }
