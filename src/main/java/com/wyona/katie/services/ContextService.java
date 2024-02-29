@@ -122,6 +122,9 @@ public class ContextService {
     private TaxonomyServiceLuceneImpl taxonomyService;
 
     @Autowired
+    private ClassificationServiceEmbeddingsCentroidsImpl classificationService;
+
+    @Autowired
     private ResourceBundleMessageSource messageSource;
 
     @Autowired
@@ -543,12 +546,9 @@ public class ContextService {
         // TODO: Classify text based on domain specific taxonomy or domain specific classifications
         // TODO: https://opennlp.apache.org/docs/2.3.2/manual/opennlp.html#tools.doccat
 
-        //String[] classifications = classificatonService.predictLabels(domain, text);
+        String[] labels = classificationService.predictLabels(domain, text);
 
-        String[] terms = new String[1];
-        terms[0] = "not_implemented_yet";
-
-        return terms;
+        return labels;
     }
 
     /**
