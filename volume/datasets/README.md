@@ -17,3 +17,6 @@ License: MIT License
 The newsgroups dataset comprises around 18000 newsgroups posts on 20 topics
 
 https://scikit-learn.org/0.19/datasets/twenty_newsgroups.html
+http://qwone.com/~jason/20Newsgroups/
+https://www.kaggle.com/datasets/crawford/20-newsgroups/
+https://huggingface.co/datasets/rungalileo/20_Newsgroups_Fixed
