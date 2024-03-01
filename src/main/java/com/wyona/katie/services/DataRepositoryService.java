@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -122,6 +123,8 @@ public class DataRepositoryService {
 
     private static final String ROW_COUNT = "rowcount";
 
+    private static final String EMBEDDING_FIELD = "embedding";
+
     /**
      * Write embedding into a file
      * @param vector Embedding vector
@@ -135,7 +138,7 @@ public class DataRepositoryService {
         rootNode.put("length", UtilsService.getVectorLength(vector));
 
         ArrayNode embeddingNode = objectMapper.createArrayNode();
-        rootNode.put("embedding", embeddingNode);
+        rootNode.put(EMBEDDING_FIELD, embeddingNode);
         for (float value : vector) {
             embeddingNode.add(value);
         }
@@ -145,6 +148,20 @@ public class DataRepositoryService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * @param file File containing embedding
+     */
+    public float[] readEmbedding(File file) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(file);
+        JsonNode embeddingNode = rootNode.get(EMBEDDING_FIELD);
+        float[] vector = new float[embeddingNode.size()];
+        for (int i = 0; i < embeddingNode.size(); i++) {
+            vector[i] = embeddingNode.get(i).floatValue();
+        }
+        return vector;
     }
 
     /**
