@@ -18,6 +18,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * https://medium.com/@juanc.olamendy/unlocking-the-power-of-text-classification-with-embeddings-7bcbb5912790
@@ -82,7 +83,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         for (TextItem sample : samples) {
             log.info("Train Sample: Text: " + sample.getText() + ", Label: " + sample.getLabel());
             try {
-                indexSample(domain, sample);
+                trainSample(domain, sample);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -92,65 +93,72 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      *
      */
-    public void indexSample(Context domain, TextItem sample) throws Exception {
-        log.info("Index classification sample ...");
+    public void trainSample(Context domain, TextItem sample) throws Exception {
+        log.info("Train classification sample ...");
 
+        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + sample.getLabel() + "/embeddings/");
+        if (!embeddingsDir.isDirectory()) {
+            embeddingsDir.mkdirs();
+        }
+        String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
+        File file = new File(embeddingsDir, uuid + ".json");
+        // TODO: Check input sequence length and log warning when text is too long:
+        //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
+        //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
+        float[] vector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        dataRepoService.saveEmbedding(vector, sample.getText(), file);
+        FloatVector centroid = getCentroid(domain, sample.getLabel());
+        log.info("Centroid: " + centroid);
+
+        // TODO: Re-index centroid instead sample vector
+
+        indexVector(uuid, "" + sample.getLabel(), vector, domain);
+    }
+
+    /**
+     * Add vector to index
+     */
+    private void indexVector(String uuid, String label, float[] vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
         IndexWriter writer = null;
         try {
             writer = new IndexWriter(getIndexDirectory(domain), iwc);
+            Document doc = new Document();
 
-            // TODO: Set UUID
-            indexSampleAsVector(writer, "TODO", sample, domain);
+            Field uuidField = new StringField(UUID_FIELD, uuid, Field.Store.YES);
+            doc.add(uuidField);
+
+            Field labelField = new StringField(LABEL_FIELD, label, Field.Store.YES);
+            doc.add(labelField);
+
+            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
+            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
+            doc.add(vectorField);
+
+            log.info("Add vector with " + vector.length + " dimensions to Lucene index ...");
+            writer.addDocument(doc);
 
             // writer.forceMerge(1);
             writer.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             closeIndexWriter(writer);
             throw e;
         }
     }
 
     /**
-     * Index sample as vector
-     */
-    private void indexSampleAsVector(IndexWriter writer, String uuid, TextItem sample, Context domain) throws Exception {
-        Document doc = new Document();
-
-        Field uuidField = new StringField(UUID_FIELD, uuid, Field.Store.YES);
-        doc.add(uuidField);
-
-        Field labelField = new StringField(LABEL_FIELD, "" + sample.getLabel(), Field.Store.YES);
-        doc.add(labelField);
-
-        // TODO: Check input sequence length and log warning when text is too long:
-        //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
-        //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        float[] vector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
-
-        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + sample.getLabel() + "/embeddings/");
-        if (!embeddingsDir.isDirectory()) {
-            embeddingsDir.mkdirs();
-        }
-        File file = new File(embeddingsDir, uuid + ".json");
-        dataRepoService.saveEmbedding(vector, sample.getText(), file);
-
-        FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
-        KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
-        doc.add(vectorField);
-
-        log.info("Add vector with " + vector.length + " dimensions to Lucene index ...");
-        writer.addDocument(doc);
-    }
-
-    /**
      * Get centroid for a particular label
      */
-    private FloatVector getCentroid(Context domain, int label) {
+    private FloatVector getCentroid(Context domain, int label) throws Exception {
         File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + label + "/embeddings/");
-        // TODO: Read all embeddings and calculate Centroid
-        return null;
+        File[] embeddingFiles = embeddingsDir.listFiles();
+        List<FloatVector> embeddings = new ArrayList<>();
+        for (File file : embeddingFiles) {
+            FloatVector embedding = new FloatVector(dataRepoService.readEmbedding(file));
+            embeddings.add(embedding);
+        }
+        return UtilsService.getCentroid(embeddings.toArray(new FloatVector[0]));
     }
 
     /**
