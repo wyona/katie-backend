@@ -2915,6 +2915,7 @@ public class ContextService {
             try {
                 // TODO: Set right label (e.g. "Managed Device Services, MacOS Clients" corresponds to "15")
                 int label = Integer.parseInt(classification);
+                // TODO: Set UUID of TextItem qna.getUuid()
                 samples[0] = new TextItem(qna.getAnswer(), label);
                 classificationService.train(domain, samples);
             } catch(Exception e) {
