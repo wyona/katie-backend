@@ -14,4 +14,6 @@ License: MIT License
 
 ## Newsgroups Text Dataset
 
+The newsgroups dataset comprises around 18000 newsgroups posts on 20 topics
+
 https://scikit-learn.org/0.19/datasets/twenty_newsgroups.html
