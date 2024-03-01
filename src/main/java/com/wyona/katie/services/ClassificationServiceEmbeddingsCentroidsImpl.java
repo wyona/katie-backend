@@ -48,6 +48,8 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
         float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
 
+        // TODO: Combine both search results!
+        // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
         if (true) {
             return searchSimilarSampleVectors(domain, queryVector);
         } else {
