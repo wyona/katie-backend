@@ -45,11 +45,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * @see com.wyona.katie.services.ClassificationService#predictLabels(Context, String) 
      */
-    public String[] predictLabels(Context domain, String text) throws Exception {
+    public HitLabel[] predictLabels(Context domain, String text) throws Exception {
         float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
 
         if (false) {
-            return searchSimilarSampleVectors(domain, queryVector);
+            //return searchSimilarSampleVectors(domain, queryVector);
         }
         return searchSimilarCentroidVectors(domain, queryVector);
     }
@@ -104,8 +104,9 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar centroid vectors
      */
-    private String[] searchSimilarCentroidVectors(Context domain, float[] queryVector) throws Exception {
-        List<String> labels = new ArrayList<String>();
+    private HitLabel[] searchSimilarCentroidVectors(Context domain, float[] queryVector) throws Exception {
+        List<HitLabel> labels = new ArrayList<>();
+
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, CENTROID_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
         int k = 7; // INFO: The number of documents to find
@@ -117,11 +118,13 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
             log.info("Centroid vector found with label '" + label + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add("" + label);
+            Classification classification = new Classification();
+            classification.setTerm("" + label);
+            labels.add(new HitLabel(classification, scoreDoc.score));
         }
         indexReader.close();
 
-        return labels.toArray(new String[0]);
+        return labels.toArray(new HitLabel[0]);
     }
 
     /**
@@ -146,6 +149,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
         FloatVector centroid = getCentroid(domain, sample.getLabel());
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
+        // TODO: See createFieldType() re similarity metric
         File centroidFile = new File(getLabelDir(domain, sample.getLabel()), "centroid.json");
         dataRepoService.saveEmbedding(centroid.getValues(), "" + sample.getLabel(), centroidFile);
         indexCentroidVector("" + sample.getLabel(), centroid.getValues(), domain);

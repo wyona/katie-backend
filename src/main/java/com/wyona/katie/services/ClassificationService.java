@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.wyona.katie.models.Context;
+import com.wyona.katie.models.HitLabel;
 import com.wyona.katie.models.TextItem;
 
 /**
@@ -14,7 +15,7 @@ public interface ClassificationService {
      * @param text Text
      * @return array of suggested labels
      */
-    public String[] predictLabels(Context domain, String text) throws Exception;
+    public HitLabel[] predictLabels(Context domain, String text) throws Exception;
 
     /**
      * Get domain specific labels

@@ -530,7 +530,7 @@ public class ContextService {
      * @param text Text, e.g. "When was Michael born?"
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
-    public String[] classifyText(String domainId, String text) throws Exception {
+    public HitLabel[] classifyText(String domainId, String text) throws Exception {
 
         Context domain = getContext(domainId);
 
@@ -546,7 +546,7 @@ public class ContextService {
         // TODO: Classify text based on domain specific taxonomy or domain specific classifications
         // TODO: https://opennlp.apache.org/docs/2.3.2/manual/opennlp.html#tools.doccat
 
-        String[] labels = classificationService.predictLabels(domain, text);
+        HitLabel[] labels = classificationService.predictLabels(domain, text);
 
         return labels;
     }
