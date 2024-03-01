@@ -19,6 +19,7 @@ import java.util.UUID;
 
 /**
  * https://medium.com/@juanc.olamendy/unlocking-the-power-of-text-classification-with-embeddings-7bcbb5912790
+ * TODO: Compare with https://ai.google.dev/examples/train_text_classifier_embeddings
  */
 @Slf4j
 @Component
