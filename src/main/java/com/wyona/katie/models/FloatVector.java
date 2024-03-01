@@ -20,6 +20,16 @@ public class FloatVector {
     /**
      *
      */
+    public FloatVector(float[] values) {
+        this.values = new float[values.length];
+        for (int i = 0; i < getDimension(); i++) {
+            this.values[i] = values[i];
+        }
+    }
+
+    /**
+     *
+     */
     public FloatVector clone() {
         FloatVector w = new FloatVector(values.length);
         for (int i = 0; i < values.length; i++) {
