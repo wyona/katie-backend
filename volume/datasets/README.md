@@ -12,7 +12,7 @@ Spam email classification, see https://huggingface.co/datasets/farshad72/spam_em
 
 License: MIT License
 
-## Newsgroups Text Dataset
+## Newsgroups
 
 The newsgroups dataset comprises around 18000 newsgroups posts on 20 topics
 
