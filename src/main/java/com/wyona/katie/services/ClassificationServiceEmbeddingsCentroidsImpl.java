@@ -134,7 +134,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
         indexSampleVector(uuid, "" + sample.getLabel(), sampleVector, domain);
 
-        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + sample.getLabel() + "/embeddings/");
+        File embeddingsDir = getEmbeddingsDir(domain, sample.getLabel());
         if (!embeddingsDir.isDirectory()) {
             embeddingsDir.mkdirs();
         }
@@ -143,9 +143,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         dataRepoService.saveEmbedding(sampleVector, sample.getText(), file);
-        FloatVector centroid = getCentroid(domain, sample.getLabel());
-        log.info("Centroid: " + centroid);
 
+        FloatVector centroid = getCentroid(domain, sample.getLabel());
+        File centroidFile = new File(getLabelDir(domain, sample.getLabel()), "centroid.json");
+        dataRepoService.saveEmbedding(centroid.getValues(), "" + sample.getLabel(), centroidFile);
         indexCentroidVector("" + sample.getLabel(), centroid.getValues(), domain);
     }
 
@@ -261,8 +262,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * Get centroid for a particular label
      */
     private FloatVector getCentroid(Context domain, int label) throws Exception {
-        File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + label + "/embeddings/");
-        File[] embeddingFiles = embeddingsDir.listFiles();
+        File[] embeddingFiles = getEmbeddingsDir(domain, label).listFiles();
         List<FloatVector> embeddings = new ArrayList<>();
         for (File file : embeddingFiles) {
             FloatVector embedding = new FloatVector(dataRepoService.readEmbedding(file));
@@ -295,5 +295,19 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         }
         String indexPath = indexDir.getAbsolutePath();
         return FSDirectory.open(Paths.get(indexPath));
+    }
+
+    /**
+     *
+     */
+    private File getLabelDir(Context domain, int label) {
+        return new File(domain.getContextDirectory(),"classifications/" + label);
+    }
+
+    /**
+     *
+     */
+    private File getEmbeddingsDir(Context domain, int label) {
+        return new File(getLabelDir(domain, label),"embeddings");
     }
 }
