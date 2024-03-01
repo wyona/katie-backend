@@ -145,6 +145,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         dataRepoService.saveEmbedding(sampleVector, sample.getText(), file);
 
         FloatVector centroid = getCentroid(domain, sample.getLabel());
+        // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
         File centroidFile = new File(getLabelDir(domain, sample.getLabel()), "centroid.json");
         dataRepoService.saveEmbedding(centroid.getValues(), "" + sample.getLabel(), centroidFile);
         indexCentroidVector("" + sample.getLabel(), centroid.getValues(), domain);
