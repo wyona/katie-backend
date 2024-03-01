@@ -48,10 +48,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
         float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
 
-        if (false) {
-            //return searchSimilarSampleVectors(domain, queryVector);
+        if (true) {
+            return searchSimilarSampleVectors(domain, queryVector);
+        } else {
+            return searchSimilarCentroidVectors(domain, queryVector);
         }
-        return searchSimilarCentroidVectors(domain, queryVector);
     }
 
     /**
@@ -79,8 +80,8 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar sample vectors
      */
-    private String[] searchSimilarSampleVectors(Context domain, float[] queryVector) throws Exception {
-        List<String> labels = new ArrayList<String>();
+    private HitLabel[] searchSimilarSampleVectors(Context domain, float[] queryVector) throws Exception {
+        List<HitLabel> labels = new ArrayList<>();
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, SAMPLE_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
         int k = 7; // INFO: The number of documents to find
@@ -93,11 +94,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
             log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add("" + label);
+            labels.add(new HitLabel(new Classification(null, label), scoreDoc.score));
         }
         indexReader.close();
 
-        return labels.toArray(new String[0]);
+        return labels.toArray(new HitLabel[0]);
     }
 
     /**
@@ -118,9 +119,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
             log.info("Centroid vector found with label '" + label + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            Classification classification = new Classification();
-            classification.setTerm("" + label);
-            labels.add(new HitLabel(classification, scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, label), scoreDoc.score));
         }
         indexReader.close();
 
