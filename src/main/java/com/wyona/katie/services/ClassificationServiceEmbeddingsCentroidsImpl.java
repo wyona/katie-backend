@@ -42,15 +42,19 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     private static final String LABEL_FIELD = "label";
     private static final String VECTOR_FIELD = "vector";
 
+    private static final String SAMPLE_INDEX = "lucene-classifications";
+    private static final String CENTROID_INDEX = "lucene-centroids";
+
     /**
      * @see com.wyona.katie.services.ClassificationService#predictLabels(Context, String) 
      */
     public String[] predictLabels(Context domain, String text) throws Exception {
-        List<String> labels = new ArrayList<String>();
-
         float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
 
-        return searchSimilarSampleVectors(domain, queryVector);
+        if (false) {
+            return searchSimilarSampleVectors(domain, queryVector);
+        }
+        return searchSimilarCentroidVectors(domain, queryVector);
     }
 
     /**
@@ -80,7 +84,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      */
     private String[] searchSimilarSampleVectors(Context domain, float[] queryVector) throws Exception {
         List<String> labels = new ArrayList<String>();
-        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, SAMPLE_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
         int k = 7; // INFO: The number of documents to find
         Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
@@ -90,7 +94,31 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             Document doc = indexReader.document(scoreDoc.doc);
             String uuid = doc.get(UUID_FIELD);
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
-            log.info("Vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+            log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+
+            labels.add("" + label);
+        }
+        indexReader.close();
+
+        return labels.toArray(new String[0]);
+    }
+
+    /**
+     * @param queryVector Embedding vector of text to be classified
+     * @return labels of similar centroid vectors
+     */
+    private String[] searchSimilarCentroidVectors(Context domain, float[] queryVector) throws Exception {
+        List<String> labels = new ArrayList<String>();
+        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, CENTROID_INDEX));
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        int k = 7; // INFO: The number of documents to find
+        Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
+
+        TopDocs topDocs = searcher.search(query, k);
+        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+            Document doc = indexReader.document(scoreDoc.doc);
+            int label = Integer.parseInt(doc.get(LABEL_FIELD));
+            log.info("Centroid vector found with label '" + label + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
             labels.add("" + label);
         }
@@ -121,18 +149,18 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         FloatVector centroid = getCentroid(domain, sample.getLabel());
         log.info("Centroid: " + centroid);
 
-        // TODO: Re-index centroid instead sample vector
+        indexCentroidVector("" + sample.getLabel(), centroid.getValues(), domain);
     }
 
     /**
-     * Add vector to index
+     * Add vector of sample text to index
      */
     private void indexSampleVector(String uuid, String label, float[] vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
         IndexWriter writer = null;
         try {
-            writer = new IndexWriter(getIndexDirectory(domain), iwc);
+            writer = new IndexWriter(getIndexDirectory(domain, SAMPLE_INDEX), iwc);
             Document doc = new Document();
 
             Field uuidField = new StringField(UUID_FIELD, uuid, Field.Store.YES);
@@ -145,7 +173,39 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
             doc.add(vectorField);
 
-            log.info("Add vector with " + vector.length + " dimensions to Lucene index ...");
+            log.info("Add vector with " + vector.length + " dimensions to Lucene '" + SAMPLE_INDEX + "' index ...");
+            writer.addDocument(doc);
+
+            // writer.forceMerge(1);
+            writer.close();
+        } catch (Exception e) {
+            closeIndexWriter(writer);
+            throw e;
+        }
+    }
+
+    /**
+     * Add vector of centroid to index
+     */
+    private void indexCentroidVector(String label, float[] vector, Context domain) throws Exception {
+        IndexWriterConfig iwc = new IndexWriterConfig();
+        iwc.setCodec(luceneCodecFactory.getCodec());
+        IndexWriter writer = null;
+        try {
+            writer = new IndexWriter(getIndexDirectory(domain, CENTROID_INDEX), iwc);
+
+            // TODO: Delete / replace existing centroid vector with this label
+
+            Document doc = new Document();
+
+            Field labelField = new StringField(LABEL_FIELD, label, Field.Store.YES);
+            doc.add(labelField);
+
+            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
+            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
+            doc.add(vectorField);
+
+            log.info("Add vector with " + vector.length + " dimensions to Lucene index '" + CENTROID_INDEX + "' ...");
             writer.addDocument(doc);
 
             // writer.forceMerge(1);
@@ -185,10 +245,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
-     *
+     * @param indexName Name of index, e.g. "lucene-classifications"
      */
-    private Directory getIndexDirectory(Context domain) throws Exception {
-        File indexDir = new File(domain.getContextDirectory(), "lucene-classifications");
+    private Directory getIndexDirectory(Context domain, String indexName) throws Exception {
+        File indexDir = new File(domain.getContextDirectory(), indexName);
         if (!indexDir.isDirectory()) {
             indexDir.mkdirs();
         }
