@@ -11,3 +11,7 @@ License: Apache 2.0
 Spam email classification, see https://huggingface.co/datasets/farshad72/spam_email
 
 License: MIT License
+
+## Newsgroups Text Dataset
+
+https://scikit-learn.org/0.19/datasets/twenty_newsgroups.html
