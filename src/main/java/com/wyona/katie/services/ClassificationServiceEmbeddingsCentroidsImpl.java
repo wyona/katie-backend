@@ -49,24 +49,8 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         List<String> labels = new ArrayList<String>();
 
         float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
-        int k = 7; // INFO: The number of documents to find
 
-        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
-        IndexSearcher searcher = new IndexSearcher(indexReader);
-        Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
-
-        TopDocs topDocs = searcher.search(query, k);
-        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-            Document doc = indexReader.document(scoreDoc.doc);
-            String uuid = doc.get(UUID_FIELD);
-            int label = Integer.parseInt(doc.get(LABEL_FIELD));
-            log.info("Vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
-
-            labels.add("" + label);
-        }
-        indexReader.close();
-
-        return labels.toArray(new String[0]);
+        return searchSimilarSampleVectors(domain, queryVector);
     }
 
     /**
@@ -91,34 +75,59 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
+     * @param queryVector Embedding vector of text to be classified
+     * @return labels of similar sample vectors
+     */
+    private String[] searchSimilarSampleVectors(Context domain, float[] queryVector) throws Exception {
+        List<String> labels = new ArrayList<String>();
+        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        int k = 7; // INFO: The number of documents to find
+        Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
+
+        TopDocs topDocs = searcher.search(query, k);
+        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+            Document doc = indexReader.document(scoreDoc.doc);
+            String uuid = doc.get(UUID_FIELD);
+            int label = Integer.parseInt(doc.get(LABEL_FIELD));
+            log.info("Vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+
+            labels.add("" + label);
+        }
+        indexReader.close();
+
+        return labels.toArray(new String[0]);
+    }
+
+    /**
      *
      */
-    public void trainSample(Context domain, TextItem sample) throws Exception {
+    private void trainSample(Context domain, TextItem sample) throws Exception {
         log.info("Train classification sample ...");
+
+        float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
+        indexSampleVector(uuid, "" + sample.getLabel(), sampleVector, domain);
 
         File embeddingsDir = new File(domain.getContextDirectory(),"classifications/" + sample.getLabel() + "/embeddings/");
         if (!embeddingsDir.isDirectory()) {
             embeddingsDir.mkdirs();
         }
-        String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
         File file = new File(embeddingsDir, uuid + ".json");
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        float[] vector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
-        dataRepoService.saveEmbedding(vector, sample.getText(), file);
+        dataRepoService.saveEmbedding(sampleVector, sample.getText(), file);
         FloatVector centroid = getCentroid(domain, sample.getLabel());
         log.info("Centroid: " + centroid);
 
         // TODO: Re-index centroid instead sample vector
-
-        indexVector(uuid, "" + sample.getLabel(), vector, domain);
     }
 
     /**
      * Add vector to index
      */
-    private void indexVector(String uuid, String label, float[] vector, Context domain) throws Exception {
+    private void indexSampleVector(String uuid, String label, float[] vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
         IndexWriter writer = null;
