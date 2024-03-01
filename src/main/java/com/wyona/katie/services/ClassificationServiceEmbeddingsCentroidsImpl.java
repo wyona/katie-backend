@@ -4,10 +4,7 @@ import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -188,13 +185,13 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * Add vector of centroid to index
      */
     private void indexCentroidVector(String label, float[] vector, Context domain) throws Exception {
+        delete(label, domain, CENTROID_INDEX);
+
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
         IndexWriter writer = null;
         try {
             writer = new IndexWriter(getIndexDirectory(domain, CENTROID_INDEX), iwc);
-
-            // TODO: Delete / replace existing centroid vector with this label
 
             Document doc = new Document();
 
@@ -213,6 +210,50 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         } catch (Exception e) {
             closeIndexWriter(writer);
             throw e;
+        }
+    }
+
+    /**
+     * Delete vectors associated with a particular label
+     */
+    public boolean delete(String label, Context domain, String indexName) throws Exception {
+
+        try {
+            IndexReader reader = DirectoryReader.open(getIndexDirectory(domain, indexName));
+            int numberOfDocsBeforeDeleting = reader.numDocs();
+            log.info("Number of documents: " + numberOfDocsBeforeDeleting);
+            //log.info("Number of deleted documents: " + reader.numDeletedDocs());
+            reader.close();
+
+            log.info("Delete documents with label '" + label + "' from index '" + indexName + "' of domain '" + domain.getId() + "' ...");
+            IndexWriterConfig iwc = new IndexWriterConfig();
+            //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+            iwc.setCodec(luceneCodecFactory.getCodec());
+
+            IndexWriter writer = null;
+            try {
+                writer = new IndexWriter(getIndexDirectory(domain, indexName), iwc);
+                Term term = new Term(LABEL_FIELD, label);
+                writer.deleteDocuments(term);
+                // writer.forceMerge(1);
+                writer.close();
+            } catch (Exception e){
+                closeIndexWriter(writer);
+                throw e;
+            }
+
+            reader = DirectoryReader.open(getIndexDirectory(domain, indexName));
+            int numberOfDocsAfterDeleting = reader.numDocs();
+            log.info("Number of documents: " + numberOfDocsAfterDeleting);
+            log.info("Number of deleted documents: " + (numberOfDocsBeforeDeleting - numberOfDocsAfterDeleting));
+            // TODO: Not sure whether the method numDeletedDocs() makes sense here
+            //log.info("Number of deleted documents: " + reader.numDeletedDocs());
+            reader.close();
+
+            return true;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
         }
     }
 
