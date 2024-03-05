@@ -157,7 +157,7 @@ public class QuestionController {
 
             if (newQnA.getClassifications() != null) {
                 for (String label : newQnA.getClassifications()) {
-                    contextService.trainClassifier(label, newQnA, domain);
+                    contextService.trainClassifier(new Classification(label, null), newQnA, domain);
                 }
             }
 
@@ -474,7 +474,7 @@ public class QuestionController {
         log.info("Add classification to trained QnA '" + domainid + "' / '" + uuid + "': " + classification.getTerm());
         try {
             Context domain = contextService.getContext(domainid);
-            Answer qna = contextService.addClassification(domain, uuid, classification.getTerm());
+            Answer qna = contextService.addClassification(domain, uuid, classification);
             return new ResponseEntity<>(qna, HttpStatus.OK);
         } catch (AccessDeniedException e) {
             log.warn(e.getMessage());

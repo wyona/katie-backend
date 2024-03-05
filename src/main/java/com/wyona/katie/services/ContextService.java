@@ -2878,9 +2878,9 @@ public class ContextService {
 
     /**
      * Add classification to trained QnA
-     * @param classification Classification, e.g. "gravel bike"
+     * @param classification Classification, e.g. class name "gravel bike" and class id "15"
      */
-    public Answer addClassification(Context domain, String uuid, String classification) throws Exception {
+    public Answer addClassification(Context domain, String uuid, Classification classification) throws Exception {
         if (!isMemberOrAdmin(domain.getId())) {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
         }
@@ -2896,7 +2896,7 @@ public class ContextService {
 
         log.info("Add classification to trained QnA '" + domain.getId() + "/" + uuid + "' ...");
 
-        qna.addClassification(classification.toLowerCase());
+        qna.addClassification(classification.getTerm().toLowerCase());
 
         saveQuestionAnswer(domain, uuid, qna);
         retrain(new QnA(qna), domain, true);
@@ -2909,17 +2909,16 @@ public class ContextService {
     /**
      *
      */
-    public void trainClassifier(String classification, Answer qna, Context domain) {
+    public void trainClassifier(Classification classification, Answer qna, Context domain) {
         if (true) { // TODO: Make configurable
             TextItem[] samples = new TextItem[1];
-            try {
-                // TODO: Set right label (e.g. "Managed Device Services, MacOS Clients" corresponds to "15")
-                int label = Integer.parseInt(classification);
-                // TODO: Set UUID of TextItem qna.getUuid()
-                samples[0] = new TextItem(qna.getAnswer(), label);
-                classificationService.train(domain, samples);
-            } catch(Exception e) {
-                log.warn("Label '" + classification + "' is not an integer and therefore classifier cannot be trained!");
+            if (classification.getId() != null) {
+                samples[0] = new TextItem(qna.getAnswer(), classification.getId());
+                try {
+                    classificationService.train(domain, samples);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }
     }
