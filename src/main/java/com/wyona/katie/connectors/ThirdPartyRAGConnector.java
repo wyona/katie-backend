@@ -54,21 +54,28 @@ public class ThirdPartyRAGConnector implements Connector {
         try {
             String _answer = "<p>NO_ANSWER_AVAILABLE</p>";
             JsonNode answerNode = null;
-            String jsonPath = ksMeta.getThirdPartyRAGResponseJsonPath();
+            String answerJsonPath = ksMeta.getThirdPartyRAGResponseJsonPath();
+            String referenceJsonPath = ksMeta.getThirdPartyRAGReferenceJsonPath();
+            JsonNode referenceNode = null;
+
+            JsonNode bodyNode = null;
 
             // INFO: Process as plain text response
             if (true) {
                 ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, String.class);
                 log.info("Plain text response: " + response);
                 ObjectMapper mapper = new ObjectMapper();
-                JsonNode bodyNode = mapper.readTree(response.getBody());
-                answerNode = bodyNode.at(jsonPath);
+                bodyNode = mapper.readTree(response.getBody());
             } else {
                 // INFO: JSON response
                 ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
-                JsonNode bodyNode = response.getBody();
+                bodyNode = response.getBody();
                 log.info("JSON response: " + bodyNode);
-                answerNode = bodyNode.at(jsonPath);
+            }
+
+            answerNode = bodyNode.at(answerJsonPath);
+            if (referenceJsonPath != null) {
+                referenceNode = bodyNode.at(referenceJsonPath);
             }
 
             if (answerNode != null) {
@@ -83,12 +90,26 @@ public class ThirdPartyRAGConnector implements Connector {
                     _answer = "<p>" +answerNode.asText() + "</p>";
                 }
             } else {
-                log.error("No node available for json path '" + jsonPath + "'!");
+                log.error("No node available for json path '" + answerJsonPath + "'!");
             }
             log.info("Answer: " + _answer);
 
-            double score = 0.0;
             String url = null;
+            if (referenceNode != null) {
+                log.info("Reference node (" + referenceJsonPath + "): " + referenceNode.toString());
+                if (referenceNode.isArray()) {
+                    url = "";
+                    for (int i = 0; i < referenceNode.size(); i++) {
+                        url = url + referenceNode.get(i).asText() + " ";
+                    }
+                } else {
+                    url = referenceNode.asText();
+                }
+            } else {
+                log.warn("No such json node '" + referenceJsonPath + "'!");
+            }
+
+            double score = 0.0;
             ContentType contentType = ContentType.TEXT_HTML;
             Answer answer = new Answer(question.getSentence(), _answer, contentType, url, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
             Hit hit = new Hit(answer, score);
