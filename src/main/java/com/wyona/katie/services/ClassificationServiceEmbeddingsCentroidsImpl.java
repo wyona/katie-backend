@@ -71,7 +71,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      */
     public void train(Context domain, TextItem[] samples) throws Exception {
         for (TextItem sample : samples) {
-            log.info("Train Sample: Text: " + sample.getText() + ", Label: " + sample.getLabel());
+            log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
             try {
                 trainSample(domain, sample);
             } catch (Exception e) {
@@ -153,13 +153,20 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      *
      */
     private void trainSample(Context domain, TextItem sample) throws Exception {
+        if (sample.getClassification().getId() == null) {
+            log.warn("No class ID available, therefore do not train classifier!");
+            return;
+        }
+
         log.info("Train classification sample ...");
+
+        int classId = sample.getClassification().getId();
 
         float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
         String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
-        indexSampleVector(uuid, "" + sample.getLabel(), sampleVector, domain);
+        indexSampleVector(uuid, "" + classId, sampleVector, domain);
 
-        File embeddingsDir = getEmbeddingsDir(domain, sample.getLabel());
+        File embeddingsDir = getEmbeddingsDir(domain, classId);
         if (!embeddingsDir.isDirectory()) {
             embeddingsDir.mkdirs();
         }
@@ -169,12 +176,12 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         dataRepoService.saveEmbedding(sampleVector, sample.getText(), file);
 
-        FloatVector centroid = getCentroid(domain, sample.getLabel());
+        FloatVector centroid = getCentroid(domain, classId);
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
         // TODO: See createFieldType() re similarity metric
-        File centroidFile = new File(getLabelDir(domain, sample.getLabel()), "centroid.json");
-        dataRepoService.saveEmbedding(centroid.getValues(), "" + sample.getLabel(), centroidFile);
-        indexCentroidVector("" + sample.getLabel(), centroid.getValues(), domain);
+        File centroidFile = new File(getLabelDir(domain, classId), "centroid.json");
+        dataRepoService.saveEmbedding(centroid.getValues(), "" + classId, centroidFile);
+        indexCentroidVector("" + classId, centroid.getValues(), domain);
     }
 
     /**

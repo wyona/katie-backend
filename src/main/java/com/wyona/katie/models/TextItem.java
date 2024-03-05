@@ -3,14 +3,14 @@ package com.wyona.katie.models;
 public class TextItem {
 
     private String text;
-    private int label;
+    private Classification classification;
 
     /**
      *
      */
-    public TextItem(String text, int label) {
+    public TextItem(String text, Classification classification) {
         this.text = text;
-        this.label = label;
+        this.classification = classification;
     }
 
     /**
@@ -23,7 +23,7 @@ public class TextItem {
     /**
      *
      */
-    public int getLabel() {
-        return label;
+    public Classification getClassification() {
+        return classification;
     }
 }

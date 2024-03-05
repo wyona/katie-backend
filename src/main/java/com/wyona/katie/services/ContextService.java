@@ -2912,13 +2912,11 @@ public class ContextService {
     public void trainClassifier(Classification classification, Answer qna, Context domain) {
         if (true) { // TODO: Make configurable
             TextItem[] samples = new TextItem[1];
-            if (classification.getId() != null) {
-                samples[0] = new TextItem(qna.getAnswer(), classification.getId());
-                try {
-                    classificationService.train(domain, samples);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
+            samples[0] = new TextItem(qna.getAnswer(), classification);
+            try {
+                classificationService.train(domain, samples);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         }
     }

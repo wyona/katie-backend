@@ -157,6 +157,7 @@ public class QuestionController {
 
             if (newQnA.getClassifications() != null) {
                 for (String label : newQnA.getClassifications()) {
+                    // TODO: Get ID of classification
                     contextService.trainClassifier(new Classification(label, null), newQnA, domain);
                 }
             }
