@@ -3033,6 +3033,15 @@ public class ContextService {
 
         saveQuestionAnswer(domain, uuid, qna);
 
+        if (qna.getClassifications() != null) {
+            for (String label : qna.getClassifications()) {
+                // TODO: Get ID of classification
+                //Classification  classification = getClassification(label);
+                Classification classification = new Classification(label, null);
+                trainClassifier(classification, qna, domain);
+            }
+        }
+
         return qna;
     }
 
