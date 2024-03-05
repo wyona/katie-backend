@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
@@ -97,7 +98,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
             log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, label), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(getLabelName(domain, label), label), scoreDoc.score));
         }
         indexReader.close();
 
@@ -122,11 +123,30 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             int label = Integer.parseInt(doc.get(LABEL_FIELD));
             log.info("Centroid vector found with label '" + label + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, label), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(getLabelName(domain, label), label), scoreDoc.score));
         }
         indexReader.close();
 
         return labels.toArray(new HitLabel[0]);
+    }
+
+    /**
+     * @param label Label ID, e.g. 15
+     * @return label name, e.g. "Managed Device Services, MacOS Clients"
+     */
+    private String getLabelName(Context domain, int label) {
+        File metaFile = new File(getLabelDir(domain, label), "meta.json");
+        if (metaFile.exists()) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                Classification classification = mapper.readValue(metaFile, Classification.class);
+                return classification.getTerm();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
+        return "No class name available";
     }
 
     /**
