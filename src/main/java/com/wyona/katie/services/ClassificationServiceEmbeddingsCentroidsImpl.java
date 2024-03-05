@@ -135,7 +135,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * @return label name, e.g. "Managed Device Services, MacOS Clients"
      */
     private String getLabelName(Context domain, int label) {
-        File metaFile = new File(getLabelDir(domain, label), "meta.json");
+        File metaFile = getMetaFile(domain, label);
         if (metaFile.exists()) {
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -169,6 +169,9 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         File embeddingsDir = getEmbeddingsDir(domain, classId);
         if (!embeddingsDir.isDirectory()) {
             embeddingsDir.mkdirs();
+            File metaFile = getMetaFile(domain, classId);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(metaFile, sample.getClassification());
         }
         File file = new File(embeddingsDir, uuid + ".json");
         // TODO: Check input sequence length and log warning when text is too long:
@@ -334,14 +337,21 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      *
      */
-    private File getLabelDir(Context domain, int label) {
-        return new File(domain.getContextDirectory(),"classifications/" + label);
+    private File getLabelDir(Context domain, int classId) {
+        return new File(domain.getContextDirectory(),"classifications/" + classId);
     }
 
     /**
      *
      */
-    private File getEmbeddingsDir(Context domain, int label) {
-        return new File(getLabelDir(domain, label),"embeddings");
+    private File getMetaFile(Context domain, int classId) {
+        return new File(getLabelDir(domain, classId), "meta.json");
+    }
+
+    /**
+     *
+     */
+    private File getEmbeddingsDir(Context domain, int classId) {
+        return new File(getLabelDir(domain, classId),"embeddings");
     }
 }
