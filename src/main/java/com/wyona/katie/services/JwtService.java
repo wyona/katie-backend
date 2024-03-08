@@ -155,9 +155,7 @@ public class JwtService {
      * Get private key to sign JWT
      */
     private PrivateKey getPrivateKey() throws Exception {
-        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
-
-        String privateKeyContent = readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
+        String privateKeyContent = getPrivateKeyAsPem();
 
         privateKeyContent = privateKeyContent.replaceAll("\\n", "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
         //log.debug("Private key: " + privateKeyContent);
@@ -174,14 +172,24 @@ public class JwtService {
      * Get public key in PEM format
      */
     public String getPublicKeyAsPem() throws Exception {
+        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
         return readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
+    }
+
+    /**
+     *
+     */
+    public String getPrivateKeyAsPem() throws Exception {
+        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
+        return readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
+
     }
 
     /**
      * Get public key to validate JWT
      */
     private RSAPublicKey getPublicKey() throws Exception {
-        String publicKeyContent = readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
+        String publicKeyContent = getPublicKeyAsPem();
 
         publicKeyContent = publicKeyContent.replaceAll("\\n", "").replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "");
         log.debug("Public key: " + publicKeyContent);

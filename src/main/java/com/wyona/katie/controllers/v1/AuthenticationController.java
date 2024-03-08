@@ -188,7 +188,7 @@ public class AuthenticationController {
         HttpServletResponse response) {
 
         try {
-            return new ResponseEntity<>(authService.getPublicKeyAsPem(), HttpStatus.OK);
+            return new ResponseEntity<>(jwtService.getPublicKeyAsPem(), HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
