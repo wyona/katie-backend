@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.security.Principal;
 
 import io.jsonwebtoken.*;
@@ -35,6 +38,9 @@ public class JwtService {
     private String issuer;
 
     public static final String JWT_CLAIM_DOMAIN_ID = "did";
+
+    @Value("${config.data_path}")
+    private String configDataPath;
 
     @Autowired
     public JwtService() {
@@ -173,7 +179,14 @@ public class JwtService {
      */
     public String getPublicKeyAsPem() throws Exception {
         // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
-        return readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
+
+        //return readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
+
+        File file = new File(configDataPath,"jwt/public_key.pem");
+        InputStream in = new FileInputStream(file);
+        String key = readString(in);
+        in.close();
+        return key;
     }
 
     /**
@@ -181,8 +194,14 @@ public class JwtService {
      */
     public String getPrivateKeyAsPem() throws Exception {
         // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
-        return readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
 
+        //return readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
+
+        File file = new File(configDataPath,"jwt/private_key_pkcs8.pem");
+        InputStream in = new FileInputStream(file);
+        String key = readString(in);
+        in.close();
+        return key;
     }
 
     /**
