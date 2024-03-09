@@ -201,6 +201,12 @@ and the startup should work again.
 * cp -r ../katie-expert-frontend-angular/dist/admin-backend/* src/main/webapp/.
 * sh build.sh
 
+## Enable Google Analytics
+
+* Uncomment Google Analytics script lines inside src/index.html in order to load gtag script and replace TAG ID with your own TAG ID
+* Enable sending events to Google Analytics inside src/app/app.component.ts and replace TAG ID with your own TAG ID
+* Test retrieval of events at https://analytics.google.com/ (and https://tagassistant.google.com/)
+
 ## Create Release
 
 Update the version in the following files:
