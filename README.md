@@ -16,7 +16,7 @@ By default, <strong>Katie</strong> uses [Apache Lucene](https://lucene.apache.or
 
 ## Quickstart
 
-To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/wyona/katie/tags) and run Katie locally, please follow the steps below
+To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/wyona/katie/tags) (with Prefix [/katie](https://hub.docker.com/repository/docker/wyona/katie-with-prefix/tags)) and run Katie locally, please follow the steps below
 
 * Download docker compose [file](https://github.com/wyona/katie-backend/blob/main/env/docker/run/docker-compose.yml)
 * Open docker compose file and configure volume path (search for TODO_REPLACE_DIRECTORY_PATH)
@@ -45,13 +45,13 @@ The <strong>Katie</strong> backend webapp is based on Spring Boot and to build a
 * Set environment variable: export SPRING_PROFILES_ACTIVE=dev
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build Katie webapp as war file: <em>sh build.sh</em>
-* Startup Katie: <em>java -jar target/askkatie-webapp-1.359.0-SNAPSHOT.war</em>
+* Startup Katie: <em>java -jar target/askkatie-webapp-1.361.0-SNAPSHOT.war</em>
 * Katie will be available at: http://localhost:8044 or https://localhost:8443 (see SSL properties inside src/main/resources/application.properties)
 * Login with the following credentials: U: superadmin, P: Katie1234% (see volume/iam/users.xml)
 
 Optionally you can run Katie with an outgoing proxy configuration enabled (https://docs.oracle.com/javase/8/docs/technotes/guides/net/proxies.html)
 
-* Startup Katie with proxy configuration: <em>java -Dhttp.proxyHost=proxy.wyona.com -Dhttp.proxyPort=8044 -Dhttps.proxyHost=proxy.wyona.com -Dhttps.proxyPort=443 -Dhttp.nonProxyHosts="*aleph-alpha.com|*cohere.ai" -Dhttp.proxyUser=USERNAME -Dhttp.proxyPassword=PASSWORD -Dhttps.proxyUser=USERNAME -Dhttps.proxyPassword=PASSWORD -jar target/askkatie-webapp-1.359.0-SNAPSHOT.war</em>
+* Startup Katie with proxy configuration: <em>java -Dhttp.proxyHost=proxy.wyona.com -Dhttp.proxyPort=8044 -Dhttps.proxyHost=proxy.wyona.com -Dhttps.proxyPort=443 -Dhttp.nonProxyHosts="*aleph-alpha.com|*cohere.ai" -Dhttp.proxyUser=USERNAME -Dhttp.proxyPassword=PASSWORD -Dhttps.proxyUser=USERNAME -Dhttps.proxyPassword=PASSWORD -jar target/askkatie-webapp-1.361.0-SNAPSHOT.war</em>
 
 ## IntelliJ (Ultimate)
 
@@ -116,8 +116,8 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build webapp as war, run: 'sh build.sh'
 * Build image: docker build -t katie .
-* Tag image: docker tag katie wyona/katie:1.359.0
-* Push image to Docker Hub: docker login -u USERNAME -p PASSWORD docker.io && docker push wyona/katie:1.359.0
+* Tag image: docker tag katie wyona/katie:1.361.0
+* Push image to Docker Hub: docker login -u USERNAME -p PASSWORD docker.io && docker push wyona/katie:1.361.0
 * Run image:
     * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie ("/ask-katie" is set inside application-prod.properties)
     * docker run -p 7070:8080 katie (If you do not mount a volume, then Katie creates the necessary files and directories within the docker container, which gets reset upon restart though)
@@ -200,6 +200,12 @@ and the startup should work again.
 * ../katie-backend
 * cp -r ../katie-expert-frontend-angular/dist/admin-backend/* src/main/webapp/.
 * sh build.sh
+
+### Enable Google Analytics
+
+* Uncomment Google Analytics script lines inside src/index.html in order to load gtag script and replace TAG ID with your own TAG ID
+* Enable sending events to Google Analytics inside src/app/app.component.ts and replace TAG ID with your own TAG ID
+* Test retrieval of events at https://analytics.google.com/ (and https://tagassistant.google.com/)
 
 ## Create Release
 

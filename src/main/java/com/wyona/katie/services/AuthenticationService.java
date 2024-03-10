@@ -214,30 +214,6 @@ public class AuthenticationService {
     }
 
     /**
-     * Get public key in PEM format
-     */
-    public String getPublicKeyAsPem() throws Exception {
-        return readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
-    }
-
-    /**
-     * Convert InputStream to String
-     * @param inputStream
-     * @return
-     * @throws Exception
-     */
-    private String readString(java.io.InputStream inputStream) throws Exception {
-
-        java.io.ByteArrayOutputStream into = new java.io.ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        for (int n; 0 < (n = inputStream.read(buf));) {
-            into.write(buf, 0, n);
-        }
-        into.close();
-        return new String(into.toByteArray());
-    }
-
-    /**
      * Check whether user is signed in by session
      * @return true when user is signed in by session and false otherwise
      */

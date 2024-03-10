@@ -55,7 +55,8 @@ public class KnowledgeSourceXMLFileService {
     private static final String WEBSITE_CHUNK_OVERLAP_ATTR = "chunk-overlap";
 
     private static final String THIRD_PARTY_RAG_TAG = "third-party-rag";
-    private static final String THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR = "json-pointer";
+    private static final String THIRD_PARTY_RAG_ANSWER_JSON_POINTER_ATTR = "answer-json-pointer";
+    private static final String THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR = "reference-json-pointer";
 
     /**
      * Get knowledge sources
@@ -190,7 +191,10 @@ public class KnowledgeSourceXMLFileService {
                     Element bodyEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "body");
                     ksMeta.setThirdPartyRAGBody(bodyEl.getFirstChild().getTextContent());
                     Element responseEl = xmlService.getDirectChildByTagName(thirdPartyRAGEl, "response");
-                    ksMeta.setThirdPartyRAGResponseJsonPath(responseEl.getAttribute(THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR));
+                    ksMeta.setThirdPartyRAGResponseJsonPath(responseEl.getAttribute(THIRD_PARTY_RAG_ANSWER_JSON_POINTER_ATTR));
+                    if (responseEl.hasAttribute(THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR)) {
+                        ksMeta.setThirdPartyRAGReferenceJsonPath(responseEl.getAttribute(THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR));
+                    }
                 }
 
                 if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
@@ -508,7 +512,7 @@ public class KnowledgeSourceXMLFileService {
      * @param payload Payload sent to endpoint, e.g. {"message":[{"content":"{{QUESTION}}","role":"user"}],"stream":false}
      * @return knowledge source Id
      */
-    public String addThirdPartyRAG(String domainId, String name, String endpointUrl, String payload, String jsonPointer) throws Exception {
+    public String addThirdPartyRAG(String domainId, String name, String endpointUrl, String payload, String answerJsonPointer, String referenceJsonPointer) throws Exception {
         log.info("Add third-party RAG as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
@@ -537,7 +541,10 @@ public class KnowledgeSourceXMLFileService {
 
         Element responseEl = doc.createElement("response");
         thirdPartyRagEl.appendChild(responseEl);
-        responseEl.setAttribute(THIRD_PARTY_RAG_RESPONSE_JSON_POINTER_ATTR, jsonPointer);
+        responseEl.setAttribute(THIRD_PARTY_RAG_ANSWER_JSON_POINTER_ATTR, answerJsonPointer);
+        if (referenceJsonPointer != null) {
+            responseEl.setAttribute(THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR, referenceJsonPointer);
+        }
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);

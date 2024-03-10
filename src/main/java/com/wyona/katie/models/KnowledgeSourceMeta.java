@@ -64,6 +64,7 @@ public class KnowledgeSourceMeta {
     private String thirdPartyRAGUrl;
     private String thirdPartyRAGBody;
     private String thirdPartyRAGResponseJsonPath;
+    private String thirdPartyRAGReferenceJsonPath;
 
     private String topDeskBaseUrl;
     private String topDeskUsername;
@@ -131,6 +132,7 @@ public class KnowledgeSourceMeta {
         this.thirdPartyRAGUrl = null;
         this.thirdPartyRAGBody = null;
         this.thirdPartyRAGResponseJsonPath = null;
+        this.thirdPartyRAGReferenceJsonPath = null;
 
         this.topDeskBaseUrl = null;
         this.topDeskUsername = null;
@@ -700,6 +702,22 @@ public class KnowledgeSourceMeta {
      */
     public String getThirdPartyRAGResponseJsonPath() {
         return thirdPartyRAGResponseJsonPath;
+    }
+
+    /**
+     * Set JSON Pointer (https://www.rfc-editor.org/rfc/rfc6901) to retrieve reference / source
+     * @param jsonPath JSON pointer, e.g. "/response/docs/0/id"
+     */
+    public void setThirdPartyRAGReferenceJsonPath(String jsonPath) {
+        this.thirdPartyRAGReferenceJsonPath = jsonPath;
+    }
+
+    /**
+     * Get JSON Pointer (https://www.rfc-editor.org/rfc/rfc6901)
+     * @return JSON pointer to retrieve reference / source, e.g. "/response/docs/0/id" or "/data/reasoning_thread/0/result/art_para/0"
+     */
+    public String getThirdPartyRAGReferenceJsonPath() {
+        return thirdPartyRAGReferenceJsonPath;
     }
 
     /**

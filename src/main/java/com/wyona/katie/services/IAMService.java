@@ -435,6 +435,7 @@ public class IAMService {
     /**
      * Get user by user id
      * @param id User id, e.g. "71aa8dc6-0f19-4787-bd91-08fe1e863473"
+     * @param includingJWT Include JWT when true and null otherwise
      * @return user if user exists and null otherwise
      */
     public User getUserById(String id, boolean includingJWT) throws Exception {
@@ -444,7 +445,8 @@ public class IAMService {
         } else {
             if (signedInUser != null) {
                 if (signedInUser.getId().equals(id)) {
-                    return usersXMLFileService.getIAMUserById(id, false, false);
+                    log.info("Get profile of signed in user '" + id + "' ...");
+                    return usersXMLFileService.getIAMUserById(id, false, includingJWT);
                 } else {
                     throw new AccessDeniedException("Id of signed in user '" + signedInUser.getId() + "' does not match with requested id '" + id + "'!");
                 }
