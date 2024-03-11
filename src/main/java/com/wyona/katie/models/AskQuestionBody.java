@@ -12,12 +12,15 @@ public class AskQuestionBody {
     private String classification;
     private String[] classifications;
 
+    private Boolean predictClassifications;
+
     private String answerContentType;
 
     /**
      *
      */
     public AskQuestionBody() {
+        this.predictClassifications = false;
     }
 
     /**
@@ -91,7 +94,8 @@ public class AskQuestionBody {
     }
 
     /**
-     * @param classification Classifications, e.g. "birthdate"
+     * Provide classification to narrow down search space
+     * @param classification Classification, e.g. "birthdate"
      */
     public void setClassification(String classification) {
         this.classification = classification;
@@ -105,6 +109,7 @@ public class AskQuestionBody {
     }
 
     /**
+     * Provide classifications to narrow down search space
      * @param classifications Multiple classifications
      */
     public void setClassifications(String[] classifications) {
@@ -116,5 +121,19 @@ public class AskQuestionBody {
      */
     public String[] getClassifications() {
         return classifications;
+    }
+
+    /**
+     * @param predictClassifications When set to true, then Katie tries to predict Classifications / Labels based on question / input message
+     */
+    public void setPredictClassifications(Boolean predictClassifications) {
+        this.predictClassifications = predictClassifications;
+    }
+
+    /**
+     * @return true when Katie tries to predict classifications / labels and false when Katie does not predict classifications / labels
+     */
+    public Boolean getPredictClassifications() {
+        return predictClassifications;
     }
 }
