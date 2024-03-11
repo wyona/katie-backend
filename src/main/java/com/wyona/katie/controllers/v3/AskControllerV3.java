@@ -281,6 +281,11 @@ public class AskControllerV3 {
                 askResponse.setLimit(_limit);
                 askResponse.setPredictedLabels(predictedLabels);
 
+                // TODO: This is a hack, which should be improved! When there are no answers, then there still should be a question UUID!
+                if (responseAnswers.size() > 0) {
+                    askResponse.setQuestionUUID(responseAnswers.get(0).getQuestionUUID());
+                }
+
                 if (responseAnswers.size() == 0 && !contextService.hasTrainedQnAs(domain)) {
                     askResponse.setKnowledgeBaseEmpty(true);
                 } else {
