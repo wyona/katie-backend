@@ -129,9 +129,10 @@ public class QuestionAnsweringService {
     private static final String ANONYMOUS = "anonymous";
 
     /**
-     * Get answers to a question
-     * @param question Question asked by user, e.g. "What is a moderator?"
-     * @param classifications Classification of question, e.g. "gravel bike", "bug", "instruction", "fact", "social", ...
+     * Get answers to a question or message containing a question
+     * 
+     * @param question Question / message asked by user, e.g. "What is a moderator?" or "Hi, I have forgotten my password, how can I reset it? Thanks, Michael"
+     * @param classifications Provided Classifications to narrow down search space, e.g. "gravel bike", "bug", "instruction", "fact", "social", ...
      * @param messageId Message Id sent by client together with question
      * @param domain Domain the question/answer is associated with
      * @param dateSubmitted Date when question was asked
