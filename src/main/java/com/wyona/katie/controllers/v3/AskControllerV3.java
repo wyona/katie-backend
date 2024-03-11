@@ -66,7 +66,7 @@ public class AskControllerV3 {
             @RequestParam(value = "limit", required = false) Integer limit,
             @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @ApiParam(name = "question-and-contact-info", value = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            @ApiParam(name = "question-and-contact-info", value = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndContact,
             @ApiParam(name = "include-feedback-links", value = "When true, then answer contains feedback links", required = false)
             @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,

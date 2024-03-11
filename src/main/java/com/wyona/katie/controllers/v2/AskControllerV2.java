@@ -84,7 +84,7 @@ public class AskControllerV2 {
             @RequestParam(value = "limit", required = false) Integer limit,
             @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @ApiParam(name = "accept-content-type", value = "Content type of answer accepted by client, e.g. 'text/plain', whereas default is 'text/html'", required = false)
+            @ApiParam(name = "accept-content-type", value = "Content type of answer accepted by client, e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'", required = false)
             @RequestParam(value = "accept-content-type", required = false) ContentType acceptContentType,
             HttpServletRequest request, HttpServletResponse response) {
 
