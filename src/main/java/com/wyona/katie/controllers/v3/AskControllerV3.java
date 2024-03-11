@@ -257,7 +257,12 @@ public class AskControllerV3 {
             HitLabel[] predictedLabels = null;
             if (predictClassifications) {
                 log.info("Predict labels / classifications ...");
-                predictedLabels = contextService.classifyText(domainId, question);
+                try {
+                    predictedLabels = contextService.classifyText(domainId, question);
+                } catch (Exception e) {
+                    // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
+                    log.error(e.getMessage(), e);
+                }
             }
 
             java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks);
