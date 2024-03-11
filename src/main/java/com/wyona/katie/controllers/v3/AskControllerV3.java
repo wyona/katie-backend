@@ -66,28 +66,28 @@ public class AskControllerV3 {
             @RequestParam(value = "limit", required = false) Integer limit,
             @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @ApiParam(name = "question-and-contact-info", value = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
-            @RequestBody AskQuestionBody questionAndContact,
+            @ApiParam(name = "question-and-optional-params", value = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            @RequestBody AskQuestionBody questionAndOptionalParams,
             @ApiParam(name = "include-feedback-links", value = "When true, then answer contains feedback links", required = false)
             @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,
             HttpServletRequest request,
             HttpServletResponse response) {
 
-        String question = questionAndContact.getQuestion();
-        String messageId = questionAndContact.getMessageId();
+        String question = questionAndOptionalParams.getQuestion();
+        String messageId = questionAndOptionalParams.getMessageId();
 
-        Language questionerLanguage = questionAndContact.getQuestionerLanguage();
+        Language questionerLanguage = questionAndOptionalParams.getQuestionerLanguage();
         String email = null;
         String fcmToken = null;
         String answerLinkType = null;
         String webhookEchoContent = null;
-        if (questionAndContact.getOptionalContactInfo() != null) {
-            email = questionAndContact.getOptionalContactInfo().getEmail();
-            fcmToken = questionAndContact.getOptionalContactInfo().getFcmToken();
-            answerLinkType = questionAndContact.getOptionalContactInfo().getAnswerLinkType();
+        if (questionAndOptionalParams.getOptionalContactInfo() != null) {
+            email = questionAndOptionalParams.getOptionalContactInfo().getEmail();
+            fcmToken = questionAndOptionalParams.getOptionalContactInfo().getFcmToken();
+            answerLinkType = questionAndOptionalParams.getOptionalContactInfo().getAnswerLinkType();
 
             log.warn("TODO: Implement webhookEchoContent ...");
-            webhookEchoContent = questionAndContact.getOptionalContactInfo().getWebhookEchoData();
+            webhookEchoContent = questionAndOptionalParams.getOptionalContactInfo().getWebhookEchoData();
         }
 
         Integer _limit = 2;
@@ -104,7 +104,7 @@ public class AskControllerV3 {
         }
 
         List<String> classifications = new ArrayList<String>();
-        String[] cfs = questionAndContact.getClassifications();
+        String[] cfs = questionAndOptionalParams.getClassifications();
         if (cfs != null && cfs.length > 0) {
             for (String classification : cfs) {
                 if (!classification.trim().isEmpty()) {
@@ -112,27 +112,31 @@ public class AskControllerV3 {
                 }
             }
         }
-        if (questionAndContact.getClassification() != null && !questionAndContact.getClassification().trim().isEmpty()) {
-            classifications.add(questionAndContact.getClassification());
+        if (questionAndOptionalParams.getClassification() != null && !questionAndOptionalParams.getClassification().trim().isEmpty()) {
+            classifications.add(questionAndOptionalParams.getClassification());
         }
 
         ContentType answerContentType = null;
-        if (questionAndContact.getAcceptContentType() != null) {
-            answerContentType = ContentType.fromString(questionAndContact.getAcceptContentType());
+        if (questionAndOptionalParams.getAcceptContentType() != null) {
+            answerContentType = ContentType.fromString(questionAndOptionalParams.getAcceptContentType());
             if (answerContentType == null) {
-                log.error("No such content type '" + questionAndContact.getAcceptContentType() + "' supported!");
+                log.error("No such content type '" + questionAndOptionalParams.getAcceptContentType() + "' supported!");
             }
         }
 
-        return getAnswers(question, classifications, messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, request, response);
+        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, request, response);
     }
 
     /**
-     * Get answer(s) to a question
+     * Get answer(s) to a question / message
+     * @param question Asked question / sent message
+     * @param classifications Provided classifications / labels to narrow down search / answer space
+     * @param predictClassifications Truw when Katie should predict classifications based on asked question / sent message
      * @param answerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
      */
     private ResponseEntity<?> getAnswers(String question,
                                          List<String> classifications,
+                                         boolean predictClassifications,
                                          String messageId,
                                          Language questionerLanguage,
                                          ContentType answerContentType,
@@ -250,6 +254,12 @@ public class AskControllerV3 {
                 question = analyzedMessage.getMessage();
             }
 
+            HitLabel[] predictedLabels = null;
+            if (predictClassifications) {
+                log.info("Predict labels / classifications ...");
+                predictedLabels = contextService.classifyText(domainId, question);
+            }
+
             java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks);
 
             if (responseAnswers != null) {
@@ -261,6 +271,7 @@ public class AskControllerV3 {
                 askResponse.setAnswers(responseAnswers);
                 askResponse.setOffset(_offset);
                 askResponse.setLimit(_limit);
+                askResponse.setPredictedLabels(predictedLabels);
 
                 if (responseAnswers.size() == 0 && !contextService.hasTrainedQnAs(domain)) {
                     askResponse.setKnowledgeBaseEmpty(true);
