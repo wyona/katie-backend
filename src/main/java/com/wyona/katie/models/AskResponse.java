@@ -24,6 +24,8 @@ public class AskResponse {
     private EmbeddingsImpl embeddingsImpl;
     private VectorSimilarityFunction similarityMetric;
 
+    private HitLabel[] predictedLabels = null;
+
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
      * @param askedQuestion Question asked by user
@@ -140,5 +142,19 @@ public class AskResponse {
      */
     public void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    /**
+     *
+     */
+    public void setPredictedLabels(HitLabel[] predictedLabels) {
+        this.predictedLabels = predictedLabels;
+    }
+
+    /**
+     * Get predicted labels / classifications, based on submitted question / message
+     */
+    public HitLabel[] getPredictedLabels() {
+        return predictedLabels;
     }
 }
