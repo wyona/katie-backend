@@ -13,6 +13,7 @@ public class AskQuestionBody {
     private String[] classifications;
 
     private Boolean predictClassifications;
+    private Boolean includeClassifications;
 
     private String answerContentType;
 
@@ -21,6 +22,7 @@ public class AskQuestionBody {
      */
     public AskQuestionBody() {
         this.predictClassifications = false;
+        this.includeClassifications = false;
     }
 
     /**
@@ -135,5 +137,19 @@ public class AskQuestionBody {
      */
     public Boolean getPredictClassifications() {
         return predictClassifications;
+    }
+
+    /**
+     * @param includeClassifications When set to true, then classifications of answers and predicted classifications will be included into answers
+     */
+    public void setIncludeClassifications(Boolean includeClassifications) {
+        this.includeClassifications = includeClassifications;
+    }
+
+    /**
+     * @return true when classifications of answers and predicted classifications are being included into answers
+     */
+    public Boolean getIncludeClassifications() {
+        return includeClassifications;
     }
 }

@@ -143,9 +143,11 @@ public class QuestionAnsweringService {
      * @param checkAuthorization True when authorization must be checked
      * @param requestedAnswerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
      * @param includeFeedbackLinks When true, then include feedback links at the end of answer (thumb up, thumb down)
+     * @param includeClassifications When true, then include classifications of answers and predicted classifications into answers
+     *
      * @return list of possible answers to question
      */
-    public List<ResponseAnswer> getAnswers(String question, List<String> classifications, String messageId, Context domain, Date dateSubmitted, String remoteAddress, ChannelType channelType, String channelRequestId, int limit, int offset, boolean checkAuthorization, ContentType requestedAnswerContentType, boolean includeFeedbackLinks) throws Exception {
+    public List<ResponseAnswer> getAnswers(String question, List<String> classifications, String messageId, Context domain, Date dateSubmitted, String remoteAddress, ChannelType channelType, String channelRequestId, int limit, int offset, boolean checkAuthorization, ContentType requestedAnswerContentType, boolean includeFeedbackLinks, boolean includeClassifications) throws Exception {
         if (checkAuthorization && domain.getAnswersGenerallyProtected() && !contextService.isMemberOrAdmin(domain.getId())) {
             String msg = "Answers of domain '" + domain.getId() + "' are generally protected and user has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "'.";
             log.info(msg);
@@ -259,6 +261,20 @@ public class QuestionAnsweringService {
                 }
             }
 
+            if (includeClassifications) {
+                String classificationsOfAnswer = getClassificationsAsCSV(ra.getClassifications());
+                String predictedLabels = "TODO";
+                String userLanguage = "en"; // TODO
+                if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
+                    ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + "Classifications of Answer: " + classificationsOfAnswer + "\n\nPredicted Labels: TODO");
+                } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
+                    ra.setAnswer(ra.getAnswer() + "<p>Classifications of Answer: " + classificationsOfAnswer + "</p>");
+                    ra.setAnswer(ra.getAnswer() + "<p>Predicted Labels: TODO</p>");
+                } else {
+                    log.warn("Include classifications not supported for content type '" + ra.getAnswerContentType() + "'.");
+                }
+            }
+
             if (includeFeedbackLinks) {
                 String userLanguage = "en"; // TODO
                 // TODO: Use i18n for Yes and No ...
@@ -296,6 +312,24 @@ public class QuestionAnsweringService {
         }
 
         return responseAnswers;
+    }
+
+    /**
+     *
+     */
+    private String getClassificationsAsCSV(String[] classifications) {
+        StringBuilder stb = new StringBuilder();
+        if (classifications != null && classifications.length > 0) {
+            for (int i = 0; i < classifications.length; i++) {
+                stb.append(classifications[i]);
+                if (i < classifications.length - 1) {
+                    stb.append(", ");
+                }
+            }
+        } else {
+            stb.append("No classifications available");
+        }
+        return stb.toString();
     }
 
     /**

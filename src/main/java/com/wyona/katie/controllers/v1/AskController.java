@@ -267,7 +267,7 @@ public class AskController {
             String channelRequestId = null; // TODO
             boolean includeFeedbackLinks = false;
             ContentType answerContentType = null;
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false);
 
             if (responseAnswers != null) {
                 if (responseAnswers.size() > 0) {

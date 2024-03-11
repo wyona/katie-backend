@@ -192,7 +192,7 @@ public class DiscordNewMessageListener extends CommonMessageSender {
                 log.info("TODO: Handle multiple questions ...");
             }
             String question = analyzedMessage.getMessage(); // TODO: Query builder
-            List<ResponseAnswer> answers = qaService.getAnswers(question, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.DISCORD, channelRequestId, -1, -1, true, null, false);
+            List<ResponseAnswer> answers = qaService.getAnswers(question, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.DISCORD, channelRequestId, -1, -1, true, null, false, false);
             if (answers != null && answers.size() > 0) {
                 topAnswer = answers.get(0);
             }

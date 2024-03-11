@@ -152,7 +152,7 @@ public class MatrixMessageSender {
                             String messageId = null; // TODO
                             boolean includeFeedbackLinks = false;
                             ContentType answerContentType = null;
-                            List<ResponseAnswer> answers = qaService.getAnswers(q.getQuestion(), classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.MATRIX, channelRequestId, -1, -1, checkAuthorization, answerContentType, includeFeedbackLinks);
+                            List<ResponseAnswer> answers = qaService.getAnswers(q.getQuestion(), classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.MATRIX, channelRequestId, -1, -1, checkAuthorization, answerContentType, includeFeedbackLinks, false);
 
                             if (answers != null && answers.size() > 0) {
                                 // INFO: When moderation is enabled, then Katie does not send any messages back to the channel

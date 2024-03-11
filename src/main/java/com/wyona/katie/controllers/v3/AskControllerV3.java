@@ -124,7 +124,7 @@ public class AskControllerV3 {
             }
         }
 
-        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, request, response);
+        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, questionAndOptionalParams.getIncludeClassifications(), request, response);
     }
 
     /**
@@ -133,6 +133,8 @@ public class AskControllerV3 {
      * @param classifications Provided classifications / labels to narrow down search / answer space
      * @param predictClassifications Truw when Katie should predict classifications based on asked question / sent message
      * @param answerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
+     * @param includeFeedbackLinks When true, then include feedback links into answers
+     * @param includeClassifications When true, then include classifications of answers and predicted classifications into answers
      */
     private ResponseEntity<?> getAnswers(String question,
                                          List<String> classifications,
@@ -147,6 +149,7 @@ public class AskControllerV3 {
                                          Integer limit,
                                          Integer offset,
                                          boolean includeFeedbackLinks,
+                                         boolean includeClassifications,
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
 
@@ -265,7 +268,7 @@ public class AskControllerV3 {
                 }
             }
 
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications);
 
             if (responseAnswers != null) {
                 String questionUUID = null;
