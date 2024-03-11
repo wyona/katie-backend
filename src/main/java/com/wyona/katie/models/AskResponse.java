@@ -56,6 +56,13 @@ public class AskResponse {
     /**
      *
      */
+    public void setQuestionUUID(String questionUUID) {
+        this.questionUUID = questionUUID;
+    }
+
+    /**
+     *
+     */
     public String getQuestionUUID() {
         return questionUUID;
     }
