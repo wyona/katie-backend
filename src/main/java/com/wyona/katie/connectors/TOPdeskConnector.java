@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
+import com.wyona.katie.services.ClassificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,25 +29,30 @@ public class TOPdeskConnector implements Connector {
     @Autowired
     private BackgroundProcessService backgroundProcessService;
 
+    @Autowired
+    private ClassificationService classificationService;
+
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
      */
     public Hit[] getAnswers(Sentence question, int limit, KnowledgeSourceMeta ksMeta) {
-        log.info("Get answers from TOPdesk connector ...");
         List<Hit> hits = new ArrayList<Hit>();
 
-        // INFO: https://developers.topdesk.com/explorer/?page=general#/search/get_search
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/search?index=incidents&query=" + question.getSentence();
-        log.info("Request URL: " + requestUrl);
+        if (false) {
+            log.info("Get answers from TOPdesk connector ...");
 
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = getHttpHeaders(ksMeta);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
+            // INFO: https://developers.topdesk.com/explorer/?page=general#/search/get_search
+            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/search?index=incidents&query=" + question.getSentence();
+            log.info("Request URL: " + requestUrl);
 
-        try {
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("JSON response: " + bodyNode);
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = getHttpHeaders(ksMeta);
+            HttpEntity<String> request = new HttpEntity<String>(headers);
+
+            try {
+                ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
+                JsonNode bodyNode = response.getBody();
+                log.info("JSON response: " + bodyNode);
 
             /*
             JsonNode dataNode = bodyNode.get("data");
@@ -65,25 +71,26 @@ public class TOPdeskConnector implements Connector {
                 }
             }
             */
-        } catch(HttpClientErrorException e) {
-            log.error(e.getMessage(), e);
-            if (e.getRawStatusCode() == 403) {
-                Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie is not authorized to access TOPdesk service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
+            } catch (HttpClientErrorException e) {
+                log.error(e.getMessage(), e);
+                if (e.getRawStatusCode() == 403) {
+                    Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie is not authorized to access TOPdesk service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
+                    hits.add(hit);
+                }
+                // INFO: Do not return null
+            } catch (HttpServerErrorException e) {
+                log.error(e.getMessage(), e);
+                if (e.getRawStatusCode() == 500) {
+                    Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie received an Internal Server Error from TOPdesk service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
+                    hits.add(hit);
+                }
+                // INFO: Do not return null
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                // INFO: Do not return null
+                Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), e.getMessage()), 0.0);
                 hits.add(hit);
             }
-            // INFO: Do not return null
-        } catch(HttpServerErrorException e) {
-            log.error(e.getMessage(), e);
-            if (e.getRawStatusCode() == 500) {
-                Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), "Katie received an Internal Server Error from TOPdesk service '" + ksMeta.getName() + "' configured within Katie domain '" + ksMeta.getDomainId() + "'!"), 0.0);
-                hits.add(hit);
-            }
-            // INFO: Do not return null
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            // INFO: Do not return null
-            Hit hit = new Hit(getAnswerContainingErrorMsg(question.getSentence(), e.getMessage()), 0.0);
-            hits.add(hit);
         }
 
         return hits.toArray(new Hit[0]);
@@ -96,11 +103,12 @@ public class TOPdeskConnector implements Connector {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
         String incidentId = pl.getIncidentId();
 
-        String logMsg = "Get answer(s) of TOPdesk incident '" + incidentId + "' ...";
+        String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
         log.info(logMsg);
         backgroundProcessService.updateProcessStatus(processId, logMsg);
 
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
+
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         log.info("Request URL: " + requestUrl);
@@ -141,14 +149,17 @@ public class TOPdeskConnector implements Connector {
                 log.info("Human request: " + humanRequest);
 
                 JsonNode categoryNode = bodyNode.get("category");
-                Classification category = new Classification(categoryNode.get("name").asText(), 0);
+                Classification category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
                 log.info("Category: " + category.getTerm());
 
                 JsonNode subcategoryNode = bodyNode.get("subcategory");
-                Classification subcategory = new Classification(subcategoryNode.get("name").asText(), 1);
+                Classification subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
                 log.info("Subcategory: " + subcategory.getTerm());
 
-                // TODO: Train classifier
+                // INFO: Train classifier
+                TextItem[] samples = new TextItem[1];
+                samples[0] = new TextItem(humanRequest, getLabel(category.getTerm(), subcategory.getTerm()));
+                classificationService.train(domain, samples);
             }
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 404) {
@@ -177,6 +188,15 @@ public class TOPdeskConnector implements Connector {
         }
 
         return null;
+    }
+
+    /**
+     *
+     */
+    private Classification getLabel(String category, String subcategory) {
+        // TODO: Check whether classification already exists
+        Classification classification = new Classification(category + ", " + subcategory, "TODO");
+        return classification;
     }
 
     /**

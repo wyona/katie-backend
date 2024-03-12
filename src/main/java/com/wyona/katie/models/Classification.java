@@ -3,7 +3,7 @@ package com.wyona.katie.models;
 public class Classification {
 
     private String term;
-    private Integer id;
+    private String id;
 
     /**
      *
@@ -13,9 +13,9 @@ public class Classification {
 
     /**
      * @param term Text, e.g. "Managed Device Services, MacOS Clients"
-     * @param id Id, e.g. 15
+     * @param id Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      */
-    public Classification(String term, Integer id) {
+    public Classification(String term, String id) {
         this.term = term;
         this.id = id;
     }
@@ -37,14 +37,14 @@ public class Classification {
     /**
      *
      */
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
     /**
      *
      */
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 }

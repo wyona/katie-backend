@@ -38,7 +38,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
 
     private static final String UUID_FIELD = "uuid";
-    private static final String LABEL_FIELD = "label";
+    private static final String LABEL_UUID_FIELD = "label";
     private static final String VECTOR_FIELD = "vector";
 
     private static final String SAMPLE_INDEX = "lucene-classifications";
@@ -95,10 +95,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document doc = indexReader.document(scoreDoc.doc);
             String uuid = doc.get(UUID_FIELD);
-            int label = Integer.parseInt(doc.get(LABEL_FIELD));
+            String labelUuid = doc.get(LABEL_UUID_FIELD);
             log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(getLabelName(domain, label), label), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(getLabelName(domain, labelUuid), labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
@@ -120,10 +120,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         TopDocs topDocs = searcher.search(query, k);
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document doc = indexReader.document(scoreDoc.doc);
-            int label = Integer.parseInt(doc.get(LABEL_FIELD));
-            log.info("Centroid vector found with label '" + label + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+            String labelUuid = doc.get(LABEL_UUID_FIELD);
+            log.info("Centroid vector found with label ID '" + labelUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(getLabelName(domain, label), label), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(getLabelName(domain, labelUuid), labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
@@ -131,11 +131,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
-     * @param label Label ID, e.g. 15
+     * @param labelUuid Label ID, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      * @return label name, e.g. "Managed Device Services, MacOS Clients"
      */
-    private String getLabelName(Context domain, int label) {
-        File metaFile = getMetaFile(domain, label);
+    private String getLabelName(Context domain, String labelUuid) {
+        File metaFile = getMetaFile(domain, labelUuid);
         if (metaFile.exists()) {
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -160,7 +160,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
         log.info("Train classification sample ...");
 
-        int classId = sample.getClassification().getId();
+        String classId = sample.getClassification().getId();
 
         float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
         String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
@@ -189,8 +189,9 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
     /**
      * Add vector of sample text to index
+     * @param labelUuid UUID of label, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      */
-    private void indexSampleVector(String uuid, String label, float[] vector, Context domain) throws Exception {
+    private void indexSampleVector(String uuid, String labelUuid, float[] vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
         IndexWriter writer = null;
@@ -201,7 +202,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             Field uuidField = new StringField(UUID_FIELD, uuid, Field.Store.YES);
             doc.add(uuidField);
 
-            Field labelField = new StringField(LABEL_FIELD, label, Field.Store.YES);
+            Field labelField = new StringField(LABEL_UUID_FIELD, labelUuid, Field.Store.YES);
             doc.add(labelField);
 
             FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
@@ -221,9 +222,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
     /**
      * Add vector of centroid to index
+     * @param labelUuid UUID of label
      */
-    private void indexCentroidVector(String label, float[] vector, Context domain) throws Exception {
-        delete(label, domain, CENTROID_INDEX);
+    private void indexCentroidVector(String labelUuid, float[] vector, Context domain) throws Exception {
+        delete(labelUuid, domain, CENTROID_INDEX);
 
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec());
@@ -233,7 +235,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
             Document doc = new Document();
 
-            Field labelField = new StringField(LABEL_FIELD, label, Field.Store.YES);
+            Field labelField = new StringField(LABEL_UUID_FIELD, labelUuid, Field.Store.YES);
             doc.add(labelField);
 
             FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
@@ -254,7 +256,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * Delete vectors associated with a particular label
      */
-    public boolean delete(String label, Context domain, String indexName) throws Exception {
+    public boolean delete(String labelUuid, Context domain, String indexName) throws Exception {
 
         try {
             IndexReader reader = DirectoryReader.open(getIndexDirectory(domain, indexName));
@@ -263,7 +265,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             //log.info("Number of deleted documents: " + reader.numDeletedDocs());
             reader.close();
 
-            log.info("Delete documents with label '" + label + "' from index '" + indexName + "' of domain '" + domain.getId() + "' ...");
+            log.info("Delete documents with label ID '" + labelUuid + "' from index '" + indexName + "' of domain '" + domain.getId() + "' ...");
             IndexWriterConfig iwc = new IndexWriterConfig();
             //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setCodec(luceneCodecFactory.getCodec());
@@ -271,7 +273,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             IndexWriter writer = null;
             try {
                 writer = new IndexWriter(getIndexDirectory(domain, indexName), iwc);
-                Term term = new Term(LABEL_FIELD, label);
+                Term term = new Term(LABEL_UUID_FIELD, labelUuid);
                 writer.deleteDocuments(term);
                 // writer.forceMerge(1);
                 writer.close();
@@ -298,8 +300,8 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * Get centroid for a particular label
      */
-    private FloatVector getCentroid(Context domain, int label) throws Exception {
-        File[] embeddingFiles = getEmbeddingsDir(domain, label).listFiles();
+    private FloatVector getCentroid(Context domain, String labelUuid) throws Exception {
+        File[] embeddingFiles = getEmbeddingsDir(domain, labelUuid).listFiles();
         List<FloatVector> embeddings = new ArrayList<>();
         for (File file : embeddingFiles) {
             FloatVector embedding = new FloatVector(dataRepoService.readEmbedding(file));
@@ -337,21 +339,21 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      *
      */
-    private File getLabelDir(Context domain, int classId) {
+    private File getLabelDir(Context domain, String classId) {
         return new File(domain.getContextDirectory(),"classifications/" + classId);
     }
 
     /**
      *
      */
-    private File getMetaFile(Context domain, int classId) {
+    private File getMetaFile(Context domain, String classId) {
         return new File(getLabelDir(domain, classId), "meta.json");
     }
 
     /**
      *
      */
-    private File getEmbeddingsDir(Context domain, int classId) {
+    private File getEmbeddingsDir(Context domain, String classId) {
         return new File(getLabelDir(domain, classId),"embeddings");
     }
 }

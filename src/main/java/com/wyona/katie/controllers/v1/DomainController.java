@@ -89,9 +89,9 @@ public class DomainController {
                 // INFO: See for example https://github.com/handav/nlp-in-javascript-with-natural/blob/master/7-classify/example1.js
                 for (AskedQuestion question : questions) {
                     // TODO: Set correct classification / label
-                    Classification classification = new Classification("question", 0);
+                    Classification classification = new Classification("question", "0");
                     if (false) {
-                        classification = new Classification("message", 1);
+                        classification = new Classification("message", "1");
                     }
 
                     items.add(new TextItem(question.getQuestion(), classification));
