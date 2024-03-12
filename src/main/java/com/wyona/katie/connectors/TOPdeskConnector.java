@@ -101,8 +101,8 @@ public class TOPdeskConnector implements Connector {
         backgroundProcessService.updateProcessStatus(processId, logMsg);
 
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         log.info("Request URL: " + requestUrl);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -114,26 +114,39 @@ public class TOPdeskConnector implements Connector {
             JsonNode bodyNode = response.getBody();
             log.info("JSON response: " + bodyNode);
 
-            boolean visibleReplies = false;
-            if (bodyNode.isArray()) {
-                backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
-                for (int i = 0; i < bodyNode.size(); i++) {
-                    JsonNode entryNode = bodyNode.get(i);
-                    boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
-                    if (!invisibleForCaller) {
-                        if (entryNode.has("memoText")) {
-                            visibleReplies = true;
-                            String _answer = entryNode.get("memoText").asText();
-                            log.info("Response to user: " + _answer);
-                            Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                            // TODO
+            if (false) {
+                boolean visibleReplies = false;
+                if (bodyNode.isArray()) {
+                    backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
+                    for (int i = 0; i < bodyNode.size(); i++) {
+                        JsonNode entryNode = bodyNode.get(i);
+                        boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
+                        if (!invisibleForCaller) {
+                            if (entryNode.has("memoText")) {
+                                visibleReplies = true;
+                                String _answer = entryNode.get("memoText").asText();
+                                log.info("Response to user: " + _answer);
+                                Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                                // TODO
+                            }
                         }
                     }
-                }
 
-                if (!visibleReplies) {
-                    log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
+                    if (!visibleReplies) {
+                        log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
+                    }
                 }
+            } else {
+                String humanRequest = bodyNode.get("request").asText();
+                log.info("Human request: " + humanRequest);
+
+                JsonNode categoryNode = bodyNode.get("category");
+                Classification category = new Classification(categoryNode.get("name").asText(), 0);
+                log.info("Category: " + category.getTerm());
+
+                JsonNode subcategoryNode = bodyNode.get("subcategory");
+                Classification subcategory = new Classification(subcategoryNode.get("name").asText(), 1);
+                log.info("Subcategory: " + subcategory.getTerm());
             }
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 404) {
