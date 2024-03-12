@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.BackgroundProcessService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,9 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Component
 public class TOPdeskConnector implements Connector {
+
+    @Autowired
+    private BackgroundProcessService backgroundProcessService;
 
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
@@ -91,7 +96,9 @@ public class TOPdeskConnector implements Connector {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
         String incidentId = pl.getIncidentId();
 
-        log.info("Update incident '" + incidentId + "' ...");
+        String logMsg = "Get answer(s) of TOPdesk incident '" + incidentId + "' ...";
+        log.info(logMsg);
+        backgroundProcessService.updateProcessStatus(processId, logMsg);
 
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
@@ -109,6 +116,7 @@ public class TOPdeskConnector implements Connector {
 
             boolean visibleReplies = false;
             if (bodyNode.isArray()) {
+                backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
                 for (int i = 0; i < bodyNode.size(); i++) {
                     JsonNode entryNode = bodyNode.get(i);
                     boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
@@ -118,6 +126,7 @@ public class TOPdeskConnector implements Connector {
                             String _answer = entryNode.get("memoText").asText();
                             log.info("Response to user: " + _answer);
                             Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                            // TODO
                         }
                     }
                 }
@@ -127,17 +136,28 @@ public class TOPdeskConnector implements Connector {
                 }
             }
         } catch(HttpClientErrorException e) {
-            log.error(e.getMessage(), e);
+            if (e.getRawStatusCode() == 404) {
+                logMsg = "No such TOPdesk incident '" + incidentId + "'!";
+                log.error(logMsg);
+                backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.ERROR);
+            }
+            if (e.getRawStatusCode() == 401) {
+                backgroundProcessService.updateProcessStatus(processId, "Authentication failed", BackgroundProcessStatusType.ERROR);
+            }
             if (e.getRawStatusCode() == 403) {
             }
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
             // INFO: Do not return null
         } catch(HttpServerErrorException e) {
             log.error(e.getMessage(), e);
             if (e.getRawStatusCode() == 500) {
             }
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
             // INFO: Do not return null
         } catch(Exception e) {
             log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
             // INFO: Do not return null
         }
 
@@ -160,6 +180,7 @@ public class TOPdeskConnector implements Connector {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
 
+        //log.info("Basic Auth Credentials: U: " + ksMeta.getTopDeskUsername() + ", P: " + ksMeta.getTopDeskAPIPassword());
         headers.setBasicAuth(ksMeta.getTopDeskUsername(), ksMeta.getTopDeskAPIPassword());
 
         return headers;
