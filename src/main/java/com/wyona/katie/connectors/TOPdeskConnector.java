@@ -127,7 +127,7 @@ public class TOPdeskConnector implements Connector {
                                 String _answer = entryNode.get("memoText").asText();
                                 log.info("Response to user: " + _answer);
                                 Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                                // TODO
+                                // TODO: Set chosenAnswer
                             }
                         }
                     }
@@ -147,6 +147,8 @@ public class TOPdeskConnector implements Connector {
                 JsonNode subcategoryNode = bodyNode.get("subcategory");
                 Classification subcategory = new Classification(subcategoryNode.get("name").asText(), 1);
                 log.info("Subcategory: " + subcategory.getTerm());
+
+                // TODO: Train classifier
             }
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 404) {
