@@ -132,6 +132,7 @@ public class QuestionAnsweringService {
      * Get answers to a question or message containing a question
      *
      * @param question Question / message asked by user, e.g. "What is a moderator?" or "Hi, I have forgotten my password, how can I reset it? Thanks, Michael"
+     * @param predictClassifications When true, then predict labels based on submitted question / message
      * @param classifications Provided Classifications to narrow down search space, e.g. "gravel bike", "bug", "instruction", "fact", "social", ...
      * @param messageId Message Id sent by client together with question
      * @param domain Domain the question/answer is associated with
@@ -148,7 +149,7 @@ public class QuestionAnsweringService {
      *
      * @return list of possible answers to question
      */
-    public List<ResponseAnswer> getAnswers(String question, List<String> classifications, String messageId, Context domain, Date dateSubmitted, String remoteAddress, ChannelType channelType, String channelRequestId, int limit, int offset, boolean checkAuthorization, ContentType requestedAnswerContentType, boolean includeFeedbackLinks, boolean includeClassifications) throws Exception {
+    public List<ResponseAnswer> getAnswers(String question, boolean predictClassifications, List<String> classifications, String messageId, Context domain, Date dateSubmitted, String remoteAddress, ChannelType channelType, String channelRequestId, int limit, int offset, boolean checkAuthorization, ContentType requestedAnswerContentType, boolean includeFeedbackLinks, boolean includeClassifications) throws Exception {
         if (checkAuthorization && domain.getAnswersGenerallyProtected() && !contextService.isMemberOrAdmin(domain.getId())) {
             String msg = "Answers of domain '" + domain.getId() + "' are generally protected and user has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "'.";
             log.info(msg);
@@ -163,6 +164,17 @@ public class QuestionAnsweringService {
         //String logEntryUUID = dataRepoService.logQuestion(question, remoteAddress, dateSubmitted, domain.getId(), username, null, null);
 
         Sentence analyzedQuestion = nerService.analyze(utilsService.preProcessQuestion(question), classifications, domain);
+
+        HitLabel[] predictedLabels = null;
+        if (predictClassifications) {
+            log.info("Predict labels / classifications ...");
+            try {
+                predictedLabels = contextService.classifyText(domain.getId(), question);
+            } catch (Exception e) {
+                // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
+                log.error(e.getMessage(), e);
+            }
+        }
 
         List<Hit> hits = getHits(domain, analyzedQuestion, limit);
 
@@ -263,47 +275,15 @@ public class QuestionAnsweringService {
             }
 
             if (includeClassifications) {
-                String classificationsOfAnswer = getClassificationsAsCSV(ra.getClassifications());
-                String predictedLabels = "TODO";
-                String userLanguage = "en"; // TODO
-                if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
-                    ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + "Classifications of Answer: " + classificationsOfAnswer + "\n\nPredicted Labels: TODO");
-                } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
-                    ra.setAnswer(ra.getAnswer() + "<p>Classifications of Answer: " + classificationsOfAnswer + "</p>");
-                    ra.setAnswer(ra.getAnswer() + "<p>Predicted Labels: TODO</p>");
-                } else {
-                    log.warn("Include classifications not supported for content type '" + ra.getAnswerContentType() + "'.");
-                }
+                ra = includeClassifications(ra, predictedLabels);
             }
 
             if (includeFeedbackLinks) {
-                String userLanguage = "en"; // TODO
-                // TODO: Use i18n for Yes and No ...
-                if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
-                    ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "\n\nYes: " + answerHelpfulLink(domain, logEntryUUID) + "\n\nNo: " + answerNotHelpfulLink(domain, logEntryUUID));
-                } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
-                    ra.setAnswer(ra.getAnswer() + "<p>" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "</p><p>Yes: <a href=\"" + answerHelpfulLink(domain, logEntryUUID) + "\">" + answerHelpfulLink(domain, logEntryUUID) + "</a></p><p>No: <a href=\"" + answerNotHelpfulLink(domain, logEntryUUID) + "\">" + answerNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
-                } else {
-                    log.warn("Include feedback links not supported for content type '" + ra.getAnswerContentType() + "'.");
-                }
+                ra = includeFeedbackLinks(ra, domain, logEntryUUID);
             }
 
             if (requestedAnswerContentType != null) {
-                if (ra.getAnswerContentType() != null) {
-                    if (ra.getAnswer() != null) {
-                        if (requestedAnswerContentType.equals(ContentType.TEXT_PLAIN) && ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
-                            ra.setAnswer(Utils.convertHtmlToPlainText(ra.getAnswer()));
-                            ra.setAnswerContentType(ContentType.TEXT_PLAIN); // WARN: This is overriding the content type of the answer, so if the answer is stored as JSON, then it will not be returned as JSON (see field "answerAsJson" or method getAnswerAsJson)
-                        } else if (requestedAnswerContentType.equals(ContentType.TEXT_TOPDESK_HTML) && ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
-                            ra.setAnswer(Utils.convertHtmlToTOPdeskHtml(ra.getAnswer()));
-                            ra.setAnswerContentType(ContentType.TEXT_HTML); // WARN: This is overriding the content type of the answer, so if the answer is stored as JSON, then it will not be returned as JSON (see field "answerAsJson" or method getAnswerAsJson)
-                        }
-                    } else {
-                        log.error("Answer with UUID '" + ra.getUuid() + "' is null and therefore cannot be converted!");
-                    }
-                } else {
-                    log.warn("Answer content type of response answer '" + ra.getUuid() + "' is not defined!");
-                }
+                ra = convertAnswerToRequestFormat(ra, requestedAnswerContentType);
             }
         }
 
@@ -313,6 +293,74 @@ public class QuestionAnsweringService {
         }
 
         return responseAnswers;
+    }
+
+    /**
+     *
+     */
+    private ResponseAnswer convertAnswerToRequestFormat(ResponseAnswer ra, ContentType requestedAnswerContentType) {
+        if (ra.getAnswerContentType() != null) {
+            if (ra.getAnswer() != null) {
+                if (requestedAnswerContentType.equals(ContentType.TEXT_PLAIN) && ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
+                    ra.setAnswer(Utils.convertHtmlToPlainText(ra.getAnswer()));
+                    ra.setAnswerContentType(ContentType.TEXT_PLAIN); // WARN: This is overriding the content type of the answer, so if the answer is stored as JSON, then it will not be returned as JSON (see field "answerAsJson" or method getAnswerAsJson)
+                } else if (requestedAnswerContentType.equals(ContentType.TEXT_TOPDESK_HTML) && ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
+                    ra.setAnswer(Utils.convertHtmlToTOPdeskHtml(ra.getAnswer()));
+                    ra.setAnswerContentType(ContentType.TEXT_HTML); // WARN: This is overriding the content type of the answer, so if the answer is stored as JSON, then it will not be returned as JSON (see field "answerAsJson" or method getAnswerAsJson)
+                }
+            } else {
+                log.error("Answer with UUID '" + ra.getUuid() + "' is null and therefore cannot be converted!");
+            }
+        } else {
+            log.warn("Answer content type of response answer '" + ra.getUuid() + "' is not defined!");
+        }
+        return ra;
+    }
+
+    /**
+     *
+     */
+    private ResponseAnswer includeFeedbackLinks(ResponseAnswer ra, Context domain, String logEntryUUID) {
+        String userLanguage = "en"; // TODO
+        // TODO: Use i18n for Yes and No ...
+        if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
+            ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "\n\nYes: " + answerHelpfulLink(domain, logEntryUUID) + "\n\nNo: " + answerNotHelpfulLink(domain, logEntryUUID));
+        } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
+            ra.setAnswer(ra.getAnswer() + "<p>" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "</p><p>Yes: <a href=\"" + answerHelpfulLink(domain, logEntryUUID) + "\">" + answerHelpfulLink(domain, logEntryUUID) + "</a></p><p>No: <a href=\"" + answerNotHelpfulLink(domain, logEntryUUID) + "\">" + answerNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
+        } else {
+            log.warn("Include feedback links not supported for content type '" + ra.getAnswerContentType() + "'.");
+        }
+        return ra;
+    }
+
+    /**
+     *
+     */
+    private ResponseAnswer includeClassifications(ResponseAnswer ra, HitLabel[] predictedLabels) {
+        String classificationsOfAnswer = getClassificationsAsCSV(ra.getClassifications());
+        String predictedClassifications = null;
+        if (predictedLabels != null && predictedLabels.length > 0) {
+            // INFO: Include only top label(s)
+            predictedClassifications = predictedLabels[0].getLabel().getTerm();
+        }
+
+        String userLanguage = "en"; // TODO
+        if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
+            ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + "Classifications of Answer: " + classificationsOfAnswer);
+            if (predictedClassifications != null) {
+                ra.setAnswer(ra.getAnswer() + "\n\nPredicted Labels: " + predictedClassifications);
+            }
+        } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
+            ra.setAnswer(ra.getAnswer() + "<p>Classifications of Answer: " + classificationsOfAnswer + "</p>");
+            if (predictedClassifications != null) {
+                ra.setAnswer(ra.getAnswer() + "<p>Predicted Labels: " + predictedClassifications + "</p>");
+            }
+        } else {
+            log.warn("Include classifications not supported for content type '" + ra.getAnswerContentType() + "'.");
+        }
+
+        log.debug("Answer including classifications: " + ra.getAnswer());
+        return ra;
     }
 
     /**

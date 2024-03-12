@@ -257,18 +257,8 @@ public class AskControllerV3 {
                 question = analyzedMessage.getMessage();
             }
 
-            HitLabel[] predictedLabels = null;
-            if (predictClassifications) {
-                log.info("Predict labels / classifications ...");
-                try {
-                    predictedLabels = contextService.classifyText(domainId, question);
-                } catch (Exception e) {
-                    // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
-                    log.error(e.getMessage(), e);
-                }
-            }
-
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications);
+            // TODO: Return AskResponse (including meta info) instead list of ResponseAnswer
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, predictClassifications, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications);
 
             if (responseAnswers != null) {
                 String questionUUID = null;
@@ -279,7 +269,7 @@ public class AskControllerV3 {
                 askResponse.setAnswers(responseAnswers);
                 askResponse.setOffset(_offset);
                 askResponse.setLimit(_limit);
-                askResponse.setPredictedLabels(predictedLabels);
+                //askResponse.setPredictedLabels(predictedLabels);
 
                 // TODO: This is a hack, which should be improved! When there are no answers, then there still should be a question UUID!
                 if (responseAnswers.size() > 0) {
