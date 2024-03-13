@@ -158,7 +158,7 @@ public class TOPdeskConnector implements Connector {
 
                 // INFO: Train classifier
                 TextItem[] samples = new TextItem[1];
-                samples[0] = new TextItem(humanRequest, getLabel(category.getTerm(), subcategory.getTerm()));
+                samples[0] = new TextItem(humanRequest, getLabel(category, subcategory));
                 classificationService.train(domain, samples);
             }
         } catch(HttpClientErrorException e) {
@@ -193,9 +193,10 @@ public class TOPdeskConnector implements Connector {
     /**
      *
      */
-    private Classification getLabel(String category, String subcategory) {
-        // TODO: Check whether classification already exists
-        Classification classification = new Classification(category + ", " + subcategory, "TODO");
+    private Classification getLabel(Classification category, Classification subcategory) {
+        String className = category.getTerm() + ", " + subcategory.getTerm();
+        String classId = category.getId() + "-" + subcategory.getId();
+        Classification classification = new Classification(className, classId);
         return classification;
     }
 

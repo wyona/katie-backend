@@ -150,11 +150,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
-     *
+     * Train classification sample
      */
     private void trainSample(Context domain, TextItem sample) throws Exception {
         if (sample.getClassification().getId() == null) {
-            log.warn("No class ID available, therefore do not train classifier!");
+            log.warn("No class ID available for class name '" + sample.getClassification().getTerm() + "', therefore do not train classifier!");
             return;
         }
 
