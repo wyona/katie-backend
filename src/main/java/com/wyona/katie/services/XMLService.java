@@ -366,7 +366,7 @@ public class XMLService {
                     }
                 }
             }
-            log.warn("Parent element '" + parent.getTagName() + "' has no such child '" + name + "'.");
+            log.debug("Parent element '" + parent.getTagName() + "' has no such child '" + name + "'.");
             return null;
         } else {
             log.warn("Parent element '" + parent.getTagName() + "' has no children at all.");
