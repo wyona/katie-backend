@@ -102,7 +102,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 
 * Configure Tomcat path inside build.sh (see TOMCAT_HOME)
 * Configure 'volume.base.path' and comment/disable 'server.servlet.session.cookie.secure' inside src/main/resources/application-prod.properties
-* Either remove &lt;base href="/katie/"&gt; or set base href to "/katie/" inside src/main/webapp/index.html
+* Either remove &lt;base href="/"&gt; or set &lt;base href="/katie/"&gt; inside src/main/webapp/index.html
 * Set i18n path to "./assets/i18n/" (1 location) and TinyMCE path to 'base_url:"./tinymce"' (6 locations) inside src/main/webapp/main.js
 * Build webapp as war, run: 'sh build.sh'
 * Startup Tomcat: ./bin/startup.sh
@@ -134,7 +134,7 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 
 ## Docker using Tomcat
 
-* Either remove &lt;base href="/katie/"&gt; or set base href to "/katie/" inside src/main/webapp/index.html
+* Either remove &lt;base href="/"&gt; or set &lt;base href="/katie/"&gt; inside src/main/webapp/index.html
 * Set i18n path to "./assets/i18n/" (1 location) and TinyMCE path to 'base_url:"./tinymce"' (6 locations) inside src/main/webapp/main.js
 * sh build.sh
 * Check available Tomcat version at https://dlcdn.apache.org/tomcat/tomcat-8/ and update inside Dockerfile_Java11_Tomcat
