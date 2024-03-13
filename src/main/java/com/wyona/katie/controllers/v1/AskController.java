@@ -468,6 +468,9 @@ public class AskController {
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Classify a text")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<?> predictTaxonomyEntries(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
@@ -475,6 +478,11 @@ public class AskController {
             @RequestParam(value = "text", required = true) String text,
             HttpServletRequest request, HttpServletResponse response) {
 
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
         rememberMeService.tryAutoLogin(request, response);
 
         try {
