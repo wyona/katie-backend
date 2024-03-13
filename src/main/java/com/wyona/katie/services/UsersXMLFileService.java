@@ -288,18 +288,18 @@ public class UsersXMLFileService {
         }
 
         String nameEl = IAM_USERNAME_TAG;
-        log.info("Get user from IAM where the element '" + nameEl + "' has the value '" + value + "' ...");
+        log.debug("Get user from IAM where the element '" + nameEl + "' has the value '" + value + "' ...");
 
         log.info("Read users XML file ...");
         Document doc = xmlService.read(getUsersXMLFile());
 
-        log.info("Normalize document ...");
+        log.debug("Normalize document ...");
         doc.getDocumentElement().normalize();
 
         // TODO: Consider using getUserElementByUsername(...)
         //Element userElement = getUserElementByUsername(doc, value);
 
-        log.info("Get all elements with tag name '" + IAM_USER_TAG + "' ...");
+        log.debug("Get all elements with tag name '" + IAM_USER_TAG + "' ...");
         NodeList userNL = doc.getElementsByTagName(IAM_USER_TAG);
         for (int i = 0; i < userNL.getLength(); i++) {
             Element userEl = (Element)userNL.item(i);

@@ -724,11 +724,11 @@ public class XMLService {
         factory.setNamespaceAware(true);
         factory.setValidating(false);
 
-        log.info("Init DocumentBuilder ...");
+        log.debug("Init DocumentBuilder ...");
         DocumentBuilder builder = factory.newDocumentBuilder();
         //DocumentBuilder builder = createBuilder(false);
 
-        log.info("Parse input stream ...");
+        log.debug("Parse input stream ...");
         Document doc = builder.parse(in);
         return doc;
     }
