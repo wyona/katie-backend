@@ -226,6 +226,20 @@
         </dependency>
 
         <!-- TODO: See src/main/java/com/wyona/katie/controllers/v2/FAQControllerV2.java#importFAQ(...) -->
+        <!-- INFO: Response as XML, see src/main/java/com/wyona/katie/controllers/v1/AskController.java#predictTaxonomyEntries(...) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+<!--
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformats-text</artifactId>
+            <version>2.16.2</version>
+        </dependency>
+-->
+
 <!--
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -440,6 +454,7 @@
       <!--<java.version>1.8</java.version>-->
       <h2.version>1.4.197</h2.version>
       <jackson.version>2.12.2</jackson.version>
+      <!--<jackson.version>2.16.2</jackson.version>-->
       <lucene.version>9.10.0</lucene.version> <!-- IMPORTANT: Also update subclass of default Lucene Codec inside com/erkigsnek/webapp/services/LuceneCodecFactory.java ... -->
       <!--<lucene.version>9.5.0-SNAPSHOT</lucene.version>-->
       <!-- IMPORTANT: Remove log4j version when upgrading Spring Boot version and Spring Boot has a recent log4j dependency -->
