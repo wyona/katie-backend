@@ -1,5 +1,6 @@
 package com.wyona.katie.models;
 
+import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -49,5 +50,19 @@ public class PredictedLabelsResponse {
      */
     public HitLabel[] getPredictedLabels() {
         return predictedLabels.toArray(new HitLabel[0]);
+    }
+
+    /**
+     * WARNING: Only temporarily!
+     */
+    public String getPredictedLabelsAsTopDeskHtml() {
+        //ContentType.TEXT_TOPDESK_HTML
+        StringBuilder sb = new StringBuilder();
+        sb.append("<ul>");
+        for (HitLabel hitLabel : predictedLabels) {
+            sb.append("<li>" + hitLabel.getLabel().getTerm() + " (Score: " + hitLabel.getScore() + ")</li>");
+        }
+        sb.append("</ul>");
+        return Utils.convertHtmlToTOPdeskHtml(sb.toString());
     }
 }
