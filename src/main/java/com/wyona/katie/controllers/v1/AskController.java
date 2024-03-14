@@ -10,6 +10,7 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -466,7 +467,8 @@ public class AskController {
     /**
      * REST interface to classify a text
      */
-    @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
     @ApiOperation(value="Classify a text")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = PredictedLabelsResponse.class),
