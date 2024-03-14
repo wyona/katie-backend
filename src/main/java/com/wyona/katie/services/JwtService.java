@@ -37,6 +37,9 @@ public class JwtService {
     @Value("${jwt.issuer}")
     private String issuer;
 
+    @Value("${jwt.allowed.clock.skew.seconds}")
+    private Long allowedClockSkewSeconds;
+
     public static final String JWT_CLAIM_DOMAIN_ID = "did";
 
     @Value("${config.data_path}")
@@ -294,9 +297,6 @@ public class JwtService {
                 log.info("Use default public key ...");
                 publicKey = getPublicKey();
             }
-
-            // TODO: Make skew seconds configurable
-            long allowedClockSkewSeconds = 16; // INFO: Allow 16 seconds difference between server and client
 
             Jwts.parser().setSigningKey(publicKey).setAllowedClockSkewSeconds(allowedClockSkewSeconds).parseClaimsJws(jwtToken);
             log.info("JWT is valid :-)");
