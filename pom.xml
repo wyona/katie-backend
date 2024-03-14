@@ -225,7 +225,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- TODO: See src/main/java/com/erkigsnek/webapp/controllers/v2/FAQControllerV2.java#importFAQ(...) -->
+        <!-- TODO: See src/main/java/com/wyona/katie/controllers/v2/FAQControllerV2.java#importFAQ(...) -->
 <!--
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
