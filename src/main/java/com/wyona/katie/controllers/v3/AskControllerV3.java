@@ -7,6 +7,7 @@ import com.wyona.katie.services.*;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,7 +50,7 @@ public class AskControllerV3 {
     /**
      * REST interface to get answer(s) to a question
      */
-    @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value="Get answer(s) to a question")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class, responseContainer = "List"),
