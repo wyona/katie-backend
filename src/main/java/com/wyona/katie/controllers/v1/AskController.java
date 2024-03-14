@@ -468,6 +468,11 @@ public class AskController {
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Classify a text")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = PredictedLabelsResponse.class),
+            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
+    })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataType = "string", paramType = "header") })
