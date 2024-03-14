@@ -530,7 +530,7 @@ public class ContextService {
      * @param text Text, e.g. "When was Michael born?"
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
-    public HitLabel[] classifyText(String domainId, String text) throws Exception {
+    public PredictedLabelsResponse classifyText(String domainId, String text) throws Exception {
 
         Context domain = getContext(domainId);
 
@@ -547,8 +547,12 @@ public class ContextService {
         // TODO: https://opennlp.apache.org/docs/2.3.2/manual/opennlp.html#tools.doccat
 
         HitLabel[] labels = classificationService.predictLabels(domain, text);
+        PredictedLabelsResponse response = new PredictedLabelsResponse();
 
-        return labels;
+        response.setPredictedLabels(labels);
+        response.setClassificationImpl(ClassificationImpl.CENTROID_MATCHING);
+
+        return response;
     }
 
     /**
