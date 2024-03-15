@@ -8,9 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MessageValue {
 
+    public static final String TEXT_INPUT_BETTER_ANSWER = "betteranswer";
+    public static final String TEXT_INPUT_RELEVANT_URL = "relevanturl";
+    public static final String TEXT_INPUT_DOMAIN_ID = "domainid";
+
     private String message;
     private String betterAnswer;
     private String relevantUrl;
+    private String domainId;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -66,6 +71,20 @@ public class MessageValue {
      */
     public String getRelevanturl() {
         return relevantUrl;
+    }
+
+    /**
+     *
+     */
+    public void setDomainid(String domainid) {
+        this.domainId = domainId;
+    }
+
+    /**
+     *
+     */
+    public String getDomainid() {
+        return domainId;
     }
 
     /**
