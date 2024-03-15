@@ -35,9 +35,6 @@ import com.wyona.katie.integrations.msteams.services.MicrosoftDomainService;
 @Component
 public class MicrosoftMessageSender extends CommonMessageSender  {
 
-    private static final String TEXT_INPUT_BETTER_ANSWER = "betteranswer";
-    private static final String TEXT_INPUT_RELEVANT_URL = "relevanturl";
-
     private static final String remoteAddress = "TODO:MS-Teams";
 
     private static final String ACTION_SEPARATOR = "::";
@@ -320,21 +317,16 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             }
         } else {
             log.warn("MS Teams user Id '" + userId + "' is not registered yet with Katie!");
-            String[] args = new String[1];
+            String[] args = new String[2];
             args[0] = "<strong>" + userId + "</strong>";
+            args[1] = defaultHostnameMailBody;
             responseMsg.setText(messageSource.getMessage("user.id.not.registered", args, Utils.getLocale(locale)));
             responseMsg.setTextFormat("xml");
 
             // WARNING: For security reasons do not auto-register users, but register users only by invitation!
 
-            String lang = message.getLocale();
-            MicrosoftAdaptiveCard notRegisteredYet = new MicrosoftAdaptiveCard(messageSource.getMessage("not.registered.yet", null, Utils.getLocale(lang)));
-
-            MicrosoftAdaptiveCardActionSubmit requestInvitation = new MicrosoftAdaptiveCardActionSubmit(messageSource.getMessage("request.invitation", null, Utils.getLocale(lang)));
-            requestInvitation.setData(new MessageValue(ChannelAction.REQUEST_INVITATION + ACTION_SEPARATOR + userId + ACTION_SEPARATOR + message.getFrom().getName()));
-            notRegisteredYet.addAction(requestInvitation);
-
-            responseMsg.addAttachment(new MicrosoftAttachment(notRegisteredYet));
+            MicrosoftAdaptiveCard requestInvitationCard = getRequestInvitationCard(Utils.getLocale(message.getLocale()), userId, message.getFrom().getName());
+            responseMsg.addAttachment(new MicrosoftAttachment(requestInvitationCard));
 
             return responseMsg;
         }
@@ -380,6 +372,23 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         }
 
         return responseMsg;
+    }
+
+    /**
+     * Get card to request invitation to use direct messaging with Katie
+     */
+    private MicrosoftAdaptiveCard getRequestInvitationCard(Locale locale, String userId, String name) {
+        MicrosoftAdaptiveCard card = new MicrosoftAdaptiveCard(messageSource.getMessage("not.registered.yet", null, locale));
+
+        MicrosoftAdaptiveCardBody domainIdInput = new MicrosoftAdaptiveCardBody("Katie Domain Id:");
+        domainIdInput.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_DOMAIN_ID, "abc3rdb3-34a9-4a84-b12a-13d5dfd2152w"));
+        card.addBody(domainIdInput);
+
+        MicrosoftAdaptiveCardActionSubmit requestInvitation = new MicrosoftAdaptiveCardActionSubmit(messageSource.getMessage("request.invitation", null, locale));
+        requestInvitation.setData(new MessageValue(ChannelAction.REQUEST_INVITATION + ACTION_SEPARATOR + userId + ACTION_SEPARATOR + name));
+        card.addAction(requestInvitation);
+
+        return card;
     }
 
     /**
@@ -666,8 +675,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 args[0] = askedQuestion.getQuestion();
                 responseMsg.setText(messageSource.getMessage("thanks.for.better.answer", args, locale));
 
-                String betterAnswer = message.getValue().getBetteranswer(); // TEXT_INPUT_BETTER_ANSWER
-                String relevantUrl = message.getValue().getRelevanturl();
+                String betterAnswer = message.getValue().getBetteranswer(); // MessageValue.TEXT_INPUT_BETTER_ANSWER
+                String relevantUrl = message.getValue().getRelevanturl(); // MessageValue.TEXT_INPUT_RELEVANT_URL
                 log.info("Save better answer: " + betterAnswer + ", " + relevantUrl);
                 ContentType contentType = null;
                 List<String> classifications  = new ArrayList<String>();
@@ -756,11 +765,11 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         MicrosoftAdaptiveCard feedbackCard = new MicrosoftAdaptiveCard(messageSource.getMessage("provide.better.answer", null, locale));
 
         MicrosoftAdaptiveCardBody betterResponse = new MicrosoftAdaptiveCardBody(messageSource.getMessage("better.answer", null, locale) + ":");
-        betterResponse.addItem(new MicrosoftAdaptiveCardInputText(TEXT_INPUT_BETTER_ANSWER, messageSource.getMessage( "what.would.be.helpful.answer", null, locale), true));
+        betterResponse.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_BETTER_ANSWER, messageSource.getMessage( "what.would.be.helpful.answer", null, locale), true));
         feedbackCard.addBody(betterResponse);
 
         MicrosoftAdaptiveCardBody betterResponseSourceUrl = new MicrosoftAdaptiveCardBody("URL:");
-        betterResponseSourceUrl.addItem(new MicrosoftAdaptiveCardInputText(TEXT_INPUT_RELEVANT_URL, messageSource.getMessage("url.relevant.source", null, locale)));
+        betterResponseSourceUrl.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_RELEVANT_URL, messageSource.getMessage("url.relevant.source", null, locale)));
         feedbackCard.addBody(betterResponseSourceUrl);
 
         MicrosoftAdaptiveCardActionSubmit improveAnswer = new MicrosoftAdaptiveCardActionSubmit(messageSource.getMessage("submit.better.answer", null, locale));
