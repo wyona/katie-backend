@@ -139,7 +139,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 log.info("Send invitation request for user registration to Katie administrators ...");
                 String userName = actionParts[2];
                 String userId = actionParts[1];
-                String domainId = message.getValue().getDomainid(); // MessageValue.TEXT_INPUT_DOMAIN_ID
+                String domainId = value.getDomainid(); // MessageValue.TEXT_INPUT_DOMAIN_ID
                 responseMsg = getRequestInvitationInteractionResponse(responseMsg, userName, userId, domainId);
                 send(convValues, message.getConversation().getName(), message.getRecipient(), message.getFrom(), responseMsg);
                 return;
@@ -487,8 +487,12 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     private MicrosoftResponse getRequestInvitationInteractionResponse(MicrosoftResponse responseMsg, String userName, String userId, String domainId) {
         try {
             log.info("Send email to Katie administrators that MS Teams user '" + userName + "' (" + userId + ") requests Katie registration and to get invited to domain '" + domainId + "' ...");
-            // TODO: Send email to owners / administrators of domain
-            notifyAdministrators("MS Teams user requests invitation to Katie domain '" + domainId + "'", getMailBodyForRegisteringMSTeamsUser(userName, userId, domainId));
+            String subject = "MS Teams user requests invitation to Katie domain '" + domainId + "'";
+            String body = getMailBodyForRegisteringMSTeamsUser(userName, userId, domainId);
+            notifyAdministrators(subject, body);
+            if (domainId != null) {
+                notifyDomainOwnersAndAdmins(subject, body, domainId);
+            }
 
             responseMsg.setText("Katie System Administrator has been notified re Katie registration request of user '" + userName + "' (" + userId + ").");
             responseMsg.setTextFormat("markdown");
@@ -547,7 +551,22 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
      */
     private void notifyAdministrators(String subject, String message) throws Exception {
         User[] admins = iamService.getAdministrators();
-        mailerService.notifyAdministrators(admins, subject, message);
+        mailerService.notifyUsers(admins, subject, message);
+    }
+
+    /**
+     *
+     */
+    private void notifyDomainOwnersAndAdmins(String subject, String message, String domainId) {
+        try {
+            User[] owners = contextService.getMembers(domainId, false, RoleDomain.OWNER);
+            mailerService.notifyUsers(owners, subject, message);
+
+            User[] admins = contextService.getMembers(domainId, false, RoleDomain.ADMIN);
+            mailerService.notifyUsers(admins, subject, message);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**

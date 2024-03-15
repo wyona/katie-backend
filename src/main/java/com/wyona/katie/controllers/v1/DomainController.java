@@ -1543,7 +1543,9 @@ public class DomainController {
                     return new ResponseEntity<>(new Error(errorMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return new ResponseEntity<>(domainService.getMembers(id, true), HttpStatus.OK);
+                // TODO: Provide role as optional request parameter
+                RoleDomain role = null; // RoleDomain.OWNER;
+                return new ResponseEntity<>(domainService.getMembers(id, true, role), HttpStatus.OK);
             }
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());

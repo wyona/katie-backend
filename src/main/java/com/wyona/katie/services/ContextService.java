@@ -1499,7 +1499,7 @@ public class ContextService {
         String[] domainIds = getDomainIDsUserIsMemberOf(user);
         for (String domainId: domainIds) {
             log.info("Remove user '" + id + "' from domain '" + domainId + "' ...");
-            User[] members = getMembers(domainId, false);
+            User[] members = getMembers(domainId, false, null);
             if (members.length == 1 && members[0].getId().equals(id)) {
                 log.info("User '" + id + "' is the only member of domain '" + domainId + "'.");
                 removeMember(domainId, id, true);
@@ -1519,9 +1519,10 @@ public class ContextService {
      * Get all users which have access to a particular domain
      * @param domainId Domain Id
      * @param checkAuthorization Check whether user is authorized to get list of members
+     * @param role Domain role of member
      * @return list of users which have access to a particular domain
      */
-    public User[] getMembers(String domainId, boolean checkAuthorization) throws Exception {
+    public User[] getMembers(String domainId, boolean checkAuthorization, RoleDomain role) throws Exception {
         if (checkAuthorization && !isMemberOrAdmin(domainId)) {
             throw new AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
@@ -1540,7 +1541,13 @@ public class ContextService {
                         user.setIsExpert(true);
                     }
                     user.setDomainRole(members[i].getDomainRole());
-                    users.add(user);
+                    if (role != null) {
+                        if (user.getDomainRole() != null && user.getDomainRole().equals(role)) {
+                            users.add(user);
+                        }
+                    } else {
+                        users.add(user);
+                    }
                 } else {
                     log.error("No such user with Id '" + members[i].getId() + "'! Maybe user got deleted, but was not removed as member from domain '" + domainId + "'. If so, clean up domain members list.");
                 }
@@ -1635,7 +1642,7 @@ public class ContextService {
 
             aiService.deleteTenant(getContext(domainId));
 
-            User[] members = getMembers(domainId, false);
+            User[] members = getMembers(domainId, false, null);
             for (User member: members) {
                 removeMember(domainId, member.getId(), false);
             }
@@ -3980,7 +3987,7 @@ public class ContextService {
         log.info("Notify all other users that the shared information '" + sourceQnA.getDomainid() + " / " + sourceQnA.getUuid() + "' has been updated ...");
 
         try {
-            User[] users = getMembers(sourceQnA.getDomainid(), false);
+            User[] users = getMembers(sourceQnA.getDomainid(), false, null);
             // TODO: Also get users from other domains, where this information is shared with
 
             User signedInUser = authService.getUser(false, false);

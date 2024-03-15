@@ -176,7 +176,7 @@ public class IAMController {
 
         try {
             if (domainId != null) {
-                return new ResponseEntity<>(contextService.getMembers(domainId, true), HttpStatus.OK);
+                return new ResponseEntity<>(contextService.getMembers(domainId, true, null), HttpStatus.OK);
             } else {
                 User[] users = iamService.getUsers();
                 return new ResponseEntity<>(users, HttpStatus.OK);

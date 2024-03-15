@@ -472,7 +472,7 @@ public class SlackMessageSender extends CommonMessageSender  {
                 domainService.connectDomainIdWithSlackTeamId(domainId, teamId, channelId, ConnectStatus.NEEDS_APPROVAL, token);
 
                 String link = domain.getHost() + "/api/v1/slack/connect-team-channel-domain?token=" + token;
-                User[] members = contextService.getMembers(domainId, false);
+                User[] members = contextService.getMembers(domainId, false, null);
                 for (User user: members) {
                     if (user.getEmail() != null && user.getIsExpert()) {
                         mailerService.send(user.getEmail(), domain.getMailSenderEmail(), "[" + domain.getMailSubjectTag() + "] " + "Approve connecting domain with Slack team / channel", getMailBodyForApproval(userId, teamId, channelId, domainId, link), true);
@@ -983,7 +983,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             if (domain == null) {
                 return new SlackAnswer("No domain connected with Slack team / channel '" + teamId + " / " + channelId + "'!", FORMAT_MARKDOWN);
             }
-            User[] members = contextService.getMembers(domain.getId(), false);
+            User[] members = contextService.getMembers(domain.getId(), false, null);
             int numberOfNotificationsSent = 0;
             for (User user: members) {
                 if (user.getEmail() != null && user.getIsExpert()) {

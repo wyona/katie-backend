@@ -81,10 +81,10 @@ public class MailerService {
     /**
      *
      */
-    public void notifyAdministrators(User[] admins, String subject, String message) {
-        for (User admin: admins) {
+    public void notifyUsers(User[] users, String subject, String message) {
+        for (User user: users) {
             try {
-                send(admin.getEmail(), mailDefaultSenderAddress, mailSubjectTag + " " + subject, message, true);
+                send(user.getEmail(), mailDefaultSenderAddress, mailSubjectTag + " " + subject, message, true);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
