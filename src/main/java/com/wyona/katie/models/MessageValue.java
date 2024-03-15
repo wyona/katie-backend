@@ -76,7 +76,7 @@ public class MessageValue {
     /**
      *
      */
-    public void setDomainid(String domainid) {
+    public void setDomainid(String domainId) {
         this.domainId = domainId;
     }
 
