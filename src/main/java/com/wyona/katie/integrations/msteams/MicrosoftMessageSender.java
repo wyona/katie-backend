@@ -139,7 +139,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 log.info("Send invitation request for user registration to Katie administrators ...");
                 String userName = actionParts[2];
                 String userId = actionParts[1];
-                responseMsg = getRequestInvitationInteractionResponse(responseMsg, userName, userId);
+                String domainId = message.getValue().getDomainid(); // MessageValue.TEXT_INPUT_DOMAIN_ID
+                responseMsg = getRequestInvitationInteractionResponse(responseMsg, userName, userId, domainId);
                 send(convValues, message.getConversation().getName(), message.getRecipient(), message.getFrom(), responseMsg);
                 return;
             }
@@ -270,10 +271,11 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                     responseMsg.setText(requestCreateDomain(_teamId, userName));
                 } else if (action.equals(ChannelAction.CONNECT_DOMAIN)) {
                     log.info("Execute action '" + action + "' ...");
-                    // TODO: Generate Input Form asking for domain id, whereas see SlackMessageSender.CHANNEL_VIEW_CONNECT_DOMAIN
+                    //TODO: Generate Input Form asking for domain id, whereas see SlackMessageSender.CHANNEL_VIEW_CONNECT_DOMAIN
+                    String domainId = "TODO"; //message.getValue().getDomainid();
                     String userId = actionParts[3];
                     if (!iamService.usernameExists(new Username(userId))) {
-                        getRequestInvitationInteractionResponse(responseMsg, userName, userId);
+                        getRequestInvitationInteractionResponse(responseMsg, userName, userId, domainId);
                     } else {
                         log.info("MS Teams user '" + userId + "' already has a Katie account.");
                     }
@@ -482,10 +484,11 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
      *
      * @return response to received message
      */
-    private MicrosoftResponse getRequestInvitationInteractionResponse(MicrosoftResponse responseMsg, String userName, String userId) {
+    private MicrosoftResponse getRequestInvitationInteractionResponse(MicrosoftResponse responseMsg, String userName, String userId, String domainId) {
         try {
-            log.info("Send email to Katie administrators that MS Teams user '" + userName + "' (" + userId + ") requests Katie registration ...");
-            notifyAdministrators("MS Teams user requests invitation", getMailBodyForRegisteringMSTeamsUser(userName, userId));
+            log.info("Send email to Katie administrators that MS Teams user '" + userName + "' (" + userId + ") requests Katie registration and to get invited to domain '" + domainId + "' ...");
+            // TODO: Send email to owners / administrators of domain
+            notifyAdministrators("MS Teams user requests invitation to Katie domain '" + domainId + "'", getMailBodyForRegisteringMSTeamsUser(userName, userId, domainId));
 
             responseMsg.setText("Katie System Administrator has been notified re Katie registration request of user '" + userName + "' (" + userId + ").");
             responseMsg.setTextFormat("markdown");
@@ -550,11 +553,11 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     /**
      * @param userName User name, e.g. "Michael Wechner"
      */
-    private String getMailBodyForRegisteringMSTeamsUser(String userName, String userId) {
+    private String getMailBodyForRegisteringMSTeamsUser(String userName, String userId, String domainId) {
         // TODO: Use mailerService.getTemplate()
         StringBuilder body = new StringBuilder();
         body.append("<html><body>");
-        body.append("<p>The MS Teams user <strong>" + userName + "</strong> with the user Id <strong>" + userId + "</strong> requests to be registered at <a href=\"" + defaultHostnameMailBody + "\">Katie</a>.</p>");
+        body.append("<p>The MS Teams user <strong>" + userName + "</strong> with the user Id <strong>" + userId + "</strong> requests to be registered at <a href=\"" + defaultHostnameMailBody + "\">Katie</a> and would like to be invited to the domain '" + domainId + "'</p>");
         body.append("</body></html>");
         return body.toString();
     }
@@ -572,7 +575,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         try {
             notifyAdministrators("MS Teams user requests becoming member of a Katie domain", getMailBodyForBecomingMember(userName, userId, domain));
 
-            responseMsg.setText("Administrator has been notified re user '" + userName + "' (" + userId + ") becoming member of a domain.");
+            responseMsg.setText("Administrator has been notified re user '" + userName + "' (" + userId + ") becoming member of a domain '" + domain.getId() + "'.");
             responseMsg.setTextFormat("markdown");
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -731,8 +734,9 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             }
         } else if (action.equals(ChannelAction.REQUEST_BECOME_MEMBER)) {
             log.info("Send become domain member request to Katie administrators ...");
+            String userId = actionParts[1];
             String userName = actionParts[2];
-            return getRequestBecomeMemberInteractionResponse(responseMsg, userName, actionParts[1], domain);
+            return getRequestBecomeMemberInteractionResponse(responseMsg, userName, userId, domain);
         } else if (action.equals(ChannelAction.THUMB_UP) || action.equals(ChannelAction.THUMB_DOWN)) {
             String questionUuid = actionParts[2];
             try {
