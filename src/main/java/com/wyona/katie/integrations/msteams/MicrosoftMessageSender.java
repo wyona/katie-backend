@@ -170,7 +170,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                     responseMsg = getAnswerForChannelConversation(message, question, responseMsg, locale, convValues, domain, teamId, channelId);
                 } else if (conversationType.equals("personal")) {
                     log.info("No team Id available, conversation type is 'personal', therefore, MS Teams user '" + message.getFrom().getName() + " / " + message.getFrom().getId() + "' chats directly with Katie.");
-                    responseMsg = getAnswerForPersonalConversation(message, question, responseMsg, locale, convValues);
+                    responseMsg = getAnswerForPersonalConversation(message, question, responseMsg, convValues);
                 } else {
                     String msg = "No such conversation type '" + conversationType + "' implemented!";
                     log.warn(msg);
@@ -297,12 +297,16 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
 
     /**
      * Get answer for direct (1:1) chat (User sending message directly to Katie)
+     * @param message TODO
      * @param question Question asked by MS Teams user
+     * @param responseMsg TODO
+     * @param convValues TODO
      */
-    private MicrosoftResponse getAnswerForPersonalConversation(MicrosoftBotMessage message, String question, MicrosoftResponse responseMsg, String locale, MSTeamsConversationValues convValues) throws Exception {
+    private MicrosoftResponse getAnswerForPersonalConversation(MicrosoftBotMessage message, String question, MicrosoftResponse responseMsg, MSTeamsConversationValues convValues) throws Exception {
         log.info("Generate answer for personal conversation ...");
 
         String userId = message.getFrom().getId();
+        String locale  = message.getLocale();
         User user = iamService.getUserByUsername(new Username(userId), false, false);
         if (user != null) {
             try {
@@ -318,7 +322,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 }
             }
         } else {
-            log.warn("MS Teams user Id '" + userId + "' is not registered yet with Katie!");
+            String tenantId = message.getChannelData().getTenant().getId();
+            log.warn("MS Teams user Id '" + userId + "' of MS Teams tenant '" + tenantId + "' is not registered yet with Katie!");
             String[] args = new String[2];
             args[0] = "<strong>" + userId + "</strong>";
             args[1] = defaultHostnameMailBody;
@@ -327,6 +332,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
 
             // WARNING: For security reasons do not auto-register users, but register users only by invitation!
 
+            // TODO: Get available Katie domain IDs / Names by MS Teams tenant Id (assuming that tenant Id is linked somehow with domain IDs)
+            // TODO: Consider asking user for email address
             MicrosoftAdaptiveCard requestInvitationCard = getRequestInvitationCard(Utils.getLocale(message.getLocale()), userId, message.getFrom().getName());
             responseMsg.addAttachment(new MicrosoftAttachment(requestInvitationCard));
 
