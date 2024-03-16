@@ -1,5 +1,8 @@
 package com.wyona.katie.models;
 
+/**
+ * Text sample of a particular classification
+ */
 public class TextItem {
 
     private String text;
