@@ -259,7 +259,7 @@ public class TOPdeskConnector implements Connector {
      */
     private Classification getLabel(Classification category, Classification subcategory) {
         String className = category.getTerm() + ", " + subcategory.getTerm();
-        String classId = category.getId() + "-" + subcategory.getId();
+        String classId = category.getId() + "_" + subcategory.getId();
         Classification classification = new Classification(className, classId);
         return classification;
     }
