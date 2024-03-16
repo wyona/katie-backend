@@ -3,7 +3,7 @@ package com.wyona.katie.models;
 /**
  * Text sample of a particular classification
  */
-public class TextItem {
+public class TextSample {
 
     private String text;
     private Classification classification;
@@ -11,7 +11,7 @@ public class TextItem {
     /**
      *
      */
-    public TextItem(String text, Classification classification) {
+    public TextSample(String text, Classification classification) {
         this.text = text;
         this.classification = classification;
     }
