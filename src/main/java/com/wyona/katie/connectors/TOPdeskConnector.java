@@ -100,29 +100,23 @@ public class TOPdeskConnector implements Connector {
      * @see Connector#update(Context, KnowledgeSourceMeta, WebhookPayload, String)
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
+
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
         String incidentId = pl.getIncidentId();
 
-        String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
-        log.info(logMsg);
-        backgroundProcessService.updateProcessStatus(processId, logMsg);
+        // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+        //int requestType = 0;
+        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?pageStart=0&pageSize=10&fields=number";
 
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents";
-
+        int requestType = 1;
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+
+        //int requestType = 2;
         //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
-        log.info("Request URL: " + requestUrl);
 
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = getHttpHeaders(ksMeta);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
 
-        try {
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("JSON response: " + bodyNode);
-
-            if (false) {
+            if (requestType == 2) {
                 boolean visibleReplies = false;
                 if (bodyNode.isArray()) {
                     backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
@@ -144,7 +138,11 @@ public class TOPdeskConnector implements Connector {
                         log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                     }
                 }
-            } else {
+            } else if (requestType == 1) {
+                String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
+                log.info(logMsg);
+                backgroundProcessService.updateProcessStatus(processId, logMsg);
+
                 String humanRequest = bodyNode.get("request").asText();
                 log.info("Human request: " + humanRequest);
 
@@ -159,11 +157,40 @@ public class TOPdeskConnector implements Connector {
                 // INFO: Train classifier
                 TextItem[] samples = new TextItem[1];
                 samples[0] = new TextItem(humanRequest, getLabel(category, subcategory));
-                classificationService.train(domain, samples);
+                try {
+                    classificationService.train(domain, samples);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else if (requestType == 0) {
+                // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+                log.info("TODO");
+            } else {
+                log.warn("No such request type '" + requestType + "' implemented!");
             }
+
+        return null;
+    }
+
+    /**
+     * Get data from TOPdesk
+     */
+    private JsonNode getData(String url, KnowledgeSourceMeta ksMeta, String processId) {
+        log.info("Request URL: " + url);
+        backgroundProcessService.updateProcessStatus(processId, "Request " + url);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = getHttpHeaders(ksMeta);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        try {
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.info("JSON response: " + bodyNode);
+            return bodyNode;
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 404) {
-                logMsg = "No such TOPdesk incident '" + incidentId + "'!";
+                String logMsg = "No such resource '" + url + "'!";
                 log.error(logMsg);
                 backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.ERROR);
             }
