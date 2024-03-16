@@ -100,74 +100,72 @@ public class TOPdeskConnector implements Connector {
      * @see Connector#update(Context, KnowledgeSourceMeta, WebhookPayload, String)
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
-
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
-        String incidentId = pl.getIncidentId();
 
-        // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
-        //int requestType = 0;
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?pageStart=0&pageSize=10&fields=number";
-
-        int requestType = 1;
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
-
+        int requestType = 0;
+        //int requestType = 1;
         //int requestType = 2;
-        //String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
 
-        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-
-            if (requestType == 2) {
-                boolean visibleReplies = false;
-                if (bodyNode.isArray()) {
-                    backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
-                    for (int i = 0; i < bodyNode.size(); i++) {
-                        JsonNode entryNode = bodyNode.get(i);
-                        boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
-                        if (!invisibleForCaller) {
-                            if (entryNode.has("memoText")) {
-                                visibleReplies = true;
-                                String _answer = entryNode.get("memoText").asText();
-                                log.info("Response to user: " + _answer);
-                                Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                                // TODO: Set chosenAnswer
-                            }
+        if (requestType == 2) {
+            boolean visibleReplies = false;
+            String incidentId = pl.getIncidentId();
+            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+            if (bodyNode.isArray()) {
+                backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
+                for (int i = 0; i < bodyNode.size(); i++) {
+                    JsonNode entryNode = bodyNode.get(i);
+                    boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
+                    if (!invisibleForCaller) {
+                        if (entryNode.has("memoText")) {
+                            visibleReplies = true;
+                            String _answer = entryNode.get("memoText").asText();
+                            log.info("Response to user: " + _answer);
+                            Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                            // TODO: Set chosenAnswer
                         }
                     }
-
-                    if (!visibleReplies) {
-                        log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
-                    }
                 }
-            } else if (requestType == 1) {
-                String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
-                log.info(logMsg);
-                backgroundProcessService.updateProcessStatus(processId, logMsg);
 
-                String humanRequest = bodyNode.get("request").asText();
-                log.info("Human request: " + humanRequest);
-
-                JsonNode categoryNode = bodyNode.get("category");
-                Classification category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
-                log.info("Category: " + category.getTerm());
-
-                JsonNode subcategoryNode = bodyNode.get("subcategory");
-                Classification subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
-                log.info("Subcategory: " + subcategory.getTerm());
-
-                // INFO: Train classifier
-                TextItem[] samples = new TextItem[1];
-                samples[0] = new TextItem(humanRequest, getLabel(category, subcategory));
-                try {
-                    classificationService.train(domain, samples);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                if (!visibleReplies) {
+                    log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                 }
-            } else if (requestType == 0) {
-                // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
-                log.info("TODO");
-            } else {
-                log.warn("No such request type '" + requestType + "' implemented!");
             }
+        } else if (requestType == 1) {
+            String incidentId = pl.getIncidentId();
+            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+            String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
+            log.info(logMsg);
+            backgroundProcessService.updateProcessStatus(processId, logMsg);
+
+            String humanRequest = bodyNode.get("request").asText();
+            log.info("Human request: " + humanRequest);
+
+            JsonNode categoryNode = bodyNode.get("category");
+            Classification category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
+            log.info("Category: " + category.getTerm());
+
+            JsonNode subcategoryNode = bodyNode.get("subcategory");
+            Classification subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
+            log.info("Subcategory: " + subcategory.getTerm());
+
+            // INFO: Train classifier
+            TextItem[] samples = new TextItem[1];
+            samples[0] = new TextItem(humanRequest, getLabel(category, subcategory));
+            try {
+                classificationService.train(domain, samples);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        } else if (requestType == 0) {
+            // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageSize=10";
+            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+            log.info("TODO: Get individual incidents ...");
+        } else {
+            log.warn("No such request type '" + requestType + "' implemented!");
+        }
 
         return null;
     }
