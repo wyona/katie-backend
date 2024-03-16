@@ -102,8 +102,8 @@ public class TOPdeskConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
-        int requestType = 0;
-        //int requestType = 1;
+        //int requestType = 0;
+        int requestType = 1;
         //int requestType = 2;
 
         if (requestType == 2) {
@@ -133,27 +133,13 @@ public class TOPdeskConnector implements Connector {
             }
         } else if (requestType == 1) {
             String incidentId = pl.getIncidentId();
-            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
-            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-            String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
-            log.info(logMsg);
-            backgroundProcessService.updateProcessStatus(processId, logMsg);
 
-            String humanRequest = bodyNode.get("request").asText();
-            log.info("Human request: " + humanRequest);
+            TextItem sample = getIncident(incidentId, ksMeta, processId);
 
-            JsonNode categoryNode = bodyNode.get("category");
-            Classification category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
-            log.info("Category: " + category.getTerm());
-
-            JsonNode subcategoryNode = bodyNode.get("subcategory");
-            Classification subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
-            log.info("Subcategory: " + subcategory.getTerm());
-
-            // INFO: Train classifier
-            TextItem[] samples = new TextItem[1];
-            samples[0] = new TextItem(humanRequest, getLabel(category, subcategory));
             try {
+                // INFO: Train classifier
+                TextItem[] samples = new TextItem[1];
+                samples[0] = sample;
                 classificationService.train(domain, samples);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -168,6 +154,30 @@ public class TOPdeskConnector implements Connector {
         }
 
         return null;
+    }
+
+    /**
+     *
+     */
+    private TextItem getIncident(String incidentId, KnowledgeSourceMeta ksMeta, String processId) {
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
+        log.info(logMsg);
+        backgroundProcessService.updateProcessStatus(processId, logMsg);
+
+        String humanRequest = bodyNode.get("request").asText();
+        log.info("Human request: " + humanRequest);
+
+        JsonNode categoryNode = bodyNode.get("category");
+        Classification category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
+        log.info("Category: " + category.getTerm());
+
+        JsonNode subcategoryNode = bodyNode.get("subcategory");
+        Classification subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
+        log.info("Subcategory: " + subcategory.getTerm());
+
+        return new TextItem(humanRequest, getLabel(category, subcategory));
     }
 
     /**
