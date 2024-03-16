@@ -69,10 +69,10 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
-     * @see com.wyona.katie.services.ClassificationService#train(Context, TextItem[])
+     * @see com.wyona.katie.services.ClassificationService#train(Context, TextSample[])
      */
-    public void train(Context domain, TextItem[] samples) throws Exception {
-        for (TextItem sample : samples) {
+    public void train(Context domain, TextSample[] samples) throws Exception {
+        for (TextSample sample : samples) {
             log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
             try {
                 trainSample(domain, sample);
@@ -154,7 +154,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * Train classification sample
      */
-    private void trainSample(Context domain, TextItem sample) throws Exception {
+    private void trainSample(Context domain, TextSample sample) throws Exception {
         if (sample.getClassification().getId() == null) {
             log.warn("No class ID available for class name '" + sample.getClassification().getTerm() + "', therefore do not train classifier!");
             return;
@@ -165,8 +165,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         String classId = sample.getClassification().getId();
 
         float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
-        String uuid = UUID.randomUUID().toString(); // TODO: Set UUID, either generate one or get from QnA
-        indexSampleVector(uuid, "" + classId, sampleVector, domain);
+        indexSampleVector(sample.getId(), classId, sampleVector, domain);
 
         File embeddingsDir = getEmbeddingsDir(domain, classId);
         if (!embeddingsDir.isDirectory()) {
@@ -175,7 +174,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(metaFile, sample.getClassification());
         }
-        File file = new File(embeddingsDir, uuid + ".json");
+        File file = new File(embeddingsDir, sample.getId() + ".json");
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained

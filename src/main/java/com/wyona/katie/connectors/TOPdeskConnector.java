@@ -135,7 +135,7 @@ public class TOPdeskConnector implements Connector {
             String incidentId = pl.getIncidentId();
             try {
                 // INFO: Train classifier
-                TextItem[] samples = new TextItem[1];
+                TextSample[] samples = new TextSample[1];
                 samples[0] = getIncident(incidentId, ksMeta, processId);
                 classificationService.train(domain, samples);
             } catch (Exception e) {
@@ -150,7 +150,7 @@ public class TOPdeskConnector implements Connector {
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");
             if (bodyNode.isArray()) {
-                List<TextItem> samples = new ArrayList<>();
+                List<TextSample> samples = new ArrayList<>();
                 for (int i = 0; i < bodyNode.size(); i++) {
                     JsonNode numberNode = bodyNode.get(i);
                     String incidentNumber = numberNode.get("number").asText();
@@ -163,7 +163,7 @@ public class TOPdeskConnector implements Connector {
                     }
                 }
                 try {
-                    classificationService.train(domain, samples.toArray(new TextItem[0]));
+                    classificationService.train(domain, samples.toArray(new TextSample[0]));
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
@@ -176,9 +176,9 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * Generate text sample from incident
      */
-    private TextItem getIncident(String incidentId, KnowledgeSourceMeta ksMeta, String processId) throws Exception{
+    private TextSample getIncident(String incidentId, KnowledgeSourceMeta ksMeta, String processId) throws Exception{
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
@@ -206,7 +206,7 @@ public class TOPdeskConnector implements Connector {
         }
         log.info("Subcategory: " + subcategory.getTerm());
 
-        return new TextItem(humanRequest, getLabel(category, subcategory));
+        return new TextSample(incidentId, humanRequest, getLabel(category, subcategory));
     }
 
     /**

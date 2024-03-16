@@ -2923,8 +2923,8 @@ public class ContextService {
      */
     public void trainClassifier(Classification classification, Answer qna, Context domain) {
         if (true) { // TODO: Make configurable
-            TextItem[] samples = new TextItem[1];
-            samples[0] = new TextItem(qna.getAnswer(), classification);
+            TextSample[] samples = new TextSample[1];
+            samples[0] = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
             try {
                 classificationService.train(domain, samples);
             } catch (Exception e) {

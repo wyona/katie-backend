@@ -64,11 +64,11 @@ public class DomainController {
     @ApiOperation(value="Export all questions of a particular domain including labels whether questions were recognized successfully, which can be used for training a model")
     public ResponseEntity<?> exportQuestionsDataset(
             @ApiParam(name = "id", value = "Domain Id",required = true)
-            @PathVariable(value = "id", required = true) String id,
+            @PathVariable(value = "id", required = true) String domainId,
             HttpServletRequest request) {
 
-        if (!domainService.existsContext(id)) {
-            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        if (!domainService.existsContext(domainId)) {
+            return new ResponseEntity<>(new Error("Domain '" + domainId + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -76,15 +76,15 @@ public class DomainController {
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
-            if (!domainService.isMemberOrAdmin(id)) {
-                throw new AccessDeniedException("User '" + user.getUsername() + "' is neither member of domain '" + id + "' nor admin!");
+            if (!domainService.isMemberOrAdmin(domainId)) {
+                throw new AccessDeniedException("User '" + user.getUsername() + "' is neither member of domain '" + domainId + "' nor admin!");
             }
 
-            Context domain = domainService.getContext(id);
+            Context domain = domainService.getContext(domainId);
 
             // TODO: Implement offset and limit
-            AskedQuestion[] questions = dataRepoService.getQuestions(id, 10000, 0, false);
-            List<TextItem> items = new ArrayList<TextItem>();
+            AskedQuestion[] questions = dataRepoService.getQuestions(domainId, 10000, 0, false);
+            List<TextSample> items = new ArrayList<>();
             if (questions != null & questions.length > 0) {
                 // INFO: See for example https://github.com/handav/nlp-in-javascript-with-natural/blob/master/7-classify/example1.js
                 for (AskedQuestion question : questions) {
@@ -94,7 +94,7 @@ public class DomainController {
                         classification = new Classification("message", "1");
                     }
 
-                    items.add(new TextItem(question.getQuestion(), classification));
+                    items.add(new TextSample(question.getUUID(), question.getQuestion(), classification));
                 }
                 return new ResponseEntity<>(items, HttpStatus.OK);
             } else {

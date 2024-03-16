@@ -2,7 +2,7 @@ package com.wyona.katie.services;
 
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.HitLabel;
-import com.wyona.katie.models.TextItem;
+import com.wyona.katie.models.TextSample;
 
 /**
  * Service to manage domain specific classifications
@@ -29,5 +29,5 @@ public interface ClassificationService {
     /**
      * Train classifier with samples (texts and labels)
      */
-    public void train(Context domain, TextItem[] samples) throws Exception;
+    public void train(Context domain, TextSample[] samples) throws Exception;
 }

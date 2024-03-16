@@ -5,15 +5,24 @@ package com.wyona.katie.models;
  */
 public class TextSample {
 
+    private String id;
     private String text;
     private Classification classification;
 
     /**
      *
      */
-    public TextSample(String text, Classification classification) {
+    public TextSample(String id, String text, Classification classification) {
+        this.id = id;
         this.text = text;
         this.classification = classification;
+    }
+
+    /**
+     *
+     */
+    public String getId() {
+        return id;
     }
 
     /**
