@@ -65,6 +65,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      * @see com.wyona.katie.services.ClassificationService#getLabels(Context, int, int) 
      */
     public String[] getLabels(Context domain, int offset, int limit) throws Exception {
+        log.info("TODO: Get labels of domain '" + domain.getId() + "' ...");
         return null;
     }
 
