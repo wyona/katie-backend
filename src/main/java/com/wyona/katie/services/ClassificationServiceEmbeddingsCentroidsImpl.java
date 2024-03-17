@@ -72,8 +72,13 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         for (File labelDir : dirs) {
             if (labelDir.isDirectory()) {
                 String labelId = labelDir.getName();
+                Classification classification = new Classification(getLabelName(domain, labelId), labelId);
+
                 File samplesDir = getEmbeddingsDir(domain, labelId);
-                classifications.add(new Classification(getLabelName(domain, labelId), labelId));
+                File[] sampleFiles = samplesDir.listFiles();
+                log.info(sampleFiles.length + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
+
+                classifications.add(classification);
             }
         }
         return classifications.toArray(new Classification[0]);
