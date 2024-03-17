@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +44,9 @@ public class DomainController {
 
     @Autowired
     private ContextService domainService;
+
+    @Autowired
+    private ClassificationServiceEmbeddingsCentroidsImpl classificationService;
 
     @Autowired
     private IAMService iamService;
@@ -975,10 +979,41 @@ public class DomainController {
     }
 
     /**
+     * Get classification labels of a particular domain
+     */
+    @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value="Get classification labels")
+    public ResponseEntity<?> getClassificationLabels(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Context domain = domainService.getDomain(id);
+
+            // TODO: Implement offset and limit
+            int offset = 0;
+            int limit = 10000;
+            String[] labels = classificationService.getLabels(domain, offset, limit);
+            return new ResponseEntity<>(labels, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get taxonomy entries of a particular domain
      */
     @RequestMapping(value = "/{id}/taxonomy/entries", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get autocompletion entries")
+    @ApiOperation(value="Get taxonomy entries")
     public ResponseEntity<?> getTaxonomyEntries(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
