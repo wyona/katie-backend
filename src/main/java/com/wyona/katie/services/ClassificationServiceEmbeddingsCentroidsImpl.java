@@ -64,9 +64,19 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * @see com.wyona.katie.services.ClassificationService#getLabels(Context, int, int) 
      */
-    public String[] getLabels(Context domain, int offset, int limit) throws Exception {
+    public Classification[] getLabels(Context domain, int offset, int limit) throws Exception {
         log.info("TODO: Get labels of domain '" + domain.getId() + "' ...");
-        return null;
+        File classifcationsDir = getClassifcationsDir(domain);
+        File[] dirs = classifcationsDir.listFiles();
+        List<Classification> classifications = new ArrayList<>();
+        for (File labelDir : dirs) {
+            if (labelDir.isDirectory()) {
+                String labelId = labelDir.getName();
+                File samplesDir = getEmbeddingsDir(domain, labelId);
+                classifications.add(new Classification(getLabelName(domain, labelId), labelId));
+            }
+        }
+        return classifications.toArray(new Classification[0]);
     }
 
     /**
@@ -341,8 +351,15 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      *
      */
+    private File getClassifcationsDir(Context domain) {
+        return new File(domain.getContextDirectory(),"classifications");
+    }
+
+    /**
+     *
+     */
     private File getLabelDir(Context domain, String classId) {
-        return new File(domain.getContextDirectory(),"classifications/" + classId);
+        return new File(getClassifcationsDir(domain), classId);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.models.Classification;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.HitLabel;
 import com.wyona.katie.models.TextSample;
@@ -24,7 +25,7 @@ public interface ClassificationService {
      * @param limit Limit the number of returned entries
      * @return array of labels
      */
-    public String[] getLabels(Context domain, int offset, int limit) throws Exception;
+    public Classification[] getLabels(Context domain, int offset, int limit) throws Exception;
 
     /**
      * Train classifier with samples (texts and labels)

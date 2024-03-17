@@ -998,7 +998,7 @@ public class DomainController {
             // TODO: Implement offset and limit
             int offset = 0;
             int limit = 10000;
-            String[] labels = classificationService.getLabels(domain, offset, limit);
+            Classification[] labels = classificationService.getLabels(domain, offset, limit);
             return new ResponseEntity<>(labels, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
