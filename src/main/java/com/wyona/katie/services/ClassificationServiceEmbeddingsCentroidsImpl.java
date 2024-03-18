@@ -62,32 +62,35 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     }
 
     /**
-     * @see com.wyona.katie.services.ClassificationService#getLabels(Context, int, int) 
+     * @see com.wyona.katie.services.ClassificationService#getDataset(Context, int, int)
      */
-    public Classification[] getLabels(Context domain, int offset, int limit) throws Exception {
-        log.info("TODO: Get labels of domain '" + domain.getId() + "' ...");
+    public ClassificationDataset getDataset(Context domain, int offset, int limit) throws Exception {
+        log.info("Get classification dataset of domain '" + domain.getId() + "' ...");
         File classifcationsDir = getClassifcationsDir(domain);
         File[] dirs = classifcationsDir.listFiles();
 
         ClassificationDataset dataset = new ClassificationDataset(domain.getName());
-        List<Classification> classifications = new ArrayList<>();
         for (File labelDir : dirs) {
             if (labelDir.isDirectory()) {
                 String labelId = labelDir.getName();
                 Classification classification = new Classification(getLabelName(domain, labelId), labelId);
 
                 File samplesDir = getEmbeddingsDir(domain, labelId);
-                File[] sampleFiles = samplesDir.listFiles();
-                classification.setFrequency(sampleFiles.length);
+                File[] embeddingFiles = samplesDir.listFiles();
+                classification.setFrequency(embeddingFiles.length);
                 log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
+                for (File embeddingFile : embeddingFiles) {
+                    //dataRepoService.readEmbedding(embeddingFile);
+                    String sampleId = embeddingFile.getName().substring(0, embeddingFile.getName().indexOf(".json"));
+                    TextSample sample = new TextSample(sampleId, "TODO", classification);
+                    dataset.addSample(sample);
+                }
 
                 dataset.addLabel(classification);
-                classifications.add(classification);
             }
         }
 
-        //return dataset;
-        return classifications.toArray(new Classification[0]);
+        return dataset;
     }
 
     /**
@@ -196,11 +199,11 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(metaFile, sample.getClassification());
         }
-        File file = new File(embeddingsDir, sample.getId() + ".json");
+        File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        dataRepoService.saveEmbedding(sampleVector, sample.getText(), file);
+        dataRepoService.saveEmbedding(sampleVector, sample.getText(), embeddingFile);
 
         FloatVector centroid = getCentroid(domain, classId);
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
@@ -385,5 +388,12 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
      */
     private File getEmbeddingsDir(Context domain, String classId) {
         return new File(getLabelDir(domain, classId),"embeddings");
+    }
+
+    /**
+     *
+     */
+    private File getEmbeddingFile(Context domain, String classId, String sampleId) {
+        return new File(getEmbeddingsDir(domain, classId), sampleId + ".json");
     }
 }

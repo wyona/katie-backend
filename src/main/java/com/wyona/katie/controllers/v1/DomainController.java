@@ -998,8 +998,8 @@ public class DomainController {
             // TODO: Implement offset and limit
             int offset = 0;
             int limit = 10000;
-            Classification[] labels = classificationService.getLabels(domain, offset, limit);
-            return new ResponseEntity<>(labels, HttpStatus.OK);
+            ClassificationDataset dataset = classificationService.getDataset(domain, offset, limit);
+            return new ResponseEntity<>(dataset, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
