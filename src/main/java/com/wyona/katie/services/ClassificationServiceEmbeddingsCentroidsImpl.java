@@ -68,6 +68,8 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         log.info("TODO: Get labels of domain '" + domain.getId() + "' ...");
         File classifcationsDir = getClassifcationsDir(domain);
         File[] dirs = classifcationsDir.listFiles();
+
+        ClassificationDataset dataset = new ClassificationDataset(domain.getName());
         List<Classification> classifications = new ArrayList<>();
         for (File labelDir : dirs) {
             if (labelDir.isDirectory()) {
@@ -76,11 +78,15 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
 
                 File samplesDir = getEmbeddingsDir(domain, labelId);
                 File[] sampleFiles = samplesDir.listFiles();
-                log.info(sampleFiles.length + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
+                classification.setFrequency(sampleFiles.length);
+                log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
 
+                dataset.addLabel(classification);
                 classifications.add(classification);
             }
         }
+
+        //return dataset;
         return classifications.toArray(new Classification[0]);
     }
 
