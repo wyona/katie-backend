@@ -19,9 +19,6 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import com.wyona.katie.models.faq.Question;
-import com.wyona.katie.models.faq.Topic;
-
 import java.io.*;
 import java.net.URI;
 import java.nio.file.*;
@@ -122,7 +119,7 @@ public class ContextService {
     private TaxonomyServiceLuceneImpl taxonomyService;
 
     @Autowired
-    private ClassificationServiceEmbeddingsCentroidsImpl classificationService;
+    private ClassificationService classificationService;
 
     @Autowired
     private ResourceBundleMessageSource messageSource;

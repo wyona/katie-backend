@@ -17,7 +17,7 @@ import java.io.File;
  */
 @Slf4j
 @Component
-public class ClassificationServiceEmbeddingsCentroidsImpl {
+public class ClassificationService {
 
     @Autowired
     private DataRepositoryService dataRepoService;
@@ -29,21 +29,24 @@ public class ClassificationServiceEmbeddingsCentroidsImpl {
     private MulticlassTextClassifierMaximumEntropyImpl classifierMaximumEntropy;
 
     /**
-     * TODO
+     * Predict labels for a text and a particular domain
+     * @param domain Domain object
+     * @param text Text
+     * @return array of suggested labels
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
         return classifier.predictLabels(domain, text);
     }
 
     /**
-     * TODO
+     * Train classifier with samples (texts and labels)
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
         classifier.train(domain, samples);
     }
 
     /**
-     * Get used classifier implementation
+     * Get classifier implementation
      */
     public ClassificationImpl getClassificationImpl() {
         return ClassificationImpl.CENTROID_MATCHING;

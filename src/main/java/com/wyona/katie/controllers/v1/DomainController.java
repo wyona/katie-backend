@@ -46,7 +46,7 @@ public class DomainController {
     private ContextService domainService;
 
     @Autowired
-    private ClassificationServiceEmbeddingsCentroidsImpl classificationService;
+    private ClassificationService classificationService;
 
     @Autowired
     private IAMService iamService;

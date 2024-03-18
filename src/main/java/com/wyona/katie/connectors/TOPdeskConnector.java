@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
-import com.wyona.katie.services.ClassificationServiceEmbeddingsCentroidsImpl;
+import com.wyona.katie.services.ClassificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +30,7 @@ public class TOPdeskConnector implements Connector {
     private BackgroundProcessService backgroundProcessService;
 
     @Autowired
-    private ClassificationServiceEmbeddingsCentroidsImpl classificationService;
+    private ClassificationService classificationService;
 
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
