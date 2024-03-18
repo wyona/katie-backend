@@ -145,7 +145,7 @@ public class TOPdeskConnector implements Connector {
         } else if (requestType == 0) {
             // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0;
-            int limit = 7; // TODO: Make configurable
+            int limit = 100; // TODO: Make configurable
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");

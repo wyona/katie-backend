@@ -1,6 +1,5 @@
 package com.wyona.katie.handlers.mcc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.DataRepositoryService;
@@ -96,7 +95,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             String labelUuid = doc.get(LABEL_UUID_FIELD);
             log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(getLabelName(domain, labelUuid), labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
@@ -121,30 +120,11 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             String labelUuid = doc.get(LABEL_UUID_FIELD);
             log.info("Centroid vector found with label ID '" + labelUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(getLabelName(domain, labelUuid), labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
         return labels.toArray(new HitLabel[0]);
-    }
-
-    /**
-     * @param labelUuid Label ID, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
-     * @return label name, e.g. "Managed Device Services, MacOS Clients"
-     */
-    private String getLabelName(Context domain, String labelUuid) {
-        File metaFile = getMetaFile(domain, labelUuid);
-        if (metaFile.exists()) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                Classification classification = mapper.readValue(metaFile, Classification.class);
-                return classification.getTerm();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-
-        return "No class name available";
     }
 
     /**
@@ -162,13 +142,10 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);
-
+        
         File embeddingsDir = getEmbeddingsDir(domain, classId);
         if (!embeddingsDir.isDirectory()) {
             embeddingsDir.mkdirs();
-            File metaFile = getMetaFile(domain, classId);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(metaFile, sample.getClassification());
         }
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
         // TODO: Check input sequence length and log warning when text is too long:
@@ -345,13 +322,6 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      */
     private File getLabelDir(Context domain, String classId) {
         return new File(getClassifcationsDir(domain), classId);
-    }
-
-    /**
-     *
-     */
-    private File getMetaFile(Context domain, String classId) {
-        return new File(getLabelDir(domain, classId), "meta.json");
     }
 
     /**

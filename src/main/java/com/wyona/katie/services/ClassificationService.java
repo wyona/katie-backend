@@ -35,13 +35,27 @@ public class ClassificationService {
      * @return array of suggested labels
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        return classifier.predictLabels(domain, text);
+        HitLabel[] hitLabels = classifier.predictLabels(domain, text);
+        for (HitLabel hitLabel : hitLabels) {
+            String labelId = hitLabel.getLabel().getId();
+            hitLabel.getLabel().setTerm(getLabelName(domain, labelId));
+        }
+        return hitLabels;
     }
 
     /**
      * Train classifier with samples (texts and labels)
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
+        for (TextSample sample : samples) {
+            log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
+            try {
+                saveSample(domain, sample);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
         classifier.train(domain, samples);
     }
 
@@ -53,7 +67,7 @@ public class ClassificationService {
     }
 
     /**
-     * TODO
+     * Get dataset
      */
     public ClassificationDataset getDataset(Context domain, int offset, int limit) throws Exception {
         log.info("Get classification dataset of domain '" + domain.getId() + "' ...");
@@ -82,6 +96,22 @@ public class ClassificationService {
         }
 
         return dataset;
+    }
+
+    /**
+     *
+     */
+    private void saveSample(Context domain, TextSample sample) throws Exception {
+        File labelDir = getLabelDir(domain, sample.getClassification().getId());
+        if (!labelDir.isDirectory()) {
+            labelDir.mkdirs();
+            File metaFile = getMetaFile(domain, sample.getClassification().getId());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(metaFile, sample.getClassification());
+        }
+
+        // TODO: Save sample
+        log.info("TODO: Save sample ...");
     }
 
     /**
