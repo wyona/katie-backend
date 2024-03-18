@@ -2,8 +2,9 @@ package com.wyona.katie.models;
 
 public class Classification {
 
-    private String term;
+    private String label;
     private String id;
+    private Integer frequency = null;
 
     /**
      *
@@ -12,26 +13,26 @@ public class Classification {
     }
 
     /**
-     * @param term Class name, e.g. "Managed Device Services, MacOS Clients"
+     * @param label Class name / Label, e.g. "Managed Device Services, MacOS Clients"
      * @param id Class Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      */
-    public Classification(String term, String id) {
-        this.term = term;
+    public Classification(String label, String id) {
+        this.label = label;
         this.id = id;
     }
 
     /**
-     * @param term Class name
+     * @param label Class name / Label
      */
-    public void setTerm(String term) {
-        this.term = term;
+    public void setTerm(String label) {
+        this.label = label;
     }
 
     /**
-     * @return class name
+     * @return class name / label
      */
     public String getTerm() {
-        return term;
+        return label;
     }
 
     /**
@@ -46,5 +47,19 @@ public class Classification {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     *
+     */
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
+
+    /**
+     * Get number of samples in this class, resp. number of samples that are labeled with this class
+     */
+    public Integer getFrequency() {
+        return frequency;
     }
 }
