@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.ai.models.TextEmbedding;
 import com.wyona.katie.models.*;
 import com.wyona.katie.models.discord.DiscordDomainMapping;
 import com.wyona.katie.models.discord.DiscordEvent;
@@ -123,7 +124,8 @@ public class DataRepositoryService {
 
     private static final String ROW_COUNT = "rowcount";
 
-    private static final String EMBEDDING_FIELD = "embedding";
+    private static final String EMBEDDING_TEXT_FIELD = "text";
+    private static final String EMBEDDING_VECTOR_FIELD = "embedding";
 
     /**
      * Write embedding into a file
@@ -135,12 +137,12 @@ public class DataRepositoryService {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode rootNode = objectMapper.createObjectNode();
 
-        rootNode.put("text", text);
+        rootNode.put(EMBEDDING_TEXT_FIELD, text);
 
         rootNode.put("length", UtilsService.getVectorLength(vector));
 
         ArrayNode embeddingNode = objectMapper.createArrayNode();
-        rootNode.put(EMBEDDING_FIELD, embeddingNode);
+        rootNode.put(EMBEDDING_VECTOR_FIELD, embeddingNode);
         for (float value : vector) {
             embeddingNode.add(value);
         }
@@ -155,15 +157,21 @@ public class DataRepositoryService {
     /**
      * @param file File containing embedding
      */
-    public float[] readEmbedding(File file) throws Exception {
+    public TextEmbedding readEmbedding(File file) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(file);
-        JsonNode embeddingNode = rootNode.get(EMBEDDING_FIELD);
+
+        String text = rootNode.get(EMBEDDING_TEXT_FIELD).asText();
+
+        JsonNode embeddingNode = rootNode.get(EMBEDDING_VECTOR_FIELD);
         float[] vector = new float[embeddingNode.size()];
         for (int i = 0; i < embeddingNode.size(); i++) {
             vector[i] = embeddingNode.get(i).floatValue();
         }
-        return vector;
+
+        TextEmbedding textEmbedding = new TextEmbedding(text, vector);
+
+        return textEmbedding;
     }
 
     /**

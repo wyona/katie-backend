@@ -2,6 +2,7 @@ package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.ai.models.FloatVector;
+import com.wyona.katie.ai.models.TextEmbedding;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.*;
@@ -80,9 +81,9 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
                 classification.setFrequency(embeddingFiles.length);
                 log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
                 for (File embeddingFile : embeddingFiles) {
-                    //dataRepoService.readEmbedding(embeddingFile);
+                    TextEmbedding textEmbedding = dataRepoService.readEmbedding(embeddingFile);
                     String sampleId = embeddingFile.getName().substring(0, embeddingFile.getName().indexOf(".json"));
-                    TextSample sample = new TextSample(sampleId, "TODO", classification);
+                    TextSample sample = new TextSample(sampleId, textEmbedding.getText(), classification);
                     dataset.addSample(sample);
                 }
 
@@ -330,7 +331,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
         File[] embeddingFiles = getEmbeddingsDir(domain, labelUuid).listFiles();
         List<FloatVector> embeddings = new ArrayList<>();
         for (File file : embeddingFiles) {
-            FloatVector embedding = new FloatVector(dataRepoService.readEmbedding(file));
+            FloatVector embedding = new FloatVector(dataRepoService.readEmbedding(file).getVector());
             embeddings.add(embedding);
         }
         return UtilsService.getCentroid(embeddings.toArray(new FloatVector[0]));
