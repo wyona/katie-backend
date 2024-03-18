@@ -128,6 +128,8 @@ public class DataRepositoryService {
     /**
      * Write embedding into a file
      * @param vector Embedding vector
+     * @param text Text which got vectorized
+     * @param file File where embedding and text will be saved
      */
     public void saveEmbedding(float[] vector, String text, File file) {
         ObjectMapper objectMapper = new ObjectMapper();
