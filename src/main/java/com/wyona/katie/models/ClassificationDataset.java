@@ -39,7 +39,21 @@ public class ClassificationDataset {
     /**
      *
      */
+    public Classification[] getLabels() {
+        return labels.toArray(new Classification[0]);
+    }
+
+    /**
+     *
+     */
     public void addSample(TextSample sample) {
         samples.add(sample);
+    }
+
+    /**
+     *
+     */
+    public TextSample[] getSamples() {
+        return samples.toArray(new TextSample[0]);
     }
 }
