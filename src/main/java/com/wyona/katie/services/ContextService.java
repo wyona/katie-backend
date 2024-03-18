@@ -550,7 +550,7 @@ public class ContextService {
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
         response.setPredictedLabels(labels);
-        response.setClassificationImpl(ClassificationImpl.CENTROID_MATCHING);
+        response.setClassificationImpl(classificationService.getClassificationImpl());
 
         return response;
     }

@@ -6,7 +6,6 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
-import com.wyona.katie.services.ClassificationService;
 import com.wyona.katie.services.ClassificationServiceEmbeddingsCentroidsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -146,7 +145,7 @@ public class TOPdeskConnector implements Connector {
         } else if (requestType == 0) {
             // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0;
-            int limit = 100; // TODO: Make configurable
+            int limit = 7; // TODO: Make configurable
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");
