@@ -283,7 +283,7 @@ public class ClassificationServiceEmbeddingsCentroidsImpl implements Classificat
     /**
      * Delete vectors associated with a particular label
      */
-    public boolean delete(String labelUuid, Context domain, String indexName) throws Exception {
+    private boolean delete(String labelUuid, Context domain, String indexName) throws Exception {
 
         try {
             IndexReader reader = DirectoryReader.open(getIndexDirectory(domain, indexName));
