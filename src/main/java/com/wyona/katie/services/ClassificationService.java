@@ -46,9 +46,9 @@ public class ClassificationService {
     /**
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      */
-    public void retrain(Context domain, int trainPercentage) {
+    public void retrain(Context domain, int trainPercentage) throws Exception {
         MulticlassTextClassifier classifier = getClassifier(getClassificationImpl());
-        // TODO
+        classifier.retrain(domain);
     }
 
     /**
