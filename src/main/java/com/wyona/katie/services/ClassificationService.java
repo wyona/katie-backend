@@ -71,7 +71,9 @@ public class ClassificationService {
      * Get classifier implementation
      */
     public ClassificationImpl getClassificationImpl() {
+        // TODO: Make configurable per domain
         return ClassificationImpl.CENTROID_MATCHING;
+        //return ClassificationImpl.MAX_ENTROPY;
     }
 
     /**
