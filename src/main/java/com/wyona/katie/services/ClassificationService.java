@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierEmbeddingsCentroidsImpl;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierMaximumEntropyImpl;
 import com.wyona.katie.models.*;
@@ -22,7 +23,7 @@ public class ClassificationService {
     private DataRepositoryService dataRepoService;
 
     @Autowired
-    private MulticlassTextClassifierEmbeddingsCentroidsImpl classifier;
+    private MulticlassTextClassifierEmbeddingsCentroidsImpl classifierEmbeddingsCentroid;
 
     @Autowired
     private MulticlassTextClassifierMaximumEntropyImpl classifierMaximumEntropy;
@@ -34,7 +35,7 @@ public class ClassificationService {
      * @return array of suggested labels
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        HitLabel[] hitLabels = classifier.predictLabels(domain, text);
+        HitLabel[] hitLabels = getClassifier(getClassificationImpl()).predictLabels(domain, text);
         for (HitLabel hitLabel : hitLabels) {
             String labelId = hitLabel.getLabel().getId();
             hitLabel.getLabel().setTerm(getLabelName(domain, labelId));
@@ -46,6 +47,7 @@ public class ClassificationService {
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      */
     public void retrain(Context domain, int trainPercentage) {
+        MulticlassTextClassifier classifier = getClassifier(getClassificationImpl());
         // TODO
     }
 
@@ -62,7 +64,7 @@ public class ClassificationService {
             }
         }
 
-        classifier.train(domain, samples);
+        getClassifier(getClassificationImpl()).train(domain, samples);
     }
 
     /**
@@ -70,6 +72,17 @@ public class ClassificationService {
      */
     public ClassificationImpl getClassificationImpl() {
         return ClassificationImpl.CENTROID_MATCHING;
+    }
+
+    /**
+     *
+     */
+    public MulticlassTextClassifier getClassifier(ClassificationImpl impl) {
+        if (impl.equals(ClassificationImpl.MAX_ENTROPY)) {
+            return classifierMaximumEntropy;
+        } else {
+            return classifierEmbeddingsCentroid;
+        }
     }
 
     /**

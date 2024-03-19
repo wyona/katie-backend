@@ -78,6 +78,13 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     }
 
     /**
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context)
+     */
+    public void retrain(Context domain) throws Exception {
+        log.info("TODO: Retrain");
+    }
+
+    /**
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar sample vectors
      */

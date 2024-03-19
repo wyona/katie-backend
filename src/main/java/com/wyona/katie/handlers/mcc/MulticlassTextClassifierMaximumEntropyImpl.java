@@ -25,4 +25,11 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
     public void train(Context domain, TextSample[] samples) throws Exception {
         // TODO
     }
+
+    /**
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context)
+     */
+    public void retrain(Context domain) throws Exception {
+        log.info("TODO: Retrain");
+    }
 }
