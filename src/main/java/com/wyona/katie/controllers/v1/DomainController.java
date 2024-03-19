@@ -979,11 +979,11 @@ public class DomainController {
     }
 
     /**
-     * Get classification labels of a particular domain
+     * Get classification dataset of a particular domain
      */
-    @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Get classification labels")
-    public ResponseEntity<?> getClassificationLabels(
+    @RequestMapping(value = "/{id}/classification/dataset", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value="Get classification dataset")
+    public ResponseEntity<?> getClassificationDataset(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
