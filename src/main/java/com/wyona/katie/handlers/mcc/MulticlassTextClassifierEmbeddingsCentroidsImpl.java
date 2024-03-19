@@ -43,7 +43,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     private static final String LABEL_UUID_FIELD = "label";
     private static final String VECTOR_FIELD = "vector";
 
-    private static final String SAMPLE_INDEX = "lucene-classifications";
+    private static final String SAMPLE_INDEX = "lucene-samples";
     private static final String CENTROID_INDEX = "lucene-centroids";
 
     /**
@@ -149,11 +149,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);
-        
-        File embeddingsDir = getEmbeddingsDir(domain, classId);
-        if (!embeddingsDir.isDirectory()) {
-            embeddingsDir.mkdirs();
-        }
+
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
@@ -163,7 +159,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         FloatVector centroid = getCentroid(domain, classId);
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
         // TODO: See createFieldType() re similarity metric
-        File centroidFile = new File(getLabelDir(domain, classId), "centroid.json");
+        File centroidFile = getCentroidFile(domain, classId);
         dataRepoService.saveEmbedding(centroid.getValues(), "" + classId, centroidFile);
         indexCentroidVector("" + classId, centroid.getValues(), domain);
     }
@@ -309,7 +305,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @param indexName Name of index, e.g. "lucene-classifications"
      */
     private Directory getIndexDirectory(Context domain, String indexName) throws Exception {
-        File indexDir = new File(domain.getContextDirectory(), indexName);
+        File indexDir = new File(getClassifierDir(domain), indexName);
         if (!indexDir.isDirectory()) {
             indexDir.mkdirs();
         }
@@ -320,22 +316,35 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     /**
      *
      */
-    private File getClassifcationsDir(Context domain) {
-        return new File(domain.getContextDirectory(),"classifications");
+    private File getClassifierDir(Context domain) {
+        File classifierDir = new File(domain.getContextDirectory(),"classifier-embeddings-centroid");
+        if (!classifierDir.isDirectory()) {
+            classifierDir.mkdirs();
+        }
+        return classifierDir;
     }
 
     /**
      *
      */
     private File getLabelDir(Context domain, String classId) {
-        return new File(getClassifcationsDir(domain), classId);
+        File labelDir = new File(getClassifierDir(domain), "labels/" + classId);
+        if (!labelDir.isDirectory()) {
+            labelDir.mkdirs();
+        }
+        return labelDir;
     }
 
     /**
      *
      */
     private File getEmbeddingsDir(Context domain, String classId) {
-        return new File(getLabelDir(domain, classId),"embeddings");
+        File embeddingsDir = new File(getLabelDir(domain, classId),"embeddings");
+        if (!embeddingsDir.isDirectory()) {
+            embeddingsDir.mkdirs();
+        }
+
+        return embeddingsDir;
     }
 
     /**
@@ -343,5 +352,12 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      */
     private File getEmbeddingFile(Context domain, String classId, String sampleId) {
         return new File(getEmbeddingsDir(domain, classId), sampleId + ".json");
+    }
+
+    /**
+     *
+     */
+    private File getCentroidFile(Context domain, String classId) {
+        return new File(getLabelDir(domain, classId), "centroid.json");
     }
 }
