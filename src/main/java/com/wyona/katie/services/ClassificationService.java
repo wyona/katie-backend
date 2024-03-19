@@ -1,7 +1,6 @@
 package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyona.katie.ai.models.TextEmbedding;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierEmbeddingsCentroidsImpl;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierMaximumEntropyImpl;
 import com.wyona.katie.models.*;
@@ -44,6 +43,13 @@ public class ClassificationService {
     }
 
     /**
+     * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
+     */
+    public void retrain(Context domain, int trainPercentage) {
+        // TODO
+    }
+
+    /**
      * Train classifier with samples (texts and labels)
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
@@ -80,14 +86,14 @@ public class ClassificationService {
                 String labelId = labelDir.getName();
                 Classification classification = new Classification(getLabelName(domain, labelId), labelId);
 
-                File samplesDir = getEmbeddingsDir(domain, labelId);
-                File[] embeddingFiles = samplesDir.listFiles();
-                classification.setFrequency(embeddingFiles.length);
+                File samplesDir = getSamplesDir(domain, labelId);
+                File[] samplesFiles = samplesDir.listFiles();
+                classification.setFrequency(samplesFiles.length);
                 log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
-                for (File embeddingFile : embeddingFiles) {
-                    TextEmbedding textEmbedding = dataRepoService.readEmbedding(embeddingFile);
-                    String sampleId = embeddingFile.getName().substring(0, embeddingFile.getName().indexOf(".json"));
-                    TextSample sample = new TextSample(sampleId, textEmbedding.getText(), classification);
+                for (File sampleFile : samplesFiles) {
+                    String sampleText = readSampleText(sampleFile);
+                    String sampleId = sampleFile.getName().substring(0, sampleFile.getName().indexOf(".json"));
+                    TextSample sample = new TextSample(sampleId, sampleText, classification);
                     dataset.addSample(sample);
                 }
 
@@ -110,9 +116,15 @@ public class ClassificationService {
             mapper.writeValue(metaFile, sample.getClassification());
         }
 
-        // TODO: Save sample
-        log.info("TODO: Save sample ...");
-    }
+        log.info("Save sample '" + sample.getId() + "' ...");
+        File samplesDir = getSamplesDir(domain, sample.getClassification().getId());
+        if (!samplesDir.isDirectory()) {
+            samplesDir.mkdirs();
+        }
+        File sampleFile = getSampleFile(domain, sample.getClassification().getId(), sample.getId());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(sampleFile, sample);
+;    }
 
     /**
      * @param labelUuid Label ID, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
@@ -157,7 +169,23 @@ public class ClassificationService {
     /**
      *
      */
-    private File getEmbeddingsDir(Context domain, String classId) {
-        return new File(getLabelDir(domain, classId),"embeddings");
+    private File getSamplesDir(Context domain, String classId) {
+        return new File(getLabelDir(domain, classId),"samples");
+    }
+
+    /**
+     *
+     */
+    private File getSampleFile(Context domain, String classId, String sampleId) {
+        return new File(getSamplesDir(domain, classId), sampleId + ".json");
+    }
+
+    /**
+     *
+     */
+    private String readSampleText(File sampleFile) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        TextSample sample = mapper.readValue(sampleFile, TextSample.class);
+        return sample.getText();
     }
 }
