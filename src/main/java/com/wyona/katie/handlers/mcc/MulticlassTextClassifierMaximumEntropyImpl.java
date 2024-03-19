@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers.mcc;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.ClassificationRepositoryService;
 import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
 import opennlp.tools.doccat.*;
@@ -8,6 +9,7 @@ import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -20,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTextClassifier {
+
+    @Autowired
+    ClassificationRepositoryService classificationRepoService;
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String) 
@@ -54,7 +59,8 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
     public void retrain(Context domain) throws Exception {
         log.info("Retrain ...");
         try {
-            //createDatasetFileForMaxEntropyClassifier(domain, null);
+            // TODO: Replace dataset file creation, by "RepoInputStreamFactory"
+            createDatasetFileForMaxEntropyClassifier(domain, classificationRepoService.getDataset(domain, 0, -1));
             File datasetFile = getDatasetFile(domain);
             ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(datasetFile), StandardCharsets.UTF_8);
             ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
@@ -74,18 +80,25 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
      *
      */
     private File getModelFile(Context domain) {
-        File maxEntClassificationDir = new File(domain.getContextDirectory(),"classifier-max-entropy");
-        if (!maxEntClassificationDir.isDirectory()) {
-            maxEntClassificationDir.mkdirs();
-        }
-        return new File(maxEntClassificationDir,"max-ent.bin");
+        return new File(getClassifierMaxEntDirectory(domain),"max-ent.bin");
     }
 
     /**
      *
      */
     private File getDatasetFile(Context domain) {
-        return new File(domain.getContextDirectory(), "classifier-max-entropy/en-docs.txt");
+        return new File(getClassifierMaxEntDirectory(domain), "en-docs.txt");
+    }
+
+    /**
+     *
+     */
+    private File getClassifierMaxEntDirectory(Context domain) {
+        File maxEntClassificationDir = new File(domain.getContextDirectory(),"classifier-max-entropy");
+        if (!maxEntClassificationDir.isDirectory()) {
+            maxEntClassificationDir.mkdirs();
+        }
+        return maxEntClassificationDir;
     }
 
     /**
@@ -97,6 +110,7 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
         for (TextSample sample : dataset.getSamples()) {
             String line = sample.getClassification().getId() + " " + Utils.replaceNewLines(sample.getText(), " ") + "\n";
             out.write(line);
+            out.write(line); // WARN: Duplicate line to generate enough trainig data
         }
         out.close();
     }
