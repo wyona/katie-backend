@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers.mcc;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
 import opennlp.tools.doccat.*;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -20,9 +21,6 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTextClassifier {
-
-    @Value("${volume.base.path}")
-    private String volumeBasePath;
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String) 
@@ -57,7 +55,8 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
     public void retrain(Context domain) throws Exception {
         log.info("Retrain ...");
         try {
-            File datasetFile = new File(volumeBasePath, "datasets/en-docs.txt"); // TODO
+            //createDatasetFileForMaxEntropyClassifier(domain, null);
+            File datasetFile = getDatasetFile(domain);
             ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(datasetFile), StandardCharsets.UTF_8);
             ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
@@ -81,5 +80,25 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
             maxEntClassificationDir.mkdirs();
         }
         return new File(maxEntClassificationDir,"max-ent.bin");
+    }
+
+    /**
+     *
+     */
+    private File getDatasetFile(Context domain) {
+        return new File(domain.getContextDirectory(), "classifier-max-entropy/en-docs.txt");
+    }
+
+    /**
+     * Only temporarily, create dataset file for max entropy classifier
+     */
+    private void createDatasetFileForMaxEntropyClassifier(Context domain, ClassificationDataset dataset) throws Exception {
+        File datasetFile = getDatasetFile(domain);
+        FileWriter out = new FileWriter(datasetFile);
+        for (TextSample sample : dataset.getSamples()) {
+            String line = sample.getClassification().getId() + " " + Utils.replaceNewLines(sample.getText(), " ") + "\n";
+            out.write(line);
+        }
+        out.close();
     }
 }
