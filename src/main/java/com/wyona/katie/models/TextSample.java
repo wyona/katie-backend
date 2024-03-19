@@ -12,10 +12,23 @@ public class TextSample {
     /**
      *
      */
+    public TextSample() {
+    }
+
+    /**
+     *
+     */
     public TextSample(String id, String text, Classification classification) {
         this.id = id;
         this.text = text;
         this.classification = classification;
+    }
+
+    /**
+     *
+     */
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**
@@ -28,8 +41,22 @@ public class TextSample {
     /**
      *
      */
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    /**
+     *
+     */
     public String getText() {
         return text;
+    }
+
+    /**
+     *
+     */
+    public void setClassification(Classification classification) {
+        this.classification = classification;
     }
 
     /**
