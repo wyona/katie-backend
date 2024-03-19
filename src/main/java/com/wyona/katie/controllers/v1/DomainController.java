@@ -1010,6 +1010,34 @@ public class DomainController {
     }
 
     /**
+     * Retrain classifier
+     */
+    @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value="Retrain classifier")
+    public ResponseEntity<?> retrainClassifier(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Context domain = domainService.getDomain(id);
+            // TODO: Background process
+            classificationService.retrain(domain, 80);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get taxonomy entries of a particular domain
      */
     @RequestMapping(value = "/{id}/taxonomy/entries", method = RequestMethod.GET, produces = "application/json")
