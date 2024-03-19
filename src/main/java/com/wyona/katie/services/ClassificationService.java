@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 
 /**
- * https://medium.com/@juanc.olamendy/unlocking-the-power-of-text-classification-with-embeddings-7bcbb5912790
- * TODO: Compare with https://ai.google.dev/examples/train_text_classifier_embeddings
+ * Classification service to predict labels for text(s)
  */
 @Slf4j
 @Component
