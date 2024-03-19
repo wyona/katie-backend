@@ -2,10 +2,7 @@ package com.wyona.katie.handlers.mcc;
 
 import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
-import com.wyona.katie.services.DataRepositoryService;
-import com.wyona.katie.services.EmbeddingsService;
-import com.wyona.katie.services.LuceneCodecFactory;
-import com.wyona.katie.services.UtilsService;
+import com.wyona.katie.services.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -36,6 +33,9 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
     @Autowired
     private DataRepositoryService dataRepoService;
+
+    @Autowired
+    private ClassificationRepositoryService classificationRepoService;
 
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
 
@@ -81,7 +81,9 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context)
      */
     public void retrain(Context domain) throws Exception {
-        log.info("TODO: Retrain");
+        log.info("Retrain ...");
+        ClassificationDataset dataset = classificationRepoService.getDataset(domain, 0, -1);
+        train(domain, dataset.getSamples());
     }
 
     /**
