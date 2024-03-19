@@ -234,6 +234,11 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * Delete vectors associated with a particular label
      */
     public boolean delete(String labelUuid, Context domain, String indexName) throws Exception {
+        File indexDir = new File(getClassifierDir(domain), indexName);
+        if (!indexDir.isDirectory()) {
+            log.info("Index '" + indexName + "' does not exist yet, therefore we cannot delete an entry.");
+            return false;
+        }
 
         try {
             IndexReader reader = DirectoryReader.open(getIndexDirectory(domain, indexName));
