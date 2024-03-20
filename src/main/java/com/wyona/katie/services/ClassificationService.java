@@ -55,7 +55,7 @@ public class ClassificationService {
         backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + getClassificationImpl() + "' for domain '" + domain.getId() + "'.", userId);
         MulticlassTextClassifier classifier = getClassifier(getClassificationImpl());
         try {
-            classifier.retrain(domain);
+            classifier.retrain(domain, bgProcessId);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);

@@ -37,6 +37,9 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     @Autowired
     private ClassificationRepositoryService classificationRepoService;
 
+    @Autowired
+    private BackgroundProcessService backgroundProcessService;
+
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
 
     private static final String UUID_FIELD = "uuid";
@@ -78,11 +81,14 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     }
 
     /**
-     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context)
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context, String)
      */
-    public void retrain(Context domain) throws Exception {
+    public void retrain(Context domain, String bgProcessId) throws Exception {
         log.info("Retrain ...");
+        backgroundProcessService.updateProcessStatus(bgProcessId, "Load dataset ...");
         ClassificationDataset dataset = classificationRepoService.getDataset(domain, 0, -1);
+
+        backgroundProcessService.updateProcessStatus(bgProcessId, "Train classifier ...");
         train(domain, dataset.getSamples());
     }
 

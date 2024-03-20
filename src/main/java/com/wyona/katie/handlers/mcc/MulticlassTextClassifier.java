@@ -21,7 +21,8 @@ public interface MulticlassTextClassifier {
     public void train(Context domain, TextSample[] samples) throws Exception;
 
     /**
-     * TODO
+     * Retrain classifier on previously imported dataset
+     * @param bgProcessId Background process Id
      */
-    public void retrain(Context domain) throws Exception;
+    public void retrain(Context domain, String bgProcessId) throws Exception;
 }

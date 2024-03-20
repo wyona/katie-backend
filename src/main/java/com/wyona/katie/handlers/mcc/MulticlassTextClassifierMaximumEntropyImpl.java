@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers.mcc;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ClassificationRepositoryService;
 import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,9 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
     @Autowired
     ClassificationRepositoryService classificationRepoService;
 
+    @Autowired
+    BackgroundProcessService backgroundProcessService;
+
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String) 
      */
@@ -50,24 +54,27 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#train(Context, TextSample[])
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
-        // TODO
+        log.warn("TODO: Implement train method.");
     }
 
     /**
-     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context)
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context, String)
      */
-    public void retrain(Context domain) throws Exception {
+    public void retrain(Context domain, String bgProcessId) throws Exception {
         log.info("Retrain ...");
         try {
             // TODO: Replace dataset file creation, by "RepoInputStreamFactory"
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Generate dataset file ...");
             createDatasetFileForMaxEntropyClassifier(domain, classificationRepoService.getDataset(domain, 0, -1));
             File datasetFile = getDatasetFile(domain);
             ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(datasetFile), StandardCharsets.UTF_8);
             ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Train classifier ...");
             String textLanguage = "eng"; // TODO
             DoccatModel model = DocumentCategorizerME.train(textLanguage, sampleStream, TrainingParameters.defaultParams(), new DoccatFactory());
 
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Save trained model ...");
             OutputStream out = new BufferedOutputStream(new FileOutputStream(getModelFile(domain)));
             model.serialize(out);
             out.close();
