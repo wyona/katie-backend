@@ -162,6 +162,8 @@ public class TOPdeskConnector implements Connector {
                         log.error(e.getMessage(), e);
                     }
                 }
+
+                backgroundProcessService.updateProcessStatus(processId, "Train classifier with " + samples.size() + " samples ...");
                 try {
                     classificationService.train(domain, samples.toArray(new TextSample[0]));
                 } catch (Exception e) {
