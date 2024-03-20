@@ -6,6 +6,7 @@ import com.wyona.katie.handlers.mcc.MulticlassTextClassifierMaximumEntropyImpl;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,6 +28,9 @@ public class ClassificationService {
     @Autowired
     private MulticlassTextClassifierMaximumEntropyImpl classifierMaximumEntropy;
 
+    @Autowired
+    private BackgroundProcessService backgroundProcessService;
+
     /**
      * Predict labels for a text and a particular domain
      * @param domain Domain object
@@ -44,10 +48,19 @@ public class ClassificationService {
 
     /**
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
+     * @param bgProcessId Background process Id
      */
-    public void retrain(Context domain, int trainPercentage) throws Exception {
+    @Async
+    public void retrain(Context domain, int trainPercentage, String bgProcessId, String userId) {
+        backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + getClassificationImpl() + "' for domain '" + domain.getId() + "'.", userId);
         MulticlassTextClassifier classifier = getClassifier(getClassificationImpl());
-        classifier.retrain(domain);
+        try {
+            classifier.retrain(domain);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
+        backgroundProcessService.stopProcess(bgProcessId);
     }
 
     /**

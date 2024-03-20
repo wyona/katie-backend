@@ -1025,9 +1025,11 @@ public class DomainController {
 
         try {
             Context domain = domainService.getDomain(id);
-            // TODO: Background process
-            classificationService.retrain(domain, 80);
-            return new ResponseEntity<>(HttpStatus.OK);
+            String bgProcessId = UUID.randomUUID().toString();
+            String userId = authenticationService.getUserId();
+            classificationService.retrain(domain, 80, bgProcessId, userId);
+            String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
