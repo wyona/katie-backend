@@ -142,12 +142,13 @@ public class TOPdeskConnector implements Connector {
             }
         } else if (requestType == 0) {
             // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
-            int offset = 0;
+            int offset = 0; // TODO: Introduce pagination
             int limit = 100; // TODO: Make configurable
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");
             if (bodyNode.isArray()) {
+                // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
                 for (int i = 0; i < bodyNode.size(); i++) {
                     JsonNode numberNode = bodyNode.get(i);
                     String incidentNumber = numberNode.get("number").asText();
