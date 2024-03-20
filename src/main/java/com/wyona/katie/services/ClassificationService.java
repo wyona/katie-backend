@@ -64,22 +64,10 @@ public class ClassificationService {
     }
 
     /**
-     * Import classification samples (texts and labels)
-     * @param train When true, then train classifier with imported samples
+     * Import classification sample / observation (text and label)
      */
-    public void importSamples(Context domain, TextSample[] samples, boolean train) throws Exception {
-        for (TextSample sample : samples) {
-            log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
-            try {
-                classificationRepoService.saveSample(domain, sample);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-
-        if (train) {
-            getClassifier(getClassificationImpl()).train(domain, samples);
-        }
+    public void importSample(Context domain, TextSample sample) throws Exception {
+        classificationRepoService.saveSample(domain, sample);
     }
 
     /**

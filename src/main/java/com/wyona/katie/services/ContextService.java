@@ -2921,9 +2921,9 @@ public class ContextService {
     public void trainClassifier(Classification classification, Answer qna, Context domain) {
         if (false) { // TODO: Make configurable
             TextSample[] samples = new TextSample[1];
-            samples[0] = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
+            TextSample sample = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
             try {
-                classificationService.importSamples(domain, samples, true);
+                classificationService.importSample(domain, sample);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

@@ -134,10 +134,8 @@ public class TOPdeskConnector implements Connector {
         } else if (requestType == 1) {
             String incidentId = pl.getIncidentId();
             try {
-                // INFO: Train classifier
-                TextSample[] samples = new TextSample[1];
-                samples[0] = getIncident(incidentId, ksMeta, processId);
-                classificationService.importSamples(domain, samples, false);
+                TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
+                classificationService.importSample(domain, sample);
             } catch (Exception e) {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
@@ -150,13 +148,13 @@ public class TOPdeskConnector implements Connector {
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");
             if (bodyNode.isArray()) {
-                List<TextSample> samples = new ArrayList<>();
                 for (int i = 0; i < bodyNode.size(); i++) {
                     JsonNode numberNode = bodyNode.get(i);
                     String incidentNumber = numberNode.get("number").asText();
                     log.info("Get incident '" + incidentNumber + "' as classification training sample ...");
                     try {
-                        samples.add(getIncident(incidentNumber, ksMeta, processId));
+                        TextSample sample = getIncidentAsClassificationSample(incidentNumber, ksMeta, processId);
+                        classificationService.importSample(domain, sample);
                     } catch (Exception e) {
                         backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                         log.error(e.getMessage(), e);
@@ -165,12 +163,12 @@ public class TOPdeskConnector implements Connector {
 
                 boolean trainClassifier = false;
                 if (trainClassifier) {
-                    backgroundProcessService.updateProcessStatus(processId, "Train classifier with " + samples.size() + " samples ...");
+                    backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
                 }
                 try {
-                    classificationService.importSamples(domain, samples.toArray(new TextSample[0]), trainClassifier);
+                    //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
@@ -185,7 +183,7 @@ public class TOPdeskConnector implements Connector {
     /**
      * Generate text sample from incident
      */
-    private TextSample getIncident(String incidentId, KnowledgeSourceMeta ksMeta, String processId) throws Exception{
+    private TextSample getIncidentAsClassificationSample(String incidentId, KnowledgeSourceMeta ksMeta, String processId) throws Exception{
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         String logMsg = "Get categories and answer(s) of TOPdesk incident '" + incidentId + "' ...";
