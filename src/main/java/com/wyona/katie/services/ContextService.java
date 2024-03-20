@@ -2916,14 +2916,14 @@ public class ContextService {
     }
 
     /**
-     *
+     * TODO: Does this functionality make sense actually?!
      */
     public void trainClassifier(Classification classification, Answer qna, Context domain) {
-        if (true) { // TODO: Make configurable
+        if (false) { // TODO: Make configurable
             TextSample[] samples = new TextSample[1];
             samples[0] = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
             try {
-                classificationService.train(domain, samples);
+                classificationService.importSamples(domain, samples, true);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

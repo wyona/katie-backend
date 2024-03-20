@@ -137,7 +137,7 @@ public class TOPdeskConnector implements Connector {
                 // INFO: Train classifier
                 TextSample[] samples = new TextSample[1];
                 samples[0] = getIncident(incidentId, ksMeta, processId);
-                classificationService.train(domain, samples);
+                classificationService.importSamples(domain, samples, false);
             } catch (Exception e) {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
@@ -163,9 +163,14 @@ public class TOPdeskConnector implements Connector {
                     }
                 }
 
-                backgroundProcessService.updateProcessStatus(processId, "Train classifier with " + samples.size() + " samples ...");
+                boolean trainClassifier = false;
+                if (trainClassifier) {
+                    backgroundProcessService.updateProcessStatus(processId, "Train classifier with " + samples.size() + " samples ...");
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
+                }
                 try {
-                    classificationService.train(domain, samples.toArray(new TextSample[0]));
+                    classificationService.importSamples(domain, samples.toArray(new TextSample[0]), trainClassifier);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
