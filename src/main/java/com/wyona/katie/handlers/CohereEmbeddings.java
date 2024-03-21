@@ -4,6 +4,7 @@ import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -32,9 +33,9 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     private String cohereVersion;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, String cohereKey) {
+    public float[] getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
         // INFO: https://txt.cohere.com/introducing-embed-v3/
         String inputTypeStr = "search_document";
         if (inputType.equals(EmbeddingType.SEARCH_QUERY)) {
@@ -45,10 +46,13 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
         //String[] embeddingTypes = null;
         String[] embeddingTypes = new String[1];
-        embeddingTypes[0] = "float";
-        //embeddingTypes[0] = "int8";
+        if (valueType == EmbeddingValueType.int8) {
+            embeddingTypes[0] = "int8";
+        } else {
+            embeddingTypes[0] = "float";
+        }
 
-        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ") for sentence '" + sentence + "' ...");
+        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ", Vector value type: " + embeddingTypes[0] + ") for sentence '" + sentence + "' ...");
 
         float[] floatVector = null;
         int[] intVector = null;
@@ -66,33 +70,33 @@ public class CohereEmbeddings implements EmbeddingsProvider {
             JsonNode embeddingsNode = bodyNode.get("embeddings");
 
             if (embeddingTypes != null) {
-                for (String embeddingType : embeddingTypes) {
-                    log.info("Embedding type: " + embeddingType);
-                    JsonNode embeddingTypeNode = embeddingsNode.get(embeddingType);
+                for (String vectorValueType : embeddingTypes) {
+                    log.info("Vector value type: " + vectorValueType);
+                    JsonNode embeddingTypeNode = embeddingsNode.get(vectorValueType);
                     if (embeddingTypeNode.isArray()) {
                         JsonNode embeddingNode = embeddingTypeNode.get(0);
                         if (embeddingNode.isArray()) {
-                            if (embeddingType.equals("float")) {
+                            if (vectorValueType.equals("float")) {
                                 floatVector = new float[embeddingNode.size()];
                                 log.info("Vector size: " + floatVector.length);
 
                                 for (int i = 0; i < floatVector.length; i++) {
                                     floatVector[i] = Float.parseFloat(embeddingNode.get(i).asText());
                                 }
-                            } else if (embeddingType.equals("int8")) {
+                            } else if (vectorValueType.equals("int8")) {
                                 intVector = new int[embeddingNode.size()];
                                 for (int i = 0;i < intVector.length; i++) {
                                     //intVector[i] = Integer.parseInt(embeddingNode.get(i).asText());
                                     intVector[i] = embeddingNode.get(i).asInt();
                                 }
                             } else {
-                                log.warn("No such embedding type '" + embeddingType + "' supported!");
+                                log.warn("No such vector value type '" + vectorValueType + "' supported!");
                             }
                         } else {
                             log.error("No embedding received for sentence '" + sentence + "'");
                         }
                     } else {
-                        log.error("No embeddings received for embedding type '" + embeddingType + "'");
+                        log.error("No embeddings received for vector value type '" + vectorValueType + "'");
                     }
                 }
             } else {

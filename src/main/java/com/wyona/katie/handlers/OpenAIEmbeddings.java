@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -27,9 +28,9 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
     private String openAIHost;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, String openAIKey) throws Exception {
+    public float[] getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
         log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
 
         float[] vector = null;

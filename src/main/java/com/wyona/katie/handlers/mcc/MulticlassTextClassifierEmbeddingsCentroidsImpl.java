@@ -49,11 +49,13 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     private static final String SAMPLE_INDEX = "lucene-samples";
     private static final String CENTROID_INDEX = "lucene-centroids";
 
+    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
+
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String)
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
@@ -155,7 +157,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         String classId = sample.getClassification().getId();
 
-        float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);
 
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
@@ -178,7 +180,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      */
     private void indexSampleVector(String uuid, String labelUuid, float[] vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
-        iwc.setCodec(luceneCodecFactory.getCodec());
+        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
         IndexWriter writer = null;
         try {
             writer = new IndexWriter(getIndexDirectory(domain, SAMPLE_INDEX), iwc);
@@ -213,7 +215,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         delete(labelUuid, domain, CENTROID_INDEX);
 
         IndexWriterConfig iwc = new IndexWriterConfig();
-        iwc.setCodec(luceneCodecFactory.getCodec());
+        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
         IndexWriter writer = null;
         try {
             writer = new IndexWriter(getIndexDirectory(domain, CENTROID_INDEX), iwc);
@@ -258,7 +260,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             log.info("Delete documents with label ID '" + labelUuid + "' from index '" + indexName + "' of domain '" + domain.getId() + "' ...");
             IndexWriterConfig iwc = new IndexWriterConfig();
             //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setCodec(luceneCodecFactory.getCodec());
+            iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
 
             IndexWriter writer = null;
             try {

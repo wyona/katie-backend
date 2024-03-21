@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.models.EmbeddingValueType;
 import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.KnnVectorsFormat;
 import org.apache.lucene.codecs.KnnVectorsReader;
@@ -7,6 +8,7 @@ import org.apache.lucene.codecs.KnnVectorsWriter;
 //import org.apache.lucene.backward_codecs.lucene95.Lucene95Codec;
 //import org.apache.lucene.backward_codecs.lucene95.Lucene95HnswVectorsFormat;
 import org.apache.lucene.codecs.lucene99.Lucene99Codec;
+import org.apache.lucene.codecs.lucene99.Lucene99HnswScalarQuantizedVectorsFormat;
 import org.apache.lucene.codecs.lucene99.Lucene99HnswVectorsFormat;
 import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
@@ -24,20 +26,32 @@ public class LuceneCodecFactory {
     /**
      *
      */
-    public Codec getCodec() {
+    public Codec getCodec(EmbeddingValueType valueType) {
         //return Lucene95Codec.getDefault();
 
         log.info("Get codec ...");
-        Codec codec = new Lucene99Codec() {
-            @Override
-            public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
-                var delegate = new Lucene99HnswVectorsFormat();
-                log.info("Maximum Vector Dimension: " + maxDimensions);
-                return new DelegatingKnnVectorsFormat(delegate, maxDimensions);
-            }
-        };
 
-        return codec;
+        if (valueType == EmbeddingValueType.int8) {
+            Codec codecInt8 = new Lucene99Codec() {
+                @Override
+                public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
+                    var delegate = new Lucene99HnswScalarQuantizedVectorsFormat();
+                    log.info("Vector Value Type: int8, Maximum Vector Dimension: " + maxDimensions);
+                    return new DelegatingKnnVectorsFormat(delegate, maxDimensions);
+                }
+            };
+            return codecInt8;
+        } else {
+            Codec codecFloat32 = new Lucene99Codec() {
+                @Override
+                public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
+                    var delegate = new Lucene99HnswVectorsFormat();
+                    log.info("Vector Value Type: float32, Maximum Vector Dimension: " + maxDimensions);
+                    return new DelegatingKnnVectorsFormat(delegate, maxDimensions);
+                }
+            };
+            return codecFloat32;
+        }
     }
 }
 

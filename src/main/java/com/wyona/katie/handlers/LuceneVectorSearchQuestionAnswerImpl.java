@@ -3,10 +3,6 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;
-import com.wyona.katie.services.UtilsService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.document.*;
@@ -47,6 +43,8 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private static final String PATH_FIELD = "qna_uuid";
     private static final String VECTOR_FIELD = "vector";
     private static final String CLASSIFICATION_FIELD = "classification";
+
+    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
 
     /**
      * Get file system directory path containing Lucene vector index
@@ -91,7 +89,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     public String createTenant(Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec());
+        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
 
         IndexWriter writer = null;
         try {
@@ -116,7 +114,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec());
+        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
 
         // INFO: https://www.elastic.co/de/blog/what-is-an-apache-lucene-codec
         log.info("Lucene Codec: " + iwc.getCodec());
@@ -214,7 +212,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         float[] vector = null;
         try {
-            vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT);
+            vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, VECTOR_VALUE_TYPE);
         } catch (Exception e) {
             log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
             throw e;
@@ -310,7 +308,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             log.info("Delete document with path '" + akUuid + "' from index of domain '" + domain.getId() + "' ...");
             IndexWriterConfig iwc = new IndexWriterConfig();
             //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setCodec(luceneCodecFactory.getCodec());
+            iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
 
             IndexWriter writer = null;
             try {
@@ -376,7 +374,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         log.info("Get embedding for question ...");
         float[] queryVector = null;
         try {
-            queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY);
+            queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE);
         } catch (Exception e) {
             log.error("Get embedding failed, therefore do not search for answers.");
             //log.error(e.getMessage(), e);

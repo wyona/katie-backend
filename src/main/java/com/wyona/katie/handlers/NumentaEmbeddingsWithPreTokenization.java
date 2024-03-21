@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.EmbeddingType;
+import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -50,9 +51,9 @@ public class NumentaEmbeddingsWithPreTokenization implements EmbeddingsProvider 
     HuggingFaceTokenizer tokenizer;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, String apiToken) {
+    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Numenta (Model: " + model + ") for sentence '" + sentence + "' ...");
 
         float[] vector = null;

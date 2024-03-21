@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -30,9 +31,9 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
     private String hosting;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, String alephAlphaToken) {
+    public float[] getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String alephAlphaToken) {
         log.info("Get embedding from Aleph Alpha for sentence '" + sentence + "' ...");
 
         float[] vector = null;

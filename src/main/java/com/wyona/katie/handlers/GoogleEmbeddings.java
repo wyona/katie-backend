@@ -4,6 +4,7 @@ import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -16,7 +17,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  *
@@ -32,9 +32,9 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
     private String googleKey;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, String apiToken) {
+    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Google for sentence '" + sentence + "' ...");
 
         float[] vector = null;

@@ -49,6 +49,8 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
     private static final String UUID_FIELD = "uuid";
     private static final String RATING_FIELD = "rating";
     private static final String VECTOR_FIELD = "vector";
+
+    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
     
     /**
      * @see HumanFeedbackHandler#indexHumanFeedback(String, String, Context, int, User)
@@ -57,7 +59,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         log.info("Index human feedback ...");
 
         IndexWriterConfig iwc = new IndexWriterConfig();
-        iwc.setCodec(luceneCodecFactory.getCodec());
+        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
         IndexWriter writer = null;
         try {
             writer = new IndexWriter(getIndexDirectory(domain), iwc);
@@ -91,7 +93,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
      */
     public Rating[] getHumanFeedback(String question, Context domain) throws Exception {
         log.info("Get embedding for question ...");
-        float[] queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        float[] queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
         int k = 7; // INFO: The number of documents to find
 
 
@@ -138,7 +140,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        float[] vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, null);
+        float[] vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
         KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);

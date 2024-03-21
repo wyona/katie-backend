@@ -108,9 +108,9 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     }
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, String apiToken) throws Exception {
+    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
         log.debug("Get embedding from SentenceBERT for sentence '" + sentence + "' ...");
 
         // TODO: Implement rate limit, e.g. using https://github.com/bucket4j/bucket4j 8.3.0
