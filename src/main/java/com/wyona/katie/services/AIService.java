@@ -2,6 +2,7 @@ package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.handlers.*;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
@@ -324,8 +325,8 @@ public class AIService {
 
         String model = getEmbeddingModel(embeddingsImpl);
 
-        float[] embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
-        float[] embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
+        FloatVector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
+        FloatVector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
 
         // INFO: Very simple test
         /*
@@ -338,14 +339,14 @@ public class AIService {
 
          */
 
-        float cosineSimilarity = getCosineSimilarity(embeddingOne, embeddingTwo);
+        float cosineSimilarity = getCosineSimilarity(embeddingOne.getValues(), embeddingTwo.getValues());
         float cosineDistance = getCosineDistance(cosineSimilarity);
-        float dotProduct = UtilsService.getDotProduct(embeddingOne, embeddingTwo); // TODO: Consider re-using dot product from cosine similarity calculation
+        float dotProduct = UtilsService.getDotProduct(embeddingOne.getValues(), embeddingTwo.getValues()); // TODO: Consider re-using dot product from cosine similarity calculation
 
-        Distances distances = new Distances(cosineSimilarity, cosineDistance, embeddingsImpl, model, embeddingOne.length, sentenceOne, sentenceTwo, dotProduct);
+        Distances distances = new Distances(cosineSimilarity, cosineDistance, embeddingsImpl, model, embeddingOne.getDimension(), sentenceOne, sentenceTwo, dotProduct);
         if (getEmbeddings) {
-            distances.setEmbeddingOne(embeddingOne);
-            distances.setEmbeddingTwo(embeddingTwo);
+            distances.setEmbeddingOne(embeddingOne.getValues());
+            distances.setEmbeddingTwo(embeddingTwo.getValues());
         }
 
         return distances;
@@ -438,7 +439,7 @@ public class AIService {
      * Get embedding for a sentence
      * @param model Model of embeddings implementation
      */
-    private float[] getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String apiToken) throws Exception {
+    private FloatVector getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String apiToken) throws Exception {
         EmbeddingsProvider embeddingsProvider = null;
 
         if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {
@@ -460,7 +461,7 @@ public class AIService {
         }
 
         // TODO: Also allow int8
-        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, EmbeddingValueType.float32, apiToken).getValues();
+        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, EmbeddingValueType.float32, apiToken);
     }
 
     /**
