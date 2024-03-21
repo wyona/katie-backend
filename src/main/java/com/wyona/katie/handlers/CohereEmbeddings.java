@@ -50,7 +50,8 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
         log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ") for sentence '" + sentence + "' ...");
 
-        float[] vector = null;
+        float[] floatVector = null;
+        int[] intVector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(cohereKey);
@@ -71,12 +72,21 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                     if (embeddingTypeNode.isArray()) {
                         JsonNode embeddingNode = embeddingTypeNode.get(0);
                         if (embeddingNode.isArray()) {
-                            // TODO: Check embedding type "int8" or "float"
-                            vector = new float[embeddingNode.size()];
-                            log.info("Vector size: " + vector.length);
+                            if (embeddingType.equals("float")) {
+                                floatVector = new float[embeddingNode.size()];
+                                log.info("Vector size: " + floatVector.length);
 
-                            for (int i = 0; i < vector.length; i++) {
-                                vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                                for (int i = 0; i < floatVector.length; i++) {
+                                    floatVector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                                }
+                            } else if (embeddingType.equals("int8")) {
+                                intVector = new int[embeddingNode.size()];
+                                for (int i = 0;i < intVector.length; i++) {
+                                    //intVector[i] = Integer.parseInt(embeddingNode.get(i).asText());
+                                    intVector[i] = embeddingNode.get(i).asInt();
+                                }
+                            } else {
+                                log.warn("No such embedding type '" + embeddingType + "' supported!");
                             }
                         } else {
                             log.error("No embedding received for sentence '" + sentence + "'");
@@ -89,11 +99,11 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                 if (embeddingsNode.isArray()) {
                     JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see createRequestBody(...))
                     if (embeddingNode.isArray()) {
-                        vector = new float[embeddingNode.size()];
-                        log.info("Vector size: " + vector.length);
+                        floatVector = new float[embeddingNode.size()];
+                        log.info("Vector size: " + floatVector.length);
 
-                        for (int i = 0; i < vector.length; i++) {
-                            vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                        for (int i = 0; i < floatVector.length; i++) {
+                            floatVector[i] = Float.parseFloat(embeddingNode.get(i).asText());
                         }
                     } else {
                         log.error("No embedding received for sentence '" + sentence + "'");
@@ -120,7 +130,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         }
          */
 
-        return vector;
+        return floatVector;
     }
 
     /**
