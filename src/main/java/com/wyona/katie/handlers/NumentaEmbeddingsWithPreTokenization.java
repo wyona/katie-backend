@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.wyona.katie.models.EmbeddingValueType;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,10 +54,10 @@ public class NumentaEmbeddingsWithPreTokenization implements EmbeddingsProvider 
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
+    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Numenta (Model: " + model + ") for sentence '" + sentence + "' ...");
 
-        float[] vector = null;
+        FloatVector vector = null;
 
         try {
             boolean isBinary = true;
@@ -98,10 +99,10 @@ public class NumentaEmbeddingsWithPreTokenization implements EmbeddingsProvider 
             InferenceServerClient client = new InferenceServerClient(host, 5000, 5000);
             log.info("Run inference with model '" + model + "' ...");
             InferResult result = client.infer(model, inputs, outputs);
-            vector = result.getOutputAsFloat("encodings");
+            vector = new FloatVector(result.getOutputAsFloat("encodings"));
             client.close();
 
-            log.info(Arrays.toString(vector));
+            //log.info(Arrays.toString(vector.getValues()));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,10 +35,10 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
+    public FloatVector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
         log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
 
-        float[] vector = null;
+        FloatVector vector = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode inputNode = mapper.createObjectNode();
@@ -56,10 +57,10 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
 
             JsonNode embeddingNode = bodyNode.get("data").get(0).get("embedding");
             if (embeddingNode.isArray()) {
-                vector = new float[embeddingNode.size()];
+                vector = new FloatVector(embeddingNode.size());
 
-                for (int i = 0; i < vector.length; i++) {
-                    vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                for (int i = 0; i < vector.getDimension(); i++) {
+                    vector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                 }
             }
         } catch(Exception e) {

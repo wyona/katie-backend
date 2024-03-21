@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -34,10 +35,10 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
+    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Google for sentence '" + sentence + "' ...");
 
-        float[] vector = null;
+        FloatVector vector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(apiToken);
@@ -52,10 +53,10 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
 
             JsonNode embeddingsNode = bodyNode.get("predictions").get(0).get("embeddings").get("values");
             if (embeddingsNode.isArray()) {
-                vector = new float[embeddingsNode.size()];
-                log.info("Vector size: " + vector.length);
-                for (int i = 0; i < vector.length; i++) {
-                    vector[i] = Float.parseFloat(embeddingsNode.get(i).asText());
+                vector = new FloatVector(embeddingsNode.size());
+                log.info("Vector size: " + vector.getDimension());
+                for (int i = 0; i < vector.getDimension(); i++) {
+                    vector.set(i, Float.parseFloat(embeddingsNode.get(i).asText()));
                 }
             } else {
                 log.error("No embeddings received!");

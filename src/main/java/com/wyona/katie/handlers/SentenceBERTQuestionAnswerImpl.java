@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.services.MailerService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,12 +111,12 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
+    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
         log.debug("Get embedding from SentenceBERT for sentence '" + sentence + "' ...");
 
         // TODO: Implement rate limit, e.g. using https://github.com/bucket4j/bucket4j 8.3.0
 
-        float[] vector = null;
+        FloatVector vector = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode parentNode = mapper.createObjectNode();
@@ -137,11 +138,11 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
 
             JsonNode embeddingNode = bodyNode.get("embedding");
             if (embeddingNode.isArray()) {
-                vector = new float[embeddingNode.size()];
-                log.info("Response contains embedding with " + vector.length + " dimensions.");
+                vector = new FloatVector(embeddingNode.size());
+                log.info("Response contains embedding with " + vector.getDimension() + " dimensions.");
 
-                for (int i = 0; i < vector.length; i++) {
-                    vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                for (int i = 0; i < vector.getDimension(); i++) {
+                    vector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                 }
             } else {
                 log.warn("Response did not contain embedding!");

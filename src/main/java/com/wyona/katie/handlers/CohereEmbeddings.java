@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,7 +36,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
+    public FloatVector getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
         // INFO: https://txt.cohere.com/introducing-embed-v3/
         String inputTypeStr = "search_document";
         if (inputType.equals(EmbeddingType.SEARCH_QUERY)) {
@@ -54,7 +55,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
         log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ", Vector value type: " + embeddingTypes[0] + ") for sentence '" + sentence + "' ...");
 
-        float[] floatVector = null;
+        FloatVector floatVector = null;
         int[] intVector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -77,11 +78,11 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                         JsonNode embeddingNode = embeddingTypeNode.get(0);
                         if (embeddingNode.isArray()) {
                             if (vectorValueType.equals("float")) {
-                                floatVector = new float[embeddingNode.size()];
-                                log.info("Vector size: " + floatVector.length);
+                                floatVector = new FloatVector(embeddingNode.size());
+                                log.info("Vector size: " + floatVector.getDimension());
 
-                                for (int i = 0; i < floatVector.length; i++) {
-                                    floatVector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                                for (int i = 0; i < floatVector.getDimension(); i++) {
+                                    floatVector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                                 }
                             } else if (vectorValueType.equals("int8")) {
                                 intVector = new int[embeddingNode.size()];
@@ -103,11 +104,11 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                 if (embeddingsNode.isArray()) {
                     JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see createRequestBody(...))
                     if (embeddingNode.isArray()) {
-                        floatVector = new float[embeddingNode.size()];
-                        log.info("Vector size: " + floatVector.length);
+                        floatVector = new FloatVector(embeddingNode.size());
+                        log.info("Vector size: " + floatVector.getDimension());
 
-                        for (int i = 0; i < floatVector.length; i++) {
-                            floatVector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                        for (int i = 0; i < floatVector.getDimension(); i++) {
+                            floatVector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                         }
                     } else {
                         log.error("No embedding received for sentence '" + sentence + "'");

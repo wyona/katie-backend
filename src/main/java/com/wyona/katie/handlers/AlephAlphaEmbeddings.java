@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,10 +34,10 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public float[] getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String alephAlphaToken) {
+    public FloatVector getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String alephAlphaToken) {
         log.info("Get embedding from Aleph Alpha for sentence '" + sentence + "' ...");
 
-        float[] vector = null;
+        FloatVector vector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(alephAlphaToken);
@@ -52,11 +53,11 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
 
             JsonNode embeddingNode = bodyNode.get("embedding");
             if (embeddingNode.isArray()) {
-                vector = new float[embeddingNode.size()];
-                log.info("Vector size: " + vector.length);
+                vector = new FloatVector(embeddingNode.size());
+                log.info("Vector size: " + vector.getDimension());
 
-                for (int i = 0; i < vector.length; i++) {
-                    vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                for (int i = 0; i < vector.getDimension(); i++) {
+                    vector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                 }
             } else {
                 log.error("No embedding received!");
