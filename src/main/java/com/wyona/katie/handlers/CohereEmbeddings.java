@@ -34,22 +34,27 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, String)
      */
-    public float[] getEmbedding(String sentence, String cohereModel, EmbeddingType embeddingType, String cohereKey) {
+    public float[] getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, String cohereKey) {
         // INFO: https://txt.cohere.com/introducing-embed-v3/
-        String inputType = "search_document";
-        if (embeddingType.equals(EmbeddingType.SEARCH_QUERY)) {
-            inputType = "search_query";
+        String inputTypeStr = "search_document";
+        if (inputType.equals(EmbeddingType.SEARCH_QUERY)) {
+            inputTypeStr = "search_query";
         }
         //String inputType = "classification";
         //String inputType = "clustering";
 
-        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputType + ") for sentence '" + sentence + "' ...");
+        String[] embeddingTypes = null;
+        //String[] embeddingTypes = new String[2];
+        //embeddingTypes[0] = "float";
+        //embeddingTypes[1] = "int8";
+
+        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ") for sentence '" + sentence + "' ...");
 
         float[] vector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(cohereKey);
-            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, cohereModel, inputType), headers);
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, cohereModel, inputTypeStr, embeddingTypes), headers);
 
             String requestUrl = cohereHost + "/embed";
             log.info("Get embeddings: " + requestUrl);
@@ -58,21 +63,38 @@ public class CohereEmbeddings implements EmbeddingsProvider {
             log.info("Response JSON: " + bodyNode);
 
             JsonNode embeddingsNode = bodyNode.get("embeddings");
-            if (embeddingsNode.isArray()) {
-                JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see createRequestBody(...))
 
-                if (embeddingNode.isArray()) {
-                    vector = new float[embeddingNode.size()];
-                    log.info("Vector size: " + vector.length);
+            if (embeddingTypes != null) {
+                for (String embeddingTypeX : embeddingTypes) {
+                    JsonNode embeddingTypeNode = embeddingsNode.get(embeddingTypeX);
+                    if (embeddingTypeNode.isArray()) {
+                        // TODO: Check embedding type "int8" or "float"
+                        vector = new float[embeddingTypeNode.size()];
+                        log.info("Vector size: " + vector.length);
 
-                    for (int i = 0; i < vector.length; i++) {
-                        vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                        for (int i = 0; i < vector.length; i++) {
+                            vector[i] = Float.parseFloat(embeddingTypeNode.get(i).asText());
+                        }
+                    } else {
+                        log.error("No embedding received for sentence '" + sentence + "'");
                     }
-                } else {
-                    log.error("No embedding received for sentence '" + sentence + "'");
                 }
             } else {
-                log.error("No embeddings received!");
+                if (embeddingsNode.isArray()) {
+                    JsonNode embeddingNode = embeddingsNode.get(0); // INFO: Embedding for sentence resp. first text node (see createRequestBody(...))
+                    if (embeddingNode.isArray()) {
+                        vector = new float[embeddingNode.size()];
+                        log.info("Vector size: " + vector.length);
+
+                        for (int i = 0; i < vector.length; i++) {
+                            vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                        }
+                    } else {
+                        log.error("No embedding received for sentence '" + sentence + "'");
+                    }
+                } else {
+                    log.error("No embeddings received!");
+                }
             }
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 429) {
@@ -97,13 +119,22 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
     /**
      * @param inputType Cohere input type, e.g. "search_document", "search_query", "classification", "clustering"
+     * @param embeddingTypes Optional array of embedding types, e.g. "float", "int8"
      */
-    private String createRequestBody(String sentence, String cohereModel, String inputType) {
+    private String createRequestBody(String sentence, String cohereModel, String inputType, String[] embeddingTypes) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
         body.put("model", cohereModel);
 
         body.put("input_type", inputType);
+
+        if (embeddingTypes != null) {
+            ArrayNode embeddingsTypesArray = mapper.createArrayNode();
+            for (String embeddingType : embeddingTypes) {
+                embeddingsTypesArray.add(embeddingType);
+            }
+            body.put("embedding_types", embeddingsTypesArray);
+        }
 
         // INFO: One could provide multiple texts with one request
         ArrayNode textsNode = mapper.createArrayNode();
