@@ -43,10 +43,10 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         //String inputType = "classification";
         //String inputType = "clustering";
 
-        String[] embeddingTypes = null;
-        //String[] embeddingTypes = new String[2];
-        //embeddingTypes[0] = "float";
-        //embeddingTypes[1] = "int8";
+        //String[] embeddingTypes = null;
+        String[] embeddingTypes = new String[1];
+        embeddingTypes[0] = "float";
+        //embeddingTypes[0] = "int8";
 
         log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ") for sentence '" + sentence + "' ...");
 
@@ -65,18 +65,24 @@ public class CohereEmbeddings implements EmbeddingsProvider {
             JsonNode embeddingsNode = bodyNode.get("embeddings");
 
             if (embeddingTypes != null) {
-                for (String embeddingTypeX : embeddingTypes) {
-                    JsonNode embeddingTypeNode = embeddingsNode.get(embeddingTypeX);
+                for (String embeddingType : embeddingTypes) {
+                    log.info("Embedding type: " + embeddingType);
+                    JsonNode embeddingTypeNode = embeddingsNode.get(embeddingType);
                     if (embeddingTypeNode.isArray()) {
-                        // TODO: Check embedding type "int8" or "float"
-                        vector = new float[embeddingTypeNode.size()];
-                        log.info("Vector size: " + vector.length);
+                        JsonNode embeddingNode = embeddingTypeNode.get(0);
+                        if (embeddingNode.isArray()) {
+                            // TODO: Check embedding type "int8" or "float"
+                            vector = new float[embeddingNode.size()];
+                            log.info("Vector size: " + vector.length);
 
-                        for (int i = 0; i < vector.length; i++) {
-                            vector[i] = Float.parseFloat(embeddingTypeNode.get(i).asText());
+                            for (int i = 0; i < vector.length; i++) {
+                                vector[i] = Float.parseFloat(embeddingNode.get(i).asText());
+                            }
+                        } else {
+                            log.error("No embedding received for sentence '" + sentence + "'");
                         }
                     } else {
-                        log.error("No embedding received for sentence '" + sentence + "'");
+                        log.error("No embeddings received for embedding type '" + embeddingType + "'");
                     }
                 }
             } else {
