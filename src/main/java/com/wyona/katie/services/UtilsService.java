@@ -1,7 +1,7 @@
 package com.wyona.katie.services;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.Context;
+import com.wyona.katie.models.FloatVector;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

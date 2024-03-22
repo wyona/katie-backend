@@ -1,8 +1,8 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.wyona.katie.models.EmbeddingValueType;
+import com.wyona.katie.models.FloatVector;
 
 /**
  * Embeddings provider, e.g. SentenceBERT, Cohere, OpenAI, Aleph Alpha, ...

@@ -1,6 +1,5 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.services.MailerService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;

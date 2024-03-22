@@ -1,6 +1,5 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;

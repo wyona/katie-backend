@@ -1,9 +1,9 @@
-package com.wyona.katie.ai.models;
+package com.wyona.katie.models;
 
 /**
  *
  */
-public class FloatVector {
+public class FloatVector implements Vector {
 
     float[] values;
 
@@ -53,7 +53,7 @@ public class FloatVector {
     }
 
     /**
-     *
+     * @see com.wyona.katie.models.Vector#getDimension()
      */
     public int getDimension() {
         return values.length;
@@ -71,11 +71,12 @@ public class FloatVector {
     }
 
     /**
-     *
+     * @see com.wyona.katie.models.Vector#add(Vector)
      */
-    public void add(FloatVector w) {
+    public void add(Vector w) {
+        FloatVector _w = (FloatVector)w;
         for (int i = 0; i < values.length; i++) {
-            values[i] += w.getValues()[i];
+            values[i] += _w.getValues()[i];
         }
     }
 

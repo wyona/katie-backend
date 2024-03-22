@@ -2,7 +2,6 @@ package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.handlers.*;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;

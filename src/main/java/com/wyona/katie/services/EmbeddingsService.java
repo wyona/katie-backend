@@ -1,11 +1,7 @@
 package com.wyona.katie.services;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.handlers.*;
-import com.wyona.katie.models.Context;
-import com.wyona.katie.models.EmbeddingType;
-import com.wyona.katie.models.EmbeddingValueType;
-import com.wyona.katie.models.EmbeddingsImpl;
+import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,5 @@
 package com.wyona.katie.handlers.mcc;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import lombok.extern.slf4j.Slf4j;

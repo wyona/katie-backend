@@ -1,10 +1,10 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.EmbeddingValueType;
+import com.wyona.katie.models.FloatVector;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
