@@ -95,7 +95,7 @@ public class EmbeddingsService {
         } else if (impl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
             vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.COHERE)) {
-            log.info("Get embedding from Cohere (" + model + ") ...");
+            log.info("Get embedding from Cohere (Model: " + model + ", Input Type: " + embeddingType + ", Value Type: " + valueType + ") ...");
             vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.ALEPH_ALPHA)) {
             vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);

@@ -44,9 +44,6 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private static final String VECTOR_FIELD = "vector";
     private static final String CLASSIFICATION_FIELD = "classification";
 
-    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
-    //private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.int8;
-
     /**
      * Get file system directory path containing Lucene vector index
      * @param domain Domain associated with Lucene index
@@ -90,7 +87,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     public String createTenant(Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
+        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
 
         IndexWriter writer = null;
         try {
@@ -115,7 +112,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
+        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
 
         // INFO: https://www.elastic.co/de/blog/what-is-an-apache-lucene-codec
         log.info("Lucene Codec: " + iwc.getCodec());
@@ -213,7 +210,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         Vector vector = null;
         try {
-            vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, VECTOR_VALUE_TYPE);
+            vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
         } catch (Exception e) {
             log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
             throw e;
@@ -224,7 +221,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         // TODO: Lucene 9.8.0 does not support anymore overriding the vector length with a custom field type
         // See "workaround" desribed by Uwe Schindler https://lists.apache.org/thread/kckbdqj4g1g9k2tl19x1y1ocndpzd0td
         Field vectorField = null;
-        if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+        if (domain.getEmbeddingValueType() == EmbeddingValueType.int8) {
             FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.BYTE);
             vectorField = new KnnByteVectorField(VECTOR_FIELD, ((ByteVector)vector).getValues(), vectorFieldType);
         } else {
@@ -315,7 +312,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             log.info("Delete document with path '" + akUuid + "' from index of domain '" + domain.getId() + "' ...");
             IndexWriterConfig iwc = new IndexWriterConfig();
             //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
+            iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
 
             IndexWriter writer = null;
             try {
@@ -381,7 +378,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         log.info("Get embedding for question ...");
         Vector queryVector = null;
         try {
-            queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE);
+            queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
         } catch (Exception e) {
             log.error("Get embedding failed, therefore do not search for answers.");
             //log.error(e.getMessage(), e);
@@ -428,14 +425,14 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
                 Query filter = new ConstantScoreQuery(bqb.build());
 
                 log.info("Filter applied before the vector search: " + filter);
-                if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+                if (domain.getEmbeddingValueType() == EmbeddingValueType.int8) {
                     query = new KnnByteVectorQuery(VECTOR_FIELD, ((ByteVector)queryVector).getValues(), k, filter);
                 } else {
                     query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k, filter);
                 }
             } else {
                 log.info("No classification provided, therefore no pre-filtering applied.");
-                if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+                if (domain.getEmbeddingValueType() == EmbeddingValueType.int8) {
                     query = new KnnByteVectorQuery(VECTOR_FIELD, ((ByteVector)queryVector).getValues(), k);
                 } else {
                     query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
