@@ -23,7 +23,7 @@ class QuestionAnalyzerServiceTest {
     //private final String questionClassifierPort = "5001";
 
     private final String questionClassifierScheme = "https";
-    private final String questionClassifierHostname = "questionclassifier.ukatie.com";
+    private final String questionClassifierHostname = "questionclassifier.katie.qa";
     private final String questionClassifierPort = "443";
 
     private final String questionClassifierCertaintyThreshold = "0.55";
