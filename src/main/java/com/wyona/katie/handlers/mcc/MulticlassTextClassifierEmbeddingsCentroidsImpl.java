@@ -55,16 +55,16 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String)
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        float[] queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        FloatVector queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
         if (true) {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar samples ...");
-            return searchSimilarSampleVectors(domain, queryVector);
+            return searchSimilarSampleVectors(domain, queryVector.getValues());
         } else {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar centroids ...");
-            return searchSimilarCentroidVectors(domain, queryVector);
+            return searchSimilarCentroidVectors(domain, queryVector.getValues());
         }
     }
 
@@ -157,14 +157,14 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         String classId = sample.getClassification().getId();
 
-        float[] sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
-        indexSampleVector(sample.getId(), classId, sampleVector, domain);
+        FloatVector sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        indexSampleVector(sample.getId(), classId, sampleVector.getValues(), domain);
 
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        dataRepoService.saveEmbedding(sampleVector, sample.getText(), embeddingFile);
+        dataRepoService.saveEmbedding(sampleVector.getValues(), sample.getText(), embeddingFile);
 
         FloatVector centroid = getCentroid(domain, classId);
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!

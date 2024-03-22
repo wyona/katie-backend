@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.handlers.*;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.EmbeddingType;
@@ -42,9 +43,11 @@ public class EmbeddingsService {
     /**
      * Get embedding for a text
      * @param domain Katie Domain associated with text
+     * @param embeddingType TODO
+     * @param valueType TODO
      * @return embedding vector
      */
-    public float[] getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
+    public FloatVector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
         try {
             return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsApiToken());
         } catch (Exception e) {
@@ -87,23 +90,23 @@ public class EmbeddingsService {
      * @param apiToken API token of embedding provider
      * @return embedding vector
      */
-    public float[] getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
-        float[] vector = null;
+    public FloatVector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
+        FloatVector vector = null;
         if (impl.equals(EmbeddingsImpl.SBERT) || impl.equals(EmbeddingsImpl.UNSET)) {
-            vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, apiToken).getValues();
+            vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI)) {
-            vector = openAIImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = openAIImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-            vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.COHERE)) {
             log.info("Get embedding from Cohere (" + model + ") ...");
-            vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.ALEPH_ALPHA)) {
-            vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.NUMENTA)) {
-            vector = numentaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = numentaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.GOOGLE)) {
-            vector = googleEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken).getValues();
+            vector = googleEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else {
             log.error("No such embedding implementation '" + impl + "' supported!");
         }

@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.ai.models.FloatVector;
 import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;
@@ -126,7 +127,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             // INFO: Index question
             if (qna.getQuestion() != null) {
                 log.info("Index question ...");
-                float[] vector = indexTextAsVector(writer, qna.getQuestion(), qna.getClassifications(), akUuid, domain);
+                FloatVector vector = indexTextAsVector(writer, qna.getQuestion(), qna.getClassifications(), akUuid, domain);
                 saveEmbedding(vector, qna.getUuid(), qna.getQuestion(), domain,"question");
             } else {
                 log.info("QnA '" + qna.getUuid() + "' has no question yet associated with.");
@@ -139,7 +140,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
                 for (String aQuestion : qna.getAlternativeQuestions()) {
                     counter++;
                     log.info("Index alternative question '" + aQuestion + "' ...");
-                    float[] vector = indexTextAsVector(writer, aQuestion, qna.getClassifications(), akUuid, domain);
+                    FloatVector vector = indexTextAsVector(writer, aQuestion, qna.getClassifications(), akUuid, domain);
                     saveEmbedding(vector, qna.getUuid(), aQuestion, domain, "alternative_q_" + counter);
                 }
             } else {
@@ -151,7 +152,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             // INFO: Index answer
             if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
                 log.info("Index answer ...");
-                float[] vector = indexTextAsVector(writer, qna.getAnswer(), qna.getClassifications(), akUuid, domain);
+                FloatVector vector = indexTextAsVector(writer, qna.getAnswer(), qna.getClassifications(), akUuid, domain);
                 saveEmbedding(vector, qna.getUuid(), qna.getAnswer(), domain, "answer");
             } else {
                 log.info("Answer of QnA '" + qna.getUuid() + "' is encrypted, therefore do not index answer.");
@@ -176,7 +177,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
      * @param text Embedded text
      * @param fieldName Field associated with text, e.g. "question" or "answer"
      */
-    private void saveEmbedding(float[] vector, String uuid, String text, Context domain, String fieldName) {
+    private void saveEmbedding(FloatVector vector, String uuid, String text, Context domain, String fieldName) {
         if (true) { // TODO: Make configurable
             log.info("Do not save embedding");
             return;
@@ -189,7 +190,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         }
 
         File file = new File(embeddingDir, fieldName + ".json");
-        dataRepoService.saveEmbedding(vector, text, file);
+        dataRepoService.saveEmbedding(vector.getValues(), text, file);
     }
 
     /**
@@ -201,7 +202,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
      * @param domain Katie Domain associated with QnA
      * @return embedding vector
      */
-    private float[] indexTextAsVector(IndexWriter writer, String text, List<String> classifications, String akUuid, Context domain) throws Exception {
+    private FloatVector indexTextAsVector(IndexWriter writer, String text, List<String> classifications, String akUuid, Context domain) throws Exception {
         Document doc = new Document();
 
         Field pathField = new StringField(PATH_FIELD, akUuid, Field.Store.YES);
@@ -210,7 +211,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         // TODO: Check input sequence length and log warning when text is too long:
         // https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        float[] vector = null;
+        FloatVector vector = null;
         try {
             vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, VECTOR_VALUE_TYPE);
         } catch (Exception e) {
@@ -218,12 +219,17 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             throw e;
         }
 
-        log.info("Add vector with " + vector.length + " dimensions to Lucene index ...");
+        log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene index ...");
 
         // TODO: Lucene 9.8.0 does not support anymore overriding the vector length with a custom field type
         // See "workaround" desribed by Uwe Schindler https://lists.apache.org/thread/kckbdqj4g1g9k2tl19x1y1ocndpzd0td
-        FieldType vectorFieldType = new CustomVectorFieldType(vector.length, domain.getVectorSimilarityMetric());
-        KnnFloatVectorField vectorField = new KnnFloatVectorField(VECTOR_FIELD, vector, vectorFieldType);
+        FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+        Field vectorField = null;
+        if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+            //vectorField = new KnnByteVectorField(VECTOR_FIELD, vector.getValues(), vectorFieldType);
+        } else {
+            vectorField = new KnnFloatVectorField(VECTOR_FIELD, vector.getValues(), vectorFieldType);
+        }
         doc.add(vectorField);
 
         if (classifications != null && classifications.size() > 0) {
@@ -372,7 +378,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         List<Hit> answers = new ArrayList<Hit>();
 
         log.info("Get embedding for question ...");
-        float[] queryVector = null;
+        FloatVector queryVector = null;
         try {
             queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE);
         } catch (Exception e) {
@@ -421,10 +427,18 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
                 Query filter = new ConstantScoreQuery(bqb.build());
 
                 log.info("Filter applied before the vector search: " + filter);
-                query = new KnnFloatVectorQuery(VECTOR_FIELD, queryVector, k, filter);
+                if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+                    //query = new KnnByteVectorQuery(VECTOR_FIELD, queryVector.getValues(), k, filter);
+                } else {
+                    query = new KnnFloatVectorQuery(VECTOR_FIELD, queryVector.getValues(), k, filter);
+                }
             } else {
                 log.info("No classification provided, therefore no pre-filtering applied.");
-                query = new KnnFloatVectorQuery(VECTOR_FIELD, queryVector, k);
+                if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+                    //query = new KnnByteVectorQuery(VECTOR_FIELD, queryVector.getValues(), k);
+                } else {
+                    query = new KnnFloatVectorQuery(VECTOR_FIELD, queryVector.getValues(), k);
+                }
             }
 
             TopDocs topDocs = searcher.search(query, k);
