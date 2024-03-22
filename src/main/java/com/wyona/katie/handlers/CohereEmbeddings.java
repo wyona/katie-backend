@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.models.Vector;
 import com.wyona.katie.models.ByteVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +38,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public FloatVector getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
+    public Vector getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
         // INFO: https://txt.cohere.com/introducing-embed-v3/
         String inputTypeStr = "search_document";
         if (inputType.equals(EmbeddingType.SEARCH_QUERY)) {
@@ -47,18 +48,17 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         //String inputType = "clustering";
 
         //String[] embeddingTypes = null;
+        /*
         String[] valueTypes = new String[2];
         valueTypes[0] = "int8";
         valueTypes[1] = "float";
-        /*
+         */
         String[] valueTypes = new String[1];
         if (valueType == EmbeddingValueType.int8) {
             valueTypes[0] = "int8";
         } else {
             valueTypes[0] = "float";
         }
-
-         */
 
         log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ", Vector value type: " + valueTypes[0] + ") for sentence '" + sentence + "' ...");
 

@@ -133,18 +133,22 @@ public class DataRepositoryService {
      * @param text Text which got vectorized
      * @param file File where embedding and text will be saved
      */
-    public void saveEmbedding(float[] vector, String text, File file) {
+    public void saveEmbedding(Vector vector, String text, File file) {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode rootNode = objectMapper.createObjectNode();
 
         rootNode.put(EMBEDDING_TEXT_FIELD, text);
 
-        rootNode.put("length", UtilsService.getVectorLength(vector));
+        if (vector instanceof FloatVector) {
+            rootNode.put("length", ((FloatVector)vector).getLength());
 
-        ArrayNode embeddingNode = objectMapper.createArrayNode();
-        rootNode.put(EMBEDDING_VECTOR_FIELD, embeddingNode);
-        for (float value : vector) {
-            embeddingNode.add(value);
+            ArrayNode embeddingNode = objectMapper.createArrayNode();
+            rootNode.put(EMBEDDING_VECTOR_FIELD, embeddingNode);
+            for (float value : ((FloatVector)vector).getValues()) {
+                embeddingNode.add(value);
+            }
+        } else {
+            log.warn("TODO: Save byte vector");
         }
 
         try {

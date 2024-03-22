@@ -93,7 +93,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
      */
     public Rating[] getHumanFeedback(String question, Context domain) throws Exception {
         log.info("Get embedding for question ...");
-        FloatVector queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        Vector queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
         int k = 7; // INFO: The number of documents to find
 
 
@@ -102,7 +102,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             IndexSearcher searcher = new IndexSearcher(indexReader);
 
-            Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector.getValues(), k);
+            Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
             TopDocs topDocs = searcher.search(query, k);
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -140,10 +140,10 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        FloatVector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        Vector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
-        KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector.getValues(), vectorFieldType);
+        KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
         doc.add(vectorField);
 
         log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene index ...");

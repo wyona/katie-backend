@@ -324,8 +324,8 @@ public class AIService {
 
         String model = getEmbeddingModel(embeddingsImpl);
 
-        FloatVector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
-        FloatVector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
+        Vector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
+        Vector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
 
         // INFO: Very simple test
         /*
@@ -338,14 +338,14 @@ public class AIService {
 
          */
 
-        float cosineSimilarity = getCosineSimilarity(embeddingOne.getValues(), embeddingTwo.getValues());
+        float cosineSimilarity = getCosineSimilarity(((FloatVector)embeddingOne).getValues(), ((FloatVector)embeddingTwo).getValues());
         float cosineDistance = getCosineDistance(cosineSimilarity);
-        float dotProduct = UtilsService.getDotProduct(embeddingOne.getValues(), embeddingTwo.getValues()); // TODO: Consider re-using dot product from cosine similarity calculation
+        float dotProduct = UtilsService.getDotProduct(((FloatVector)embeddingOne).getValues(), ((FloatVector)embeddingTwo).getValues()); // TODO: Consider re-using dot product from cosine similarity calculation
 
         Distances distances = new Distances(cosineSimilarity, cosineDistance, embeddingsImpl, model, embeddingOne.getDimension(), sentenceOne, sentenceTwo, dotProduct);
         if (getEmbeddings) {
-            distances.setEmbeddingOne(embeddingOne.getValues());
-            distances.setEmbeddingTwo(embeddingTwo.getValues());
+            distances.setEmbeddingOne(((FloatVector)embeddingOne).getValues());
+            distances.setEmbeddingTwo(((FloatVector)embeddingTwo).getValues());
         }
 
         return distances;
@@ -438,7 +438,7 @@ public class AIService {
      * Get embedding for a sentence
      * @param model Model of embeddings implementation
      */
-    private FloatVector getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String apiToken) throws Exception {
+    private Vector getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String apiToken) throws Exception {
         EmbeddingsProvider embeddingsProvider = null;
 
         if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {

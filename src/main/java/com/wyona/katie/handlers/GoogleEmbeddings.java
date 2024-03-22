@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.EmbeddingValueType;
 import com.wyona.katie.models.FloatVector;
+import com.wyona.katie.models.Vector;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
+    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Google for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;

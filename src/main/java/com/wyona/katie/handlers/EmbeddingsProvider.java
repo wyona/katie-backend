@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.EmbeddingType;
 import com.wyona.katie.models.EmbeddingValueType;
 import com.wyona.katie.models.FloatVector;
+import com.wyona.katie.models.Vector;
 
 /**
  * Embeddings provider, e.g. SentenceBERT, Cohere, OpenAI, Aleph Alpha, ...
@@ -18,5 +19,5 @@ public interface EmbeddingsProvider {
      * @param apiToken API token
      * @return embedding, which is a vector with for example 1024 dimensions
      */
-    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception;
+    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception;
 }

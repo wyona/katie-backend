@@ -54,16 +54,16 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String)
      */
     public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        FloatVector queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        Vector queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
         if (true) {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar samples ...");
-            return searchSimilarSampleVectors(domain, queryVector.getValues());
+            return searchSimilarSampleVectors(domain, queryVector);
         } else {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar centroids ...");
-            return searchSimilarCentroidVectors(domain, queryVector.getValues());
+            return searchSimilarCentroidVectors(domain, queryVector);
         }
     }
 
@@ -97,12 +97,12 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar sample vectors
      */
-    private HitLabel[] searchSimilarSampleVectors(Context domain, float[] queryVector) throws Exception {
+    private HitLabel[] searchSimilarSampleVectors(Context domain, Vector queryVector) throws Exception {
         List<HitLabel> labels = new ArrayList<>();
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, SAMPLE_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
         int k = 7; // INFO: The number of documents to find
-        Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
+        Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
         TopDocs topDocs = searcher.search(query, k);
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -122,13 +122,13 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar centroid vectors
      */
-    private HitLabel[] searchSimilarCentroidVectors(Context domain, float[] queryVector) throws Exception {
+    private HitLabel[] searchSimilarCentroidVectors(Context domain, Vector queryVector) throws Exception {
         List<HitLabel> labels = new ArrayList<>();
 
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, CENTROID_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
         int k = 7; // INFO: The number of documents to find
-        Query query = new KnnVectorQuery(VECTOR_FIELD, queryVector, k);
+        Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
         TopDocs topDocs = searcher.search(query, k);
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -156,20 +156,20 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         String classId = sample.getClassification().getId();
 
-        FloatVector sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
-        indexSampleVector(sample.getId(), classId, sampleVector.getValues(), domain);
+        Vector sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
+        indexSampleVector(sample.getId(), classId, sampleVector, domain);
 
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        dataRepoService.saveEmbedding(sampleVector.getValues(), sample.getText(), embeddingFile);
+        dataRepoService.saveEmbedding(sampleVector, sample.getText(), embeddingFile);
 
         FloatVector centroid = getCentroid(domain, classId);
         // TODO: Centroid will have length less than 1, resp. is not normalized. When using cosine similarity, then this should not be an issue, but otherwise?!
         // TODO: See createFieldType() re similarity metric
         File centroidFile = getCentroidFile(domain, classId);
-        dataRepoService.saveEmbedding(centroid.getValues(), "" + classId, centroidFile);
+        dataRepoService.saveEmbedding(centroid, "" + classId, centroidFile);
         indexCentroidVector("" + classId, centroid.getValues(), domain);
     }
 
@@ -177,7 +177,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * Add vector of sample text to index
      * @param labelUuid UUID of label, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      */
-    private void indexSampleVector(String uuid, String labelUuid, float[] vector, Context domain) throws Exception {
+    private void indexSampleVector(String uuid, String labelUuid, Vector vector, Context domain) throws Exception {
         IndexWriterConfig iwc = new IndexWriterConfig();
         iwc.setCodec(luceneCodecFactory.getCodec(VECTOR_VALUE_TYPE));
         IndexWriter writer = null;
@@ -191,11 +191,11 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             Field labelField = new StringField(LABEL_UUID_FIELD, labelUuid, Field.Store.YES);
             doc.add(labelField);
 
-            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
-            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
+            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
 
-            log.info("Add vector with " + vector.length + " dimensions to Lucene '" + SAMPLE_INDEX + "' index ...");
+            log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene '" + SAMPLE_INDEX + "' index ...");
             writer.addDocument(doc);
 
             // writer.forceMerge(1);

@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.EmbeddingType;
 import com.wyona.katie.models.EmbeddingValueType;
 import com.wyona.katie.models.FloatVector;
+import com.wyona.katie.models.Vector;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,10 +39,10 @@ public class NumentaEmbeddingsWithoutPreTokenization implements EmbeddingsProvid
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public FloatVector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
+    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
         log.info("Get embedding from Numenta (Model: " + model + ") for sentence '" + sentence + "' ...");
 
-        FloatVector vector = null;
+        Vector vector = null;
 
         try {
             int numberOfSentences = 1;

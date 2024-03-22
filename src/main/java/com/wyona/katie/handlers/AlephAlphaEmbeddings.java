@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.EmbeddingValueType;
 import com.wyona.katie.models.FloatVector;
+import com.wyona.katie.models.Vector;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -34,7 +35,7 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public FloatVector getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String alephAlphaToken) {
+    public Vector getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String alephAlphaToken) {
         log.info("Get embedding from Aleph Alpha for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;

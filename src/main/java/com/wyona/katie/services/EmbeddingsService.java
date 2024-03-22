@@ -43,7 +43,7 @@ public class EmbeddingsService {
      * @param valueType TODO
      * @return embedding vector
      */
-    public FloatVector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
+    public Vector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
         try {
             return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsApiToken());
         } catch (Exception e) {
@@ -86,8 +86,8 @@ public class EmbeddingsService {
      * @param apiToken API token of embedding provider
      * @return embedding vector
      */
-    public FloatVector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
-        FloatVector vector = null;
+    public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
+        Vector vector = null;
         if (impl.equals(EmbeddingsImpl.SBERT) || impl.equals(EmbeddingsImpl.UNSET)) {
             vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI)) {
