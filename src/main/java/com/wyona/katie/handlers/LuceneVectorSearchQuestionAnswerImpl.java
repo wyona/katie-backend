@@ -45,6 +45,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private static final String CLASSIFICATION_FIELD = "classification";
 
     private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
+    //private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.int8;
 
     /**
      * Get file system directory path containing Lucene vector index
@@ -222,11 +223,12 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
         // TODO: Lucene 9.8.0 does not support anymore overriding the vector length with a custom field type
         // See "workaround" desribed by Uwe Schindler https://lists.apache.org/thread/kckbdqj4g1g9k2tl19x1y1ocndpzd0td
-        FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
         Field vectorField = null;
         if (VECTOR_VALUE_TYPE == EmbeddingValueType.int8) {
+            FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.BYTE);
             vectorField = new KnnByteVectorField(VECTOR_FIELD, ((ByteVector)vector).getValues(), vectorFieldType);
         } else {
+            FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.FLOAT32);
             vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
         }
         doc.add(vectorField);
@@ -490,13 +492,15 @@ class CustomVectorFieldType extends FieldType {
 
     private int dimension;
     private VectorSimilarityFunction vectorSimilarityFunction;
+    private VectorEncoding vectorEncoding;
 
     /**
      *
      */
-    public CustomVectorFieldType(int dimension, VectorSimilarityFunction vectorSimilarityFunction) {
+    public CustomVectorFieldType(int dimension, VectorSimilarityFunction vectorSimilarityFunction, VectorEncoding vectorEncoding) {
         this.dimension = dimension;
         this.vectorSimilarityFunction = vectorSimilarityFunction;
+        this.vectorEncoding = vectorEncoding;
     }
 
     @Override
@@ -507,7 +511,7 @@ class CustomVectorFieldType extends FieldType {
 
     @Override
     public VectorEncoding vectorEncoding() {
-        return VectorEncoding.FLOAT32;
+        return vectorEncoding;
     }
 
     @Override

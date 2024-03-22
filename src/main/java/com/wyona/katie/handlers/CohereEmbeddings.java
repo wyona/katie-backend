@@ -91,12 +91,14 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                                 for (int i = 0; i < floatVector.getDimension(); i++) {
                                     floatVector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                                 }
+                                return floatVector;
                             } else if (vectorValueType.equals("int8")) {
                                 byteVector = new ByteVector(embeddingNode.size());
                                 for (int i = 0;i < byteVector.getDimension(); i++) {
                                     byteVector.set(i, Byte.parseByte(embeddingNode.get(i).asText()));
                                 }
                                 log.info("Byte embedding: " + byteVector);
+                                return byteVector;
                             } else {
                                 log.warn("No such vector value type '" + vectorValueType + "' supported!");
                             }
@@ -117,6 +119,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                         for (int i = 0; i < floatVector.getDimension(); i++) {
                             floatVector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                         }
+                        return floatVector;
                     } else {
                         log.error("No embedding received for sentence '" + sentence + "'");
                     }
@@ -142,7 +145,7 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         }
          */
 
-        return floatVector;
+        return null;
     }
 
     /**
