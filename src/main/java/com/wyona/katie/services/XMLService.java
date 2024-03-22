@@ -137,6 +137,7 @@ public class XMLService {
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_TAG = "sbert-lucene";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_MODEL_ATTR = "model";
+    private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR = "value-type";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR = "api-token";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR = "similarity-metric";
 
@@ -1483,6 +1484,9 @@ public class XMLService {
             if (context.getEmbeddingsModel() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_MODEL_ATTR, context.getEmbeddingsModel());
             }
+            if (context.getEmbeddingValueType() != null) {
+                luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR, context.getEmbeddingValueType().toString());
+            }
             if (context.getEmbeddingsApiToken() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR, context.getEmbeddingsApiToken());
             }
@@ -1653,6 +1657,7 @@ public class XMLService {
         boolean luceneVectorSearch = false;
         EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.UNSET;
         String embeddingsModel = null;
+        EmbeddingValueType embeddingValueType = null;
         String embeddingsApiToken = null;
         String similarityMetricStr = null;
         NodeList luceneVectorSearchNL = doc.getElementsByTagName(CONTEXT_LUCENE_VECTOR_SEARCH_TAG);
@@ -1664,6 +1669,11 @@ public class XMLService {
             }
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_MODEL_ATTR)) {
                 embeddingsModel = luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_MODEL_ATTR);
+            }
+            if (luceneVectorSearchEl.hasAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)) {
+                embeddingValueType = EmbeddingValueType.valueOf(luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR));
+            } else {
+                embeddingValueType = EmbeddingValueType.float32;
             }
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR)) {
                 embeddingsApiToken = luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR);
@@ -1870,6 +1880,7 @@ public class XMLService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
             domain.setEmbeddingsImpl(embeddingsImpl);
             domain.setEmbeddingsModel(embeddingsModel);
+            domain.setEmbeddingValueType(embeddingValueType);
             domain.setEmbeddingsApiToken(embeddingsApiToken);
             if (similarityMetricStr != null) {
                 domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(similarityMetricStr));

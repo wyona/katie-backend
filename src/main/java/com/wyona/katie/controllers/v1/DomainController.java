@@ -1386,6 +1386,8 @@ public class DomainController {
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
             @ApiParam(name = "embedding-model", value = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
             @RequestParam(value = "embedding-model", required = false) String embeddingModel,
+            @ApiParam(name = "embedding-value-type", value = "Embedding value type",required = false)
+            @RequestParam(value = "embedding-value-type", required = false) EmbeddingValueType embeddingValueType,
             @ApiParam(name = "api-token", value = "Embedding implementation API token",required = false)
             @RequestParam(value = "api-token", required = false) String apiToken,
             @ApiParam(name = "index-alternative-questions", value = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
@@ -1436,6 +1438,13 @@ public class DomainController {
                     return new ResponseEntity<>(new Error("For Embeddings Implementation '" + embeddingImpl + "' API Token is required!", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
                 }
             }
+
+            if (embeddingValueType == null) {
+                embeddingValueType = EmbeddingValueType.float32;
+            }
+            if (embeddingValueType == EmbeddingValueType.int8 && embeddingImpl != EmbeddingsImpl.COHERE) {
+                return new ResponseEntity<>(new Error("Currently only Cohere provides embeddings with value type int8 / byte", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            }
         }
 
         try {
@@ -1451,7 +1460,7 @@ public class DomainController {
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
 
-        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
+        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
 
         /* INFO: Delay response to test frontend spinner
         try {

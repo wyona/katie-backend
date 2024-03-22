@@ -29,6 +29,7 @@ public class Context {
     private DetectDuplicatedQuestionImpl detectDuplicatedQuestionImpl;
     private EmbeddingsImpl embeddingsImpl;
     private String embeddingsModel;
+    private EmbeddingValueType embeddingValueType;
     private String embeddingsApiToken;
     private VectorSimilarityFunction vectorSimilarityMetric;
 
@@ -238,6 +239,20 @@ public class Context {
      */
     public String getEmbeddingsModel() {
         return embeddingsModel;
+    }
+
+    /**
+     * @param embeddingValueType Embedding value type, either float32 or int8
+     */
+    public void setEmbeddingValueType(EmbeddingValueType embeddingValueType) {
+        this.embeddingValueType = embeddingValueType;
+    }
+
+    /**
+     * @return embedding value type, either float32 or int8
+     */
+    public EmbeddingValueType getEmbeddingValueType() {
+        return embeddingValueType;
     }
 
     /**
