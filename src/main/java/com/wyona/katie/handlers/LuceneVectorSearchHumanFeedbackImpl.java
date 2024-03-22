@@ -45,12 +45,11 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
     private LuceneCodecFactory luceneCodecFactory;
 
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
+    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
 
     private static final String UUID_FIELD = "uuid";
     private static final String RATING_FIELD = "rating";
     private static final String VECTOR_FIELD = "vector";
-
-    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
     
     /**
      * @see HumanFeedbackHandler#indexHumanFeedback(String, String, Context, int, User)

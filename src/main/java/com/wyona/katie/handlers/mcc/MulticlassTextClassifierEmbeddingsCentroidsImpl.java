@@ -40,6 +40,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     private BackgroundProcessService backgroundProcessService;
 
     private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
+    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
 
     private static final String UUID_FIELD = "uuid";
     private static final String LABEL_UUID_FIELD = "label";
@@ -47,8 +48,6 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
     private static final String SAMPLE_INDEX = "lucene-samples";
     private static final String CENTROID_INDEX = "lucene-centroids";
-
-    private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String)
