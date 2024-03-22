@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.models.ByteVector;
 import com.wyona.katie.models.EmbeddingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -46,21 +47,27 @@ public class CohereEmbeddings implements EmbeddingsProvider {
         //String inputType = "clustering";
 
         //String[] embeddingTypes = null;
-        String[] embeddingTypes = new String[1];
+        String[] valueTypes = new String[2];
+        valueTypes[0] = "int8";
+        valueTypes[1] = "float";
+        /*
+        String[] valueTypes = new String[1];
         if (valueType == EmbeddingValueType.int8) {
-            embeddingTypes[0] = "int8";
+            valueTypes[0] = "int8";
         } else {
-            embeddingTypes[0] = "float";
+            valueTypes[0] = "float";
         }
 
-        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ", Vector value type: " + embeddingTypes[0] + ") for sentence '" + sentence + "' ...");
+         */
+
+        log.info("Get embedding from Cohere (Model: " + cohereModel + ", Input type: " + inputTypeStr + ", Vector value type: " + valueTypes[0] + ") for sentence '" + sentence + "' ...");
 
         FloatVector floatVector = null;
-        int[] intVector = null;
+        ByteVector byteVector = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(cohereKey);
-            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, cohereModel, inputTypeStr, embeddingTypes), headers);
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(sentence, cohereModel, inputTypeStr, valueTypes), headers);
 
             String requestUrl = cohereHost + "/embed";
             log.info("Get embeddings: " + requestUrl);
@@ -70,8 +77,8 @@ public class CohereEmbeddings implements EmbeddingsProvider {
 
             JsonNode embeddingsNode = bodyNode.get("embeddings");
 
-            if (embeddingTypes != null) {
-                for (String vectorValueType : embeddingTypes) {
+            if (valueTypes != null) {
+                for (String vectorValueType : valueTypes) {
                     log.info("Vector value type: " + vectorValueType);
                     JsonNode embeddingTypeNode = embeddingsNode.get(vectorValueType);
                     if (embeddingTypeNode.isArray()) {
@@ -85,11 +92,11 @@ public class CohereEmbeddings implements EmbeddingsProvider {
                                     floatVector.set(i, Float.parseFloat(embeddingNode.get(i).asText()));
                                 }
                             } else if (vectorValueType.equals("int8")) {
-                                intVector = new int[embeddingNode.size()];
-                                for (int i = 0;i < intVector.length; i++) {
-                                    //intVector[i] = Integer.parseInt(embeddingNode.get(i).asText());
-                                    intVector[i] = embeddingNode.get(i).asInt();
+                                byteVector = new ByteVector(embeddingNode.size());
+                                for (int i = 0;i < byteVector.getDimension(); i++) {
+                                    byteVector.set(i, Byte.parseByte(embeddingNode.get(i).asText()));
                                 }
+                                log.info("Byte embedding: " + byteVector);
                             } else {
                                 log.warn("No such vector value type '" + vectorValueType + "' supported!");
                             }
