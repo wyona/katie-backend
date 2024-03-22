@@ -192,6 +192,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             doc.add(labelField);
 
             FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+            // TODO: Use KnnFloatVectorField
             KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
 

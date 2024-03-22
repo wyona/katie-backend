@@ -143,6 +143,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         Vector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+        // TODO: Use KnnFloatVectorField
         KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
         doc.add(vectorField);
 
