@@ -1415,8 +1415,13 @@ public class ContextService {
         }
         domain.unsetDetectDuplicatedQuestionImpl();
 
-        backgroundProcessService.updateProcessStatus(processId, "Set new index / search implementation '" + detectDuplicatedQuestionsImpl + "' (Embedding: " + embeddingImpl + ") ...");
-        log.info("Set new implementation: " + detectDuplicatedQuestionsImpl + " (Embedding: " + embeddingImpl + ")");
+        String logMsg = "Set new index / search implementation '" + detectDuplicatedQuestionsImpl;
+        if (embeddingImpl != null) {
+            logMsg = logMsg + "' (Embedding Service: " + embeddingImpl + ", Embedding Model: " + embeddingModel + ", Embedding Value Type: " + embeddingValueType + ")";
+        }
+        logMsg = logMsg + " ...";
+        backgroundProcessService.updateProcessStatus(processId, logMsg);
+        log.info(logMsg);
         if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             if (queryServiceBaseUrl != null) {
                 domain.setQueryServiceUrl(queryServiceBaseUrl.trim());
