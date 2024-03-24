@@ -331,9 +331,6 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             responseMsg.setTextFormat("xml");
 
             // WARNING: For security reasons do not auto-register users, but register users only by invitation!
-
-            // TODO: Get available Katie domain IDs / Names by MS Teams tenant Id (assuming that tenant Id is linked somehow with domain IDs)
-            // TODO: Consider asking user for email address
             MicrosoftAdaptiveCard requestInvitationCard = getRequestInvitationCard(Utils.getLocale(message.getLocale()), userId, message.getFrom().getName());
             responseMsg.addAttachment(new MicrosoftAttachment(requestInvitationCard));
 
@@ -349,13 +346,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 responseMsg.setTextFormat("xml");
 
                 String lang = message.getLocale();
-                MicrosoftAdaptiveCard notConnectedYet = new MicrosoftAdaptiveCard(messageSource.getMessage("not.member.yet", null, Utils.getLocale(lang)));
-
-                MicrosoftAdaptiveCardActionSubmit requestBecomeMember = new MicrosoftAdaptiveCardActionSubmit(messageSource.getMessage("request.become.member", null, Utils.getLocale(lang)));
-                requestBecomeMember.setData(new MessageValue(ChannelAction.REQUEST_BECOME_MEMBER + ACTION_SEPARATOR + user.getUsername() + ACTION_SEPARATOR + message.getFrom().getName()));
-                notConnectedYet.addAction(requestBecomeMember);
-
-                responseMsg.addAttachment(new MicrosoftAttachment(notConnectedYet));
+                MicrosoftAdaptiveCard notDomainMemberYet = getRequestBecomeDomainMemberCard(Utils.getLocale(lang), user.getUsername(), message.getFrom().getName());
+                responseMsg.addAttachment(new MicrosoftAttachment(notDomainMemberYet));
             } else if (domainIds.length == 1) {
                 Context domain = contextService.getContext(domainIds[0]);
                 log.info("MS Teams user '" + user.getId() + "' is member only of Katie domain '" + domain.getId() + "', therefore try to get answer from this domain ...");
@@ -371,8 +363,10 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         } else {
             MessageValue value = message.getValue();
             if (value != null) {
-                log.info("Action detected: " + value.getMessage());
+                log.info("Action detected: " + value.getMessage()); // INFO: For example: REQUEST_BECOME_MEMBER::29:1lgs5cd7zlt-i8q09aahzyrcri4sje_ydrn-qoeflaffxptf3lsxy-m6xslkb08fy69tjor-ueduxjc5sahsyzq::Michael Wechner
+
                 String[] domainIds = contextService.getDomainIDsUserIsMemberOf(user);
+                // TODO: Check length of domainIds ...
                 responseMsg = getAnswerForActionRequest(message, responseMsg, convValues, domainIds[0]);
             } else {
                 responseMsg.setText(messageSource.getMessage("neither.question.nor.action.detected", null, Utils.getLocale(locale)));
@@ -384,11 +378,33 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     }
 
     /**
-     * Get card to request invitation to use direct messaging with Katie
+     * Get card to request to become member (MS Teams user already registered) of a particular domain to use direct messaging with Katie
+     * @param userId MS Teams user Id, e.g. "29:1lgs3cd7zlt-i8q09aahzyrcri4sje_gdrn-qoeflaffxptf2lsxy-m6zslkb08fy69tjor-ueduxjc2sahsyzq"
+     * @param name Name of user, e.g. "Michael Wechner"
+     */
+    private MicrosoftAdaptiveCard getRequestBecomeDomainMemberCard(Locale locale, String userId, String name) {
+        MicrosoftAdaptiveCard card = new MicrosoftAdaptiveCard(messageSource.getMessage("not.member.yet", null, locale));
+
+        // TODO: Get available Katie domain IDs / Names by MS Teams tenant Id (assuming that tenant Id is linked somehow with domain IDs)
+        MicrosoftAdaptiveCardBody domainIdInput = new MicrosoftAdaptiveCardBody("Katie Domain Id:");
+        domainIdInput.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_DOMAIN_ID, "abc3rdb3-34a9-4a84-b12a-13d5dfd2152w"));
+        card.addBody(domainIdInput);
+
+        MicrosoftAdaptiveCardActionSubmit requestBecomeMember = new MicrosoftAdaptiveCardActionSubmit(messageSource.getMessage("request.become.member", null, locale));
+        requestBecomeMember.setData(new MessageValue(ChannelAction.REQUEST_BECOME_MEMBER + ACTION_SEPARATOR + userId + ACTION_SEPARATOR + name));
+        card.addAction(requestBecomeMember);
+
+        return card;
+    }
+
+    /**
+     * Get card to request invitation (MS Teams user not registered yet) to use direct messaging with Katie
      */
     private MicrosoftAdaptiveCard getRequestInvitationCard(Locale locale, String userId, String name) {
         MicrosoftAdaptiveCard card = new MicrosoftAdaptiveCard(messageSource.getMessage("not.registered.yet", null, locale));
 
+        // TODO: Get available Katie domain IDs / Names by MS Teams tenant Id (assuming that tenant Id is linked somehow with domain IDs)
+        // TODO: Consider asking user also for email address
         MicrosoftAdaptiveCardBody domainIdInput = new MicrosoftAdaptiveCardBody("Katie Domain Id:");
         domainIdInput.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_DOMAIN_ID, "abc3rdb3-34a9-4a84-b12a-13d5dfd2152w"));
         card.addBody(domainIdInput);
@@ -666,7 +682,12 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
 
         Context domain = null;
         try {
-            domain = contextService.getContext(domainId);
+            if (contextService.existsContext(domainId)) {
+                domain = contextService.getContext(domainId);
+            } else {
+                responseMsg.setText("No such domain '" + domainId + "'!");
+                return responseMsg;
+            }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             responseMsg.setText(e.getMessage());
