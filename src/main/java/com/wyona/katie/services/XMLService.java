@@ -2475,7 +2475,7 @@ public class XMLService {
             }
         } else {
             log.warn("Answer is not well-formed, therefore we add answer as text node ...");
-            Text answerText = qaDoc.createTextNode(answer.getAnswer());
+            Text answerText = qaDoc.createTextNode(stripNonValidXMLCharacters(answer.getAnswer()));
             answerElement.appendChild(answerText);
         }
         // TODO: answerElement.setAttribute(QA_QUESTION_DATE_ATTR, "" + answer.getDateAnswered().getTime());
