@@ -371,6 +371,8 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                     domainId = domainIds[0];
                 } else {
                     log.warn("User '" + user.getId() + "' is not member of any domains.");
+                    // Domain Id submitted by User
+                    domainId = value.getDomainid(); // MessageValue.TEXT_INPUT_DOMAIN_ID
                 }
                 responseMsg = getAnswerForActionRequest(message, responseMsg, convValues, domainId);
             } else {
