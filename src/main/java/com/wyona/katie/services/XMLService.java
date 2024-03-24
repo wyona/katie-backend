@@ -708,7 +708,7 @@ public class XMLService {
      * @return DOM
      */
     protected Document read(File file) throws Exception {
-        log.info("Read XML from file '" + file.getAbsolutePath() + "' ...");
+        log.debug("Read XML from file '" + file.getAbsolutePath() + "' ...");
         FileInputStream in = new FileInputStream(file);
         Document doc = read(in);
         in.close();
@@ -735,9 +735,10 @@ public class XMLService {
     }
 
     /**
-     *
+     * Read XML from string
      */
     private Document read(String xml) throws Exception {
+        log.debug("Read XML from String: " + xml);
         InputStream in = new ByteArrayInputStream(xml.getBytes());
         return read(in);
     }
@@ -2228,7 +2229,7 @@ public class XMLService {
         File ratingsXMLFile = domain.getRatingsXmlFilePath(uuid);
 
         if (!ratingsXMLFile.isFile()) {
-            log.warn("No such ratinngs file: " + ratingsXMLFile.getAbsolutePath());
+            log.warn("No such ratings file: " + ratingsXMLFile.getAbsolutePath());
             return ratings;
         }
 
@@ -2462,15 +2463,8 @@ public class XMLService {
             answerElement.setAttribute(QA_DATE_ANSWER_MODIFIED_ATTR, "" + answer.getDateAnswerModified());
         }
 
-        log.info("Answer as semi-structured text: " + answer.getAnswer());
-        Document answerDoc = null;
-        try {
-            answerDoc = read("<?xml version=\"1.0\"?><root>" + answer.getAnswer() + "</root>");
-            log.info("Answer is well-formed XML :-)");
-        } catch(Exception e) {
-            log.warn("Answer is not well-formed XML: " + answer.getAnswer());
-            log.error(e.getMessage(), e);
-        }
+        log.info("Answer might be semi-structured text, check well-formedness ...");
+        Document answerDoc = getWellFormedXML(answer.getAnswer());
         if (answerDoc != null) {
             NodeList answerNodes = answerDoc.getDocumentElement().getChildNodes();
             for (int i = 0; i < answerNodes.getLength(); i++) {
@@ -2568,6 +2562,65 @@ public class XMLService {
         }
 
         return qaDoc;
+    }
+
+    /**
+     * @param content Text, e.g. "das <b>Zivilverfahren</b> von zen\u0002traler Bedeutung. In BGE 144 III 67"
+     */
+    private Document getWellFormedXML(String content) {
+        Document doc = isWellFormed(content);
+        if (doc != null) {
+            return doc;
+        } else {
+            log.warn("Content is not well-formed XML, try to fix it ...");
+            doc = isWellFormed(stripNonValidXMLCharacters(content));
+            if (doc != null) {
+                log.info("Well-formedness achieved :-)");
+                return doc;
+            } else {
+                log.error("Could not fix well-formedness!");
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Check whether content is well-formed
+     * @return XML document when content well-formed and null when content not well-formed
+     */
+    private Document isWellFormed(String content) {
+        try {
+            Document answerDoc = read("<?xml version=\"1.0\"?><test-well-formedness>" + content + "</test-well-formedness>");
+            log.info("Content is well-formed XML :-)");
+            return answerDoc;
+        } catch(Exception e) {
+            log.warn("Content is not well-formed XML: " + content);
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Strip non valie XML characters
+     * @param in
+     * @return
+     */
+    private String stripNonValidXMLCharacters(String in) {
+        StringBuilder out = new StringBuilder(); // Used to hold the output.
+        char current; // Used to reference the current character.
+
+        if (in == null || ("".equals(in))) return ""; // vacancy test.
+        for (int i = 0; i < in.length(); i++) {
+            current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+            if ((current == 0x9) ||
+                    (current == 0xA) ||
+                    (current == 0xD) ||
+                    ((current >= 0x20) && (current <= 0xD7FF)) ||
+                    ((current >= 0xE000) && (current <= 0xFFFD)) ||
+                    ((current >= 0x10000) && (current <= 0x10FFFF)))
+                out.append(current);
+        }
+        return out.toString();
     }
 
     /**
