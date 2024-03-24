@@ -366,8 +366,13 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
                 log.info("Action detected: " + value.getMessage()); // INFO: For example: REQUEST_BECOME_MEMBER::29:1lgs5cd7zlt-i8q09aahzyrcri4sje_ydrn-qoeflaffxptf3lsxy-m6xslkb08fy69tjor-ueduxjc5sahsyzq::Michael Wechner
 
                 String[] domainIds = contextService.getDomainIDsUserIsMemberOf(user);
-                // TODO: Check length of domainIds ...
-                responseMsg = getAnswerForActionRequest(message, responseMsg, convValues, domainIds[0]);
+                String domainId = null;
+                if (domainIds.length > 0) {
+                    domainId = domainIds[0];
+                } else {
+                    log.warn("User '" + user.getId() + "' is not member of any domains.");
+                }
+                responseMsg = getAnswerForActionRequest(message, responseMsg, convValues, domainId);
             } else {
                 responseMsg.setText(messageSource.getMessage("neither.question.nor.action.detected", null, Utils.getLocale(locale)));
                 responseMsg.setTextFormat("plain");
@@ -682,11 +687,10 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
 
         Context domain = null;
         try {
-            if (contextService.existsContext(domainId)) {
+            if (domainId != null) {
                 domain = contextService.getContext(domainId);
             } else {
-                responseMsg.setText("No such domain '" + domainId + "'!");
-                return responseMsg;
+                log.warn("No domain Id available!");
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -783,7 +787,12 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             log.info("Send become domain member request to Katie administrators ...");
             String userId = actionParts[1];
             String userName = actionParts[2];
-            return getRequestBecomeMemberInteractionResponse(responseMsg, userName, userId, domain);
+            if (domain != null) {
+                return getRequestBecomeMemberInteractionResponse(responseMsg, userName, userId, domain);
+            } else {
+                responseMsg.setText("Please make sure to provide a Katie domain Id!");
+                return responseMsg;
+            }
         } else if (action.equals(ChannelAction.THUMB_UP) || action.equals(ChannelAction.THUMB_DOWN)) {
             String questionUuid = actionParts[2];
             try {
