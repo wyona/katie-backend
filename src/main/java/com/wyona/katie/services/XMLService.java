@@ -740,7 +740,9 @@ public class XMLService {
     private Document read(String xml) throws Exception {
         log.debug("Read XML from String: " + xml);
         InputStream in = new ByteArrayInputStream(xml.getBytes());
-        return read(in);
+        Document doc = read(in);
+        in.close();
+        return doc;
     }
 
     /**
