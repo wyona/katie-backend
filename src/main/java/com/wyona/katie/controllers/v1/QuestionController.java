@@ -158,7 +158,7 @@ public class QuestionController {
             return new ResponseEntity<>(body, HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "TODO_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
