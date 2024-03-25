@@ -721,7 +721,7 @@ public class AIService {
      *
      */
     private void extractKeywordsAndAddToAutocompletionIndex(QnA qna, Context domain) throws Exception {
-        log.info("Extract keywords from content of QnA in order to use for autocomplete / auto-suggest.");
+        log.info("Extract keywords from content of QnA in order to use for autocomplete / auto-suggest ...");
         //java.util.List<CardKeyword> keywords = KeywordsExtractor.getKeywordsList(getContent(qna), Language.de);
         //domainService.addAutocompletionEntry(domain.getId(), "TODO");
 
@@ -729,7 +729,7 @@ public class AIService {
         TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
         stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
         while (stream.incrementToken()) {
-            log.info("Token: " + stream.getAttribute(CharTermAttribute.class));
+            //log.info("Token: " + stream.getAttribute(CharTermAttribute.class));
         }
         stream.end();
         stream.close();
