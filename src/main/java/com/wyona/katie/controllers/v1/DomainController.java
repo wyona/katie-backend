@@ -706,6 +706,9 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-supabase", method = RequestMethod.POST, produces = "application/json")
     @ApiOperation(value="Trigger a particular Supabase based knowledge source by a webhook")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<?> triggerKnowledgeSourceSupabase(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -715,11 +718,27 @@ public class DomainController {
             @RequestBody WebhookPayloadSupabase payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+        }
+
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
-
-        // TODO: Check security token
+        try {
+            // INFO: Check whether user is authorized
+            domainService.getDomain(id);
+        } catch (AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
