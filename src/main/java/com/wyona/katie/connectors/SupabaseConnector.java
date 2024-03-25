@@ -82,8 +82,8 @@ public class SupabaseConnector implements Connector {
                 log.info("Override QnA '" + katieUUID + "' ...");
                 try {
                     Answer qna = domainService.getQnA(null, katieUUID, domain);
-                    qna.setOriginalQuestion(getConcatenatedValue(record,ksMeta.getSupabaseQuestionNames()));
-                    qna.setAnswer(getConcatenatedValue(record,ksMeta.getSupabaseAnswerNames()));
+                    qna.setOriginalQuestion(getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames()));
+                    qna.setAnswer(getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames()));
                     qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
 
                     qna.deleteAllClassifications();
