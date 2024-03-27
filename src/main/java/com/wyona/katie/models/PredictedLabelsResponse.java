@@ -63,6 +63,9 @@ public class PredictedLabelsResponse {
             sb.append("<li>" + hitLabel.getLabel().getTerm() + " (Score: " + hitLabel.getScore() + ")</li>");
         }
         sb.append("</ul>");
+
+        // TODO: Add feedback links
+
         return Utils.convertHtmlToTOPdeskHtml(sb.toString());
     }
 }

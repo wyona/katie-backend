@@ -31,9 +31,9 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
     BackgroundProcessService backgroundProcessService;
 
     /**
-     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String) 
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
      */
-    public HitLabel[] predictLabels(Context domain, String text) throws Exception {
+    public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
         InputStream in = new FileInputStream(getModelFile(domain));
         DoccatModel model = new DoccatModel(in);
         in.close();

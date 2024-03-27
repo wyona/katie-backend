@@ -34,11 +34,12 @@ public class ClassificationService {
     /**
      * Predict labels for a text and a particular domain
      * @param domain Domain object
-     * @param text Text
+     * @param text Text to be classified / labeled
+     * @param limit Limit of returned labels
      * @return array of suggested labels
      */
-    public HitLabel[] predictLabels(Context domain, String text) throws Exception {
-        HitLabel[] hitLabels = getClassifier(getClassificationImpl()).predictLabels(domain, text);
+    public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
+        HitLabel[] hitLabels = getClassifier(getClassificationImpl()).predictLabels(domain, text, limit);
         for (HitLabel hitLabel : hitLabels) {
             String labelId = hitLabel.getLabel().getId();
             hitLabel.getLabel().setTerm(classificationRepoService.getLabelName(domain, labelId));

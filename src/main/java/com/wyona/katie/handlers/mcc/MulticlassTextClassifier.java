@@ -11,9 +11,10 @@ public interface MulticlassTextClassifier {
      * Predict labels for a text and a particular domain
      * @param domain Domain object
      * @param text Text
+     * @param limit Limit of returned labels
      * @return array of suggested labels
      */
-    public HitLabel[] predictLabels(Context domain, String text) throws Exception;
+    public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception;
 
     /**
      * Train classifier with samples (texts and labels)

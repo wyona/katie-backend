@@ -50,19 +50,19 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     private static final String CENTROID_INDEX = "lucene-centroids";
 
     /**
-     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String)
+     * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
      */
-    public HitLabel[] predictLabels(Context domain, String text) throws Exception {
+    public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
         Vector queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
         if (true) {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar samples ...");
-            return searchSimilarSampleVectors(domain, queryVector);
+            return searchSimilarSampleVectors(domain, queryVector, limit);
         } else {
             log.info("Predict labels for text associated with domain '" + domain.getId() + "' by finding similar centroids ...");
-            return searchSimilarCentroidVectors(domain, queryVector);
+            return searchSimilarCentroidVectors(domain, queryVector, limit);
         }
     }
 
@@ -90,20 +90,22 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         backgroundProcessService.updateProcessStatus(bgProcessId, "Train classifier ...");
         train(domain, dataset.getSamples());
+        backgroundProcessService.updateProcessStatus(bgProcessId, "Training of classifier finished.");
     }
 
     /**
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar sample vectors
      */
-    private HitLabel[] searchSimilarSampleVectors(Context domain, Vector queryVector) throws Exception {
+    private HitLabel[] searchSimilarSampleVectors(Context domain, Vector queryVector, int limit) throws Exception {
         List<HitLabel> labels = new ArrayList<>();
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, SAMPLE_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
-        int k = 7; // INFO: The number of documents to find
+        // TODO: k should be greater than limit
+        int k = 2 * limit; // INFO: The number of documents to find
         Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
-        TopDocs topDocs = searcher.search(query, k);
+        TopDocs topDocs = searcher.search(query, limit);
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document doc = indexReader.document(scoreDoc.doc);
             String uuid = doc.get(UUID_FIELD);
@@ -121,15 +123,16 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar centroid vectors
      */
-    private HitLabel[] searchSimilarCentroidVectors(Context domain, Vector queryVector) throws Exception {
+    private HitLabel[] searchSimilarCentroidVectors(Context domain, Vector queryVector, int limit) throws Exception {
         List<HitLabel> labels = new ArrayList<>();
 
         IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain, CENTROID_INDEX));
         IndexSearcher searcher = new IndexSearcher(indexReader);
-        int k = 7; // INFO: The number of documents to find
+        // TODO: k should be greater than limit
+        int k = 2 * limit; // INFO: The number of documents to find
         Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
-        TopDocs topDocs = searcher.search(query, k);
+        TopDocs topDocs = searcher.search(query, limit);
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document doc = indexReader.document(scoreDoc.doc);
             String labelUuid = doc.get(LABEL_UUID_FIELD);

@@ -540,10 +540,8 @@ public class ContextService {
             }
         }
 
-        // TODO: Classify text based on domain specific taxonomy or domain specific classifications
-        // TODO: https://opennlp.apache.org/docs/2.3.2/manual/opennlp.html#tools.doccat
-
-        HitLabel[] labels = classificationService.predictLabels(domain, text);
+        int limit = 3; // TODO: Make configurable
+        HitLabel[] labels = classificationService.predictLabels(domain, text, limit);
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
         response.setPredictedLabels(labels);
