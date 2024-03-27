@@ -1,5 +1,6 @@
 package com.wyona.katie.connectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.ForeignKeyIndexService;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,9 +58,14 @@ public class SupabaseConnector implements Connector {
     private Answer updateKnowledgeSourceSupabase(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayloadSupabase payload, String processId) {
         log.info("Update knowledge source connected with Supabase ...");
 
+        ObjectNode record = payload.getRecord();
+        String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
+        String answer = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
+        //String answer = getMockData();
+        // TODO: Chunk answer
+
         if (payload.getType().equals("UPDATE")) {
             log.info("Update Supabase item ...");
-            ObjectNode record = payload.getRecord();
             String id = record.get(ksMeta.getSupabaseIdName()).asText();
             log.info("Supabase Id: " + id);
             backgroundProcessService.updateProcessStatus(processId, "Update QnA based on Supabase Item '" + id + "' ...");
@@ -77,41 +84,17 @@ public class SupabaseConnector implements Connector {
 
             if (katieUUID == null) {
                 log.info("Add QnA ...");
-                return createQnA(domain, id, record, ksMeta, processId);
+                return createQnA(domain, id, question, answer, record, ksMeta, processId);
             } else {
                 log.info("Override QnA '" + katieUUID + "' ...");
                 try {
-                    Answer qna = domainService.getQnA(null, katieUUID, domain);
-                    qna.setOriginalQuestion(getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames()));
-                    qna.setAnswer(getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames()));
-                    qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
-
-                    qna.deleteAllClassifications();
-                    List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-                    for (String classification : classifications) {
-                        qna.addClassification(classification);
-                    }
-
-                    qna.setDateAnswerModified(new Date());
-
-                    // TODO: Let ConnectorService update and retrain QnA, whereas make sure, that ConnectorService is also handling Foreign Key
-                    domainService.saveQuestionAnswer(domain, katieUUID, qna);
-                    domainService.retrain(new QnA(qna), domain, false);
-                    try {
-                        domainService.saveDataObject(domain, qna.getUuid(), record);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
-                    backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": QnA '" + katieUUID + "' updated.");
-                    return null;
-                    //return qna;
+                    return updateQnA(domain, id, question, answer, record, ksMeta, processId, katieUUID);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
         } else if (payload.getType().equals("INSERT")) {
             log.info("Create new Supabase item ...");
-            ObjectNode record = payload.getRecord();
             String id = record.get(ksMeta.getSupabaseIdName()).asText();
             log.info("Supabase Id: " + id);
             backgroundProcessService.updateProcessStatus(processId, "Create QnA based on Supabase Item '" + id + "' ...");
@@ -133,10 +116,9 @@ public class SupabaseConnector implements Connector {
                 log.error(msg);
                 backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.ERROR);
             } else {
-                return createQnA(domain, id, record, ksMeta, processId);
+                return createQnA(domain, id, question, answer, record, ksMeta, processId);
             }
         } else if (payload.getType().equals("DELETE")) {
-            ObjectNode record = payload.getOld_record();
             String id = record.get(ksMeta.getSupabaseIdName()).asText();
             log.info("Try to delete Supabase item '" + id + "' ...");
             if (foreignKeyIndexService.existsUUID(domain, ksMeta, id)) {
@@ -160,9 +142,38 @@ public class SupabaseConnector implements Connector {
     /**
      *
      */
-    private Answer createQnA(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
-        String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
-        String answer = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
+    private String getMockData() {
+        StringBuilder sb = new StringBuilder();
+
+        //File mockFile = new File("/Users/michaelwechner/src/wyona/public/katie-backend/qa.txt");
+        File mockFile = new File("/Users/michaelwechner/src/wyona/public/katie-backend/tmp.txt");
+        File jsonFileOut = new File("/Users/michaelwechner/src/wyona/public/katie-backend/tmp.json");
+        log.info("Get mock data from file " + mockFile.getAbsolutePath() + " ...");
+        try {
+            InputStream in = new FileInputStream(mockFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            int c = 0;
+            while((c = br.read()) != -1) {
+                sb.append((char) c);
+            }
+            br.close();
+            in.close();
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("text", sb.toString());
+            mapper.writeValue(jsonFileOut, rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     *
+     */
+    private Answer createQnA(Context domain, String id, String question, String answer, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
         String url = ksMeta.getSupabaseBaseUrl() + "/" + id;
         ContentType contentType = null;
 
@@ -191,6 +202,36 @@ public class SupabaseConnector implements Connector {
         }
         return null;
         //return newQnA;
+    }
+
+    /**
+     *
+     */
+    private Answer updateQnA(Context domain, String id, String question, String answer, JsonNode record, KnowledgeSourceMeta ksMeta, String processId, String katieUUID) throws Exception {
+        Answer qna = domainService.getQnA(null, katieUUID, domain);
+        qna.setOriginalQuestion(question);
+        qna.setAnswer(answer);
+        qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
+
+        qna.deleteAllClassifications();
+        List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
+        for (String classification : classifications) {
+            qna.addClassification(classification);
+        }
+
+        qna.setDateAnswerModified(new Date());
+
+        // TODO: Let ConnectorService update and retrain QnA, whereas make sure, that ConnectorService is also handling Foreign Key
+        domainService.saveQuestionAnswer(domain, katieUUID, qna);
+        domainService.retrain(new QnA(qna), domain, false);
+        try {
+            domainService.saveDataObject(domain, qna.getUuid(), record);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": QnA '" + katieUUID + "' updated.");
+        return null;
+        //return qna;
     }
 
     /**
