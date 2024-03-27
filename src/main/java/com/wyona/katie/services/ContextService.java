@@ -546,8 +546,44 @@ public class ContextService {
 
         response.setPredictedLabels(labels);
         response.setClassificationImpl(classificationService.getClassificationImpl());
+        response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain));
 
         return response;
+    }
+
+    /**
+     *
+     */
+    private String getPredictedLabelsAsTopDeskHtml(HitLabel[] predictedLabels, Context domain) {
+        //ContentType.TEXT_TOPDESK_HTML
+        StringBuilder sb = new StringBuilder();
+        sb.append("<ul>");
+        for (HitLabel hitLabel : predictedLabels) {
+            sb.append("<li>" + hitLabel.getLabel().getTerm() + " (Score: " + hitLabel.getScore() + ")</li>");
+        }
+        sb.append("</ul>");
+
+        String userLanguage = "en"; // TODO
+        String logEntryUUID = "54c3222e-bffa-491e-bd63-489f2f6cc3e0"; // TODO
+        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(userLanguage)) + "</p><p>Yes: <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>No: <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
+
+        return Utils.convertHtmlToTOPdeskHtml(sb.toString());
+    }
+
+    /**
+     * @param questionUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
+     */
+    private String labelsHelpfulLink(Context domain, String questionUUID) {
+        int rating = 10;
+        return domain.getHost() + "/#/domain/" + domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
+    }
+
+    /**
+     * @param questionUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
+     */
+    private String labelsNotHelpfulLink(Context domain, String questionUUID) {
+        int rating = 0;
+        return domain.getHost() + "/#/domain/" +domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
     }
 
     /**

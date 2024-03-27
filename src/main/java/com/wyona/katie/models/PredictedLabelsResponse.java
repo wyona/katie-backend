@@ -1,6 +1,5 @@
 package com.wyona.katie.models;
 
-import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -14,6 +13,8 @@ public class PredictedLabelsResponse {
 
     private List<HitLabel> predictedLabels = new ArrayList<>();
     private ClassificationImpl classificationImpl;
+
+    private String topDeskHtml;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -53,19 +54,16 @@ public class PredictedLabelsResponse {
     }
 
     /**
+     *
+     */
+    public void setPredictedLabelsAsTopDeskHtml(String topDeskHtml) {
+        this.topDeskHtml = topDeskHtml;
+    }
+
+    /**
      * WARNING: Only temporarily!
      */
     public String getPredictedLabelsAsTopDeskHtml() {
-        //ContentType.TEXT_TOPDESK_HTML
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul>");
-        for (HitLabel hitLabel : predictedLabels) {
-            sb.append("<li>" + hitLabel.getLabel().getTerm() + " (Score: " + hitLabel.getScore() + ")</li>");
-        }
-        sb.append("</ul>");
-
-        // TODO: Add feedback links
-
-        return Utils.convertHtmlToTOPdeskHtml(sb.toString());
+        return topDeskHtml;
     }
 }
