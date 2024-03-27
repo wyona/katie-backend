@@ -169,7 +169,8 @@ public class QuestionAnsweringService {
         if (predictClassifications) {
             log.info("Predict labels / classifications ...");
             try {
-                predictedLabels = contextService.classifyText(domain.getId(), question).getPredictedLabels();
+                int limitPredictedLabels = 3; // TODO: Make configurable
+                predictedLabels = contextService.classifyText(domain.getId(), question, limitPredictedLabels).getPredictedLabels();
             } catch (Exception e) {
                 // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
                 log.error(e.getMessage(), e);

@@ -525,9 +525,10 @@ public class ContextService {
      * Classify a text
      * @param domainId Domain Id
      * @param text Text, e.g. "When was Michael born?"
+     * @param limit Maximum number of labels returned
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
-    public PredictedLabelsResponse classifyText(String domainId, String text) throws Exception {
+    public PredictedLabelsResponse classifyText(String domainId, String text, int limit) throws Exception {
 
         Context domain = getContext(domainId);
 
@@ -540,7 +541,6 @@ public class ContextService {
             }
         }
 
-        int limit = 3; // TODO: Make configurable
         HitLabel[] labels = classificationService.predictLabels(domain, text, limit);
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
@@ -575,6 +575,7 @@ public class ContextService {
      */
     private String labelsHelpfulLink(Context domain, String questionUUID) {
         int rating = 10;
+        // TODO: Change URL
         return domain.getHost() + "/#/domain/" + domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
     }
 
@@ -583,6 +584,7 @@ public class ContextService {
      */
     private String labelsNotHelpfulLink(Context domain, String questionUUID) {
         int rating = 0;
+        // TODO: Change URL
         return domain.getHost() + "/#/domain/" +domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
     }
 

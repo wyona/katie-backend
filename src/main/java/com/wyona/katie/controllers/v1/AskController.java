@@ -467,8 +467,8 @@ public class AskController {
     /**
      * REST interface to classify a text
      */
-    @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
+    @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
     @ApiOperation(value="Classify a text")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = PredictedLabelsResponse.class),
@@ -481,8 +481,10 @@ public class AskController {
     public ResponseEntity<?> predictTaxonomyEntries(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "limit", value = "Maximum number of labels returned", required = false)
+            @RequestParam(value = "limit", required = false) Integer limit,
             @ApiParam(name = "text", value = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
-            @RequestParam(value = "text", required = true) String text,
+            @RequestBody Message text,
             HttpServletRequest request, HttpServletResponse response) {
 
         try {
@@ -493,7 +495,11 @@ public class AskController {
         rememberMeService.tryAutoLogin(request, response);
 
         try {
-            return new ResponseEntity<>(contextService.classifyText(domainId, text), HttpStatus.OK);
+            int _limit = 3;
+            if (limit != null) {
+                _limit = limit.intValue();
+            }
+            return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), _limit), HttpStatus.OK);
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
