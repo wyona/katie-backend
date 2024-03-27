@@ -70,12 +70,27 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#train(Context, TextSample[])
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
+        train(domain, samples, null);
+    }
+
+    /**
+     *
+     */
+    private void train(Context domain, TextSample[] samples, String bgProcessId) throws Exception {
+        int counter = 0;
+        final int BATCH_SIZE = 100;
         for (TextSample sample : samples) {
             log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
             try {
                 trainSample(domain, sample);
+                counter++;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+            }
+
+            // INFO: Log progress
+            if (counter % BATCH_SIZE == 0) {
+                backgroundProcessService.updateProcessStatus(bgProcessId, counter + " samples trained, " + (samples.length - counter) + " samples remaining");
             }
         }
     }
@@ -89,7 +104,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         ClassificationDataset dataset = classificationRepoService.getDataset(domain, 0, -1);
 
         backgroundProcessService.updateProcessStatus(bgProcessId, "Train classifier ...");
-        train(domain, dataset.getSamples());
+        train(domain, dataset.getSamples(), bgProcessId);
         backgroundProcessService.updateProcessStatus(bgProcessId, "Training of classifier finished.");
     }
 
