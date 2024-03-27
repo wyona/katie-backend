@@ -202,6 +202,9 @@ public class KnowledgeSourceXMLFileService {
                     ksMeta.setTopDeskBaseUrl(topDeskEl.getAttribute("base-url"));
                     ksMeta.setTopDeskUsername(topDeskEl.getAttribute("username"));
                     ksMeta.setTopDeskAPIPassword(topDeskEl.getAttribute("password"));
+                    if (topDeskEl.hasAttribute("limit")) {
+                        ksMeta.setTopDeskIncidentsRetrievalLimit(Integer.parseInt(topDeskEl.getAttribute("limit")));
+                    }
                 }
 
                 if (connector.equals(KnowledgeSourceConnector.WEBSITE)) {

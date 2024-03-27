@@ -69,6 +69,7 @@ public class KnowledgeSourceMeta {
     private String topDeskBaseUrl;
     private String topDeskUsername;
     private String topDeskAPIPassword;
+    private Integer topDeskIncidentsRetrievalLimit;
 
     private String configurationErrorMessage;
 
@@ -137,6 +138,7 @@ public class KnowledgeSourceMeta {
         this.topDeskBaseUrl = null;
         this.topDeskUsername = null;
         this.topDeskAPIPassword = null;
+        this.topDeskIncidentsRetrievalLimit = 10;
     }
 
     /**
@@ -732,6 +734,20 @@ public class KnowledgeSourceMeta {
      */
     public String getTopDeskBaseUrl() {
         return topDeskBaseUrl;
+    }
+
+    /**
+     *
+     */
+    public void setTopDeskIncidentsRetrievalLimit(Integer topDeskIncidentsRetrievalLimit) {
+        this.topDeskIncidentsRetrievalLimit = topDeskIncidentsRetrievalLimit;
+    }
+
+    /**
+     *
+     */
+    public int getTopDeskIncidentsRetrievalLimit() {
+        return topDeskIncidentsRetrievalLimit.intValue();
     }
 
     /**
