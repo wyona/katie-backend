@@ -572,21 +572,19 @@ public class ContextService {
     }
 
     /**
-     * @param questionUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
+     * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
      */
-    private String labelsHelpfulLink(Context domain, String questionUUID) {
+    private String labelsHelpfulLink(Context domain, String requestUUID) {
         int rating = 10;
-        // TODO: Change URL and questionUUID
-        return domain.getHost() + "/#/domain/" + domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
+        return domain.getHost() + "/#/domain/" + domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?rating=" + rating;
     }
 
     /**
-     * @param questionUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
+     * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
      */
-    private String labelsNotHelpfulLink(Context domain, String questionUUID) {
+    private String labelsNotHelpfulLink(Context domain, String requestUUID) {
         int rating = 0;
-        // TODO: Change URL and questionUUID
-        return domain.getHost() + "/#/domain/" +domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
+        return domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?rating=" + rating;
     }
 
     /**
