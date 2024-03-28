@@ -854,7 +854,7 @@ public class DataRepositoryService {
     public String logPredictedLabels(Context domain, String text, HitLabel[] labels, ClassificationImpl classificationImpl) {
         // TODO: Sanitize text
         String uuid = java.util.UUID.randomUUID().toString();
-        savePredictedClassifications(uuid, domain, text);
+        savePredictedClassifications(uuid, domain, text, labels, classificationImpl);
         return uuid;
     }
 
@@ -890,7 +890,7 @@ public class DataRepositoryService {
     /**
      *
      */
-    private void savePredictedClassifications(String uuid, Context domain, String text) {
+    private void savePredictedClassifications(String uuid, Context domain, String text, HitLabel[] labels, ClassificationImpl classificationImpl) {
         if (!domain.getPredictedLabelsDirectory().isDirectory()) {
             domain.getPredictedLabelsDirectory().mkdir();
         }
@@ -900,6 +900,8 @@ public class DataRepositoryService {
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
         rootNode.put("text", text);
+        // TODO: Log labels
+        // TODO: Log classification implementation
 
         try {
             File predictedLabelsFile = getPredictedLabelsFile(uuid, domain);
