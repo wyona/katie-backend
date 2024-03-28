@@ -478,6 +478,13 @@ public class Context {
     }
 
     /**
+     * @return path of directory containing predicted text classifications associated with a particular domain
+     */
+    public File getPredictedLabelsDirectory() {
+        return new File(getContextDirectory(), "predicted-classifications");
+    }
+
+    /**
      * @return path of directory, which contains embedding vectors
      */
     public File getQnAEmbeddingsPath(String uuid) {
