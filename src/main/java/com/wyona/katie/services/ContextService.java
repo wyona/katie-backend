@@ -548,6 +548,8 @@ public class ContextService {
         response.setClassificationImpl(classificationService.getClassificationImpl());
         response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain));
 
+        dataRepositoryService.logPredictedLabels(domain, text, labels, classificationService.getClassificationImpl());
+
         return response;
     }
 
@@ -575,7 +577,7 @@ public class ContextService {
      */
     private String labelsHelpfulLink(Context domain, String questionUUID) {
         int rating = 10;
-        // TODO: Change URL
+        // TODO: Change URL and questionUUID
         return domain.getHost() + "/#/domain/" + domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
     }
 
@@ -584,7 +586,7 @@ public class ContextService {
      */
     private String labelsNotHelpfulLink(Context domain, String questionUUID) {
         int rating = 0;
-        // TODO: Change URL
+        // TODO: Change URL and questionUUID
         return domain.getHost() + "/#/domain/" +domain.getId() + "/asked-questions/" + questionUUID + "/rate-answer?rating=" + rating;
     }
 
