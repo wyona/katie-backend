@@ -849,6 +849,16 @@ public class DataRepositoryService {
     }
 
     /**
+     * @return uuid of log entry
+     */
+    public String logPredictedLabels(Context domain, String text, HitLabel[] labels, ClassificationImpl classificationImpl) {
+        // TODO: Sanitize text
+        String uuid = java.util.UUID.randomUUID().toString();
+        savePredictedClassifications(uuid, domain, text);
+        return uuid;
+    }
+
+    /**
      * Save asked question, including answer, etc.
      * @param uuid UUID of question
      * @param question Asked question
@@ -872,6 +882,28 @@ public class DataRepositoryService {
         try {
             File askedQuestionFile = getAskedQuestionFile(uuid, domain);
             mapper.writeValue(askedQuestionFile, rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     *
+     */
+    private void savePredictedClassifications(String uuid, Context domain, String text) {
+        if (!domain.getPredictedLabelsDirectory().isDirectory()) {
+            domain.getPredictedLabelsDirectory().mkdir();
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("uuid", uuid);
+        rootNode.put("domainId", domain.getId());
+        rootNode.put("text", text);
+
+        try {
+            File predictedLabelsFile = getPredictedLabelsFile(uuid, domain);
+            mapper.writeValue(predictedLabelsFile, rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -1480,6 +1512,13 @@ public class DataRepositoryService {
      */
     protected File getAskedQuestionFile(String uuid, Context domain) {
         return new File(domain.getAskedQuestionsDirectory(), uuid + ".json");
+    }
+
+    /**
+     *
+     */
+    protected File getPredictedLabelsFile(String uuid, Context domain) {
+        return new File(domain.getPredictedLabelsDirectory(), uuid + ".json");
     }
 
     /**
