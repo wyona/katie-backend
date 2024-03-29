@@ -1076,7 +1076,7 @@ public class QuestionController {
             return new ResponseEntity<>(answer, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
