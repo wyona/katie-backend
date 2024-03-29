@@ -2711,6 +2711,13 @@ public class ContextService {
     }
 
     /**
+     *
+     */
+    public void ratePredictedLabels(Context domain, RatingPredictedLabels rating) {
+        // TODO
+    }
+
+    /**
      * Send notifications that a user provided feedback re an answer
      * @param uuid UUID of QnA when answer is based on QnA and null otherwise
      */
