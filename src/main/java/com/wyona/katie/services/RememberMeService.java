@@ -57,7 +57,7 @@ Means: if the session timeout is 4h and you configure here 30min, the cookie tok
     }
 
     /**
-     * Remember email address provided by user (without being signed in)
+     * Remember email address provided by user (without being signed in). One can retrieve it again using getEmail(HttpServletRequest)
      * @param domainId Domain Id for which user provided email address
      */
     public void rememberEmail(String email, HttpServletRequest request, HttpServletResponse response, String domainId) {
