@@ -1009,6 +1009,82 @@ public class QuestionController {
     }
 
     /**
+     * REST interface such that user can rate received answer
+     */
+    @RequestMapping(value = "/{domainid}/{uuid}/rateAnswer", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Rate answer to question")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
+    @Deprecated
+    public ResponseEntity<?> rateAnswer(
+            @ApiParam(name = "uuid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @PathVariable("uuid") String quuid,
+            @ApiParam(name = "domainid", value = "Domain Id question and answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @PathVariable("domainid") String domainid,
+            @ApiParam(name = "rating", value = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
+            @RequestBody Rating rating,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        rating.setQuestionuuid(quuid);
+        log.info("Rate answer to the asked question '" + quuid + "' ...");
+
+        if (rating.getRating() < 0 || rating.getRating() > 10) {
+            return new ResponseEntity<>(new Error("Rating '" + rating.getRating() + "' out of bounds!", "RATING_OUT_OF_BOUNDS"), HttpStatus.BAD_REQUEST);
+        }
+
+        if (rating.getFeedback() != null && !rating.getFeedback().isEmpty()) {
+            log.info("Received optional feedback: " + rating.getFeedback());
+            int FEEDBACK_MAX_LENGTH = 150;
+            if (rating.getFeedback().length() > FEEDBACK_MAX_LENGTH){
+                String msg = "Rating feedback out of bounds (more than " + FEEDBACK_MAX_LENGTH + " characters): " + rating.getFeedback();
+                log.error(msg);
+                return new ResponseEntity<>(new Error(msg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            log.info("No optional feedback received.");
+        }
+
+        if (rating.getEmail() != null && !rating.getEmail().isEmpty()) {
+            log.info("User provided email: " + rating.getEmail());
+            rememberMeService.rememberEmail(rating.getEmail(), request, response, domainid);
+        }
+
+        try {
+            AskedQuestion askedQuestion = contextService.getAskedQuestionByUUID(quuid);
+
+            // INFO: We don't need the user question from the rating object, because we already have it using the question UUID
+            rating.setUserquestion(askedQuestion.getQuestion());
+            log.info("User question: " + rating.getUserquestion());
+            if (rating.getUserquestion() != null && rating.getUserquestion().length() > 300) {
+                log.warn("User question more than 300 characters, therefore shorten question ...");
+                rating.setUserquestion(rating.getUserquestion().substring(0, 299));
+            }
+
+            rating.setDate(new Date());
+            rating.setQnauuid(askedQuestion.getQnaUuid());
+
+            Context domain = contextService.getContext(domainid);
+            Answer answer = contextService.rateAnswer(domain, rating);
+            return new ResponseEntity<>(answer, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
      * REST interface such that user can rate a QnA
      */
     @RequestMapping(value = "/resubmitted/{domainid}/{uuid}/rateQnA", method = RequestMethod.POST, produces = "application/json")
