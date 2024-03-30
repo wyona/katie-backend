@@ -105,7 +105,7 @@ public class ClassificationRepositoryService {
      *
      */
     private File getClassifcationsDir(Context domain) {
-        return new File(domain.getContextDirectory(),"classifications-dataset");
+        return new File(domain.getClassificationsDirectory(),"classifications-dataset");
     }
 
     /**

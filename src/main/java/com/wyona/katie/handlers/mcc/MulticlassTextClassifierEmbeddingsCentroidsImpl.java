@@ -349,7 +349,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      *
      */
     private File getClassifierDir(Context domain) {
-        File classifierDir = new File(domain.getContextDirectory(),"classifier-embeddings-centroid");
+        File classifierDir = new File(domain.getClassificationsDirectory(),"classifier-embeddings-centroid");
         if (!classifierDir.isDirectory()) {
             classifierDir.mkdirs();
         }

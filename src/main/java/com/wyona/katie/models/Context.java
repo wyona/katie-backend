@@ -373,6 +373,13 @@ public class Context {
     }
 
     /**
+     *
+     */
+    public File getClassificationsDirectory() {
+        return new File(getContextDirectory(), "classifications");
+    }
+
+    /**
      * @param language Language of FAQ, e.g. 'de' or 'en'
      */
     public File getFAQJsonDataPath(String language) {
@@ -481,7 +488,7 @@ public class Context {
      * @return path of directory containing predicted text classifications associated with a particular domain
      */
     public File getPredictedLabelsDirectory() {
-        return new File(getContextDirectory(), "predicted-classifications");
+        return new File(getClassificationsDirectory(), "predicted-classifications");
     }
 
     /**
