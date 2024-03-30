@@ -2695,7 +2695,7 @@ public class ContextService {
                 }
             }
 
-            sendNotificationsReRating(domain, askedQuestion, qna.getUuid(), qna.getRespondentId());
+            sendNotificationsReRatingOfAnswer(domain, askedQuestion, qna.getUuid(), qna.getRespondentId());
 
             return qna;
         } else {
@@ -2704,7 +2704,7 @@ public class ContextService {
             saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
             Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
 
-            sendNotificationsReRating(domain, rating.getUserquestion(), null, null);
+            sendNotificationsReRatingOfAnswer(domain, rating.getUserquestion(), null, null);
 
             return answer;
         }
@@ -2717,24 +2717,62 @@ public class ContextService {
         File predictedLabelsFile = dataRepositoryService.getPredictedLabelsLogFile(rating.getRequestuuid(), domain);
         if (predictedLabelsFile.isFile()) {
             log.info("Update preference dataset ...");
-            // TODO: Send notification, that predicted labels got rated
+            // TODO: Update preference dataset
+
+            try {
+                sendNotificationsReRatingOfPredictedLabels(domain, rating);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         } else {
             log.warn("No such predicted labels log entry for request UUID '" + rating.getRequestuuid() + "'!");
         }
     }
 
     /**
-     * Send notifications that a user provided feedback re an answer
-     * @param uuid UUID of QnA when answer is based on QnA and null otherwise
+     * Send notifications that a user provided feedback re predicted labels
      */
-    private void sendNotificationsReRating(Context domain, String askedQuestion, String uuid, String respondentId) throws Exception {
+    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating) throws Exception {
         User[] experts = getExperts(domain.getId(), false);
         for (User expert: experts) {
-            sendNotificationReRating(domain, uuid, expert.getId(), askedQuestion);
+            sendNotificationReRatingOfPredictedLabels(domain, rating, expert.getId());
+        }
+    }
+
+    /**
+     * Send notification that a user provided feedback re predicted labels
+     * @param userId Id of user to be notified
+     */
+    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String userId) {
+        try {
+            User user = iamService.getUserByIdWithoutAuthCheck(userId);
+            if (user != null) {
+                log.info("Notify '" + user.getEmail() + "' (" + user.getLanguage() + "), that a user has provided feedback re predicted labels '" + rating.getRequestuuid() + "' ...");
+                String email = user.getEmail();
+                String body = "A user has provided feedback re predicted labels"; // TODO
+                String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
+                mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
+            } else {
+                log.warn("No such user '" + userId + "'.");
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send notifications that a user provided feedback re an answer
+     * @param uuid UUID of QnA when answer is based on QnA and null otherwise
+     * @param respondentId User Id of author of answer
+     */
+    private void sendNotificationsReRatingOfAnswer(Context domain, String askedQuestion, String uuid, String respondentId) throws Exception {
+        User[] experts = getExperts(domain.getId(), false);
+        for (User expert: experts) {
+            sendNotificationReRatingOfAnswer(domain, uuid, expert.getId(), askedQuestion);
         }
         if (respondentId != null) {
             if (!isExpert(respondentId, experts)) {
-                sendNotificationReRating(domain, uuid, respondentId, askedQuestion);
+                sendNotificationReRatingOfAnswer(domain, uuid, respondentId, askedQuestion);
             } else {
                 log.info("Author '" + respondentId + "' already notified as expert.");
             }
@@ -2748,11 +2786,11 @@ public class ContextService {
      * @param uuid UUID of QnA
      * @param userId Id of user to be notified
      */
-    private void sendNotificationReRating(Context domain, String uuid, String userId, String askedQuestion) {
+    private void sendNotificationReRatingOfAnswer(Context domain, String uuid, String userId, String askedQuestion) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
-                log.info("Notify user '" + user.getEmail() + "' (" + user.getLanguage() + "), that user has provided feedback re answer '" + uuid + "' ...");
+                log.info("Notify '" + user.getEmail() + "' (" + user.getLanguage() + "), that user has provided feedback re answer '" + uuid + "' ...");
                 String email = user.getEmail();
                 String body = "A user has provided feedback for the answer to the question '" + askedQuestion + "'"; // TODO
                 if (uuid != null) {
