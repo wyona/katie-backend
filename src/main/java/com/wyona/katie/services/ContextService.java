@@ -2714,7 +2714,13 @@ public class ContextService {
      *
      */
     public void ratePredictedLabels(Context domain, RatingPredictedLabels rating) {
-        // TODO
+        File predictedLabelsFile = dataRepositoryService.getPredictedLabelsLogFile(rating.getRequestuuid(), domain);
+        if (predictedLabelsFile.isFile()) {
+            log.info("Update preference dataset ...");
+            // TODO: Send notification, that predicted labels got rated
+        } else {
+            log.warn("No such predicted labels log entry for request UUID '" + rating.getRequestuuid() + "'!");
+        }
     }
 
     /**

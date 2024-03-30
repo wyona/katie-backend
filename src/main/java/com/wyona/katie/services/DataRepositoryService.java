@@ -900,11 +900,21 @@ public class DataRepositoryService {
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
         rootNode.put("text", text);
-        // TODO: Log labels
-        // TODO: Log classification implementation
+        rootNode.put("classification-implementation", classificationImpl.toString());
+
+        ArrayNode labelsNode = mapper.createArrayNode();
+        for (HitLabel label : labels) {
+            ObjectNode labelNode = mapper.createObjectNode();
+            labelNode.put("label", label.getLabel().getTerm());
+            labelNode.put("id", label.getLabel().getId());
+            labelNode.put("score", label.getScore());
+
+            labelsNode.add(labelNode);
+        }
+        rootNode.put("predicted-labels", labelsNode);
 
         try {
-            File predictedLabelsFile = getPredictedLabelsFile(uuid, domain);
+            File predictedLabelsFile = getPredictedLabelsLogFile(uuid, domain);
             mapper.writeValue(predictedLabelsFile, rootNode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -1517,9 +1527,9 @@ public class DataRepositoryService {
     }
 
     /**
-     *
+     * Log file containing text and predicted labels
      */
-    protected File getPredictedLabelsFile(String uuid, Context domain) {
+    protected File getPredictedLabelsLogFile(String uuid, Context domain) {
         return new File(domain.getPredictedLabelsDirectory(), uuid + ".json");
     }
 
