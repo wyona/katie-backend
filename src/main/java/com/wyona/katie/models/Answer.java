@@ -68,7 +68,7 @@ public class Answer {
      * @param originalQuestion Original question which answer is based on
      * @param isPublic true when answer is public and false otherwise
      * @param isTrained true when QnA is trained/indexed and false otherwise
-     * @param respondentId Id of user who provided answer
+     * @param respondentId Id of user who provided answer (author of answer)
      */
     public Answer(String submittedQuestion, String answer, ContentType answerContentType, String url, List<String> classifications, QnAType type, String answerClientSideEncryptionAlgorithm, Date dateAnswered, Date dateAnswerModified, String email, String domainId, String uuid, String originalQuestion, Date dateOriginalQuestionSubmitted, boolean isPublic, Permissions permissions, boolean isTrained, String respondentId) {
         this.submittedQuestion = submittedQuestion;
