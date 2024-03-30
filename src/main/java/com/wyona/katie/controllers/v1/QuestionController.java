@@ -1010,6 +1010,8 @@ public class QuestionController {
 
     /**
      * REST interface such that user can rate received answer
+     * @deprecated Use {@link FeedbackController#rateAnswer(String, String, Rating, HttpServletRequest, HttpServletResponse)} instead
+     * TODO: See for example git@github.com:wyona/katie-4-faq.git
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rateAnswer", method = RequestMethod.POST, produces = "application/json")
     @ApiOperation(value="Rate answer to question")
