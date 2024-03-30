@@ -3631,7 +3631,7 @@ public class ContextService {
     /**
      * Get preferences / ratings of answers of a particular domain
      */
-    public HumanPreference[] getRatings(String domainId) throws Exception {
+    public HumanPreference[] getRatingsOfAnswers(String domainId) throws Exception {
         List<HumanPreference> preferences = new ArrayList<>();
 
         Context domain = getDomain(domainId);
