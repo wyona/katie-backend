@@ -129,6 +129,7 @@ public class DataRepositoryService {
 
     private static final String PREDICTED_LABELS_FIELD = "predicted-labels";
     private static final String LABEL_FIELD = "label";
+    private static final String TEXT_FIELD = "text";
 
     /**
      * Write embedding into a file
@@ -902,7 +903,7 @@ public class DataRepositoryService {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
-        rootNode.put("text", text);
+        rootNode.put(TEXT_FIELD, text);
         rootNode.put("classification-implementation", classificationImpl.toString());
 
         ArrayNode labelsNode = mapper.createArrayNode();
@@ -941,6 +942,16 @@ public class DataRepositoryService {
             log.error("No predicted labels logged!");
             return null;
         }
+    }
+
+    /**
+     * Get text for which labels were predicted
+     */
+    public String getClassifiedText(String uuid, Context domain) throws Exception {
+        File logFile = getPredictedLabelsLogFile(uuid, domain);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(logFile);
+        return rootNode.get(TEXT_FIELD).asText();
     }
 
     /**

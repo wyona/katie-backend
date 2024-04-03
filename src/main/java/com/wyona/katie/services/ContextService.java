@@ -2717,7 +2717,7 @@ public class ContextService {
         if (predictedLabelsFile.isFile()) {
             try {
                 Classification classification = dataRepositoryService.getTopPredictedClassification(rating.getRequestuuid(), domain);
-                saveRatingOfPredictedLabels(domain, rating, "TODO_TEXT", classification);
+                saveRatingOfPredictedLabels(domain, rating, dataRepositoryService.getClassifiedText(rating.getRequestuuid(), domain), classification);
 
                 sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
             } catch (Exception e) {
