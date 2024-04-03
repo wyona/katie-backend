@@ -471,10 +471,18 @@ public class Context {
     }
 
     /**
+     * Get directory containing ratings of answers given to asked questions
      * @return path of directory containing ratings of answers of a particular domain
      */
     public File getRatingsDirectory() {
         return new File(getContextDirectory(), "ratings");
+    }
+
+    /**
+     *
+     */
+    public File getRatingsOfPredictedLabelsDirectory() {
+        return new File(getClassificationsDirectory(), "ratings");
     }
 
     /**
