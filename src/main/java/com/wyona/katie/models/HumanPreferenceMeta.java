@@ -11,6 +11,8 @@ import java.util.Date;
 @Slf4j
 public class HumanPreferenceMeta {
 
+    public final static String HUMAN_FEEDBACK = "humanFeedback";
+
     private String id;
     private Integer rating;
     private Long epochTime;
