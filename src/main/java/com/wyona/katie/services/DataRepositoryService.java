@@ -128,6 +128,7 @@ public class DataRepositoryService {
     private static final String EMBEDDING_VECTOR_FIELD = "embedding";
 
     private static final String PREDICTED_LABELS_FIELD = "predicted-labels";
+    private static final String LABEL_FIELD = "label";
 
     /**
      * Write embedding into a file
@@ -907,7 +908,7 @@ public class DataRepositoryService {
         ArrayNode labelsNode = mapper.createArrayNode();
         for (HitLabel label : labels) {
             ObjectNode labelNode = mapper.createObjectNode();
-            labelNode.put("label", label.getLabel().getTerm());
+            labelNode.put(LABEL_FIELD, label.getLabel().getTerm());
             labelNode.put("id", label.getLabel().getId());
             labelNode.put("score", label.getScore());
 
@@ -924,16 +925,22 @@ public class DataRepositoryService {
     }
 
     /**
-     * Get predicted classification from log file
+     * Get top predicted classification from log file
      * @param uuid Request UUID
      */
-    public Classification getPredictedClassification(String uuid, Context domain) throws Exception {
+    public Classification getTopPredictedClassification(String uuid, Context domain) throws Exception {
         File logFile = getPredictedLabelsLogFile(uuid, domain);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(logFile);
-        rootNode.get(PREDICTED_LABELS_FIELD);
-        Classification classification = new Classification("TODO_LABEL", "TODO_ID");
-        return classification;
+        JsonNode predictedLabels = rootNode.get(PREDICTED_LABELS_FIELD);
+        if (predictedLabels.isArray()) {
+            JsonNode topLabel = predictedLabels.get(0);
+            Classification classification = new Classification(topLabel.get(LABEL_FIELD).asText(), topLabel.get("id").asText());
+            return classification;
+        } else {
+            log.error("No predicted labels logged!");
+            return null;
+        }
     }
 
     /**

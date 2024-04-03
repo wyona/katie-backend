@@ -2716,7 +2716,7 @@ public class ContextService {
         File predictedLabelsFile = dataRepositoryService.getPredictedLabelsLogFile(rating.getRequestuuid(), domain);
         if (predictedLabelsFile.isFile()) {
             try {
-                Classification classification = dataRepositoryService.getPredictedClassification(rating.getRequestuuid(), domain);
+                Classification classification = dataRepositoryService.getTopPredictedClassification(rating.getRequestuuid(), domain);
                 saveRatingOfPredictedLabels(domain, rating, "TODO_TEXT", classification);
 
                 sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
@@ -2738,9 +2738,11 @@ public class ContextService {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("text", text);
         if (rating.getRank() == 0) {
-            rootNode.put("chosenLabel", predictedClassification.getId());
+            // TODO: Replace concatenated value
+            rootNode.put("chosenLabel", predictedClassification.getId() + "::" + predictedClassification.getTerm());
         } else {
-            rootNode.put("rejectedLabel", predictedClassification.getId());
+            // TODO: Replace concatenated value
+            rootNode.put("rejectedLabel", predictedClassification.getId() + "::" + predictedClassification.getTerm());
 
             // TODO: Label was not correct, but check whether it was part of predicted labels with lower score
             if (rating.getRank() != -1) {

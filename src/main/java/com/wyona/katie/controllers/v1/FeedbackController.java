@@ -202,21 +202,23 @@ public class FeedbackController {
             rememberMeService.rememberEmail(rating.getEmail(), request, response, rating.getDomainid());
         }
 
-        // TEST: Uncomment lines below to test frotend spinner
-        /*
-        try {
-            for (int i = 0; i < 2; i++) {
-                log.info("Sleep for 2 seconds ...");
-                Thread.sleep(2000);
-            }
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-         */
-
         try {
             Context domain = domainService.getContext(rating.getDomainid());
             domainService.ratePredictedLabels(domain, rating);
+
+            // TODO: Measure time spent above and if very fast, then delay response artificially such that frontend spinner can be seen
+            // TEST: Uncomment lines below to test frotend spinner
+            /*
+            try {
+                for (int i = 0; i < 2; i++) {
+                    log.info("Sleep for 2 seconds ...");
+                    Thread.sleep(2000);
+                }
+            } catch(Exception e) {
+                log.error(e.getMessage(), e);
+            }
+             */
+
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
