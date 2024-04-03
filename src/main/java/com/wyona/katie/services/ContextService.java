@@ -2737,12 +2737,13 @@ public class ContextService {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("text", text);
+        ObjectNode labelNode = mapper.createObjectNode();
+        labelNode.put("id", predictedClassification.getId());
+        labelNode.put("label", predictedClassification.getTerm());
         if (rating.getRank() == 0) {
-            // TODO: Replace concatenated value
-            rootNode.put("chosenLabel", predictedClassification.getId() + "::" + predictedClassification.getTerm());
+            rootNode.put("chosenLabel", labelNode);
         } else {
-            // TODO: Replace concatenated value
-            rootNode.put("rejectedLabel", predictedClassification.getId() + "::" + predictedClassification.getTerm());
+            rootNode.put("rejectedLabel", labelNode);
 
             // TODO: Label was not correct, but check whether it was part of predicted labels with lower score
             if (rating.getRank() != -1) {
