@@ -547,6 +547,7 @@ public class ContextService {
 
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
+        response.setRequestUuid(uuid);
         response.setPredictedLabels(labels);
         response.setClassificationImpl(classificationService.getClassificationImpl());
         response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain, uuid, language));
@@ -575,16 +576,14 @@ public class ContextService {
      * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
      */
     private String labelsHelpfulLink(Context domain, String requestUUID) {
-        int rating = 10;
-        return domain.getHost() + "/#/domain/" + domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?rating=" + rating;
+        return domain.getHost() + "/#/domain/" + domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=true";
     }
 
     /**
      * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
      */
     private String labelsNotHelpfulLink(Context domain, String requestUUID) {
-        int rating = 0;
-        return domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?rating=" + rating;
+        return domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=false";
     }
 
     /**
@@ -2716,11 +2715,11 @@ public class ContextService {
     public void ratePredictedLabels(Context domain, RatingPredictedLabels rating) {
         File predictedLabelsFile = dataRepositoryService.getPredictedLabelsLogFile(rating.getRequestuuid(), domain);
         if (predictedLabelsFile.isFile()) {
-            log.info("Update preference dataset ...");
-            // TODO: Update preference dataset
-
             try {
-                sendNotificationsReRatingOfPredictedLabels(domain, rating);
+                Classification classification = dataRepositoryService.getPredictedClassification(rating.getRequestuuid(), domain);
+                saveRatingOfPredictedLabels(domain, rating, "TODO_TEXT", classification);
+
+                sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -2730,12 +2729,54 @@ public class ContextService {
     }
 
     /**
-     * Send notifications that a user provided feedback re predicted labels
+     * Save rating of predicted labels
+     * @param text Text for which labels got predicted
+     * @param predictedClassification Predicted label with highest score
      */
-    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating) throws Exception {
+    private void saveRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String text, Classification predictedClassification) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("text", text);
+        if (rating.getRank() == 0) {
+            rootNode.put("chosenLabel", predictedClassification.getId());
+        } else {
+            rootNode.put("rejectedLabel", predictedClassification.getId());
+
+            // TODO: Label was not correct, but check whether it was part of predicted labels with lower score
+            if (rating.getRank() != -1) {
+                // TODO: Log information
+            }
+        }
+        ObjectNode metaNode = mapper.createObjectNode();
+        rootNode.put("meta", metaNode);
+        String uuid = UUID.randomUUID().toString();
+        metaNode.put("id", uuid);
+        metaNode.put(HumanPreferenceMeta.HUMAN_FEEDBACK, rating.getFeedback());
+
+        File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
+        if (!ratingsDir.isDirectory()) {
+            ratingsDir.mkdirs();
+        }
+        File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(uuid, domain);
+        try {
+            mapper.writeValue(ratingFile, rootNode);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (false) {
+            saveRating(domain, null, null);
+        }
+    }
+
+    /**
+     * Send notifications that a user provided feedback re predicted labels
+     * @param classification Predicted classification
+     */
+    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification classification) throws Exception {
         User[] experts = getExperts(domain.getId(), false);
         for (User expert: experts) {
-            sendNotificationReRatingOfPredictedLabels(domain, rating, expert.getId());
+            sendNotificationReRatingOfPredictedLabels(domain, rating, classification, expert.getId());
         }
     }
 
@@ -2743,13 +2784,19 @@ public class ContextService {
      * Send notification that a user provided feedback re predicted labels
      * @param userId Id of user to be notified
      */
-    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String userId) {
+    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification classification, String userId) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
                 log.info("Notify '" + user.getEmail() + "' (" + user.getLanguage() + "), that a user has provided feedback re predicted labels '" + rating.getRequestuuid() + "' ...");
                 String email = user.getEmail();
-                String body = "A user has provided feedback re predicted labels"; // TODO
+
+                // TODO: Use template, see for example feedback_re_answer_en.ftl
+                String body = "A user has provided positive / negative feedback re predicted label '" + classification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")";
+                if (true) {
+                    body = body + "\n\nFeedback: " + rating.getFeedback();
+                }
+
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
             } else {
@@ -3643,7 +3690,7 @@ public class ContextService {
         }
         metaNode.put("questionUuid", rating.getQuestionuuid());
         metaNode.put("qnaUuid", rating.getQnauuid());
-        metaNode.put("humanFeedback", rating.getFeedback());
+        metaNode.put(HumanPreferenceMeta.HUMAN_FEEDBACK, rating.getFeedback());
         metaNode.put("userEmail", rating.getEmail());
         try {
             AskedQuestion askedQuestion = getAskedQuestionByUUID(rating.getQuestionuuid());

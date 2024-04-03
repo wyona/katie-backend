@@ -127,6 +127,8 @@ public class DataRepositoryService {
     private static final String EMBEDDING_TEXT_FIELD = "text";
     private static final String EMBEDDING_VECTOR_FIELD = "embedding";
 
+    private static final String PREDICTED_LABELS_FIELD = "predicted-labels";
+
     /**
      * Write embedding into a file
      * @param vector Embedding vector
@@ -911,7 +913,7 @@ public class DataRepositoryService {
 
             labelsNode.add(labelNode);
         }
-        rootNode.put("predicted-labels", labelsNode);
+        rootNode.put(PREDICTED_LABELS_FIELD, labelsNode);
 
         try {
             File predictedLabelsFile = getPredictedLabelsLogFile(uuid, domain);
@@ -919,6 +921,19 @@ public class DataRepositoryService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get predicted classification from log file
+     * @param uuid Request UUID
+     */
+    public Classification getPredictedClassification(String uuid, Context domain) throws Exception {
+        File logFile = getPredictedLabelsLogFile(uuid, domain);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(logFile);
+        rootNode.get(PREDICTED_LABELS_FIELD);
+        Classification classification = new Classification("TODO_LABEL", "TODO_ID");
+        return classification;
     }
 
     /**
@@ -1538,6 +1553,13 @@ public class DataRepositoryService {
      */
     protected File getRatingFile(String uuid, Context domain) {
         return new File(domain.getRatingsDirectory(), uuid + ".json");
+    }
+
+    /**
+     *
+     */
+    protected File getRatingOfPredictedClassificationsFile(String uuid, Context domain) {
+        return new File(domain.getRatingsOfPredictedLabelsDirectory(), uuid + ".json");
     }
 
     /**

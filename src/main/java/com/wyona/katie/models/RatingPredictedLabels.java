@@ -12,6 +12,7 @@ public class RatingPredictedLabels {
 
     private String domainId;
     private String requestUuid;
+    private Integer rank;
     private String feedback;
     private String email;
 
@@ -22,6 +23,7 @@ public class RatingPredictedLabels {
     public RatingPredictedLabels() {
         this.domainId = null;
         this.requestUuid = null;
+        this.rank = -1;
         this.feedback = null;
         this.email = null;
     }
@@ -66,6 +68,20 @@ public class RatingPredictedLabels {
      */
     public String getRequestuuid() {
         return requestUuid;
+    }
+
+    /**
+     * Set result rank, e.g. 0 means top result (positive) and -1 means not part of result set (negative)
+     */
+    public void setRank(Integer rank) {
+        this.rank = rank;
+    }
+
+    /**
+     * @return rank of predicted label, e.g. 0 means top result (positive) and -1 means not part of result set (negative)
+     */
+    public Integer getRank() {
+        return rank;
     }
 
     /**

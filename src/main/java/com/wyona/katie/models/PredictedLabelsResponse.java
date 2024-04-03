@@ -11,6 +11,7 @@ import java.util.List;
 @Slf4j
 public class PredictedLabelsResponse {
 
+    private String uuid;
     private List<HitLabel> predictedLabels = new ArrayList<>();
     private ClassificationImpl classificationImpl;
 
@@ -21,6 +22,20 @@ public class PredictedLabelsResponse {
      *
      */
     public PredictedLabelsResponse() {
+    }
+
+    /**
+     *
+     */
+    public void setRequestUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    /**
+     *
+     */
+    public String getRequestUuid() {
+        return uuid;
     }
 
     /**
