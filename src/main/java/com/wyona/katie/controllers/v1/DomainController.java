@@ -1005,10 +1005,17 @@ public class DomainController {
     public ResponseEntity<?> getClassificationDataset(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "labels-only", value = "When set to true, then only labels are returned", required = false, defaultValue = "false")
+            @RequestParam(value = "labels-only", required = false) Boolean labelsOnly,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        boolean _labelsOnly = false;
+        if (labelsOnly != null) {
+            _labelsOnly = labelsOnly;
         }
 
         try {
@@ -1017,7 +1024,7 @@ public class DomainController {
             // TODO: Implement offset and limit
             int offset = 0;
             int limit = 10000;
-            ClassificationDataset dataset = classificationService.getDataset(domain, offset, limit);
+            ClassificationDataset dataset = classificationService.getDataset(domain, _labelsOnly, offset, limit);
             return new ResponseEntity<>(dataset, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());

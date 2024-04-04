@@ -2762,6 +2762,7 @@ public class ContextService {
         metaNode.put("id", uuid);
         metaNode.put(HumanPreferenceMeta.HUMAN_FEEDBACK, rating.getFeedback());
         metaNode.put(HumanPreferenceMeta.CLIENT_MESSAGE_ID, clientMessageId);
+        metaNode.put(HumanPreferenceMeta.REQUEST_UUID, rating.getRequestuuid());
 
         File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
         if (!ratingsDir.isDirectory()) {

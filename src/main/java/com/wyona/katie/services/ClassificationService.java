@@ -93,8 +93,12 @@ public class ClassificationService {
 
     /**
      * Get dataset
+     * @param domain
+     * @param labelsOnly When set to true, then return only labels and no samples
+     * @param offset Offset of returned samples
+     * @param limit Limit of returned samples
      */
-    public ClassificationDataset getDataset(Context domain, int offset, int limit) throws Exception {
-        return classificationRepoService.getDataset(domain, offset, limit);
+    public ClassificationDataset getDataset(Context domain, boolean labelsOnly, int offset, int limit) throws Exception {
+        return classificationRepoService.getDataset(domain, labelsOnly, offset, limit);
     }
 }

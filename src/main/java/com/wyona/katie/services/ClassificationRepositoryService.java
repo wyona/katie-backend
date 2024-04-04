@@ -19,9 +19,13 @@ public class ClassificationRepositoryService {
     private DataRepositoryService dataRepoService;
 
     /**
-     * Get dataset
+     * Get dataset (labels and samples)
+     * @param domain
+     * @param labelsOnly When set to true, then return only labels and no samples
+     * @param offset Offset of returned samples
+     * @param limit Limit of returned samples
      */
-    public ClassificationDataset getDataset(Context domain, int offset, int limit) throws Exception {
+    public ClassificationDataset getDataset(Context domain, boolean labelsOnly, int offset, int limit) throws Exception {
         log.info("Get classification dataset of domain '" + domain.getId() + "' ...");
         File classifcationsDir = getClassifcationsDir(domain);
         File[] dirs = classifcationsDir.listFiles();
@@ -36,11 +40,13 @@ public class ClassificationRepositoryService {
                 File[] samplesFiles = samplesDir.listFiles();
                 classification.setFrequency(samplesFiles.length);
                 log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
-                for (File sampleFile : samplesFiles) {
-                    String sampleText = readSampleText(sampleFile);
-                    String sampleId = sampleFile.getName().substring(0, sampleFile.getName().indexOf(".json"));
-                    TextSample sample = new TextSample(sampleId, sampleText, classification);
-                    dataset.addSample(sample);
+                if (!labelsOnly) {
+                    for (File sampleFile : samplesFiles) {
+                        String sampleText = readSampleText(sampleFile);
+                        String sampleId = sampleFile.getName().substring(0, sampleFile.getName().indexOf(".json"));
+                        TextSample sample = new TextSample(sampleId, sampleText, classification);
+                        dataset.addSample(sample);
+                    }
                 }
 
                 dataset.addLabel(classification);

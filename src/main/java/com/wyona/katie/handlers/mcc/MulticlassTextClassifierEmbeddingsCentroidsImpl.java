@@ -101,7 +101,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     public void retrain(Context domain, String bgProcessId) throws Exception {
         log.info("Retrain ...");
         backgroundProcessService.updateProcessStatus(bgProcessId, "Load dataset ...");
-        ClassificationDataset dataset = classificationRepoService.getDataset(domain, 0, -1);
+        ClassificationDataset dataset = classificationRepoService.getDataset(domain, false, 0, -1);
 
         backgroundProcessService.updateProcessStatus(bgProcessId, "Train classifier ...");
         train(domain, dataset.getSamples(), bgProcessId);

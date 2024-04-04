@@ -65,7 +65,7 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
         try {
             // TODO: Replace dataset file creation, by "RepoInputStreamFactory"
             backgroundProcessService.updateProcessStatus(bgProcessId, "Generate dataset file ...");
-            createDatasetFileForMaxEntropyClassifier(domain, classificationRepoService.getDataset(domain, 0, -1));
+            createDatasetFileForMaxEntropyClassifier(domain, classificationRepoService.getDataset(domain, false, 0, -1));
             File datasetFile = getDatasetFile(domain);
             ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(datasetFile), StandardCharsets.UTF_8);
             ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
