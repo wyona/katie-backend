@@ -525,10 +525,11 @@ public class ContextService {
      * Classify a text
      * @param domainId Domain Id
      * @param text Text, e.g. "When was Michael born?"
+     * @param clientMessageId Foreign message id
      * @param limit Maximum number of labels returned
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
-    public PredictedLabelsResponse classifyText(String domainId, String text, int limit, String language) throws Exception {
+    public PredictedLabelsResponse classifyText(String domainId, String text, String clientMessageId, int limit, String language) throws Exception {
 
         Context domain = getContext(domainId);
 
@@ -543,7 +544,7 @@ public class ContextService {
 
         HitLabel[] labels = classificationService.predictLabels(domain, text, limit);
 
-        String uuid = dataRepositoryService.logPredictedLabels(domain, text, labels, classificationService.getClassificationImpl());
+        String uuid = dataRepositoryService.logPredictedLabels(domain, text, clientMessageId, labels, classificationService.getClassificationImpl());
 
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
@@ -2716,8 +2717,12 @@ public class ContextService {
         File predictedLabelsFile = dataRepositoryService.getPredictedLabelsLogFile(rating.getRequestuuid(), domain);
         if (predictedLabelsFile.isFile()) {
             try {
+                // TODO: Get all information with one call
                 Classification classification = dataRepositoryService.getTopPredictedClassification(rating.getRequestuuid(), domain);
-                saveRatingOfPredictedLabels(domain, rating, dataRepositoryService.getClassifiedText(rating.getRequestuuid(), domain), classification);
+                String text = dataRepositoryService.getClassifiedText(rating.getRequestuuid(), domain);
+                String clientMessageId = dataRepositoryService.getClientMessageId(rating.getRequestuuid(), domain);
+
+                saveRatingOfPredictedLabels(domain, rating, text, clientMessageId, classification);
 
                 sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
             } catch (Exception e) {
@@ -2731,9 +2736,10 @@ public class ContextService {
     /**
      * Save rating of predicted labels
      * @param text Text for which labels got predicted
+     * @param clientMessageId Foreign message Id
      * @param predictedClassification Predicted label with highest score
      */
-    private void saveRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String text, Classification predictedClassification) {
+    private void saveRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String text, String clientMessageId, Classification predictedClassification) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
@@ -2755,6 +2761,7 @@ public class ContextService {
         String uuid = UUID.randomUUID().toString();
         metaNode.put("id", uuid);
         metaNode.put(HumanPreferenceMeta.HUMAN_FEEDBACK, rating.getFeedback());
+        metaNode.put(HumanPreferenceMeta.CLIENT_MESSAGE_ID, clientMessageId);
 
         File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
         if (!ratingsDir.isDirectory()) {

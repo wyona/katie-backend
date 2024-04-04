@@ -853,10 +853,10 @@ public class DataRepositoryService {
     /**
      * @return uuid of log entry
      */
-    public String logPredictedLabels(Context domain, String text, HitLabel[] labels, ClassificationImpl classificationImpl) {
+    public String logPredictedLabels(Context domain, String text, String clientMessageId, HitLabel[] labels, ClassificationImpl classificationImpl) {
         // TODO: Sanitize text
         String uuid = java.util.UUID.randomUUID().toString();
-        savePredictedClassifications(uuid, domain, text, labels, classificationImpl);
+        savePredictedClassifications(uuid, domain, text, clientMessageId, labels, classificationImpl);
         return uuid;
     }
 
@@ -892,7 +892,7 @@ public class DataRepositoryService {
     /**
      *
      */
-    private void savePredictedClassifications(String uuid, Context domain, String text, HitLabel[] labels, ClassificationImpl classificationImpl) {
+    private void savePredictedClassifications(String uuid, Context domain, String text, String clientMessageId, HitLabel[] labels, ClassificationImpl classificationImpl) {
         if (!domain.getPredictedLabelsDirectory().isDirectory()) {
             domain.getPredictedLabelsDirectory().mkdir();
         }
@@ -902,6 +902,7 @@ public class DataRepositoryService {
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
+        rootNode.put(HumanPreferenceMeta.CLIENT_MESSAGE_ID, clientMessageId);
         rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
         rootNode.put("classification-implementation", classificationImpl.toString());
 
@@ -911,7 +912,6 @@ public class DataRepositoryService {
             labelNode.put(HumanPreferenceLabel.LABEL_FIELD, label.getLabel().getTerm());
             labelNode.put("id", label.getLabel().getId());
             labelNode.put("score", label.getScore());
-
             labelsNode.add(labelNode);
         }
         rootNode.put(PREDICTED_LABELS_FIELD, labelsNode);
@@ -951,6 +951,16 @@ public class DataRepositoryService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(logFile);
         return rootNode.get(HumanPreferenceLabel.TEXT_FIELD).asText();
+    }
+
+    /**
+     * Get client message id from logged request
+     */
+    public String getClientMessageId(String uuid, Context domain) throws Exception {
+        File logFile = getPredictedLabelsLogFile(uuid, domain);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(logFile);
+        return rootNode.get(HumanPreferenceMeta.CLIENT_MESSAGE_ID).asText();
     }
 
     /**

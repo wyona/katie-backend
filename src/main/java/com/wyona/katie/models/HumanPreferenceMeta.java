@@ -12,6 +12,7 @@ import java.util.Date;
 public class HumanPreferenceMeta {
 
     public final static String HUMAN_FEEDBACK = "humanFeedback";
+    public final static String CLIENT_MESSAGE_ID = "clientMessageId";
 
     private String id;
     private Integer rating;
