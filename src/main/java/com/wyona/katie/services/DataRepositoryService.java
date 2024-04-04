@@ -128,8 +128,6 @@ public class DataRepositoryService {
     private static final String EMBEDDING_VECTOR_FIELD = "embedding";
 
     private static final String PREDICTED_LABELS_FIELD = "predicted-labels";
-    private static final String LABEL_FIELD = "label";
-    private static final String TEXT_FIELD = "text";
 
     /**
      * Write embedding into a file
@@ -899,17 +897,18 @@ public class DataRepositoryService {
             domain.getPredictedLabelsDirectory().mkdir();
         }
 
+        // TODO: Use class HumanPreferenceLabel
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put("uuid", uuid);
         rootNode.put("domainId", domain.getId());
-        rootNode.put(TEXT_FIELD, text);
+        rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
         rootNode.put("classification-implementation", classificationImpl.toString());
 
         ArrayNode labelsNode = mapper.createArrayNode();
         for (HitLabel label : labels) {
             ObjectNode labelNode = mapper.createObjectNode();
-            labelNode.put(LABEL_FIELD, label.getLabel().getTerm());
+            labelNode.put(HumanPreferenceLabel.LABEL_FIELD, label.getLabel().getTerm());
             labelNode.put("id", label.getLabel().getId());
             labelNode.put("score", label.getScore());
 
@@ -936,7 +935,7 @@ public class DataRepositoryService {
         JsonNode predictedLabels = rootNode.get(PREDICTED_LABELS_FIELD);
         if (predictedLabels.isArray()) {
             JsonNode topLabel = predictedLabels.get(0);
-            Classification classification = new Classification(topLabel.get(LABEL_FIELD).asText(), topLabel.get("id").asText());
+            Classification classification = new Classification(topLabel.get(HumanPreferenceLabel.LABEL_FIELD).asText(), topLabel.get("id").asText());
             return classification;
         } else {
             log.error("No predicted labels logged!");
@@ -951,7 +950,7 @@ public class DataRepositoryService {
         File logFile = getPredictedLabelsLogFile(uuid, domain);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(logFile);
-        return rootNode.get(TEXT_FIELD).asText();
+        return rootNode.get(HumanPreferenceLabel.TEXT_FIELD).asText();
     }
 
     /**

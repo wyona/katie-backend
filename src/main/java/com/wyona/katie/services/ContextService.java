@@ -2736,12 +2736,12 @@ public class ContextService {
     private void saveRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String text, Classification predictedClassification) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
-        rootNode.put("text", text);
+        rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
         ObjectNode labelNode = mapper.createObjectNode();
         labelNode.put("id", predictedClassification.getId());
-        labelNode.put("label", predictedClassification.getTerm());
+        labelNode.put(HumanPreferenceLabel.LABEL_FIELD, predictedClassification.getTerm());
         if (rating.getRank() == 0) {
-            rootNode.put("chosenLabel", labelNode);
+            rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, labelNode);
         } else {
             rootNode.put("rejectedLabel", labelNode);
 
@@ -2765,10 +2765,6 @@ public class ContextService {
             mapper.writeValue(ratingFile, rootNode);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-        }
-
-        if (false) {
-            saveRating(domain, null, null);
         }
     }
 
@@ -3741,23 +3737,23 @@ public class ContextService {
     /**
      * Get preferences / ratings of predicted labels of a particular domain
      */
-    public HumanPreference[] getRatingsOfPredictedLabels(String domainId) throws Exception {
-        List<HumanPreference> preferences = new ArrayList<>();
+    public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId) throws Exception {
+        List<HumanPreferenceLabel> preferences = new ArrayList<>();
 
         Context domain = getDomain(domainId);
-        File ratingsDir = domain.getRatingsDirectory();
+        File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
         File[] ratingFiles = ratingsDir.listFiles();
         ObjectMapper mapper = new ObjectMapper();
         if (ratingFiles != null) {
             for (File ratingFile : ratingFiles) {
-                HumanPreference humanPreference = mapper.readValue(ratingFile, HumanPreference.class);
+                HumanPreferenceLabel humanPreference = mapper.readValue(ratingFile, HumanPreferenceLabel.class);
                 preferences.add(humanPreference);
             }
         } else {
             log.warn("No preferences / ratings yet.");
         }
 
-        return preferences.toArray(new HumanPreference[0]);
+        return preferences.toArray(new HumanPreferenceLabel[0]);
     }
 
     /**

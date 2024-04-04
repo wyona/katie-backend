@@ -262,7 +262,7 @@ public class FeedbackController {
                 }
                  */
 
-                HumanPreference[] preferences = domainService.getRatingsOfPredictedLabels(domainId);
+                HumanPreferenceLabel[] preferences = domainService.getRatingsOfPredictedLabels(domainId);
                 return new ResponseEntity<>(preferences, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
