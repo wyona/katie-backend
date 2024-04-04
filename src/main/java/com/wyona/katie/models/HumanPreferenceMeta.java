@@ -13,11 +13,13 @@ public class HumanPreferenceMeta {
 
     public final static String HUMAN_FEEDBACK = "humanFeedback";
     public final static String CLIENT_MESSAGE_ID = "clientMessageId";
+    public final static String REQUEST_UUID = "requestUuid";
 
     private String id;
     private Integer rating;
     private Long epochTime;
     private String questionUuid;
+    private String requestUuid;
     private String qnaUuid;
     private String humanFeedback;
     private String userEmail;
@@ -72,6 +74,20 @@ public class HumanPreferenceMeta {
      */
     public Long getEpochTime() {
         return epochTime;
+    }
+
+    /**
+     *
+     */
+    public void setRequestUuid(String requestUuid) {
+        this.requestUuid = requestUuid;
+    }
+
+    /**
+     *
+     */
+    public String getRequestUuid() {
+        return requestUuid;
     }
 
     /**
