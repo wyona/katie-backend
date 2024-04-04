@@ -2798,13 +2798,19 @@ public class ContextService {
                 String email = user.getEmail();
 
                 // TODO: Use template, see for example feedback_re_answer_en.ftl
-                String body = "A user has provided positive / negative feedback re predicted label '" + classification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")";
-                if (true) {
-                    body = body + "\n\nFeedback: " + rating.getFeedback();
+                StringBuilder body = new StringBuilder("A user has provided ");
+                if (rating.getRank() == 0) {
+                    body.append("positive");
+                } else {
+                    body.append("negative");
+                }
+                body.append(" feedback re predicted label '" + classification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")");
+                if (rating.getFeedback() != null) {
+                    body.append("\n\nFeedback: " + rating.getFeedback());
                 }
 
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
-                mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, body.toString(), true);
             } else {
                 log.warn("No such user '" + userId + "'.");
             }
