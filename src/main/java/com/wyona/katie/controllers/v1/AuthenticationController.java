@@ -387,15 +387,15 @@ public class AuthenticationController {
 
             String username = logout(response);
 
-            Message msg = new Message();
+            LogoutResponse logoutResponse = new LogoutResponse();
             if (username != null) {
-                msg.setMessage("User '" + username + "' logged out successfully.");
+                logoutResponse.setMessage("User '" + username + "' logged out successfully.");
             } else {
-                msg.setMessage("User is not signed in, so cannot be logged out.");
+                logoutResponse.setMessage("User is not signed in, so cannot be logged out.");
             }
-            log.info(msg.getMessage());
+            log.info(logoutResponse.toString());
 
-            return new ResponseEntity<>(msg, HttpStatus.OK);
+            return new ResponseEntity<>(logoutResponse, HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "AUTHENTICATION_FAILED"), HttpStatus.BAD_REQUEST);
