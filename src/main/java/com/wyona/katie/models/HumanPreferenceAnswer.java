@@ -2,13 +2,11 @@ package com.wyona.katie.models;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
-
 /**
  *
  */
 @Slf4j
-public class HumanPreference {
+public class HumanPreferenceAnswer {
 
     private String humanMessage;
     private String chosenAnswer;
@@ -20,7 +18,7 @@ public class HumanPreference {
     /**
      *
      */
-    public HumanPreference() {
+    public HumanPreferenceAnswer() {
         this.humanMessage = null;
         this.chosenAnswer = null;
         this.rejectedAnswer = null;

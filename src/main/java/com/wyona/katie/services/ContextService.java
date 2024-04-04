@@ -3669,7 +3669,7 @@ public class ContextService {
     private void saveRating(Context domain, Rating rating, String answer) {
         log.info("Save rating of answer '" + rating.getQnauuid() + "' for question '" + rating.getQuestionuuid() + "' ...");
 
-        HumanPreference humanPreference = new HumanPreference();
+        HumanPreferenceAnswer humanPreference = new HumanPreferenceAnswer();
         humanPreference.setHumanMessage(rating.getUserquestion());
         if (rating.getRating() < 5) {
             humanPreference.setRejectedAnswer(answer);
@@ -3722,8 +3722,8 @@ public class ContextService {
     /**
      * Get preferences / ratings of answers of a particular domain
      */
-    public HumanPreference[] getRatingsOfAnswers(String domainId) throws Exception {
-        List<HumanPreference> preferences = new ArrayList<>();
+    public HumanPreferenceAnswer[] getRatingsOfAnswers(String domainId) throws Exception {
+        List<HumanPreferenceAnswer> preferences = new ArrayList<>();
 
         Context domain = getDomain(domainId);
         File ratingsDir = domain.getRatingsDirectory();
@@ -3731,14 +3731,14 @@ public class ContextService {
         ObjectMapper mapper = new ObjectMapper();
         if (ratingFiles != null) {
             for (File ratingFile : ratingFiles) {
-                HumanPreference humanPreference = mapper.readValue(ratingFile, HumanPreference.class);
+                HumanPreferenceAnswer humanPreference = mapper.readValue(ratingFile, HumanPreferenceAnswer.class);
                 preferences.add(humanPreference);
             }
         } else {
             log.warn("No preferences / ratings yet.");
         }
 
-        return preferences.toArray(new HumanPreference[0]);
+        return preferences.toArray(new HumanPreferenceAnswer[0]);
     }
 
     /**
