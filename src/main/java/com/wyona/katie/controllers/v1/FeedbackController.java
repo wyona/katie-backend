@@ -39,7 +39,6 @@ public class FeedbackController {
     private RememberMeService rememberMeService;
 
     // TODO: Rate QnA, move QuestionController#rateQnA()
-    // TODO: Get ratings of predicted labels (Preference dataset)
 
     /**
      * REST interface such that user can rate received answer
@@ -226,6 +225,51 @@ public class FeedbackController {
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * REST interface to get ratings of predicted labels (as preference dataset)
+     * TODO: Filtering, Sorting, Pagination: https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
+     */
+    @RequestMapping(value = "/ratings-of-predicted-labels", method = RequestMethod.GET, produces = "application/json")
+    @ApiOperation(value="Get ratings of predicted labels (as preference dataset)")
+    public ResponseEntity<?> getRatingsOfPredictedLabels(
+            @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
+            @RequestParam(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned ratings", required = true, defaultValue = "10")
+            @RequestParam(value = "limit", required = true) int limit,
+            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned ratings", required = true, defaultValue = "0")
+            @RequestParam(value = "offset", required = true) int offset,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        log.info("Get all ratings ...");
+
+        rememberMeService.tryAutoLogin(request, response);
+
+        try {
+            if (domainService.isMemberOrAdmin(domainId)) {
+
+                // TEST: Uncomment lines below to test frotend spinner
+                /*
+                try {
+                    for (int i = 0; i < 1; i++) {
+                        log.info("Sleep for 2 seconds ...");
+                        Thread.sleep(2000);
+                    }
+                } catch(Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+                 */
+
+                HumanPreference[] preferences = domainService.getRatingsOfPredictedLabels(domainId);
+                return new ResponseEntity<>(preferences, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 }
