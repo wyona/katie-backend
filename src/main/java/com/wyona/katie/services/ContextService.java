@@ -3737,6 +3737,29 @@ public class ContextService {
 
         return preferences.toArray(new HumanPreference[0]);
     }
+
+    /**
+     * Get preferences / ratings of predicted labels of a particular domain
+     */
+    public HumanPreference[] getRatingsOfPredictedLabels(String domainId) throws Exception {
+        List<HumanPreference> preferences = new ArrayList<>();
+
+        Context domain = getDomain(domainId);
+        File ratingsDir = domain.getRatingsDirectory();
+        File[] ratingFiles = ratingsDir.listFiles();
+        ObjectMapper mapper = new ObjectMapper();
+        if (ratingFiles != null) {
+            for (File ratingFile : ratingFiles) {
+                HumanPreference humanPreference = mapper.readValue(ratingFile, HumanPreference.class);
+                preferences.add(humanPreference);
+            }
+        } else {
+            log.warn("No preferences / ratings yet.");
+        }
+
+        return preferences.toArray(new HumanPreference[0]);
+    }
+
     /**
      * @param channelRequestId Channel request Id, e.g. "3139c14f-ae63-4fc4-abe2-adceb67988af"
      * @param threadId Thread Id, e.g. "1084254275661725697" in the case of Discord or "C045ZFM7PUH-1678626022.589689" in the case of Slack
