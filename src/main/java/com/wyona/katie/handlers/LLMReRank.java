@@ -98,7 +98,7 @@ public class LLMReRank implements ReRankProvider {
     }
 
     /**
-     *
+     * https://huggingface.co/docs/transformers/main/tasks/prompting
      */
     private String getMultipleChoicePrompt(String question, String[] answers, int item_number_none_of_the_answers)  {
 
