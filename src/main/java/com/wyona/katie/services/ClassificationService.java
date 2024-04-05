@@ -2,6 +2,7 @@ package com.wyona.katie.services;
 
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierEmbeddingsCentroidsImpl;
+import com.wyona.katie.handlers.mcc.MulticlassTextClassifierLLMImpl;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierMaximumEntropyImpl;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,9 @@ public class ClassificationService {
 
     @Autowired
     private MulticlassTextClassifierMaximumEntropyImpl classifierMaximumEntropy;
+
+    @Autowired
+    private MulticlassTextClassifierLLMImpl classifierLLM;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -77,15 +81,18 @@ public class ClassificationService {
     public ClassificationImpl getClassificationImpl() {
         // TODO: Make configurable per domain
         return ClassificationImpl.CENTROID_MATCHING;
+        //return ClassificationImpl.LLM;
         //return ClassificationImpl.MAX_ENTROPY;
     }
 
     /**
-     *
+     * Get classifier implementation
      */
     public MulticlassTextClassifier getClassifier(ClassificationImpl impl) {
         if (impl.equals(ClassificationImpl.MAX_ENTROPY)) {
             return classifierMaximumEntropy;
+        } else if (impl.equals(ClassificationImpl.LLM)) {
+            return classifierLLM;
         } else {
             return classifierEmbeddingsCentroid;
         }
