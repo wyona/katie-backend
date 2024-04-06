@@ -89,9 +89,15 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             String[] possibleCategories = completedText.split(",");
 
             for (String possibleCategory : possibleCategories) {
-                Classification classification = new Classification(possibleCategory, "TODO");
-                HitLabel hitLabel = new HitLabel(classification, -1);
-                hitLabels.add(hitLabel);
+                Classification classification = searchClassification(possibleCategory, dataset.getLabels());
+                if (classification != null) {
+                    if (!isDuplicate(classification, hitLabels)) {
+                        HitLabel hitLabel = new HitLabel(classification, -1);
+                        hitLabels.add(hitLabel);
+                    }
+                } else {
+                    log.info("No such classification '" + possibleCategory + "'!");
+                }
             }
         } else {
             log.info("No category matched.");
@@ -130,5 +136,29 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
         prompt.append("\n\nText: " + text);
         return prompt.toString();
+    }
+
+    /**
+     * @param query Query, e.g. "Identität" or "Zugang (SK)" or "Passwort-Reset (SK)"
+     */
+    private Classification searchClassification(String query, Classification[] classifications) {
+        for (Classification classification : classifications) {
+            if (classification.getTerm().contains(query)) {
+                return classification;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return true when classification is already contained and false otherwise
+     */
+    private boolean isDuplicate(Classification classification, List<HitLabel> hitLabels) {
+        for (HitLabel hitLabel : hitLabels) {
+            if (hitLabel.getLabel().getId().equals(classification.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
