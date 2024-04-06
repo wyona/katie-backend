@@ -39,6 +39,8 @@ public class Context {
     private CompletionImpl generateImpl;
     private List<PromptMessage> promptMessages;
 
+    private ClassificationImpl classifierImpl;
+
     private NerImpl nerImpl;
 
     private Double scoreThreshold; // INFO: Independent of search implementation, whereas also see implementation specific thresholds: weaviateCertaintyThreshold, sentenceBERTDistanceThreshold
@@ -920,6 +922,20 @@ public class Context {
      */
     public void setCompletionImpl(CompletionImpl generateImpl) {
         this.generateImpl = generateImpl;
+    }
+
+    /**
+     *
+     */
+    public void setClassifierImpl(ClassificationImpl classifierImpl) {
+        this.classifierImpl = classifierImpl;
+    }
+
+    /**
+     *
+     */
+    public ClassificationImpl getClassifierImpl() {
+        return classifierImpl;
     }
 
     /**

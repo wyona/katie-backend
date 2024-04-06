@@ -67,7 +67,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels())));
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
-        // TODO: Create LLM service, which can also be used by LLMReRank,etc.
+        // TODO: Create LLMService / GenAIService, which can also be used by LLMReRank,etc.
         GenerateProvider generateMistralCloud = mistralAIGenerate;
         GenerateProvider generateOllama = ollamaGenerate;
         GenerateProvider generateOpenAI = openAIGenerate;

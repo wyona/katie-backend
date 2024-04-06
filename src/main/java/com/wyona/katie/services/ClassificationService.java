@@ -43,7 +43,7 @@ public class ClassificationService {
      * @return array of suggested labels
      */
     public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
-        HitLabel[] hitLabels = getClassifier(getClassificationImpl(domain)).predictLabels(domain, text, limit);
+        HitLabel[] hitLabels = getClassifier(domain.getClassifierImpl()).predictLabels(domain, text, limit);
         for (HitLabel hitLabel : hitLabels) {
             String labelId = hitLabel.getLabel().getId();
             hitLabel.getLabel().setTerm(classificationRepoService.getLabelName(domain, labelId));
@@ -57,8 +57,8 @@ public class ClassificationService {
      */
     @Async
     public void retrain(Context domain, int trainPercentage, String bgProcessId, String userId) {
-        backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + getClassificationImpl(domain) + "' for domain '" + domain.getId() + "'.", userId);
-        MulticlassTextClassifier classifier = getClassifier(getClassificationImpl(domain));
+        backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
+        MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
         try {
             classifier.retrain(domain, bgProcessId);
         } catch (Exception e) {
@@ -73,16 +73,6 @@ public class ClassificationService {
      */
     public void importSample(Context domain, TextSample sample) throws Exception {
         classificationRepoService.saveSample(domain, sample);
-    }
-
-    /**
-     * Get classifier implementation
-     */
-    public ClassificationImpl getClassificationImpl(Context domain) {
-        // TODO: Make configurable per domain
-        //return ClassificationImpl.CENTROID_MATCHING;
-        return ClassificationImpl.LLM;
-        //return ClassificationImpl.MAX_ENTROPY;
     }
 
     /**

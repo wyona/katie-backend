@@ -166,6 +166,9 @@ public class XMLService {
     private static final String CONTEXT_SCORE_THRESHOLD_ATTR = "score-threshold";
     private static final String CONTEXT_ANALYZE_MESSAGES_ASK_REST_API = "analyze-messages-ask-rest-api";
 
+    private static final String CONTEXT_CLASSIFICATION_TAG = "classification";
+    private static final String CONTEXT_CLASSIFIER_IMPL_ATTR = "classifier-impl";
+
     private static final String CONTEXT_INFORM_WHEN_NO_ANSWER_TAG = "inform-user-when-no-answer-available";
     private static final String CONTEXT_INFORM_WHEN_NO_ANSWER_ENABLED_ATTR = "enabled";
 
@@ -1814,12 +1817,19 @@ public class XMLService {
             katieSearchEnabled = getAttributeBooleanValue(indexSearchPipelineEl, CONTEXT_KATIE_SEARCH_ENABLED_ATTR, true);
         }
 
+        ClassificationImpl classificationImpl = ClassificationImpl.CENTROID_MATCHING;
+        Element classificationEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_CLASSIFICATION_TAG);
+        if (classificationEl != null) {
+            classificationImpl = ClassificationImpl.valueOf(classificationEl.getAttribute(CONTEXT_CLASSIFIER_IMPL_ATTR));
+        }
+
         String reindexBackgroundProcessId = getReindexProcessId(domainId);
 
         Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled, reindexBackgroundProcessId);
         domain.setInformUserReNoAnswerAvailable(informUserReNoAnswerAvailable);
         domain.setReRankImpl(reRankImpl);
         domain.setReRankLLMImpl(reRankLLMDefaultImpl); // TODO: Make configurable
+        domain.setClassifierImpl(classificationImpl);
 
         domain.setCompletionImpl(generateImpl);
         Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
