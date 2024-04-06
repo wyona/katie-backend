@@ -544,13 +544,13 @@ public class ContextService {
 
         HitLabel[] labels = classificationService.predictLabels(domain, text, limit);
 
-        String uuid = dataRepositoryService.logPredictedLabels(domain, text, clientMessageId, labels, classificationService.getClassificationImpl());
+        String uuid = dataRepositoryService.logPredictedLabels(domain, text, clientMessageId, labels, classificationService.getClassificationImpl(domain));
 
         PredictedLabelsResponse response = new PredictedLabelsResponse();
 
         response.setRequestUuid(uuid);
         response.setPredictedLabels(labels);
-        response.setClassificationImpl(classificationService.getClassificationImpl());
+        response.setClassificationImpl(classificationService.getClassificationImpl(domain));
         response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain, uuid, language));
 
         return response;
