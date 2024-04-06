@@ -1420,6 +1420,10 @@ public class XMLService {
         }
         doc.getDocumentElement().appendChild(indexSearchPipelineEl);
 
+        Element classificationEl = doc.createElement(CONTEXT_CLASSIFICATION_TAG);
+        classificationEl.setAttribute(CONTEXT_CLASSIFIER_IMPL_ATTR, context.getClassifierImpl().toString());
+        doc.getDocumentElement().appendChild(classificationEl);
+
         if (context.getPromptMessages().size() > 0) {
             Element promptMessagesEl = doc.createElement(CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
             doc.getDocumentElement().appendChild(promptMessagesEl);
@@ -1817,7 +1821,7 @@ public class XMLService {
             katieSearchEnabled = getAttributeBooleanValue(indexSearchPipelineEl, CONTEXT_KATIE_SEARCH_ENABLED_ATTR, true);
         }
 
-        ClassificationImpl classificationImpl = ClassificationImpl.CENTROID_MATCHING;
+        ClassificationImpl classificationImpl = ClassificationImpl.CENTROID_MATCHING; // INFO: Default
         Element classificationEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_CLASSIFICATION_TAG);
         if (classificationEl != null) {
             classificationImpl = ClassificationImpl.valueOf(classificationEl.getAttribute(CONTEXT_CLASSIFIER_IMPL_ATTR));
