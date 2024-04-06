@@ -85,7 +85,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         log.info("Completed text: " + completedText);
 
         if (!completedText.contains(NOT_APPLICABLE)) {
-            // TODO: Split answer into classifications and verify labels, such that LLM does not invent categories, like for example "Passwort-Reset (SK)"
+            // INFO: Split answer into classifications and verify labels, such that LLM does not invent categories, like for example "Passwort-Reset (SK)"
             String[] possibleCategories = completedText.split(",");
 
             for (String possibleCategory : possibleCategories) {
