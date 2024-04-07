@@ -2727,6 +2727,9 @@ public class ContextService {
 
                 saveRatingOfPredictedLabels(domain, rating, text, clientMessageId, classification);
 
+                // TODO: Log feedback
+                //analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
+
                 sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -2820,6 +2823,8 @@ public class ContextService {
                 if (rating.getFeedback() != null) {
                     body.append("\n\nFeedback: " + rating.getFeedback());
                 }
+                String ratingsLink = domain.getHost() + "/api/v1/feedback/ratings-of-predicted-labels?domain-id=" + domain.getId() + "&limit=10&offset=0";
+                body.append("\n\nAll ratings: " + ratingsLink);
 
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body.toString(), true);
