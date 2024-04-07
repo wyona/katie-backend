@@ -15,6 +15,7 @@ public class RatingPredictedLabels {
     private Integer rank;
     private String feedback;
     private String email;
+    private String bestFittingLabelId;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -26,6 +27,7 @@ public class RatingPredictedLabels {
         this.rank = -1;
         this.feedback = null;
         this.email = null;
+        this.bestFittingLabelId = null;
     }
 
     /**
@@ -96,5 +98,19 @@ public class RatingPredictedLabels {
      */
     public String getFeedback() {
         return feedback;
+    }
+
+    /**
+     *
+     */
+    public void setBestFittingLabelId(String bestFittingLabelId) {
+        this.bestFittingLabelId = bestFittingLabelId;
+    }
+
+    /**
+     *
+     */
+    public String getBestFittingLabelId() {
+        return bestFittingLabelId;
     }
 }

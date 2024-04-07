@@ -2749,7 +2749,14 @@ public class ContextService {
         if (rating.getRank() == 0) {
             rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, labelNode);
         } else {
-            rootNode.put("rejectedLabel", labelNode);
+            rootNode.put(HumanPreferenceLabel.REJECTED_LABEL_FIELD, labelNode);
+
+            if (rating.getBestFittingLabelId() != null) {
+                ObjectNode bestFittingLabelNode = mapper.createObjectNode();
+                bestFittingLabelNode.put("id", rating.getBestFittingLabelId());
+                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_FIELD, "TODO");
+                rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, bestFittingLabelNode);
+            }
 
             // TODO: Label was not correct, but check whether it was part of predicted labels with lower score
             if (rating.getRank() != -1) {
