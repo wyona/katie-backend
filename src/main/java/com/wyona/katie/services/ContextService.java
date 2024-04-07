@@ -101,6 +101,9 @@ public class ContextService {
     private DataRepositoryService dataRepositoryService;
 
     @Autowired
+    private ClassificationRepositoryService classificationRepositoryService;
+
+    @Autowired
     private AIService aiService;
 
     @Autowired
@@ -2754,7 +2757,8 @@ public class ContextService {
             if (rating.getBestFittingLabelId() != null) {
                 ObjectNode bestFittingLabelNode = mapper.createObjectNode();
                 bestFittingLabelNode.put("id", rating.getBestFittingLabelId());
-                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_FIELD, "TODO");
+                String labelName = classificationRepositoryService.getLabelName(domain, rating.getBestFittingLabelId());
+                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_FIELD, labelName);
                 rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, bestFittingLabelNode);
             }
 
