@@ -1036,6 +1036,37 @@ public class DomainController {
     }
 
     /**
+     * Get classification labels of a particular domain
+     */
+    @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value="Get classification labels")
+    public ResponseEntity<?> getClassificationLabels(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Context domain = domainService.getDomain(id);
+
+            // TODO: Implement offset and limit
+            int offset = 0;
+            int limit = 10000;
+            ClassificationDataset dataset = classificationService.getDataset(domain, true, offset, limit);
+            return new ResponseEntity<>(dataset.getLabels(), HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Retrain classifier
      */
     @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
