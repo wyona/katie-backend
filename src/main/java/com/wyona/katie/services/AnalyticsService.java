@@ -31,6 +31,9 @@ public class AnalyticsService {
     private static final String EVENT_TYPE_FEEDBACK_10 = "feedb_10";
     private static final String EVENT_TYPE_FEEDBACK_1 = "feedb_1";
 
+    private static final String EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_POSITIVE = "feedb_label_pos";
+    private static final String EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_NEGATIVE = "feedb_label_neg";
+
     /**
      * Log that a message was reveived
      *
@@ -150,9 +153,9 @@ public class AnalyticsService {
     }
 
     /**
-     * Log postive/negative feedback
+     * Log postive / negative feedback re answer
      */
-    public void logFeedback(String domainId, int rating, String email) {
+    public void logFeedbackReAnswer(String domainId, int rating, String email) {
         Date current = new Date();
         String agent = "TODO";
         String remoteAddress = "TODO";
@@ -161,6 +164,24 @@ public class AnalyticsService {
                 dataRepositoryService.logAnalyticsEvent(domainId, EVENT_TYPE_FEEDBACK_1, null, ChannelType.UNDEFINED, null, agent, remoteAddress, email);
             } else {
                 dataRepositoryService.logAnalyticsEvent(domainId, EVENT_TYPE_FEEDBACK_10, null, ChannelType.UNDEFINED, null, agent, remoteAddress, email);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Log postive / negative feedback re predicted label
+     */
+    public void logFeedbackRePredictedLabel(String domainId, int rank, String email) {
+        Date current = new Date();
+        String agent = "TODO";
+        String remoteAddress = "TODO";
+        try {
+            if (rank == 0) {
+                dataRepositoryService.logAnalyticsEvent(domainId, EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_POSITIVE, null, ChannelType.UNDEFINED, null, agent, remoteAddress, email);
+            } else {
+                dataRepositoryService.logAnalyticsEvent(domainId, EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_NEGATIVE, null, ChannelType.UNDEFINED, null, agent, remoteAddress, email);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -320,9 +341,9 @@ public class AnalyticsService {
     }
 
     /**
-     * Total number of positive feedbacks in the specified time period
+     * Total number of positive feedbacks re answers in the specified time period
      */
-    public int getNumberOfPositiveFeedbacks(String domainId, Date start, Date end) {
+    public int getNumberOfPositiveFeedbacksReAnswers(String domainId, Date start, Date end) {
         try {
             return dataRepositoryService.getNumberOfEvents(domainId, EVENT_TYPE_FEEDBACK_10, null, start, end);
         } catch(Exception e) {
@@ -332,9 +353,9 @@ public class AnalyticsService {
     }
 
     /**
-     * Total number of negative feedbacks in the specified time period
+     * Total number of negative feedbacks re answers in the specified time period
      */
-    public int getNumberOfNegativeFeedbacks(String domainId, Date start, Date end) {
+    public int getNumberOfNegativeFeedbacksReAnswers(String domainId, Date start, Date end) {
         try {
             return dataRepositoryService.getNumberOfEvents(domainId, EVENT_TYPE_FEEDBACK_1, null, start, end);
         } catch(Exception e) {

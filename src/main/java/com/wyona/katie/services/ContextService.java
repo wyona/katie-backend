@@ -933,9 +933,8 @@ public class ContextService {
 
         insights.setNumberOfQuestionsSentToExpert(analyticsService.getNumberOfQuestionsSentToExpert(domainId, start, end));
 
-        insights.setNumberOfPositiveFeedbacks(analyticsService.getNumberOfPositiveFeedbacks(domainId, start, end));
-
-        insights.setNumberOfNegativeFeedbacks(analyticsService.getNumberOfNegativeFeedbacks(domainId, start, end));
+        insights.setNumberOfPositiveFeedbacks(analyticsService.getNumberOfPositiveFeedbacksReAnswers(domainId, start, end));
+        insights.setNumberOfNegativeFeedbacks(analyticsService.getNumberOfNegativeFeedbacksReAnswers(domainId, start, end));
 
         insights.setNumberOfApprovedAnswers(analyticsService.getNumberOfApprovedAnswers(domainId, start, end));
         insights.setNumberOfDiscardedAnswers(analyticsService.getNumberOfDiscardedAnswers(domainId, start, end));
@@ -996,7 +995,7 @@ public class ContextService {
     }
 
     /**
-     *
+     * Get number of events of a particular type
      */
     private int getNumberOfEvents(String domainId, EventType type, Date start, Date end) throws Exception {
         if (type == EventType.QUESTION_SENT_TO_EXPERT) {
@@ -1004,9 +1003,9 @@ public class ContextService {
         } else if(type == EventType.MESSAGE_RECEIVED) {
             return analyticsService.getNumberOfReceivedMessages(domainId, start, end);
         } else if(type == EventType.FEEDBACK_1) {
-            return analyticsService.getNumberOfNegativeFeedbacks(domainId, start, end);
+            return analyticsService.getNumberOfNegativeFeedbacksReAnswers(domainId, start, end);
         } else if(type == EventType.FEEDBACK_10) {
-            return analyticsService.getNumberOfPositiveFeedbacks(domainId, start, end);
+            return analyticsService.getNumberOfPositiveFeedbacksReAnswers(domainId, start, end);
         } else if(type == EventType.GET_FAQ) {
             // TODO: Make language selectable
             return analyticsService.getFAQPageviews(domainId, "en", start, end);
@@ -2702,7 +2701,7 @@ public class ContextService {
             saveRating(domain, rating, Utils.convertHtmlToPlainText(qna.getAnswer()));
             dataRepositoryService.updateStatusOfResubmittedQuestion(qna.getUuid(), StatusResubmittedQuestion.STATUS_ANSWER_RATED);
 
-            analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
+            analyticsService.logFeedbackReAnswer(domain.getId(), rating.getRating(), rating.getEmail());
 
             String askedQuestion = qna.getOriginalquestion();
             if (rating.getUserquestion() != null) {
@@ -2741,8 +2740,7 @@ public class ContextService {
 
                 saveRatingOfPredictedLabels(domain, rating, text, clientMessageId, topPredictedClassification);
 
-                // TODO: Log feedback
-                //analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
+                analyticsService.logFeedbackRePredictedLabel(domain.getId(), rating.getRank(), rating.getEmail());
 
                 sendNotificationsReRatingOfPredictedLabels(domain, rating, topPredictedClassification);
             } catch (Exception e) {
