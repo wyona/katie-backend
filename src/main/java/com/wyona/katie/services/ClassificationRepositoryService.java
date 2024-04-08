@@ -27,10 +27,16 @@ public class ClassificationRepositoryService {
      */
     public ClassificationDataset getDataset(Context domain, boolean labelsOnly, int offset, int limit) throws Exception {
         log.info("Get classification dataset of domain '" + domain.getId() + "' ...");
+        ClassificationDataset dataset = new ClassificationDataset(domain.getName());
+
         File classifcationsDir = getClassifcationsDir(domain);
+        if (!classifcationsDir.isDirectory()) {
+            log.warn("No classifications dataset imported yet!");
+            return dataset;
+        }
+
         File[] dirs = classifcationsDir.listFiles();
 
-        ClassificationDataset dataset = new ClassificationDataset(domain.getName());
         for (File labelDir : dirs) {
             if (labelDir.isDirectory()) {
                 String labelId = labelDir.getName();
