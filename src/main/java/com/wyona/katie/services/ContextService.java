@@ -3793,6 +3793,14 @@ public class ContextService {
         if (ratingFiles != null) {
             for (File ratingFile : ratingFiles) {
                 HumanPreferenceLabel humanPreference = mapper.readValue(ratingFile, HumanPreferenceLabel.class);
+                if (humanPreference.getChosenLabel() != null) {
+                    Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getChosenLabel().getKatieId());
+                    humanPreference.getChosenLabel().setId(classification.getId());
+                }
+                if (humanPreference.getRejectedLabel() != null) {
+                    Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getRejectedLabel().getKatieId());
+                    humanPreference.getRejectedLabel().setId(classification.getId());
+                }
                 preferences.add(humanPreference);
             }
         } else {
