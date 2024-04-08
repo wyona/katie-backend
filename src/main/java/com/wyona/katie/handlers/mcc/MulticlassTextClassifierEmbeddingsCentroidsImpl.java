@@ -80,7 +80,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         int counter = 0;
         final int BATCH_SIZE = 100;
         for (TextSample sample : samples) {
-            log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Class Id: " + sample.getClassification().getId());
+            log.info("Train Sample: Text: " + sample.getText() + ", Class Name / Label: " + sample.getClassification().getTerm() + ", Foreign class Id: " + sample.getClassification().getId());
             try {
                 trainSample(domain, sample);
                 counter++;
@@ -127,7 +127,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             String labelUuid = doc.get(LABEL_UUID_FIELD);
             log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, null, labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
@@ -153,7 +153,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             String labelUuid = doc.get(LABEL_UUID_FIELD);
             log.info("Centroid vector found with label ID '" + labelUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, null, labelUuid), scoreDoc.score));
         }
         indexReader.close();
 
@@ -164,14 +164,14 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * Train classification sample
      */
     private void trainSample(Context domain, TextSample sample) throws Exception {
-        if (sample.getClassification().getId() == null) {
-            log.warn("No class ID available for class name '" + sample.getClassification().getTerm() + "', therefore do not train classifier!");
+        if (sample.getClassification().getKatieId() == null) {
+            log.warn("No Katie class ID available for class name '" + sample.getClassification().getTerm() + "', therefore do not train classifier!");
             return;
         }
 
         log.info("Train classification sample ...");
 
-        String classId = sample.getClassification().getId();
+        String classId = sample.getClassification().getKatieId();
 
         Vector sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);

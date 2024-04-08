@@ -39,13 +39,14 @@ public class ClassificationRepositoryService {
 
         for (File labelDir : dirs) {
             if (labelDir.isDirectory()) {
-                String labelId = labelDir.getName();
-                Classification classification = new Classification(getLabelName(domain, labelId), labelId);
+                String labelKatieId = labelDir.getName();
+                Classification classification = getClassification(domain, labelKatieId);
 
-                File samplesDir = getSamplesDir(domain, labelId);
+                File samplesDir = getSamplesDir(domain, labelKatieId);
                 File[] samplesFiles = samplesDir.listFiles();
                 classification.setFrequency(samplesFiles.length);
-                log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + labelId);
+                log.debug(classification.getFrequency() + " samples exists for classification '" + classification.getTerm() + "' / " + classification.getId() + " / " + classification.getKatieId());
+
                 if (!labelsOnly) {
                     for (File sampleFile : samplesFiles) {
                         String sampleText = readSampleText(sampleFile);
@@ -66,41 +67,46 @@ public class ClassificationRepositoryService {
      *
      */
     public void saveSample(Context domain, TextSample sample) throws Exception {
-        File labelDir = getLabelDir(domain, sample.getClassification().getId());
+        String katieId = getLabelKatieId(sample.getClassification().getId());
+
+        sample.getClassification().setKatieId(katieId);
+
+        File labelDir = getLabelDir(domain, katieId);
         if (!labelDir.isDirectory()) {
             labelDir.mkdirs();
-            File metaFile = getMetaFile(domain, sample.getClassification().getId());
+            File labelFile = getLabelFile(domain, katieId);
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(metaFile, sample.getClassification());
+            mapper.writeValue(labelFile, sample.getClassification());
         }
 
         log.info("Save sample '" + sample.getId() + "' ...");
-        File samplesDir = getSamplesDir(domain, sample.getClassification().getId());
+        File samplesDir = getSamplesDir(domain, katieId);
         if (!samplesDir.isDirectory()) {
             samplesDir.mkdirs();
         }
-        File sampleFile = getSampleFile(domain, sample.getClassification().getId(), sample.getId());
+        File sampleFile = getSampleFile(domain, katieId, sample.getId());
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(sampleFile, sample);
 ;    }
 
     /**
-     * @param labelUuid Label ID, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
+     * @param labelKatieId Label Id assigned by Katie, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      * @return label name, e.g. "Managed Device Services, MacOS Clients"
      */
-    public String getLabelName(Context domain, String labelUuid) {
-        File metaFile = getMetaFile(domain, labelUuid);
+    public Classification getClassification(Context domain, String labelKatieId) {
+        File metaFile = getLabelFile(domain, labelKatieId);
         if (metaFile.exists()) {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 Classification classification = mapper.readValue(metaFile, Classification.class);
-                return classification.getTerm();
+                return classification;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
 
-        return "No class name available";
+        log.error("No such classification: " + metaFile.getAbsolutePath());
+        return null;
     }
 
 
@@ -121,30 +127,38 @@ public class ClassificationRepositoryService {
     }
 
     /**
-     *
+     * @param labelKatieId Label Id assigned by Katie
      */
-    private File getLabelDir(Context domain, String classId) {
-        return new File(getClassifcationsDir(domain), classId);
+    private File getLabelDir(Context domain, String labelKatieId) {
+        return new File(getClassifcationsDir(domain), labelKatieId);
+    }
+
+    /**
+     * @param labelKatieId Label Id assigned by Katie
+     * @return file containing information about label
+     */
+    private File getLabelFile(Context domain, String labelKatieId) {
+        return new File(getLabelDir(domain, labelKatieId), "meta.json");
+    }
+
+    /**
+     * @param labelKatieId Label Id assigned by Katie
+     */
+    private File getSamplesDir(Context domain, String labelKatieId) {
+        return new File(getLabelDir(domain, labelKatieId),"samples");
+    }
+
+    /**
+     * @param labelKatieId Label Id assigned by Katie
+     */
+    private File getSampleFile(Context domain, String labelKatieId, String sampleId) {
+        return new File(getSamplesDir(domain, labelKatieId), sampleId + ".json");
     }
 
     /**
      *
      */
-    private File getMetaFile(Context domain, String classId) {
-        return new File(getLabelDir(domain, classId), "meta.json");
-    }
-
-    /**
-     *
-     */
-    private File getSamplesDir(Context domain, String classId) {
-        return new File(getLabelDir(domain, classId),"samples");
-    }
-
-    /**
-     *
-     */
-    private File getSampleFile(Context domain, String classId, String sampleId) {
-        return new File(getSamplesDir(domain, classId), sampleId + ".json");
+    private String getLabelKatieId(String labelForeignId) {
+        return "" + labelForeignId.hashCode();
     }
 }

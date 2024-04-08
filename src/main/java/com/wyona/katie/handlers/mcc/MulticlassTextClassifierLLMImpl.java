@@ -155,7 +155,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      */
     private boolean isDuplicate(Classification classification, List<HitLabel> hitLabels) {
         for (HitLabel hitLabel : hitLabels) {
-            if (hitLabel.getLabel().getId().equals(classification.getId())) {
+            if (hitLabel.getLabel().getKatieId().equals(classification.getKatieId())) {
                 return true;
             }
         }

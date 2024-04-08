@@ -198,7 +198,7 @@ public class TOPdeskConnector implements Connector {
         Classification category  = null;
         if (bodyNode.hasNonNull("category")) {
             JsonNode categoryNode = bodyNode.get("category");
-            category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText());
+            category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText(), null);
             log.info("Category: " + category.getTerm());
         } else {
             throw new Exception("Incident '" + incidentId + "' does not have a category!");
@@ -207,7 +207,7 @@ public class TOPdeskConnector implements Connector {
         Classification subcategory = null;
         if (bodyNode.hasNonNull("subcategory")) {
             JsonNode subcategoryNode = bodyNode.get("subcategory");
-            subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText());
+            subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText(), null);
         } else {
             throw new Exception("Incident '" + incidentId + "' does not have a subcategory!");
         }
@@ -262,12 +262,12 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * Combine category and subcategory to one label
      */
     private Classification getLabel(Classification category, Classification subcategory) {
         String className = category.getTerm() + ", " + subcategory.getTerm();
         String classId = category.getId() + "_" + subcategory.getId();
-        Classification classification = new Classification(className, classId);
+        Classification classification = new Classification(className, classId, null);
         return classification;
     }
 

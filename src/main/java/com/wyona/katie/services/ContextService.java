@@ -2721,16 +2721,16 @@ public class ContextService {
         if (predictedLabelsFile.isFile()) {
             try {
                 // TODO: Get all information with one call
-                Classification classification = dataRepositoryService.getTopPredictedClassification(rating.getRequestuuid(), domain);
+                Classification topPredictedClassification = dataRepositoryService.getTopPredictedClassification(rating.getRequestuuid(), domain);
                 String text = dataRepositoryService.getClassifiedText(rating.getRequestuuid(), domain);
                 String clientMessageId = dataRepositoryService.getClientMessageId(rating.getRequestuuid(), domain);
 
-                saveRatingOfPredictedLabels(domain, rating, text, clientMessageId, classification);
+                saveRatingOfPredictedLabels(domain, rating, text, clientMessageId, topPredictedClassification);
 
                 // TODO: Log feedback
                 //analyticsService.logFeedback(domain.getId(), rating.getRating(), rating.getEmail());
 
-                sendNotificationsReRatingOfPredictedLabels(domain, rating, classification);
+                sendNotificationsReRatingOfPredictedLabels(domain, rating, topPredictedClassification);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -2749,19 +2749,27 @@ public class ContextService {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
-        ObjectNode labelNode = mapper.createObjectNode();
-        labelNode.put("id", predictedClassification.getId());
-        labelNode.put(HumanPreferenceLabel.LABEL_FIELD, predictedClassification.getTerm());
+
+        ObjectNode labelNode = null;
+        if (predictedClassification != null) { // INFO: It is possible that no classification was predicted
+            labelNode = mapper.createObjectNode();
+            labelNode.put(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD, predictedClassification.getKatieId());
+            labelNode.put(HumanPreferenceLabel.LABEL_NAME_FIELD, predictedClassification.getTerm());
+        }
         if (rating.getRank() == 0) {
-            rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, labelNode);
+            if (labelNode != null) {
+                rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, labelNode);
+            }
         } else {
-            rootNode.put(HumanPreferenceLabel.REJECTED_LABEL_FIELD, labelNode);
+            if (labelNode != null) {
+                rootNode.put(HumanPreferenceLabel.REJECTED_LABEL_FIELD, labelNode);
+            }
 
             if (rating.getBestFittingLabelId() != null) {
                 ObjectNode bestFittingLabelNode = mapper.createObjectNode();
-                bestFittingLabelNode.put("id", rating.getBestFittingLabelId());
-                String labelName = classificationRepositoryService.getLabelName(domain, rating.getBestFittingLabelId());
-                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_FIELD, labelName);
+                Classification bestFittingClassification = classificationRepositoryService.getClassification(domain, rating.getBestFittingLabelId());
+                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD, bestFittingClassification.getKatieId());
+                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_NAME_FIELD, bestFittingClassification.getTerm());
                 rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, bestFittingLabelNode);
             }
 
@@ -2792,12 +2800,12 @@ public class ContextService {
 
     /**
      * Send notifications that a user provided feedback re predicted labels
-     * @param classification Predicted classification
+     * @param predictedClassification Predicted classification
      */
-    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification classification) throws Exception {
+    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification) throws Exception {
         User[] experts = getExperts(domain.getId(), false);
         for (User expert: experts) {
-            sendNotificationReRatingOfPredictedLabels(domain, rating, classification, expert.getId());
+            sendNotificationReRatingOfPredictedLabels(domain, rating, predictedClassification, expert.getId());
         }
     }
 
@@ -2805,7 +2813,7 @@ public class ContextService {
      * Send notification that a user provided feedback re predicted labels
      * @param userId Id of user to be notified
      */
-    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification classification, String userId) {
+    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification, String userId) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
@@ -2819,7 +2827,15 @@ public class ContextService {
                 } else {
                     body.append("negative");
                 }
-                body.append(" feedback re predicted label '" + classification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")");
+
+                if (predictedClassification != null) {
+                    body.append(" feedback re predicted label '" + predictedClassification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")");
+                } else {
+                    body.append(" feedback re predicted label (WARN: No label got predicted!)");
+                }
+
+                body.append(" (Request Id: " + rating.getRequestuuid() + ")");
+
                 if (rating.getFeedback() != null) {
                     body.append("\n\nFeedback: " + rating.getFeedback());
                 }
@@ -3223,7 +3239,7 @@ public class ContextService {
             for (String label : qna.getClassifications()) {
                 // TODO: Get ID of classification
                 //Classification  classification = getClassification(label);
-                Classification classification = new Classification(label, null);
+                Classification classification = new Classification(label, null, null);
                 trainClassifier(classification, qna, domain);
             }
         }

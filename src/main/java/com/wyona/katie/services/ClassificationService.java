@@ -45,8 +45,10 @@ public class ClassificationService {
     public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
         HitLabel[] hitLabels = getClassifier(domain.getClassifierImpl()).predictLabels(domain, text, limit);
         for (HitLabel hitLabel : hitLabels) {
-            String labelId = hitLabel.getLabel().getId();
-            hitLabel.getLabel().setTerm(classificationRepoService.getLabelName(domain, labelId));
+            String labelKatieId = hitLabel.getLabel().getKatieId();
+            Classification classification = classificationRepoService.getClassification(domain, labelKatieId);
+            hitLabel.getLabel().setTerm(classification.getTerm());
+            hitLabel.getLabel().setId(classification.getId());
         }
         return hitLabels;
     }

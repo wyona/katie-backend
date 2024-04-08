@@ -4,6 +4,7 @@ public class Classification {
 
     private String label;
     private String id;
+    private String katieId;
     private Integer frequency = null;
 
     /**
@@ -14,11 +15,13 @@ public class Classification {
 
     /**
      * @param label Class name / Label, e.g. "Managed Device Services, MacOS Clients"
-     * @param id Class Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
+     * @param id Foreign class Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062" or "https://jena.apache.org/2f61f866-bcd8-4db3-833b-37e6f7877e52"
+     * @param katieId Id assigned by Katie
      */
-    public Classification(String label, String id) {
+    public Classification(String label, String id, String katieId) {
         this.label = label;
         this.id = id;
+        this.katieId = katieId;
     }
 
     /**
@@ -36,17 +39,31 @@ public class Classification {
     }
 
     /**
-     * @param id Class Id
+     * @param id Foreign class Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062" or "https://jena.apache.org/2f61f866-bcd8-4db3-833b-37e6f7877e52"
      */
     public void setId(String id) {
         this.id = id;
     }
 
     /**
-     * @return class Id
+     * @return foreign class Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062" or "https://jena.apache.org/2f61f866-bcd8-4db3-833b-37e6f7877e52"
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     *
+     */
+    public void setKatieId(String katieId) {
+        this.katieId = katieId;
+    }
+
+    /**
+     *
+     */
+    public String getKatieId() {
+        return katieId;
     }
 
     /**

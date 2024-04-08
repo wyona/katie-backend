@@ -45,7 +45,7 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
         String category = categorizerME.getBestCategory(outcomes);
 
         HitLabel[] hitLabels = new HitLabel[1];
-        hitLabels[0] = new HitLabel(new Classification(null, category), -1);
+        hitLabels[0] = new HitLabel(new Classification(null, null, category), -1);
 
         return hitLabels;
     }
@@ -115,7 +115,7 @@ public class MulticlassTextClassifierMaximumEntropyImpl implements MulticlassTex
         File datasetFile = getDatasetFile(domain);
         FileWriter out = new FileWriter(datasetFile);
         for (TextSample sample : dataset.getSamples()) {
-            String line = sample.getClassification().getId() + " " + Utils.replaceNewLines(sample.getText(), " ") + "\n";
+            String line = sample.getClassification().getKatieId() + " " + Utils.replaceNewLines(sample.getText(), " ") + "\n";
             out.write(line);
             out.write(line); // WARN: Duplicate line to generate enough trainig data
         }

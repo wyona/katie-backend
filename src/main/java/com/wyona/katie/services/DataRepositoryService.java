@@ -909,8 +909,8 @@ public class DataRepositoryService {
         ArrayNode labelsNode = mapper.createArrayNode();
         for (HitLabel label : labels) {
             ObjectNode labelNode = mapper.createObjectNode();
-            labelNode.put(HumanPreferenceLabel.LABEL_FIELD, label.getLabel().getTerm());
-            labelNode.put("id", label.getLabel().getId());
+            labelNode.put(HumanPreferenceLabel.LABEL_NAME_FIELD, label.getLabel().getTerm());
+            labelNode.put(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD, label.getLabel().getKatieId());
             labelNode.put("score", label.getScore());
             labelsNode.add(labelNode);
         }
@@ -933,9 +933,10 @@ public class DataRepositoryService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(logFile);
         JsonNode predictedLabels = rootNode.get(PREDICTED_LABELS_FIELD);
-        if (predictedLabels.isArray()) {
+        if (predictedLabels.isArray() && predictedLabels.size() > 0) {
             JsonNode topLabel = predictedLabels.get(0);
-            Classification classification = new Classification(topLabel.get(HumanPreferenceLabel.LABEL_FIELD).asText(), topLabel.get("id").asText());
+            String foreignClassId = null; // TODO
+            Classification classification = new Classification(topLabel.get(HumanPreferenceLabel.LABEL_NAME_FIELD).asText(), foreignClassId, topLabel.get(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD).asText());
             return classification;
         } else {
             log.error("No predicted labels logged!");

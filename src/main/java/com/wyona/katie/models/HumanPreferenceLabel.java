@@ -11,7 +11,8 @@ import java.util.Date;
 public class HumanPreferenceLabel {
 
     public final static String TEXT_FIELD = "text";
-    public final static String LABEL_FIELD = "term";
+    public final static String LABEL_NAME_FIELD = "term";
+    public final static String LABEL_KATIE_ID_FIELD = "katieId";
     public final static String CHOSEN_LABEL_FIELD = "chosenLabel";
     public final static String REJECTED_LABEL_FIELD = "rejectedLabel";
 
