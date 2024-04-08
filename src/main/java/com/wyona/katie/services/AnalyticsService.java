@@ -363,4 +363,28 @@ public class AnalyticsService {
             return 0;
         }
     }
+
+    /**
+     * Total number of positive feedbacks re predicted labels in the specified time period
+     */
+    public int getNumberOfPositiveFeedbacksRePredictedLabels(String domainId, Date start, Date end) {
+        try {
+            return dataRepositoryService.getNumberOfEvents(domainId, EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_POSITIVE, null, start, end);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
+    }
+
+    /**
+     * Total number of negative feedbacks re predicted labels in the specified time period
+     */
+    public int getNumberOfNegativeFeedbacksRePredictedLabels(String domainId, Date start, Date end) {
+        try {
+            return dataRepositoryService.getNumberOfEvents(domainId, EVENT_TYPE_FEEDBACK_PREDICTED_LABEL_NEGATIVE, null, start, end);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
+    }
 }

@@ -936,6 +936,9 @@ public class ContextService {
         insights.setNumberOfPositiveFeedbacks(analyticsService.getNumberOfPositiveFeedbacksReAnswers(domainId, start, end));
         insights.setNumberOfNegativeFeedbacks(analyticsService.getNumberOfNegativeFeedbacksReAnswers(domainId, start, end));
 
+        insights.setNumberOfPositiveFeedbacksRePredictedLabels(analyticsService.getNumberOfPositiveFeedbacksRePredictedLabels(domainId, start, end));
+        insights.setNumberOfNegativeFeedbacksRePredictedLabels(analyticsService.getNumberOfNegativeFeedbacksRePredictedLabels(domainId, start, end));
+
         insights.setNumberOfApprovedAnswers(analyticsService.getNumberOfApprovedAnswers(domainId, start, end));
         insights.setNumberOfDiscardedAnswers(analyticsService.getNumberOfDiscardedAnswers(domainId, start, end));
         insights.setNumberOfCorrectedAnswers(analyticsService.getNumberOfCorrectedAnswers(domainId, start, end));

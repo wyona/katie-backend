@@ -16,8 +16,12 @@ public class DomainInsights {
     private int numberOfNextBestAnswer;
     private int numberOfAnsweredQuestions;
     private int numberOfQuestionsSentToExpert;
+
     private int numberOfPositiveFeedbacks;
     private int numberOfNegativeFeedbacks;
+
+    private int numberOfPositiveFeedbacksRePredictedLabels;
+    private int numberOfNegativeFeedbacksRePredictedLabels;
 
     private int numberOfApprovedAnswers;
     private int numberOfDiscardedAnswers;
@@ -36,8 +40,12 @@ public class DomainInsights {
         this.numberOfReceivedMessages = 0;
         this.numberOfAnsweredQuestions = 0;
         this.numberOfQuestionsSentToExpert = 0;
+
         this.numberOfPositiveFeedbacks = 0;
         this.numberOfNegativeFeedbacks = 0;
+
+        this.numberOfPositiveFeedbacksRePredictedLabels = 0;
+        this.numberOfNegativeFeedbacksRePredictedLabels = 0;
 
         this.numberOfApprovedAnswers = 0;
         this.numberOfDiscardedAnswers = 0;
@@ -165,7 +173,7 @@ public class DomainInsights {
     }
 
     /**
-     *
+     * Get number of positive feedbacks re answers
      */
     public int getNumberOfPositiveFeedbacks() {
         return numberOfPositiveFeedbacks;
@@ -179,10 +187,38 @@ public class DomainInsights {
     }
 
     /**
-     *
+     * Get number of negative feedbacks re answers
      */
     public int getNumberOfNegativeFeedbacks() {
         return numberOfNegativeFeedbacks;
+    }
+
+    /**
+     *
+     */
+    public void setNumberOfPositiveFeedbacksRePredictedLabels(int numberOfPositiveFeedbacksRePredictedLabels) {
+        this.numberOfPositiveFeedbacksRePredictedLabels = numberOfPositiveFeedbacksRePredictedLabels;
+    }
+
+    /**
+     *
+     */
+    public int getNumberOfPositiveFeedbacksRePredictedLabels() {
+        return numberOfPositiveFeedbacksRePredictedLabels;
+    }
+
+    /**
+     *
+     */
+    public void setNumberOfNegativeFeedbacksRePredictedLabels(int numberOfNegativeFeedbacksRePredictedLabels) {
+        this.numberOfNegativeFeedbacksRePredictedLabels = numberOfNegativeFeedbacksRePredictedLabels;
+    }
+
+    /**
+     *
+     */
+    public int getNumberOfNegativeFeedbacksRePredictedLabels() {
+        return numberOfNegativeFeedbacksRePredictedLabels;
     }
 
     /**
