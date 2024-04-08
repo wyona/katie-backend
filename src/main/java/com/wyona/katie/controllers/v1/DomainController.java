@@ -998,6 +998,62 @@ public class DomainController {
     }
 
     /**
+     * Import Classification dataset from JSON file into a particular domain
+     */
+    @RequestMapping(value = "/{id}/classification/import-dataset", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Import classification dataset from JSON file into a particular domain")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
+    public ResponseEntity<?> importClassificationLabelsFromFile(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @RequestPart("file") MultipartFile file,
+            HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            User user = authenticationService.getUser(false, false);
+            if (user == null) {
+                throw new AccessDeniedException("User is not signed in!");
+            }
+            if (!domainService.isMemberOrAdmin(id)) {
+                throw new AccessDeniedException("User '" + user.getUsername() + "' is neither member of domain '" + id + "' nor admin!");
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream in = file.getInputStream();
+            ClassificationDataset dataset = mapper.readValue(in, ClassificationDataset.class);
+            in.close();
+
+            Context domain = domainService.getContext(id);
+            String processId = UUID.randomUUID().toString();
+            //domainService.importQnAs(qnas, domain, processId, user.getId());
+            // TODO: Move to ContextService as background process
+            for (TextSample sample : dataset.getSamples()) {
+                classificationService.importSample(domain, sample);
+            }
+
+            return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get classification dataset of a particular domain
      */
     @RequestMapping(value = "/{id}/classification/dataset", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
