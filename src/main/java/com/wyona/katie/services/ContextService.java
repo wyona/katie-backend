@@ -2330,6 +2330,20 @@ public class ContextService {
     }
 
     /**
+     *
+     */
+    @Async
+    public void importClassificationDataset(ClassificationDataset dataset, Context domain, String processId, String userId) throws Exception {
+        backgroundProcessService.startProcess(processId, "Import classification dataset", userId);
+        backgroundProcessService.updateProcessStatus(processId, "Import classification samples ...");
+        for (TextSample sample : dataset.getSamples()) {
+            classificationService.importSample(domain, sample);
+        }
+        backgroundProcessService.updateProcessStatus(processId, "Import finished");
+        backgroundProcessService.stopProcess(processId);
+    }
+
+    /**
      * Add QnA to FAQ
      * @param domain Domain associated with FAQ
      * @param language Two-letter Language code of FAQ, e.g. "de" or "en"

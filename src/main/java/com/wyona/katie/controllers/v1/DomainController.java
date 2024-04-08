@@ -1005,7 +1005,7 @@ public class DomainController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataType = "string", paramType = "header") })
-    public ResponseEntity<?> importClassificationLabelsFromFile(
+    public ResponseEntity<?> importClassificationDatasetFromFile(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @RequestPart("file") MultipartFile file,
@@ -1037,11 +1037,7 @@ public class DomainController {
 
             Context domain = domainService.getContext(id);
             String processId = UUID.randomUUID().toString();
-            //domainService.importQnAs(qnas, domain, processId, user.getId());
-            // TODO: Move to ContextService as background process
-            for (TextSample sample : dataset.getSamples()) {
-                classificationService.importSample(domain, sample);
-            }
+            domainService.importClassificationDataset(dataset, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
