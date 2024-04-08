@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -17,6 +20,8 @@ public class ClassificationRepositoryService {
 
     @Autowired
     private DataRepositoryService dataRepoService;
+
+    private final static String SEPARATOR = ",";
 
     /**
      * Get dataset (labels and samples)
@@ -67,7 +72,7 @@ public class ClassificationRepositoryService {
      *
      */
     public void saveSample(Context domain, TextSample sample) throws Exception {
-        String katieId = getLabelKatieId(sample.getClassification().getId());
+        String katieId = getLabelKatieId(domain, sample.getClassification().getId());
 
         sample.getClassification().setKatieId(katieId);
 
@@ -156,9 +161,78 @@ public class ClassificationRepositoryService {
     }
 
     /**
+     * @param foreignId Foreign Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062" or "https://jena.apache.org/2f61f866-bcd8-4db3-833b-37e6f7877e52"
+     * @return Katie Id, e.g. "abb6edd3-34a9-4a84-b12a-13d5dfd8152f"
+     */
+    private String getLabelKatieId(Context domain, String foreignId) throws Exception {
+        String labelId = null;
+        
+        File classifcationsDir = domain.getClassificationsDirectory();
+        if (!classifcationsDir.isDirectory()) {
+            classifcationsDir.mkdirs();
+        }
+
+        File idTableFile = new File(classifcationsDir, "id-table.txt");
+        List<String> entries = new ArrayList<>();
+        if (idTableFile.isFile()) {
+            entries = readIdTable(idTableFile);
+            labelId = labelIdAlreadyExists(foreignId, entries);
+            if (labelId != null) {
+                return labelId;
+            }
+        }
+
+        labelId = UUID.randomUUID().toString();
+        entries.add(labelId + SEPARATOR + foreignId);
+        writeIdTable(idTableFile, entries);
+
+        return labelId;
+    }
+
+    /**
+     * Get Katie label Id for a particular foreign Id
+     * @param foreignId Foreign Id
+     * @return Katie id if it already exists and otherwise null
+     */
+    private String labelIdAlreadyExists(String foreignId, List<String> entries) {
+        for (String entry : entries) {
+            String[] katieId_foreignId = entry.split(SEPARATOR);
+            if (katieId_foreignId[1].equals(foreignId)) {
+                return katieId_foreignId[0];
+            }
+        }
+        return null;
+    }
+
+    /**
      *
      */
-    private String getLabelKatieId(String labelForeignId) {
-        return "" + labelForeignId.hashCode();
+    private List<String> readIdTable(File idTableFile) throws Exception {
+        List<String> entries = new ArrayList<>();
+
+        FileInputStream in = new FileInputStream(idTableFile);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while((line = br.readLine()) != null) {
+            entries.add(line);
+        }
+        br.close();
+        in.close();
+
+        return entries;
+    }
+
+    /**
+     *
+     */
+    private void writeIdTable(File idTableFile, List<String> entries) throws Exception {
+        FileOutputStream out = new FileOutputStream(idTableFile);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
+        for (String entry : entries) {
+            bw.write(entry);
+            bw.newLine();
+        }
+        bw.close();
+        out.close();
     }
 }
