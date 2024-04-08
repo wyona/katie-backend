@@ -935,7 +935,11 @@ public class Context {
      *
      */
     public ClassificationImpl getClassifierImpl() {
-        return classifierImpl;
+        if (classifierImpl != null) {
+            return classifierImpl;
+        } else {
+            return ClassificationImpl.CENTROID_MATCHING;
+        }
     }
 
     /**
