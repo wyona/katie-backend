@@ -91,7 +91,7 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
      * @see HumanFeedbackHandler#getHumanFeedback(String, Context)
      */
     public Rating[] getHumanFeedback(String question, Context domain) throws Exception {
-        log.info("Get embedding for question ...");
+        log.info("Consider human feedback: Get embedding for question ...");
         Vector queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null);
         int k = 7; // INFO: The number of documents to find
 
