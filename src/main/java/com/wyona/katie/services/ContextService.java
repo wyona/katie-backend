@@ -2839,30 +2839,16 @@ public class ContextService {
                 log.info("Notify '" + user.getEmail() + "' (" + user.getLanguage() + "), that a user has provided feedback re predicted labels '" + rating.getRequestuuid() + "' ...");
                 String email = user.getEmail();
 
-                // TODO: Use template, see for example feedback_re_answer_en.ftl
-                StringBuilder body = new StringBuilder("A user has provided ");
+                boolean positiveFeedback = false;
                 if (rating.getRank() == 0) {
-                    body.append("positive");
-                } else {
-                    body.append("negative");
+                    positiveFeedback = true;
                 }
 
-                if (predictedClassification != null) {
-                    body.append(" feedback re predicted label '" + predictedClassification.getTerm() + "' (Request Id: " + rating.getRequestuuid() + ")");
-                } else {
-                    body.append(" feedback re predicted label (WARN: No label got predicted!)");
-                }
-
-                body.append(" (Request Id: " + rating.getRequestuuid() + ")");
-
-                if (rating.getFeedback() != null) {
-                    body.append("\n\nFeedback: " + rating.getFeedback());
-                }
                 String ratingsLink = domain.getHost() + "/api/v1/feedback/ratings-of-predicted-labels?domain-id=" + domain.getId() + "&limit=10&offset=0";
-                body.append("\n\nAll ratings: " + ratingsLink);
+                String body = getLabelFeedbackNotificationBody(domain, positiveFeedback, rating, predictedClassification, ratingsLink, user.getLanguage());
 
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
-                mailerService.send(email, domain.getMailSenderEmail(), subject, body.toString(), true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
             } else {
                 log.warn("No such user '" + userId + "'.");
             }
@@ -2905,7 +2891,7 @@ public class ContextService {
                 String email = user.getEmail();
                 String body = "A user has provided feedback for the answer to the question '" + askedQuestion + "'"; // TODO
                 if (uuid != null) {
-                    body = getFeedbackNotificationBody(domain, uuid, askedQuestion, user.getLanguage());
+                    body = getAnswerFeedbackNotificationBody(domain, uuid, askedQuestion, user.getLanguage());
                 }
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.answer", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
@@ -2918,12 +2904,12 @@ public class ContextService {
     }
 
     /**
-     * Generate email text re user feedback
-     * @param domain Domain containing QnA
+     * Generate email text re answer feedback
+     * @param domain Domain containing QnA / answer
      * @param uuid UUID of QnA which was used as answer and user provided feedback to
      * @return email body, which will be sent to experts of domain
      */
-    private String getFeedbackNotificationBody(Context domain, String uuid, String askedQuestion, String userLanguage) throws Exception {
+    private String getAnswerFeedbackNotificationBody(Context domain, String uuid, String askedQuestion, String userLanguage) throws Exception {
         //Answer qna = getQnA(null, uuid, domain);
 
         String answerLink = domain.getHost() + "/#/domain/" + domain.getId() + "/qna/" + uuid;
@@ -2936,6 +2922,38 @@ public class ContextService {
 
         StringWriter writer = new StringWriter();
         Template emailTemplate = mailerService.getTemplate("feedback_re_answer_", Language.valueOf(userLanguage), domain);
+        emailTemplate.process(tmplArgs.getArgs(), writer);
+        return writer.toString();
+    }
+
+    /**
+     * Generate email text re label feedback
+     * @param domain Domain containing labels
+     * @param positiveFeedback Positive when true and negative when false
+     * @return email body, which will be sent to experts of domain
+     */
+    private String getLabelFeedbackNotificationBody(Context domain, boolean positiveFeedback, RatingPredictedLabels rating, Classification predictedClassification, String ratingsLink, String userLanguage) throws Exception {
+
+        String insightsLink = domain.getHost() + "/#/domain/" + domain.getId() + "/insights";
+
+        TemplateArguments tmplArgs = new TemplateArguments(domain, null);
+        tmplArgs.add("feedback_positive", positiveFeedback);
+        tmplArgs.add("classified_text", "TODO");
+        tmplArgs.add("insights_link", insightsLink);
+        tmplArgs.add("request_uuid", rating.getRequestuuid());
+        if (rating.getFeedback() != null) {
+            tmplArgs.add("feedback", rating.getFeedback());
+        } else {
+            tmplArgs.add("feedback", "NO_FEEDBACK");
+        }
+        if (predictedClassification != null) {
+            tmplArgs.add("predicted_label", predictedClassification.getTerm());
+        } else {
+            tmplArgs.add("predicted_label", "NO_LABEL_PREDICTED");
+        }
+
+        StringWriter writer = new StringWriter();
+        Template emailTemplate = mailerService.getTemplate("feedback_re_predicted_label_", Language.valueOf(userLanguage), domain);
         emailTemplate.process(tmplArgs.getArgs(), writer);
         return writer.toString();
     }
