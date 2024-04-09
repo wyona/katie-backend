@@ -31,9 +31,9 @@
                                         <!-- HEADER -->
                                         <@components.header/>
 
-                                        <h1 style="margin: 32px 0 0;">Neues Feedback</h1>
+                                        <h1 style="margin: 32px 0 0;">Neues Antwort Feedback</h1>
                                         <p style="margin: 16px 0 0;">
-                                            Ein Benutzer hat ein Feedback für die Antwort auf die folgende Frage gegeben <span
+                                            Ein Benutzer hat ein <span style="font-weight: bold"><#if feedback_positive == true>positives<#else>negatives</#if></span> Feedback für die Antwort auf die folgende Frage gegeben <span
                                                     style="font-weight: bold">"${userquestion}"</span></p>
                                         <table role="presentation"
                                                class="btn btn-primary"
