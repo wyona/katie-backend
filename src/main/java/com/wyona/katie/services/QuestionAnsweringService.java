@@ -489,6 +489,7 @@ public class QuestionAnsweringService {
         }
 
         if (domain.getConsiderHumanFeedback()) {
+            log.info("Consider human feedback enabled.");
             hits = correctByConsideringPreviousHumanFeedback(analyzedQuestion, domain, hits);
         } else {
             log.info("Consider human feedback disabled.");
