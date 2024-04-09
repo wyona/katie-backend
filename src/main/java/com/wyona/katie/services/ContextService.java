@@ -2749,7 +2749,7 @@ public class ContextService {
 
                 analyticsService.logFeedbackRePredictedLabel(domain.getId(), rating.getRank(), rating.getEmail());
 
-                sendNotificationsReRatingOfPredictedLabels(domain, rating, topPredictedClassification);
+                sendNotificationsReRatingOfPredictedLabels(domain, rating, topPredictedClassification, text);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -2821,10 +2821,12 @@ public class ContextService {
      * Send notifications that a user provided feedback re predicted labels
      * @param predictedClassification Predicted classification
      */
-    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification) throws Exception {
+    private void sendNotificationsReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification, String classifiedText) throws Exception {
+        // TODO: Generate subject and body here, instead for each user
+
         User[] experts = getExperts(domain.getId(), false);
         for (User expert: experts) {
-            sendNotificationReRatingOfPredictedLabels(domain, rating, predictedClassification, expert.getId());
+            sendNotificationReRatingOfPredictedLabels(domain, rating, predictedClassification, classifiedText, expert.getId());
         }
     }
 
@@ -2832,7 +2834,7 @@ public class ContextService {
      * Send notification that a user provided feedback re predicted labels
      * @param userId Id of user to be notified
      */
-    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification, String userId) {
+    private void sendNotificationReRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, Classification predictedClassification, String classifiedText, String userId) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
@@ -2845,7 +2847,7 @@ public class ContextService {
                 }
 
                 String ratingsLink = domain.getHost() + "/api/v1/feedback/ratings-of-predicted-labels?domain-id=" + domain.getId() + "&limit=10&offset=0";
-                String body = getLabelFeedbackNotificationBody(domain, positiveFeedback, rating, predictedClassification, ratingsLink, user.getLanguage());
+                String body = getLabelFeedbackNotificationBody(domain, positiveFeedback, rating, predictedClassification, classifiedText, ratingsLink, user.getLanguage());
 
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
@@ -2932,13 +2934,13 @@ public class ContextService {
      * @param positiveFeedback Positive when true and negative when false
      * @return email body, which will be sent to experts of domain
      */
-    private String getLabelFeedbackNotificationBody(Context domain, boolean positiveFeedback, RatingPredictedLabels rating, Classification predictedClassification, String ratingsLink, String userLanguage) throws Exception {
+    private String getLabelFeedbackNotificationBody(Context domain, boolean positiveFeedback, RatingPredictedLabels rating, Classification predictedClassification, String classifiedText, String ratingsLink, String userLanguage) throws Exception {
 
         String insightsLink = domain.getHost() + "/#/domain/" + domain.getId() + "/insights";
 
         TemplateArguments tmplArgs = new TemplateArguments(domain, null);
         tmplArgs.add("feedback_positive", positiveFeedback);
-        tmplArgs.add("classified_text", "TODO");
+        tmplArgs.add("classified_text", classifiedText);
         tmplArgs.add("insights_link", insightsLink);
         tmplArgs.add("request_uuid", rating.getRequestuuid());
         if (rating.getFeedback() != null) {
