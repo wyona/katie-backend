@@ -1009,6 +1009,10 @@ public class ContextService {
             return analyticsService.getNumberOfNegativeFeedbacksReAnswers(domainId, start, end);
         } else if(type == EventType.FEEDBACK_10) {
             return analyticsService.getNumberOfPositiveFeedbacksReAnswers(domainId, start, end);
+        } else if (type == EventType.FEEDBACK_PREDICTED_LABEL_POSITIVE) {
+            return analyticsService.getNumberOfPositiveFeedbacksRePredictedLabels(domainId, start, end);
+        } else if (type == EventType.FEEDBACK_PREDICTED_LABEL_NEGATIVE) {
+            return analyticsService.getNumberOfNegativeFeedbacksRePredictedLabels(domainId, start, end);
         } else if(type == EventType.GET_FAQ) {
             // TODO: Make language selectable
             return analyticsService.getFAQPageviews(domainId, "en", start, end);
