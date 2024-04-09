@@ -2687,6 +2687,11 @@ public class ContextService {
             qna = getQnA(rating.getUserquestion(), rating.getQnauuid(), domain);
         }
 
+        boolean positiveFeedback = false;
+        if (rating.getRating() == 10) {
+            positiveFeedback = true;
+        }
+
         // TODO
         if (qna != null) {
             PermissionStatus permissionStatus = null;
@@ -2718,7 +2723,7 @@ public class ContextService {
                 }
             }
 
-            sendNotificationsReRatingOfAnswer(domain, askedQuestion, qna.getUuid(), qna.getRespondentId());
+            sendNotificationsReRatingOfAnswer(domain, positiveFeedback, askedQuestion, qna.getUuid(), qna.getRespondentId());
 
             return qna;
         } else {
@@ -2727,7 +2732,7 @@ public class ContextService {
             saveRating(domain, rating, Utils.convertHtmlToPlainText(_answer));
             Answer answer = new Answer(rating.getUserquestion(), _answer, null, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
 
-            sendNotificationsReRatingOfAnswer(domain, rating.getUserquestion(), null, null);
+            sendNotificationsReRatingOfAnswer(domain, positiveFeedback, rating.getUserquestion(), null, null);
 
             return answer;
         }
@@ -2864,14 +2869,14 @@ public class ContextService {
      * @param uuid UUID of QnA when answer is based on QnA and null otherwise
      * @param respondentId User Id of author of answer
      */
-    private void sendNotificationsReRatingOfAnswer(Context domain, String askedQuestion, String uuid, String respondentId) throws Exception {
+    private void sendNotificationsReRatingOfAnswer(Context domain, boolean positiveFeedback, String askedQuestion, String uuid, String respondentId) throws Exception {
         User[] experts = getExperts(domain.getId(), false);
         for (User expert: experts) {
-            sendNotificationReRatingOfAnswer(domain, uuid, expert.getId(), askedQuestion);
+            sendNotificationReRatingOfAnswer(domain, positiveFeedback, uuid, expert.getId(), askedQuestion);
         }
         if (respondentId != null) {
             if (!isExpert(respondentId, experts)) {
-                sendNotificationReRatingOfAnswer(domain, uuid, respondentId, askedQuestion);
+                sendNotificationReRatingOfAnswer(domain, positiveFeedback, uuid, respondentId, askedQuestion);
             } else {
                 log.info("Author '" + respondentId + "' already notified as expert.");
             }
@@ -2885,7 +2890,7 @@ public class ContextService {
      * @param uuid UUID of QnA
      * @param userId Id of user to be notified
      */
-    private void sendNotificationReRatingOfAnswer(Context domain, String uuid, String userId, String askedQuestion) {
+    private void sendNotificationReRatingOfAnswer(Context domain, boolean positiveFeedback, String uuid, String userId, String askedQuestion) {
         try {
             User user = iamService.getUserByIdWithoutAuthCheck(userId);
             if (user != null) {
@@ -2893,7 +2898,7 @@ public class ContextService {
                 String email = user.getEmail();
                 String body = "A user has provided feedback for the answer to the question '" + askedQuestion + "'"; // TODO
                 if (uuid != null) {
-                    body = getAnswerFeedbackNotificationBody(domain, uuid, askedQuestion, user.getLanguage());
+                    body = getAnswerFeedbackNotificationBody(domain, positiveFeedback, uuid, askedQuestion, user.getLanguage());
                 }
                 String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.answer", null, new Locale(user.getLanguage()));
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
@@ -2908,16 +2913,18 @@ public class ContextService {
     /**
      * Generate email text re answer feedback
      * @param domain Domain containing QnA / answer
+     * @param positiveFeedback Positive when true and negative when false
      * @param uuid UUID of QnA which was used as answer and user provided feedback to
      * @return email body, which will be sent to experts of domain
      */
-    private String getAnswerFeedbackNotificationBody(Context domain, String uuid, String askedQuestion, String userLanguage) throws Exception {
+    private String getAnswerFeedbackNotificationBody(Context domain, boolean positiveFeedback, String uuid, String askedQuestion, String userLanguage) throws Exception {
         //Answer qna = getQnA(null, uuid, domain);
 
         String answerLink = domain.getHost() + "/#/domain/" + domain.getId() + "/qna/" + uuid;
         String insightsLink = domain.getHost() + "/#/domain/" + domain.getId() + "/insights";
 
         TemplateArguments tmplArgs = new TemplateArguments(domain, null);
+        tmplArgs.add("feedback_positive", positiveFeedback);
         tmplArgs.add("question_answer_link", answerLink);
         tmplArgs.add("insights_link", insightsLink);
         tmplArgs.add("userquestion", askedQuestion);
