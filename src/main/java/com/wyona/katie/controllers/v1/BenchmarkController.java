@@ -4,6 +4,8 @@ import com.wyona.katie.models.*;
 
 import com.wyona.katie.models.Error;
 import com.wyona.katie.services.*;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiParam;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -280,6 +282,9 @@ public class BenchmarkController {
      */
     @RequestMapping(value = "/run-benchmark", method = RequestMethod.POST, produces = "application/json")
     @ApiOperation(value="Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<?> performBenchmark(
             // TODO: Add description for file, e.g. "Dataset" and that if not provided a default set is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
@@ -296,6 +301,12 @@ public class BenchmarkController {
             @ApiParam(name = "delete-domain", value = "When set to true, then delete domain which was created to run benchmark (true by default)", required = false)
             @RequestParam(value = "delete-domain", required = false) Boolean deleteDomain,
             HttpServletRequest request) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         try {
             if (!contextService.isAdmin() && !contextService.hasRole(Role.BENCHMARK)) {
