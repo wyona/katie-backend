@@ -298,8 +298,8 @@ public class BenchmarkController {
             HttpServletRequest request) {
 
         try {
-            if (!contextService.isAdmin()) {
-                log.error("Access denied, because user is not ADMIN!");
+            if (!contextService.isAdmin() && !contextService.hasRole(Role.BENCHMARK)) {
+                log.error("Access denied, because user has neither role " + Role.ADMIN + " nor role " + Role.BENCHMARK + "!");
                 return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
             }
 
