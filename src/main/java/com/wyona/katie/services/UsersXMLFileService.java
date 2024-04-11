@@ -129,7 +129,7 @@ public class UsersXMLFileService {
             throw new Exception("No username provided!");
         }
 
-        Element roleEl = xmlService.appendElement(userEl, IAM_ROLE_TAG, getRoleAsString(user.getRole()));
+        Element roleEl = xmlService.appendElement(userEl, IAM_ROLE_TAG, user.getRole().toString());
         if (roleEl == null) {
             throw new Exception("No role provided!");
         }
@@ -459,20 +459,8 @@ public class UsersXMLFileService {
             return Role.ADMIN;
         } else if (role.equals("USER")) {
             return Role.USER;
-        } else {
-            log.error("No such role '" + role + "' implemented!");
-            return null;
-        }
-    }
-
-    /**
-     *
-     */
-    private String getRoleAsString(Role role) {
-        if (role.equals(Role.ADMIN)) {
-            return "ADMIN";
-        } else if (role.equals(Role.USER)) {
-            return "USER";
+        } else if (role.equals("BENCHMARK")) {
+            return Role.BENCHMARK;
         } else {
             log.error("No such role '" + role + "' implemented!");
             return null;
