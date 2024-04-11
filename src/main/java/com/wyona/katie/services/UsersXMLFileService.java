@@ -381,7 +381,7 @@ public class UsersXMLFileService {
         }
 
         NodeList roleNL = userEl.getElementsByTagName(IAM_ROLE_TAG);
-        Role role = getRole(((Element)roleNL.item(0)).getTextContent());
+        Role role = Role.valueOf(((Element)roleNL.item(0)).getTextContent());
 
         String password = null;
         String passwordEncoding = null;
@@ -449,21 +449,5 @@ public class UsersXMLFileService {
         }
 
         return users;
-    }
-
-    /**
-     *
-     */
-    private Role getRole(String role) {
-        if (role.equals("ADMIN")) {
-            return Role.ADMIN;
-        } else if (role.equals("USER")) {
-            return Role.USER;
-        } else if (role.equals("BENCHMARK")) {
-            return Role.BENCHMARK;
-        } else {
-            log.error("No such role '" + role + "' implemented!");
-            return null;
-        }
     }
 }
