@@ -2317,16 +2317,25 @@ public class ContextService {
      * @return true when user is administrator and false otherwise
      */
     public boolean isAdmin() {
-        log.info("Check whether user is signed in and has role " + Role.ADMIN + " ...");
+        return hasRole(Role.ADMIN);
+    }
+
+    /**
+     * Check whether user is signed in and if so whether user has a particular role
+     * @param role Role to check
+     * @return true when user has a particular role and false otherwise
+     */
+    public boolean hasRole(Role role) {
+        log.info("Check whether user is signed in and has role " + role + " ...");
 
         User signedInUser = authService.getUser(false, false);
         if (signedInUser != null) {
             log.debug("Signed in user: " + signedInUser.getUsername());
 
-            if (signedInUser.getRole() == Role.ADMIN) {
+            if (signedInUser.getRole() == role) {
                 return true;
             } else {
-                log.warn("User '" + signedInUser.getId() + "' has not role '" + Role.ADMIN + "'!");
+                log.warn("User '" + signedInUser.getId() + "' has not role '" + role + "'!");
                 return false;
             }
         } else {
