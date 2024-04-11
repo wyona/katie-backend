@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -62,6 +63,9 @@ public class BenchmarkController {
     
     @Autowired
     private BenchmarkService bmService;
+
+    @Value("${datasets.data_path}")
+    private String datasetsDataPath;
 
     @Value("${benchmarks.data_path}")
     private String benchmarksDataPath;
@@ -274,10 +278,10 @@ public class BenchmarkController {
      * REST interface to perform a full benchmark and create evaluation graphs
      * 
      */
-    @RequestMapping(value = "/perform-benchmark", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/run-benchmark", method = RequestMethod.POST, produces = "application/json")
     @ApiOperation(value="Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time")
     public ResponseEntity<?> performBenchmark(
-            // TODO: Add description for file, e.g. "Dataset"
+            // TODO: Add description for file, e.g. "Dataset" and that if not provided a default set is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
             @ApiParam(name = "search-implementations", value = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
             @RequestParam(value = "search-implementations", required = true) String searchImplementations,
@@ -342,11 +346,16 @@ public class BenchmarkController {
             // INFO: Use default dataset if none was given
             String datasetPathName = "weaviate-size7-v1.json";
             //String datasetPathName = "weaviate-size121-v2.json"; //TODO: maybe put this into config
-            String fileName = String.join("", "benchmark_data/", datasetPathName);
-            log.info("Use default dataset from classpath: " + fileName);
-            ClassLoader classLoader = getClass().getClassLoader();
-            InputStream inputStream = classLoader.getResourceAsStream(fileName);
-            return inputStream;
+
+            File datasetFile = new File(datasetsDataPath, "questions-and-answers/" + datasetPathName);
+            log.info("Use default dataset: " + datasetFile.getAbsolutePath());
+            return new FileInputStream(datasetFile);
+
+            //String fileName = String.join("", "benchmark_data/", datasetPathName);
+            //log.info("Use default dataset from classpath: " + fileName);
+            //ClassLoader classLoader = getClass().getClassLoader();
+            //InputStream inputStream = classLoader.getResourceAsStream(fileName);
+            //return inputStream;
         }
     }
 
