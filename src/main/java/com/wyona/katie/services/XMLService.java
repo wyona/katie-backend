@@ -1337,20 +1337,6 @@ public class XMLService {
     /**
      *
      */
-    private Role getRole(String role) {
-        if (role.equals("ADMIN")) {
-            return Role.ADMIN;
-        } else if (role.equals("USER")) {
-            return Role.USER;
-        } else {
-            log.error("No such role '" + role + "' implemented!");
-            return null;
-        }
-    }
-
-    /**
-     *
-     */
     private String getRoleAsString(Role role) {
         if (role.equals(Role.ADMIN)) {
             return "ADMIN";
