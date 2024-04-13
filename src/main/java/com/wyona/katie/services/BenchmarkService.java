@@ -207,7 +207,7 @@ public class BenchmarkService {
 
             if (email != null) {
                 String subject = mailSubjectTag + " Benchmark completed (" + benchmarkId + ")";
-                mailerService.send(email, domain.getMailSenderEmail(), subject, getBenchmarkCompletedEmailBody(domain, benchmarkId, "en"), true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getBenchmarkCompletedEmailBody(domain.getHost(), benchmarkInfo, "en"), true);
             }
 
             backgroundProcessService.updateProcessStatus(processId, "Benchmark finished: " + benchmarkId);
@@ -221,29 +221,22 @@ public class BenchmarkService {
     /**
      * Get email body containing information about completed benchmark
      */
-    private String getBenchmarkCompletedEmailBody(Context domain, String benchmarkId, String userLanguage) throws Exception {
-        String benchmarkRawDataLink = domain.getHost() + "/api/v1/benchmark/report/" + benchmarkId + "/json";
+    private String getBenchmarkCompletedEmailBody(String hostname, BenchmarkInfo benchmarkInfo, String userLanguage) throws Exception {
+        BenchmarkResult[] benchmarkResults = getBenchmarkResults(benchmarkInfo.getId());
+        // TODO: Make reference benchmark configurable or add to dataset
+        String referenceBenchmarkId = "231005_210106";
+        //String referenceBenchmarkId = "230302_164322";
+        benchmarkResults = compareWithReferenceBenchmark(benchmarkResults, referenceBenchmarkId);
 
-        TemplateArguments tmplArgs = new TemplateArguments(domain, null);
+        TemplateArguments tmplArgs = new TemplateArguments(null, hostname);
+
+        String benchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + benchmarkInfo.getId() + "/json";
         tmplArgs.add("raw_data_link", benchmarkRawDataLink);
-        /*
-        tmplArgs.add("request_uuid", rating.getRequestuuid());
-        tmplArgs.add("classified_text", classifiedText);
-        if (rating.getFeedback() != null) {
-            tmplArgs.add("feedback", rating.getFeedback());
-        } else {
-            tmplArgs.add("feedback", "NO_FEEDBACK");
-        }
-        if (predictedClassification != null) {
-            tmplArgs.add("predicted_label", predictedClassification.getTerm());
-        } else {
-            tmplArgs.add("predicted_label", "NO_LABEL_PREDICTED");
-        }
-
-         */
+        tmplArgs.add("results", benchmarkResults);
+        tmplArgs.add("info", benchmarkInfo);
 
         StringWriter writer = new StringWriter();
-        Template emailTemplate = mailerService.getTemplate("benchmark_completed_", Language.valueOf(userLanguage), domain);
+        Template emailTemplate = mailerService.getTemplate("benchmark_completed_", Language.valueOf(userLanguage), null);
         emailTemplate.process(tmplArgs.getArgs(), writer);
         return writer.toString();
     }
@@ -251,7 +244,7 @@ public class BenchmarkService {
     /**
      * Compare benchmark results with reference benchmark to check whether there are improvements or degradations
      * @param implementationResults Benchmark results of the various search implementations
-     * @param referenceBenchmarkId Id of reference benchmark
+     * @param referenceBenchmarkId Id of reference benchmark, e.g. "231005_210106"
      */
     public BenchmarkResult[] compareWithReferenceBenchmark(BenchmarkResult[] implementationResults, String referenceBenchmarkId) throws Exception {
         log.info("Compare results with reference benchmark '" + referenceBenchmarkId + "' ...");
