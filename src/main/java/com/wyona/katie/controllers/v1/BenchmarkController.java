@@ -437,8 +437,9 @@ public class BenchmarkController {
 
             BenchmarkResult[] implementationResults = bmService.getBenchmarkResults(benchmarkId);
 
-            String referenceBenchmarkId = "231005_210106"; // TODO: Make configurable
-            //String referenceBenchmarkId = "230302_164322"; // TODO: Make configurable
+            // TODO: Make reference benchmark configurable or add to dataset
+            String referenceBenchmarkId = "231005_210106";
+            //String referenceBenchmarkId = "230302_164322";
             implementationResults = bmService.compareWithReferenceBenchmark(implementationResults, referenceBenchmarkId);
 
             BenchmarkResponse responseObject = new BenchmarkResponse(bmInfo, implementationResults);
