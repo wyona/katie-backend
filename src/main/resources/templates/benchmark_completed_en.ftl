@@ -33,9 +33,9 @@
 
                                         <h1 style="margin: 32px 0 0;">Benchmark Results</h1>
                                         <p style="margin: 16px 0 0;">
-                                          Dataset name: ${info.datasetName}
+                                          Dataset name: ${info.datasetName} (Reference: ${reference_info.datasetName})
                                           <br/>
-                                          Dataset size: ${info.datasetSize}
+                                          Dataset size: ${info.datasetSize} (Reference: ${reference_info.datasetSize})
                                         </p>
                                         <p style="margin: 16px 0 0;">
                                             Raw benchmark data <a href="${raw_data_link}">here</a>
