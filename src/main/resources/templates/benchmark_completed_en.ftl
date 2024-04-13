@@ -3,7 +3,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <@components.globalHead title="Benchmark completed"/>
+    <@components.globalHead title="Benchmark Results"/>
 </head>
 <body style="background-color: #f6f6f6; -webkit-font-smoothing: antialiased; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
 <!--<span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">This is preheader text. Some clients will show this text as a preview.</span>-->
@@ -31,10 +31,28 @@
                                         <!-- HEADER -->
                                         <@components.header/>
 
-                                        <h1 style="margin: 32px 0 0;">Benchmark completed</h1>
+                                        <h1 style="margin: 32px 0 0;">Benchmark Results</h1>
+                                        <p style="margin: 16px 0 0;">
+                                          Dataset name: ${info.datasetName}
+                                          <br/>
+                                          Dataset size: ${info.datasetSize}
+                                        </p>
                                         <p style="margin: 16px 0 0;">
                                             Raw benchmark data <a href="${raw_data_link}">here</a>
                                         </p>
+
+                                        <h2>Implementation Results</h2>
+                                        <hr/>
+                                        <#list results as result>
+                                          <h3>${result.systemName} ${result.systemVersion}</h3>
+                                          <p>${result.systemMeta}</p>
+                                          <p>Accuracy: ${result.accuracy} <#if result.accuracyDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.accuracyDeviationInPercentage}%</p>
+                                          <p>Total number of failed / tested questions: ${result.failedQuestions?size} / ${result.totalNumberOfQuestions}</p>
+                                          <p>Recall: ${result.recall} <#if result.recallDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.recallDeviationInPercentage}%</p>
+                                          <p>Precision: ${result.precision} <#if result.precisionDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.precisionDeviationInPercentage}%</p>
+                                          <hr/>
+                                        </#list>
+
                                         <p style="margin: 16px 0 0;">Thanks, <br/>Team Katie</p>
                                     </td>
                                 </tr>
