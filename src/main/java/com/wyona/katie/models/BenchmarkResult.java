@@ -19,9 +19,11 @@ public class BenchmarkResult {
 
     private double indexingTimeInSeconds;
     private double indexingTimeDeviation;
+    private double indexingTimePerformanceFactor;
 
     private double inferenceTimeInSeconds;
     private double inferenceTimeDeviation;
+    private double inferenceTimePerformanceFactor;
 
     private LocalDateTime benchmarkStart;
 
@@ -52,10 +54,14 @@ public class BenchmarkResult {
         this.precisionDeviation = 0.0;
         this.recall = recall;
         this.recallDeviation = 0.0;
+
         this.indexingTimeInSeconds = indexingTimeInSeconds;
         this.indexingTimeDeviation = 0.0;
+        this.indexingTimePerformanceFactor = 1.0;
+
         this.inferenceTimeInSeconds = inferenceTimeInSeconds;
         this.inferenceTimeDeviation = 0.0;
+        this.inferenceTimePerformanceFactor = 1.0;
 
         this.benchmarkStart = benchmarkStart;
     }
@@ -191,6 +197,20 @@ public class BenchmarkResult {
     }
 
     /**
+     *
+     */
+    public void setIndexingTimePerformanceFactor(double factor) {
+        this.indexingTimePerformanceFactor = factor;
+    }
+
+    /**
+     *
+     */
+    public double getIndexingTimePerformanceFactor() {
+        return indexingTimePerformanceFactor;
+    }
+
+    /**
      * @return number of seconds it takes to run benchmark for the whole dataset
      */
     public double getInferenceTimeInSeconds() {
@@ -210,6 +230,20 @@ public class BenchmarkResult {
 
     public double getInferenceTimeDeviationInPercentage() {
         return this.inferenceTimeDeviation;
+    }
+
+    /**
+     * @param factor Performance factor, e.g. 2 times faster than reference benchmark
+     */
+    public void setInferenceTimePerformanceFactor(double factor) {
+        this.inferenceTimePerformanceFactor = factor;
+    }
+
+    /**
+     * @return performance factor, e.g. 2 times faster than reference benchmark
+     */
+    public double getInferenceTimePerformanceFactor() {
+        return inferenceTimePerformanceFactor;
     }
 
     /**
