@@ -228,6 +228,8 @@ public class BenchmarkService {
         //String referenceBenchmarkId = "230302_164322";
         benchmarkResults = compareWithReferenceBenchmark(benchmarkResults, referenceBenchmarkId);
 
+        BenchmarkInfo referenceBenchmarkInfo = getReferenceBenchmarkInfo(referenceBenchmarkId);
+
         TemplateArguments tmplArgs = new TemplateArguments(null, hostname);
 
         String benchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + benchmarkInfo.getId() + "/json";
@@ -236,6 +238,7 @@ public class BenchmarkService {
         tmplArgs.add("raw_reference_data_link", referenceBenchmarkRawDataLink);
         tmplArgs.add("results", benchmarkResults);
         tmplArgs.add("info", benchmarkInfo);
+        tmplArgs.add("reference_info", referenceBenchmarkInfo);
 
         StringWriter writer = new StringWriter();
         Template emailTemplate = mailerService.getTemplate("benchmark_completed_", Language.valueOf(userLanguage), null);
@@ -302,7 +305,7 @@ public class BenchmarkService {
      * @return list of reference benchmark results
      */
     private BenchmarkResult[] getReferenceBenchmarkResults(String referenceBenchmarkId) throws Exception {
-        // TODO: Move reference results to volume/benchmarks
+        // TODO: Move reference benchmark to volume/benchmarks
         String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + BENCHMARK_RESULTS;
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream in = classLoader.getResourceAsStream(filePath);
@@ -311,6 +314,22 @@ public class BenchmarkService {
         in.close();
 
         return referenceImplementationResults;
+    }
+
+    /**
+     *
+     */
+    private BenchmarkInfo getReferenceBenchmarkInfo(String referenceBenchmarkId) throws Exception {
+        // TODO: Move reference benchmark to volume/benchmarks
+        String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + DATASET_INFO_FILE;
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream in = classLoader.getResourceAsStream(filePath);
+
+        ObjectMapper objectMapper = getObjectMapper();
+        BenchmarkInfo info = objectMapper.readValue(in, BenchmarkInfo.class);
+        in.close();
+
+        return info;
     }
 
     /**
