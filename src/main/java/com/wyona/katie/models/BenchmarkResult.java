@@ -19,9 +19,11 @@ public class BenchmarkResult {
 
     private double indexingTimeInSeconds;
     private double indexingTimeDeviation;
+    private double indexingTimePerformanceFactor;
 
-    private double timeToRunBenchmarkInSeconds;
+    private double inferenceTimeInSeconds;
     private double inferenceTimeDeviation;
+    private double inferenceTimePerformanceFactor;
 
     private LocalDateTime benchmarkStart;
 
@@ -35,10 +37,10 @@ public class BenchmarkResult {
      * @param precision
      * @param recall
      * @param indexingTimeInSeconds Number of seconds it takes to index the whole dataset
-     * @param timeToRunBenchmarkInSeconds Number of seconds it takes to run benchmark for the whole dataset
+     * @param inferenceTimeInSeconds Number of seconds it takes to run benchmark for the whole dataset
      * @param benchmarkStart Date / time when benchmark was started
      */
-    public BenchmarkResult(DetectDuplicatedQuestionImpl systemName, String systemVersion, String systemMeta, double accuracy, int totalNumQuestions, String[] failedQuestions, double precision, double recall, double indexingTimeInSeconds, double timeToRunBenchmarkInSeconds, LocalDateTime benchmarkStart) {
+    public BenchmarkResult(DetectDuplicatedQuestionImpl systemName, String systemVersion, String systemMeta, double accuracy, int totalNumQuestions, String[] failedQuestions, double precision, double recall, double indexingTimeInSeconds, double inferenceTimeInSeconds, LocalDateTime benchmarkStart) {
         super();
         this.systemName = systemName;
         this.systemVersion = systemVersion;
@@ -52,10 +54,14 @@ public class BenchmarkResult {
         this.precisionDeviation = 0.0;
         this.recall = recall;
         this.recallDeviation = 0.0;
+
         this.indexingTimeInSeconds = indexingTimeInSeconds;
         this.indexingTimeDeviation = 0.0;
-        this.timeToRunBenchmarkInSeconds = timeToRunBenchmarkInSeconds;
+        this.indexingTimePerformanceFactor = 1.0;
+
+        this.inferenceTimeInSeconds = inferenceTimeInSeconds;
         this.inferenceTimeDeviation = 0.0;
+        this.inferenceTimePerformanceFactor = 1.0;
 
         this.benchmarkStart = benchmarkStart;
     }
@@ -191,25 +197,53 @@ public class BenchmarkResult {
     }
 
     /**
-     * @return number of seconds it takes to run benchmark for the whole dataset
+     *
      */
-    public double getTimeToRunBenchmarkInSeconds() {
-        return timeToRunBenchmarkInSeconds;
+    public void setIndexingTimePerformanceFactor(double factor) {
+        this.indexingTimePerformanceFactor = factor;
     }
 
     /**
-     * @param timeToRunBenchmarkInSeconds Number of seconds it takes to run the benchmark with the whole dataset
+     *
      */
-    public void setTimeToRunBenchmarkInSeconds(double timeToRunBenchmarkInSeconds) {
-        this.timeToRunBenchmarkInSeconds = timeToRunBenchmarkInSeconds;
+    public double getIndexingTimePerformanceFactor() {
+        return indexingTimePerformanceFactor;
     }
 
-    public void setTimeToRunBenchmarkDeviationInPercentage(double deviation) {
+    /**
+     * @return number of seconds it takes to run benchmark for the whole dataset
+     */
+    public double getInferenceTimeInSeconds() {
+        return inferenceTimeInSeconds;
+    }
+
+    /**
+     * @param inferenceTimeInSeconds Number of seconds it takes to run the benchmark with the whole dataset
+     */
+    public void setInferenceTimeInSeconds(double inferenceTimeInSeconds) {
+        this.inferenceTimeInSeconds = inferenceTimeInSeconds;
+    }
+
+    public void setInferenceTimeDeviationInPercentage(double deviation) {
         this.inferenceTimeDeviation = deviation;
     }
 
-    public double getTimeToRunBenchmarkDeviationInPercentage() {
+    public double getInferenceTimeDeviationInPercentage() {
         return this.inferenceTimeDeviation;
+    }
+
+    /**
+     * @param factor Performance factor, e.g. 2 times faster than reference benchmark
+     */
+    public void setInferenceTimePerformanceFactor(double factor) {
+        this.inferenceTimePerformanceFactor = factor;
+    }
+
+    /**
+     * @return performance factor, e.g. 2 times faster than reference benchmark
+     */
+    public double getInferenceTimePerformanceFactor() {
+        return inferenceTimePerformanceFactor;
     }
 
     /**

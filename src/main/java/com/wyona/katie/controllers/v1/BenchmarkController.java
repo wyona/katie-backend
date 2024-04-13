@@ -354,9 +354,10 @@ public class BenchmarkController {
             InputStream inputStream = new BufferedInputStream(file.getInputStream());
             return inputStream;
         } else {
-            // INFO: Use default dataset if none was given
-            String datasetPathName = "weaviate-size7-v1.json";
-            //String datasetPathName = "weaviate-size121-v2.json"; //TODO: maybe put this into config
+            // INFO: Use default dataset if none was given. TODO: Make configurable
+            //String datasetPathName = "weaviate-size2-v1.json";
+            //String datasetPathName = "weaviate-size7-v1.json";
+            String datasetPathName = "weaviate-size121-v2.json";
 
             File datasetFile = new File(datasetsDataPath, "questions-and-answers/" + datasetPathName);
             log.info("Use default dataset: " + datasetFile.getAbsolutePath());
@@ -402,10 +403,7 @@ public class BenchmarkController {
             
             LinkedList<BenchmarkInfo> benchmarkResultHistory = new LinkedList<>();
             for (String dir : bechnmarkHistoryDirectories) {
-                File benchmarkD = new File(benchmarksDataPath, dir);
-                File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-
-                benchmarkResultHistory.add(objectMapper.readValue(resultF, BenchmarkInfo.class));
+                benchmarkResultHistory.add(bmService.getBenchmarkInfo(dir));
             }
 
             return new ResponseEntity<>(benchmarkResultHistory, HttpStatus.OK);
@@ -426,18 +424,13 @@ public class BenchmarkController {
             HttpServletRequest request) {
 
         try {
-            // for reading json files as objects
-            ObjectMapper objectMapper = getObjectMapper();
-
-            // get info file and graph files from desired benchmark directory
-            File benchmarkD = new File(benchmarksDataPath, benchmarkId);
-            File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-            BenchmarkInfo bmInfo = objectMapper.readValue(resultF, BenchmarkInfo.class);
+            BenchmarkInfo bmInfo = bmService.getBenchmarkInfo(benchmarkId);
 
             BenchmarkResult[] implementationResults = bmService.getBenchmarkResults(benchmarkId);
 
-            String referenceBenchmarkId = "231005_210106"; // TODO: Make configurable
-            //String referenceBenchmarkId = "230302_164322"; // TODO: Make configurable
+            // TODO: Make reference benchmark configurable or add to dataset
+            String referenceBenchmarkId = "231005_210106";
+            //String referenceBenchmarkId = "230302_164322";
             implementationResults = bmService.compareWithReferenceBenchmark(implementationResults, referenceBenchmarkId);
 
             BenchmarkResponse responseObject = new BenchmarkResponse(bmInfo, implementationResults);
@@ -460,14 +453,7 @@ public class BenchmarkController {
             HttpServletRequest request) {
 
         try {
-            // for reading json files as objects
-            ObjectMapper objectMapper = getObjectMapper();
-            
-            // get info file and graph files from desired benchmark directory
-            File benchmarkD = new File(benchmarksDataPath, benchmarkId);
-            File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-            BenchmarkInfo bmInfo = objectMapper.readValue(resultF, BenchmarkInfo.class);
-                    
+            BenchmarkInfo bmInfo = bmService.getBenchmarkInfo(benchmarkId);
                     
             // create report with data and graphs
             PDDocument doc = new PDDocument();
@@ -522,10 +508,11 @@ public class BenchmarkController {
             contentStream.endText();
             
             // draw the graphs
-            File barPlot = new File(benchmarkD, "accuracy_precision_recall_bar.png");
+            File benchmarkDir = new File(benchmarksDataPath, benchmarkId);
+            File barPlot = new File(benchmarkDir, "accuracy_precision_recall_bar.png");
             PDImageXObject pdImageBar = PDImageXObject.createFromFile(barPlot.getPath(),doc);
             contentStream.drawImage(pdImageBar, 50, 320, 500, 300);
-            File scatterPlot = new File(benchmarkD, "accuracy_vs_time_scatter.png");
+            File scatterPlot = new File(benchmarkDir, "accuracy_vs_time_scatter.png");
             PDImageXObject pdImageScatter = PDImageXObject.createFromFile(scatterPlot.getPath(),doc);
             contentStream.drawImage(pdImageScatter, 50, 10, 500, 300);
             

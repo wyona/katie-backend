@@ -3,6 +3,7 @@ package com.wyona.katie.services;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +22,7 @@ import com.wyona.katie.handlers.WeaviateQuestionAnswerImpl;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wyona.katie.models.*;
+import freemarker.template.Template;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -205,8 +207,7 @@ public class BenchmarkService {
 
             if (email != null) {
                 String subject = mailSubjectTag + " Benchmark completed (" + benchmarkId + ")";
-                String body = "Benchmark '" + benchmarkId + "' completed. See " + domain.getHost() + "/api/v1/benchmark/report/" + benchmarkId + "/json";
-                mailerService.send(email, domain.getMailSenderEmail(), subject, body, false);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getBenchmarkCompletedEmailBody(domain.getHost(), benchmarkInfo, "en"), true);
             }
 
             backgroundProcessService.updateProcessStatus(processId, "Benchmark finished: " + benchmarkId);
@@ -218,13 +219,41 @@ public class BenchmarkService {
     }
 
     /**
+     * Get email body containing information about completed benchmark
+     */
+    private String getBenchmarkCompletedEmailBody(String hostname, BenchmarkInfo benchmarkInfo, String userLanguage) throws Exception {
+        BenchmarkResult[] benchmarkResults = getBenchmarkResults(benchmarkInfo.getId());
+        // TODO: Make reference benchmark configurable or add to dataset
+        String referenceBenchmarkId = "231005_210106";
+        //String referenceBenchmarkId = "230302_164322";
+        benchmarkResults = compareWithReferenceBenchmark(benchmarkResults, referenceBenchmarkId);
+
+        BenchmarkInfo referenceBenchmarkInfo = getBenchmarkInfo(referenceBenchmarkId);
+
+        TemplateArguments tmplArgs = new TemplateArguments(null, hostname);
+
+        String benchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + benchmarkInfo.getId() + "/json";
+        String referenceBenchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + referenceBenchmarkId + "/json";
+        tmplArgs.add("raw_data_link", benchmarkRawDataLink);
+        tmplArgs.add("raw_reference_data_link", referenceBenchmarkRawDataLink);
+        tmplArgs.add("results", benchmarkResults);
+        tmplArgs.add("info", benchmarkInfo);
+        tmplArgs.add("reference_info", referenceBenchmarkInfo);
+
+        StringWriter writer = new StringWriter();
+        Template emailTemplate = mailerService.getTemplate("benchmark_completed_", Language.valueOf(userLanguage), null);
+        emailTemplate.process(tmplArgs.getArgs(), writer);
+        return writer.toString();
+    }
+
+    /**
      * Compare benchmark results with reference benchmark to check whether there are improvements or degradations
      * @param implementationResults Benchmark results of the various search implementations
-     * @param referenceBenchmarkId Id of reference benchmark
+     * @param referenceBenchmarkId Id of reference benchmark, e.g. "231005_210106"
      */
     public BenchmarkResult[] compareWithReferenceBenchmark(BenchmarkResult[] implementationResults, String referenceBenchmarkId) throws Exception {
         log.info("Compare results with reference benchmark '" + referenceBenchmarkId + "' ...");
-        BenchmarkResult[] referenceImplementationResults = getReferenceBenchmarkResults(referenceBenchmarkId);
+        BenchmarkResult[] referenceImplementationResults = getBenchmarkResults(referenceBenchmarkId);
 
         for (BenchmarkResult result : implementationResults) {
             boolean referenceImplementationExists = false;
@@ -233,25 +262,27 @@ public class BenchmarkService {
                     referenceImplementationExists = true;
                     log.info("Compare results for implementation: " + result.getSystemName());
 
-                    double indexingTimeDeviation = getDeviation(result.getIndexingTimeInSeconds(), referenceResult.getIndexingTimeInSeconds());
-                    result.setIndexingTimeDeviationInPercentage(indexingTimeDeviation);
-                    log.info("Indexing time deviation in percentage: " + indexingTimeDeviation);
-
-                    double accuracyDeviation = getDeviation(result.getAccuracy(), referenceResult.getAccuracy());
+                    double accuracyDeviation = getPercentDeviation(result.getAccuracy(), referenceResult.getAccuracy());
                     result.setAccuracyDeviationInPercentage(accuracyDeviation);
                     log.info("Accuracy deviation in percentage: " + accuracyDeviation);
 
-                    double precisionDeviation = getDeviation(result.getPrecision(), referenceResult.getPrecision());
+                    double precisionDeviation = getPercentDeviation(result.getPrecision(), referenceResult.getPrecision());
                     result.setPrecisionDeviationInPercentage(precisionDeviation);
                     log.info("Precision deviation in percentage: " + precisionDeviation);
 
-                    double recallDeviation = getDeviation(result.getRecall(), referenceResult.getRecall());
+                    double recallDeviation = getPercentDeviation(result.getRecall(), referenceResult.getRecall());
                     result.setRecallDeviationInPercentage(recallDeviation);
                     log.info("Recall deviation in percentage: " + recallDeviation);
 
-                    double inferenceTimeDeviation = getDeviation(result.getTimeToRunBenchmarkInSeconds(), referenceResult.getTimeToRunBenchmarkInSeconds());
-                    result.setTimeToRunBenchmarkDeviationInPercentage(inferenceTimeDeviation);
+                    double indexingTimeDeviation = getPercentDeviation(result.getIndexingTimeInSeconds(), referenceResult.getIndexingTimeInSeconds());
+                    result.setIndexingTimeDeviationInPercentage(indexingTimeDeviation);
+                    log.info("Indexing time deviation in percentage: " + indexingTimeDeviation);
+                    result.setIndexingTimePerformanceFactor(referenceResult.getIndexingTimeInSeconds() / result.getIndexingTimeInSeconds());
+
+                    double inferenceTimeDeviation = getPercentDeviation(result.getInferenceTimeInSeconds(), referenceResult.getInferenceTimeInSeconds());
+                    result.setInferenceTimeDeviationInPercentage(inferenceTimeDeviation);
                     log.info("Average inference time deviation in percentage: " + inferenceTimeDeviation);
+                    result.setInferenceTimePerformanceFactor(referenceResult.getInferenceTimeInSeconds() / result.getInferenceTimeInSeconds());
                 }
             }
 
@@ -266,24 +297,8 @@ public class BenchmarkService {
     /**
      * Get deviation in percentage
      */
-    private double getDeviation(double observed, double reference) {
+    private double getPercentDeviation(double observed, double reference) {
         return ((observed - reference) / reference) * 100.0;
-    }
-
-    /**
-     * Get reference benchmark results
-     * @param referenceBenchmarkId Reference benchmark Id, e.g. "230302_164322"
-     * @return list of reference benchmark results
-     */
-    private BenchmarkResult[] getReferenceBenchmarkResults(String referenceBenchmarkId) throws Exception {
-        String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + BENCHMARK_RESULTS;
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream in = classLoader.getResourceAsStream(filePath);
-        ObjectMapper objectMapper = getObjectMapper();
-        BenchmarkResult[] referenceImplementationResults = objectMapper.readValue(in, BenchmarkResult[].class);
-        in.close();
-
-        return referenceImplementationResults;
     }
 
     /**
@@ -295,9 +310,22 @@ public class BenchmarkService {
         File benchmarkD = new File(benchmarksDataPath, benchmarkId);
         File resultsF = new File(benchmarkD, BENCHMARK_RESULTS);
         ObjectMapper objectMapper = getObjectMapper();
-        BenchmarkResult[] referenceImplementationResults = objectMapper.readValue(resultsF, BenchmarkResult[].class);
+        BenchmarkResult[] implementationResults = objectMapper.readValue(resultsF, BenchmarkResult[].class);
 
-        return referenceImplementationResults;
+        return implementationResults;
+    }
+
+    /**
+     * Get benchmark info
+     * @param benchmarkId Benchmark Id, e.g. "230302_164322"
+     * @return benchmark info
+     */
+    public BenchmarkInfo getBenchmarkInfo(String benchmarkId) throws Exception {
+        File benchmarkD = new File(benchmarksDataPath, benchmarkId);
+        File infoF = new File(benchmarkD, DATASET_INFO_FILE);
+        ObjectMapper objectMapper = getObjectMapper();
+        BenchmarkInfo info = objectMapper.readValue(infoF, BenchmarkInfo.class);
+        return info;
     }
 
     /**
@@ -471,7 +499,7 @@ public class BenchmarkService {
             dataset_bar.addValue(result.getRecall(), result.getSystemName(), "Recall");
 
             series = new XYSeries(result.getSystemName());
-            series.add(result.getTimeToRunBenchmarkInSeconds(), result.getAccuracy());
+            series.add(result.getInferenceTimeInSeconds(), result.getAccuracy());
             dataset_scatter.addSeries(series);
         }
 
