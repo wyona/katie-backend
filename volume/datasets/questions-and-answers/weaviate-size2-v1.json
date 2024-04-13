@@ -1,5 +1,5 @@
 {
-  "datasetName": "Weaviate one QnA",
+  "datasetName": "Weaviate",
   "datasetVersion": "1",
   "qnas": [
     {
