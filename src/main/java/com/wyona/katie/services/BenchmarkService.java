@@ -3,6 +3,7 @@ package com.wyona.katie.services;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +22,7 @@ import com.wyona.katie.handlers.WeaviateQuestionAnswerImpl;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wyona.katie.models.*;
+import freemarker.template.Template;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -205,8 +207,7 @@ public class BenchmarkService {
 
             if (email != null) {
                 String subject = mailSubjectTag + " Benchmark completed (" + benchmarkId + ")";
-                String body = "Benchmark '" + benchmarkId + "' completed. See " + domain.getHost() + "/api/v1/benchmark/report/" + benchmarkId + "/json";
-                mailerService.send(email, domain.getMailSenderEmail(), subject, body, false);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getBenchmarkCompletedEmailBody(domain, benchmarkId, "en"), true);
             }
 
             backgroundProcessService.updateProcessStatus(processId, "Benchmark finished: " + benchmarkId);
@@ -215,6 +216,36 @@ public class BenchmarkService {
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
         backgroundProcessService.stopProcess(processId);
+    }
+
+    /**
+     * Get email body containing information about completed benchmark
+     */
+    private String getBenchmarkCompletedEmailBody(Context domain, String benchmarkId, String userLanguage) throws Exception {
+        String benchmarkRawDataLink = domain.getHost() + "/api/v1/benchmark/report/" + benchmarkId + "/json";
+
+        TemplateArguments tmplArgs = new TemplateArguments(domain, null);
+        tmplArgs.add("raw_data_link", benchmarkRawDataLink);
+        /*
+        tmplArgs.add("request_uuid", rating.getRequestuuid());
+        tmplArgs.add("classified_text", classifiedText);
+        if (rating.getFeedback() != null) {
+            tmplArgs.add("feedback", rating.getFeedback());
+        } else {
+            tmplArgs.add("feedback", "NO_FEEDBACK");
+        }
+        if (predictedClassification != null) {
+            tmplArgs.add("predicted_label", predictedClassification.getTerm());
+        } else {
+            tmplArgs.add("predicted_label", "NO_LABEL_PREDICTED");
+        }
+
+         */
+
+        StringWriter writer = new StringWriter();
+        Template emailTemplate = mailerService.getTemplate("benchmark_completed_", Language.valueOf(userLanguage), domain);
+        emailTemplate.process(tmplArgs.getArgs(), writer);
+        return writer.toString();
     }
 
     /**
@@ -276,6 +307,7 @@ public class BenchmarkService {
      * @return list of reference benchmark results
      */
     private BenchmarkResult[] getReferenceBenchmarkResults(String referenceBenchmarkId) throws Exception {
+        // TODO: Move reference results to volume/benchmarks
         String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + BENCHMARK_RESULTS;
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream in = classLoader.getResourceAsStream(filePath);
