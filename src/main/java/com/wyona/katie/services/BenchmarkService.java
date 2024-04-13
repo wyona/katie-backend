@@ -228,7 +228,7 @@ public class BenchmarkService {
         //String referenceBenchmarkId = "230302_164322";
         benchmarkResults = compareWithReferenceBenchmark(benchmarkResults, referenceBenchmarkId);
 
-        BenchmarkInfo referenceBenchmarkInfo = getReferenceBenchmarkInfo(referenceBenchmarkId);
+        BenchmarkInfo referenceBenchmarkInfo = getBenchmarkInfo(referenceBenchmarkId);
 
         TemplateArguments tmplArgs = new TemplateArguments(null, hostname);
 
@@ -253,7 +253,7 @@ public class BenchmarkService {
      */
     public BenchmarkResult[] compareWithReferenceBenchmark(BenchmarkResult[] implementationResults, String referenceBenchmarkId) throws Exception {
         log.info("Compare results with reference benchmark '" + referenceBenchmarkId + "' ...");
-        BenchmarkResult[] referenceImplementationResults = getReferenceBenchmarkResults(referenceBenchmarkId);
+        BenchmarkResult[] referenceImplementationResults = getBenchmarkResults(referenceBenchmarkId);
 
         for (BenchmarkResult result : implementationResults) {
             boolean referenceImplementationExists = false;
@@ -297,39 +297,6 @@ public class BenchmarkService {
      */
     private double getDeviation(double observed, double reference) {
         return ((observed - reference) / reference) * 100.0;
-    }
-
-    /**
-     * Get reference benchmark results
-     * @param referenceBenchmarkId Reference benchmark Id, e.g. "230302_164322"
-     * @return list of reference benchmark results
-     */
-    private BenchmarkResult[] getReferenceBenchmarkResults(String referenceBenchmarkId) throws Exception {
-        // TODO: Move reference benchmark to volume/benchmarks
-        String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + BENCHMARK_RESULTS;
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream in = classLoader.getResourceAsStream(filePath);
-        ObjectMapper objectMapper = getObjectMapper();
-        BenchmarkResult[] referenceImplementationResults = objectMapper.readValue(in, BenchmarkResult[].class);
-        in.close();
-
-        return referenceImplementationResults;
-    }
-
-    /**
-     *
-     */
-    private BenchmarkInfo getReferenceBenchmarkInfo(String referenceBenchmarkId) throws Exception {
-        // TODO: Move reference benchmark to volume/benchmarks
-        String filePath = "benchmark_data/" + "reference_benchmarks/" + referenceBenchmarkId + "/" + DATASET_INFO_FILE;
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream in = classLoader.getResourceAsStream(filePath);
-
-        ObjectMapper objectMapper = getObjectMapper();
-        BenchmarkInfo info = objectMapper.readValue(in, BenchmarkInfo.class);
-        in.close();
-
-        return info;
     }
 
     /**
