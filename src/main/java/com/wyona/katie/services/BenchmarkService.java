@@ -349,6 +349,17 @@ public class BenchmarkService {
     /**
      *
      */
+    public BenchmarkInfo getBenchmarkInfo(String benchmarkId) throws Exception {
+        File benchmarkD = new File(benchmarksDataPath, benchmarkId);
+        File infoF = new File(benchmarkD, DATASET_INFO_FILE);
+        ObjectMapper objectMapper = getObjectMapper();
+        BenchmarkInfo info = objectMapper.readValue(infoF, BenchmarkInfo.class);
+        return info;
+    }
+
+    /**
+     *
+     */
     private ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
