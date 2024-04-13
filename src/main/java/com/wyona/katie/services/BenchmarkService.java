@@ -277,10 +277,12 @@ public class BenchmarkService {
                     double indexingTimeDeviation = getPercentDeviation(result.getIndexingTimeInSeconds(), referenceResult.getIndexingTimeInSeconds());
                     result.setIndexingTimeDeviationInPercentage(indexingTimeDeviation);
                     log.info("Indexing time deviation in percentage: " + indexingTimeDeviation);
+                    result.setIndexingTimePerformanceFactor(referenceResult.getIndexingTimeInSeconds() / result.getIndexingTimeInSeconds());
 
                     double inferenceTimeDeviation = getPercentDeviation(result.getInferenceTimeInSeconds(), referenceResult.getInferenceTimeInSeconds());
                     result.setInferenceTimeDeviationInPercentage(inferenceTimeDeviation);
                     log.info("Average inference time deviation in percentage: " + inferenceTimeDeviation);
+                    result.setInferenceTimePerformanceFactor(referenceResult.getInferenceTimeInSeconds() / result.getInferenceTimeInSeconds());
                 }
             }
 
