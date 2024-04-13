@@ -33,7 +33,7 @@
 
                                         <h1 style="margin: 32px 0 0;">Benchmark Results</h1>
                                         <p style="margin: 16px 0 0;">
-                                          Dataset name: ${info.datasetName} (Reference: ${reference_info.datasetName})
+                                          Dataset name: ${info.datasetName} v${info.datasetVersion} (Reference: ${reference_info.datasetName} v${reference_info.datasetVersion})
                                           <br/>
                                           Dataset size: ${info.datasetSize} (Reference: ${reference_info.datasetSize})
                                         </p>
