@@ -403,10 +403,7 @@ public class BenchmarkController {
             
             LinkedList<BenchmarkInfo> benchmarkResultHistory = new LinkedList<>();
             for (String dir : bechnmarkHistoryDirectories) {
-                File benchmarkD = new File(benchmarksDataPath, dir);
-                File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-
-                benchmarkResultHistory.add(objectMapper.readValue(resultF, BenchmarkInfo.class));
+                benchmarkResultHistory.add(bmService.getBenchmarkInfo(dir));
             }
 
             return new ResponseEntity<>(benchmarkResultHistory, HttpStatus.OK);
@@ -427,13 +424,7 @@ public class BenchmarkController {
             HttpServletRequest request) {
 
         try {
-            // for reading json files as objects
-            ObjectMapper objectMapper = getObjectMapper();
-
-            // get info file and graph files from desired benchmark directory
-            File benchmarkD = new File(benchmarksDataPath, benchmarkId);
-            File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-            BenchmarkInfo bmInfo = objectMapper.readValue(resultF, BenchmarkInfo.class);
+            BenchmarkInfo bmInfo = bmService.getBenchmarkInfo(benchmarkId);
 
             BenchmarkResult[] implementationResults = bmService.getBenchmarkResults(benchmarkId);
 
@@ -462,14 +453,7 @@ public class BenchmarkController {
             HttpServletRequest request) {
 
         try {
-            // for reading json files as objects
-            ObjectMapper objectMapper = getObjectMapper();
-            
-            // get info file and graph files from desired benchmark directory
-            File benchmarkD = new File(benchmarksDataPath, benchmarkId);
-            File resultF = new File(benchmarkD, bmService.DATASET_INFO_FILE);
-            BenchmarkInfo bmInfo = objectMapper.readValue(resultF, BenchmarkInfo.class);
-                    
+            BenchmarkInfo bmInfo = bmService.getBenchmarkInfo(benchmarkId);
                     
             // create report with data and graphs
             PDDocument doc = new PDDocument();
@@ -524,10 +508,11 @@ public class BenchmarkController {
             contentStream.endText();
             
             // draw the graphs
-            File barPlot = new File(benchmarkD, "accuracy_precision_recall_bar.png");
+            File benchmarkDir = new File(benchmarksDataPath, benchmarkId);
+            File barPlot = new File(benchmarkDir, "accuracy_precision_recall_bar.png");
             PDImageXObject pdImageBar = PDImageXObject.createFromFile(barPlot.getPath(),doc);
             contentStream.drawImage(pdImageBar, 50, 320, 500, 300);
-            File scatterPlot = new File(benchmarkD, "accuracy_vs_time_scatter.png");
+            File scatterPlot = new File(benchmarkDir, "accuracy_vs_time_scatter.png");
             PDImageXObject pdImageScatter = PDImageXObject.createFromFile(scatterPlot.getPath(),doc);
             contentStream.drawImage(pdImageScatter, 50, 10, 500, 300);
             
