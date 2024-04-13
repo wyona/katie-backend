@@ -53,7 +53,7 @@
                                           <p>Recall: ${result.recall} <#if result.recallDeviationInPercentage lt 0><span style="color: red">WORSE</span><#else><span style="color: green">BETTER</span></#if>: ${result.recallDeviationInPercentage}%</p>
                                           <p>Precision: ${result.precision} <#if result.precisionDeviationInPercentage lt 0><span style="color: red">WORSE</span><#else><span style="color: green">BETTER</span></#if>: ${result.precisionDeviationInPercentage}%</p>
                                           <p>Indexing time: ${result.indexingTimeInSeconds} secs <#if result.indexingTimeDeviationInPercentage lt 0><span style="color: green">FASTER</span><#else><span style="color: red">SLOWER</span></#if>: ${result.indexingTimeDeviationInPercentage}%</p>
-                                          <p>Running time: ${result.timeToRunBenchmarkInSeconds} secs <#if result.timeToRunBenchmarkDeviationInPercentage lt 0><span style="color: green">FASTER</span><#else><span style="color: red">SLOWER</span></#if>: ${result.timeToRunBenchmarkDeviationInPercentage}%</p>
+                                          <p>Inference time: ${result.inferenceTimeInSeconds} secs <#if result.inferenceTimeDeviationInPercentage lt 0><span style="color: green">FASTER</span><#else><span style="color: red">SLOWER</span></#if>: ${result.inferenceTimeDeviationInPercentage}%</p>
                                           <hr/>
                                         </#list>
 

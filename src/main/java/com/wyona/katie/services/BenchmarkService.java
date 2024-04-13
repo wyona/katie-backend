@@ -262,24 +262,24 @@ public class BenchmarkService {
                     referenceImplementationExists = true;
                     log.info("Compare results for implementation: " + result.getSystemName());
 
-                    double indexingTimeDeviation = getDeviation(result.getIndexingTimeInSeconds(), referenceResult.getIndexingTimeInSeconds());
-                    result.setIndexingTimeDeviationInPercentage(indexingTimeDeviation);
-                    log.info("Indexing time deviation in percentage: " + indexingTimeDeviation);
-
-                    double accuracyDeviation = getDeviation(result.getAccuracy(), referenceResult.getAccuracy());
+                    double accuracyDeviation = getPercentDeviation(result.getAccuracy(), referenceResult.getAccuracy());
                     result.setAccuracyDeviationInPercentage(accuracyDeviation);
                     log.info("Accuracy deviation in percentage: " + accuracyDeviation);
 
-                    double precisionDeviation = getDeviation(result.getPrecision(), referenceResult.getPrecision());
+                    double precisionDeviation = getPercentDeviation(result.getPrecision(), referenceResult.getPrecision());
                     result.setPrecisionDeviationInPercentage(precisionDeviation);
                     log.info("Precision deviation in percentage: " + precisionDeviation);
 
-                    double recallDeviation = getDeviation(result.getRecall(), referenceResult.getRecall());
+                    double recallDeviation = getPercentDeviation(result.getRecall(), referenceResult.getRecall());
                     result.setRecallDeviationInPercentage(recallDeviation);
                     log.info("Recall deviation in percentage: " + recallDeviation);
 
-                    double inferenceTimeDeviation = getDeviation(result.getTimeToRunBenchmarkInSeconds(), referenceResult.getTimeToRunBenchmarkInSeconds());
-                    result.setTimeToRunBenchmarkDeviationInPercentage(inferenceTimeDeviation);
+                    double indexingTimeDeviation = getPercentDeviation(result.getIndexingTimeInSeconds(), referenceResult.getIndexingTimeInSeconds());
+                    result.setIndexingTimeDeviationInPercentage(indexingTimeDeviation);
+                    log.info("Indexing time deviation in percentage: " + indexingTimeDeviation);
+
+                    double inferenceTimeDeviation = getPercentDeviation(result.getInferenceTimeInSeconds(), referenceResult.getInferenceTimeInSeconds());
+                    result.setInferenceTimeDeviationInPercentage(inferenceTimeDeviation);
                     log.info("Average inference time deviation in percentage: " + inferenceTimeDeviation);
                 }
             }
@@ -295,7 +295,7 @@ public class BenchmarkService {
     /**
      * Get deviation in percentage
      */
-    private double getDeviation(double observed, double reference) {
+    private double getPercentDeviation(double observed, double reference) {
         return ((observed - reference) / reference) * 100.0;
     }
 
@@ -308,13 +308,15 @@ public class BenchmarkService {
         File benchmarkD = new File(benchmarksDataPath, benchmarkId);
         File resultsF = new File(benchmarkD, BENCHMARK_RESULTS);
         ObjectMapper objectMapper = getObjectMapper();
-        BenchmarkResult[] referenceImplementationResults = objectMapper.readValue(resultsF, BenchmarkResult[].class);
+        BenchmarkResult[] implementationResults = objectMapper.readValue(resultsF, BenchmarkResult[].class);
 
-        return referenceImplementationResults;
+        return implementationResults;
     }
 
     /**
-     *
+     * Get benchmark info
+     * @param benchmarkId Benchmark Id, e.g. "230302_164322"
+     * @return benchmark info
      */
     public BenchmarkInfo getBenchmarkInfo(String benchmarkId) throws Exception {
         File benchmarkD = new File(benchmarksDataPath, benchmarkId);
@@ -495,7 +497,7 @@ public class BenchmarkService {
             dataset_bar.addValue(result.getRecall(), result.getSystemName(), "Recall");
 
             series = new XYSeries(result.getSystemName());
-            series.add(result.getTimeToRunBenchmarkInSeconds(), result.getAccuracy());
+            series.add(result.getInferenceTimeInSeconds(), result.getAccuracy());
             dataset_scatter.addSeries(series);
         }
 
