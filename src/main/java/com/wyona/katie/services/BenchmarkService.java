@@ -231,7 +231,9 @@ public class BenchmarkService {
         TemplateArguments tmplArgs = new TemplateArguments(null, hostname);
 
         String benchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + benchmarkInfo.getId() + "/json";
+        String referenceBenchmarkRawDataLink = hostname + "/api/v1/benchmark/report/" + referenceBenchmarkId + "/json";
         tmplArgs.add("raw_data_link", benchmarkRawDataLink);
+        tmplArgs.add("raw_reference_data_link", referenceBenchmarkRawDataLink);
         tmplArgs.add("results", benchmarkResults);
         tmplArgs.add("info", benchmarkInfo);
 
