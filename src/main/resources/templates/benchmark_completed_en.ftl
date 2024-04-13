@@ -39,6 +39,8 @@
                                         </p>
                                         <p style="margin: 16px 0 0;">
                                             Raw benchmark data <a href="${raw_data_link}">here</a>
+                                            <br/>
+                                            Raw reference benchmark data <a href="${raw_reference_data_link}">here</a>
                                         </p>
 
                                         <h2>Implementation Results</h2>
@@ -46,10 +48,12 @@
                                         <#list results as result>
                                           <h3>${result.systemName} ${result.systemVersion}</h3>
                                           <p>${result.systemMeta}</p>
-                                          <p>Accuracy: ${result.accuracy} <#if result.accuracyDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.accuracyDeviationInPercentage}%</p>
+                                          <p>Accuracy: ${result.accuracy} <#if result.accuracyDeviationInPercentage lt 0><span style="color: red">WORSE</span><#else><span style="color: green">BETTER</span></#if>: ${result.accuracyDeviationInPercentage}%</p>
                                           <p>Total number of failed / tested questions: ${result.failedQuestions?size} / ${result.totalNumberOfQuestions}</p>
-                                          <p>Recall: ${result.recall} <#if result.recallDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.recallDeviationInPercentage}%</p>
-                                          <p>Precision: ${result.precision} <#if result.precisionDeviationInPercentage lt 0><span style="color: red">DOWN</span><#else><span style="color: green">UP</span></#if>: ${result.precisionDeviationInPercentage}%</p>
+                                          <p>Recall: ${result.recall} <#if result.recallDeviationInPercentage lt 0><span style="color: red">WORSE</span><#else><span style="color: green">BETTER</span></#if>: ${result.recallDeviationInPercentage}%</p>
+                                          <p>Precision: ${result.precision} <#if result.precisionDeviationInPercentage lt 0><span style="color: red">WORSE</span><#else><span style="color: green">BETTER</span></#if>: ${result.precisionDeviationInPercentage}%</p>
+                                          <p>Indexing time: ${result.indexingTimeInSeconds} secs <#if result.indexingTimeDeviationInPercentage lt 0><span style="color: green">FASTER</span><#else><span style="color: red">SLOWER</span></#if>: ${result.indexingTimeDeviationInPercentage}%</p>
+                                          <p>Running time: ${result.timeToRunBenchmarkInSeconds} secs <#if result.timeToRunBenchmarkDeviationInPercentage lt 0><span style="color: green">FASTER</span><#else><span style="color: red">SLOWER</span></#if>: ${result.timeToRunBenchmarkDeviationInPercentage}%</p>
                                           <hr/>
                                         </#list>
 
