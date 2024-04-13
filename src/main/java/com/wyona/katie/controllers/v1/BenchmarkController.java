@@ -354,9 +354,10 @@ public class BenchmarkController {
             InputStream inputStream = new BufferedInputStream(file.getInputStream());
             return inputStream;
         } else {
-            // INFO: Use default dataset if none was given
-            String datasetPathName = "weaviate-size7-v1.json";
-            //String datasetPathName = "weaviate-size121-v2.json"; //TODO: maybe put this into config
+            // INFO: Use default dataset if none was given. TODO: Make configurable
+            //String datasetPathName = "weaviate-size2-v1.json";
+            //String datasetPathName = "weaviate-size7-v1.json";
+            String datasetPathName = "weaviate-size121-v2.json";
 
             File datasetFile = new File(datasetsDataPath, "questions-and-answers/" + datasetPathName);
             log.info("Use default dataset: " + datasetFile.getAbsolutePath());
