@@ -1,9 +1,6 @@
 package com.wyona.katie.models;
 
-import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Date;
 
 /**
  *
