@@ -399,7 +399,7 @@ public class ConfigurationController {
     @ApiOperation(value="Get domain configuration")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getContextConfiguration(
         @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,
@@ -468,7 +468,7 @@ public class ConfigurationController {
     @ApiOperation(value="Create a new domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> createDomain(
         @ApiParam(name = "name", value = "Name of domain (e.g. 'Wyona Research & Development')",required = true)
         @RequestParam("name") String name,

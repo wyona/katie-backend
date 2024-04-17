@@ -41,7 +41,7 @@ public class BackgroundProcessController {
     @ApiOperation(value="Get a particular status of a running process")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getStatusOfRunningProcess(
         @ApiParam(name = "process-id", value = "Process Id",required = true)
         @PathVariable(value = "process-id", required = true) String processId,
@@ -80,7 +80,7 @@ public class BackgroundProcessController {
     @ApiOperation(value="Get a particular status of a completed process")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getStatusOfCompletedProcess(
             @ApiParam(name = "process-id", value = "Process Id",required = true)
             @PathVariable(value = "process-id", required = true) String processId,

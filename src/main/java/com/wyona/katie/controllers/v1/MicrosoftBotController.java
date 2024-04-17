@@ -226,7 +226,7 @@ public class MicrosoftBotController {
     @ApiOperation(value="MICROSOFT: Handle Microsoft bot messages")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> handleEvents(@RequestBody MicrosoftBotMessage message,
         HttpServletRequest request) {
 

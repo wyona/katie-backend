@@ -63,7 +63,7 @@ public class AskControllerV2 {
     })
     @ApiImplicitParams({
     @ApiImplicitParam(name = "Authorization", value = "Bearer JWT", 
-                      required = false, dataType = "string", paramType = "header") })
+                      required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getAnswer(
             //public ResponseEntity<Answer, AnswerError> getAnswer(
             @ApiParam(name = "question", value = "Question, e.g. 'What is the highest mountain of the world?'", required = true)
@@ -122,7 +122,7 @@ public class AskControllerV2 {
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> postQuestion(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,

@@ -47,7 +47,7 @@ public class FeedbackController {
     @ApiOperation(value="Rate answer to question")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> rateAnswer(
             @ApiParam(name = "uuid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String quuid,
@@ -167,7 +167,7 @@ public class FeedbackController {
     @ApiOperation(value="Rate predicted labels")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> ratePredictedLabels(
             @ApiParam(name = "rating", value = "Rating of predicted labels", required = true)
             @RequestBody RatingPredictedLabels rating,

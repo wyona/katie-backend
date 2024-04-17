@@ -398,7 +398,7 @@ public class IAMController {
     @ApiOperation(value= "Update profile picture of a particular user")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> updateProfilePicture(
             @ApiParam(name = "id", value = "Katie user Id, e.g. '9cfc7e09-fe62-4ae4-81b6-1605424d6f87'",required = true)
             @PathVariable(value = "id", required = true) String id,

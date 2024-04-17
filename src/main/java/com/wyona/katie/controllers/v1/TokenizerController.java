@@ -50,7 +50,7 @@ public class TokenizerController {
     @ApiOperation(value="Get bert-base-cased tokenization of text")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getBertBaseCasedTokenization(
         @ApiParam(name = "domainId", value = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
         @RequestParam(value = "domainId", required = true) String domainId,

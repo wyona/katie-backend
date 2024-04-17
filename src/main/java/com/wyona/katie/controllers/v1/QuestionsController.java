@@ -475,7 +475,7 @@ public class QuestionsController {
     @ApiOperation(value="Add a thread message / response to an originally asked question")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> addThreadMessage(
             @ApiParam(name = "client-message-id", value = "Client message / thread Id", required = true)
             @RequestParam(value = "client-message-id", required = true) String messageId,
@@ -725,7 +725,7 @@ public class QuestionsController {
     @ApiOperation(value="Get all trained QnAs of a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getTrainedQuestions(
             @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -794,7 +794,7 @@ public class QuestionsController {
     @ApiOperation(value="Delete all trained QnAs of a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> deleteTrainedQnAs(
             @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -841,7 +841,7 @@ public class QuestionsController {
     @ApiOperation(value="Delete all QnAs (trained and not trained) of a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> deleteAllQnAs(
             @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,

@@ -284,7 +284,7 @@ public class BenchmarkController {
     @ApiOperation(value="Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> performBenchmark(
             // TODO: Add description for file, e.g. "Dataset" and that if not provided a default set is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
