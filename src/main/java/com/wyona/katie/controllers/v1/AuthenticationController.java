@@ -202,7 +202,7 @@ public class AuthenticationController {
     @ApiOperation(value= "Login with username/password or JWT token")
     @ApiImplicitParams({
     @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                      required = false, dataType = "string", paramType = "header") })
+                      required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
         @ApiParam(name = "rememberMe", value = "True when user wants to stay logged in and false otherwise",required = false)
         @RequestParam(value = "rememberMe", required = false) boolean rememberMe,
