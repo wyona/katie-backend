@@ -130,7 +130,7 @@ public class QuestionController {
     @ApiOperation(value = "Add a new QnA to domain and train QnA once added")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> addQuestionAndAnswer(
             @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -169,7 +169,7 @@ public class QuestionController {
     @ApiOperation(value = "Get a particular trained QnA")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getTrainedQnA(
         @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
         @PathVariable("domainid") String domainid,
@@ -216,7 +216,7 @@ public class QuestionController {
     @ApiOperation(value = "Get only answer of a particular trained QnA")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getTrainedAnswer(
             @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -347,7 +347,7 @@ public class QuestionController {
     @ApiOperation(value = "Exract auto-suggest terms from QnA")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getExtractedSuggestions(
             @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -1017,7 +1017,7 @@ public class QuestionController {
     @ApiOperation(value="Rate answer to question")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     @Deprecated
     public ResponseEntity<?> rateAnswer(
             @ApiParam(name = "uuid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
@@ -1093,7 +1093,7 @@ public class QuestionController {
     @ApiOperation(value="Rate QnA")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> rateQnA(
             @ApiParam(name = "uuid", value = "UUID of QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
