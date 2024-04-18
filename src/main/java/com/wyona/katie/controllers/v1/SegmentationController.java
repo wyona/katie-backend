@@ -7,12 +7,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.SegmentationService;
 import com.wyona.katie.services.Utils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,11 +50,11 @@ public class SegmentationController {
      * https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1998/892_892_892/20230123/en/xml/fedlex-data-admin-ch-eli-cc-1998-892_892_892-20230123-en-xml-1.xml
      */
     @RequestMapping(value = "/akoma-ntoso", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Convert Akoma Ntoso XML into Katie import JSON")
+    @Operation(summary="Convert Akoma Ntoso XML into Katie import JSON")
     public ResponseEntity<?> convertAkomaNtoso(
-            @ApiParam(name = "domainId", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
+            @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "source-url", value = "Source URL, e.g. 'https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/en#' or 'https://www.fedlex.admin.ch/eli/cc/2022/491/de#'" ,required = true)
+            @Parameter(name = "source-url", description = "Source URL, e.g. 'https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/en#' or 'https://www.fedlex.admin.ch/eli/cc/2022/491/de#'" ,required = true)
             @RequestParam(value = "source-url", required = true) String sourceUrl,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -87,11 +86,11 @@ public class SegmentationController {
      * https://docs.ai21.com/docs/text-segmentation-api
      */
     @RequestMapping(value = "/ai21", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Split text into chunks using AI21 segmentation service")
+    @Operation(summary="Split text into chunks using AI21 segmentation service")
     public ResponseEntity<?> getSegments(
-            @ApiParam(name = "domainId", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
+            @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "source-url", value = "Source URL, e.g. https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/en" ,required = true)
+            @Parameter(name = "source-url", description = "Source URL, e.g. https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/en" ,required = true)
             @RequestParam(value = "source-url", required = true) String sourceUrl,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest requestIn) {
@@ -124,22 +123,24 @@ public class SegmentationController {
     }
 
     /**
-     * REST interface to split text into chunks similar to langchain character text splitter (https://python.langchain.com/en/latest/modules/indexes/text_splitters/examples/character_text_splitter.html)
+     * REST interface to split plain text document into chunks similar to langchain character text splitter (https://python.langchain.com/en/latest/modules/indexes/text_splitters/examples/character_text_splitter.html)
      * TODO: Also consider: https://github.com/run-llama/llama-hub/tree/main/llama_hub/llama_packs/node_parser/semantic_chunking
      * TODO: Semnatic chunking https://www.youtube.com/watch?v=w_veb816Asg
      */
-    @RequestMapping(value = "/character", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Split text into chunks similar to langchain character text splitter")
+    @RequestMapping(value = "/character", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    //@RequestMapping(value = "/character", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary="Split plain text document into chunks similar to langchain character text splitter")
     public ResponseEntity<?> getCharacterTextSplitter(
-            @ApiParam(name = "domainId", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
+            @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "separator", value = "Separator, e.g. ' ' or '\\n'" ,required = true)
-            @RequestParam(value = "separator", required = true) Character separator,
-            @ApiParam(name = "chunk-size", value = "Chunk size" ,required = true)
+            @Parameter(name = "separator", description = "Separator, e.g. ' ' or '\\n'" ,required = false)
+            @RequestParam(value = "separator", required = false) Character separator,
+            @Parameter(name = "chunk-size", description = "Chunk size" ,required = true)
             @RequestParam(value = "chunk-size", required = true) Integer chunkSize,
-            @ApiParam(name = "chunk-overlap", value = "Chunk overlap" ,required = true)
+            @Parameter(name = "chunk-overlap", description = "Chunk overlap" ,required = true)
             @RequestParam(value = "chunk-overlap", required = true) Integer chunkOverlap,
-            @RequestPart("file") MultipartFile file,
+            @Parameter(description = "Plain text file to upload", required = true)
+            @RequestPart(name = "file", required = true) MultipartFile file,
             HttpServletRequest requestIn) {
 
         if (!domainService.isMemberOrAdmin(domainId)) {
@@ -151,7 +152,10 @@ public class SegmentationController {
             String text = Utils.convertInputStreamToString(in);
             in.close();
 
-            List<String> chunks = segmentationService.getSegments(text, separator, chunkSize, chunkOverlap);
+            // TODO: Use separator from request argument
+            Character _separator = '\n';
+            //Character _separator = ' ';
+            List<String> chunks = segmentationService.getSegments(text, _separator, chunkSize, chunkOverlap);
 
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode katieImport = mapper.createArrayNode();
