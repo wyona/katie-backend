@@ -59,6 +59,9 @@ public class SegmentationService {
             chunkOverlap = 0;
         }
 
+        log.info("Chunk text into pieces with intended length of " + chunkSize + " characters and with " + chunkOverlap + " characters overlap.");
+        log.info("Provided separator '" + separator + "'");
+
         List<String> chunks = new ArrayList<String>();
 
         String remainingText = text;
