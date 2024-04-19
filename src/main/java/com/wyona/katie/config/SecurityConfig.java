@@ -84,9 +84,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/api/v1/communication/process-emails").hasRole(ADMIN_ROLE)
                 //.antMatchers(GET, "/api/v1/configuration/version").permitAll()
                 //.antMatchers(GET, "/api/v1/configuration").hasRole(ADMIN_ROLE)
-                .antMatchers(GET, "/api/v1/configuration/context").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain
-                .antMatchers(GET, "/api/v1/configuration/context/*").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain or whether a valid JWT is provided
-                .antMatchers(GET, "/api/v1/configuration/domain/*/display-information").permitAll()
+                //.antMatchers(GET, "/api/v1/configuration/context").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain
+                //.antMatchers(GET, "/api/v1/configuration/context/*").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain or whether a valid JWT is provided
+                //.antMatchers(GET, "/api/v1/configuration/domain/*/display-information").permitAll()
                 .antMatchers(DELETE, "/api/v1/configuration/domain/*").hasRole(ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/configuration/domain/*/message-body-hostname").authenticated()
                 //.antMatchers(POST, "/api/v1/configuration/domain").authenticated()
