@@ -79,10 +79,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/api/v1/submitQuestionToExpert").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 //.antMatchers(POST, "/api/v1/auth/token/katie").hasRole(ADMIN_ROLE)
                 //.antMatchers(POST, "/api/v1/auth/token/generic").hasRole(ADMIN_ROLE)
-                .antMatchers(GET, "/api/v1/auth/username").permitAll()
-                .antMatchers(GET, "/api/v1/auth/user").permitAll()
+                //.antMatchers(GET, "/api/v1/auth/username").permitAll()
+                //.antMatchers(GET, "/api/v1/auth/user").permitAll()
                 .antMatchers(GET, "/api/v1/communication/process-emails").hasRole(ADMIN_ROLE)
-                .antMatchers(GET, "/api/v1/configuration/version").permitAll()
+                //.antMatchers(GET, "/api/v1/configuration/version").permitAll()
                 //.antMatchers(GET, "/api/v1/configuration").hasRole(ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/configuration/context").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain
                 .antMatchers(GET, "/api/v1/configuration/context/*").permitAll() // INFO: The controller itself checks whether signed in user is member of Domain or whether a valid JWT is provided
@@ -112,6 +112,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/**").permitAll()
                 .antMatchers(PUT, "/**").permitAll()
                 .antMatchers(POST, "/**").permitAll()
+                //.antMatchers(PATCH, "/**").permitAll() // TODO: Check permissions
                 .and()
                 .logout() // https://www.baeldung.com/spring-security-logout
                     .deleteCookies("JSESSIONID")
