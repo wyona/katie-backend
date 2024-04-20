@@ -318,8 +318,10 @@ public class IAMController {
             log.info("User language: " + user.getLanguage());
             User updatedUser = iamService.updateUser(id, user);
             return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
-            return new ResponseEntity<>(new Error(e.getMessage(), "UPDATE_USER_FAILED"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
