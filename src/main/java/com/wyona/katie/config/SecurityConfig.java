@@ -72,7 +72,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 //.antMatchers("/h2-console/**").permitAll()
-                .antMatchers(GET, "/api/v1/communication/process-emails").hasRole(ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/configuration/domain/*/message-body-hostname").authenticated()
                 .antMatchers(GET, "/api/v1/summary/current").hasRole(ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/question/resubmitted/*").hasAnyRole(USER_ROLE, ADMIN_ROLE)
@@ -80,6 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(DELETE, "/api/v1/question/resubmitted/*").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/question/resubmitted/*/sendAnswer").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/question/resubmitted/*/train").hasAnyRole(USER_ROLE, ADMIN_ROLE)
+                // TODO: Consider removing push-notification functionality completely
                 .antMatchers(POST, "/tmp-test/push-notification/topic").hasRole(ADMIN_ROLE)
                 .antMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
                 .antMatchers(POST, "/tmp-test/push-notification/data").hasRole(ADMIN_ROLE)
