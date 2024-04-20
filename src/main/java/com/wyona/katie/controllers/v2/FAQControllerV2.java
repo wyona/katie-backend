@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.*;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -342,9 +343,11 @@ public class FAQControllerV2 {
             FAQ faq = contextService.addQnA2FAQ(domain, language, topicId, uuid, true);
 
             return new ResponseEntity<>(faq.getTopics(), HttpStatus.OK);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
