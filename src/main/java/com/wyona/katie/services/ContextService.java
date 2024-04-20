@@ -1665,8 +1665,9 @@ public class ContextService {
      * @return domain Id of deleted domain
      */
     public String deleteDomain(String id) throws Exception {
-        // TODO: Check authorization here, whereas is currently protected by SecurityConfig
-        // TODO: Add authorization check to Postman monitor
+        if (!isMemberOrAdmin(id)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + id + "', nor has role " + Role.ADMIN + "!");
+        }
         return deleteDomain(id, authService.getUserId());
     }
 
