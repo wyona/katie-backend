@@ -5,10 +5,12 @@ import com.wyona.katie.models.Username;
 import com.wyona.katie.services.JwtService;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.ContextService;
+
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -264,7 +266,9 @@ public class IAMController {
             @RequestBody User user,
             HttpServletRequest request) {
         try {
-            // INFO: This endpoint is protected by SecurityConfig
+            if (!contextService.isAdmin()) {
+                throw new AccessDeniedException("User is either not signed in or has not role ADMIN!");
+            }
             User newUser = iamService.createUser(new Username(user.getUsername()), user.getEmail(), user.getRole(), user.getPassword(), true, user.getFirstname(), user.getLastname(), user.getLanguage(), false);
             log.info("Every new user gets a personal domain for free (MyKatie), for example to remember credentials, bookmarks, etc.");
 
@@ -292,6 +296,8 @@ public class IAMController {
             }
 
             return new ResponseEntity<>(newUser, HttpStatus.OK);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "ADD_USER_FAILED"), HttpStatus.BAD_REQUEST);
