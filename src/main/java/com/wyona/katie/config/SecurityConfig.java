@@ -1,6 +1,5 @@
 package com.wyona.katie.config;
 
-import com.wyona.katie.services.UsersXMLFileService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.context.annotation.Configuration;
@@ -18,11 +17,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import static org.springframework.http.HttpMethod.*;
 
 import org.springframework.security.web.session.SessionManagementFilter;
-import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.authentication.AuthenticationManager;
 
 import com.wyona.katie.services.IAMService;
-import com.wyona.katie.services.XMLService;
 //import com.wyona.katie.security.RestAuthenticationEntryPoint;
 
 /**
@@ -98,6 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(PUT, "/**").permitAll()
                 .antMatchers(POST, "/**").permitAll()
                 //.antMatchers(PATCH, "/**").permitAll() // TODO: Check permissions
+                //.antMatchers(DELETE, "/**").permitAll() // TODO: Check permissions
                 .and()
                 .logout() // https://www.baeldung.com/spring-security-logout
                     .deleteCookies("JSESSIONID")
