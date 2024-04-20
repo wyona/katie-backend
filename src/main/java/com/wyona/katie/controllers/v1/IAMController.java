@@ -7,6 +7,8 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.ContextService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.IAMService;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,10 +49,10 @@ public class IAMController {
      * Self-registration
      */
     @RequestMapping(value = "/self-register", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "Self-registration")
+    @Operation(summary= "Self-registration")
     public ResponseEntity<?> selfRegister(
             @RequestBody(required = false) SelfRegistrationInformation infos,
-            @ApiParam(name = "h-captcha-response-token", value = "hCaptcha response token", required = false)
+            @Parameter(name = "h-captcha-response-token", description = "hCaptcha response token", required = false)
             @RequestParam(value = "h-captcha-response-token", required = false) String hCaptchaResponseToken,
             HttpServletRequest request) {
 
@@ -99,7 +98,7 @@ public class IAMController {
      * E-mail confirmation of user to complete self-registration account-setup
      */
     @RequestMapping(value = "/self-register-email-confirmation", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "E-mail confirmation of user to complete self-registration account-setup")
+    @Operation(summary= "E-mail confirmation of user to complete self-registration account-setup")
     public ResponseEntity<?> selfRegisterEmailConfirmation(
             @RequestBody PasswordResetToken passwordToken,
             HttpServletRequest request) {
@@ -118,9 +117,9 @@ public class IAMController {
      * REST interface to approve self-registration of user by administrator
      */
     @RequestMapping(value = "/self-register-approve", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Approve self-registration")
+    @Operation(summary = "Approve self-registration")
     public ResponseEntity<?> approveSelfRegistration(
-            @ApiParam(name = "token", value = "Token containing user information",required = true)
+            @Parameter(name = "token", description = "Token containing user information",required = true)
             @RequestParam(value = "token", required = true) String token,
             HttpServletRequest request) {
 
@@ -137,9 +136,9 @@ public class IAMController {
      * REST interface to reject self-registration of user by administrator
      */
     @RequestMapping(value = "/self-register-reject", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Reject self-registration")
+    @Operation(summary = "Reject self-registration")
     public ResponseEntity<?> rejectSelfRegistration(
-            @ApiParam(name = "token", value = "Token containing user information",required = true)
+            @Parameter(name = "token", description = "Token containing user information",required = true)
             @RequestParam(value = "token", required = true) String token,
             HttpServletRequest request) {
 
@@ -156,9 +155,9 @@ public class IAMController {
      * REST interface to get all users of all domains or all users of a particular domain
      */
     @RequestMapping(value = "/users", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all users")
+    @Operation(summary = "Get all users", description = "Get all users")
     public ResponseEntity<?> getUsers(
-        @ApiParam(name = "domainId", value = "Optional domain Id, for example 'df39dcaf-dd7e-4d04-bec4-ba60ee25834a', which represents a single realm containing its own users / members, etc.",required = false)
+        @Parameter(name = "domainId", description = "Optional domain Id, for example 'df39dcaf-dd7e-4d04-bec4-ba60ee25834a', which represents a single realm containing its own users / members, etc.",required = false)
         @RequestParam(value = "domainId", required = false) String domainId,
         HttpServletRequest request) {
 
@@ -193,9 +192,9 @@ public class IAMController {
      * Get a particular user
      */
     @RequestMapping(value = "/user/{id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value= "Get a particular user")
+    @Operation(summary = "Get a particular user", description = "Get a particular user")
     public ResponseEntity<?> getUser(
-            @ApiParam(name = "id", value = "User Id",required = true)
+            @Parameter(name = "id", description = "User Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
@@ -219,11 +218,11 @@ public class IAMController {
      * Submit email or username when forgot password
      */
     @RequestMapping(value = "/user/forgot-password", method = RequestMethod.POST)
-    @ApiOperation(value= "Submit email or username when forgot password")
+    @Operation(summary = "Submit email or username when forgot password")
     public ResponseEntity<?> submitUsername(
-            @ApiParam(name = "username", value = "Email or username",required = true)
+            @Parameter(name = "username", description = "Email or username",required = true)
             @RequestParam(value = "username", required = true) String username,
-            @ApiParam(name = "host-frontend", value = "Host of frontend",required = false)
+            @Parameter(name = "host-frontend", description = "Host of frontend",required = false)
             @RequestParam(value = "host-frontend", required = false) HostFrontend hostFrontend,
             HttpServletRequest request) {
         try {
@@ -242,7 +241,7 @@ public class IAMController {
      * Reset password
      */
     @RequestMapping(value = "/user/reset-password", method = RequestMethod.PUT)
-    @ApiOperation(value= "Reset password")
+    @Operation(summary = "Reset password")
     public ResponseEntity<?> resetPassword(
             @RequestBody PasswordResetToken passwordResetToken,
             HttpServletRequest request) {
@@ -258,9 +257,9 @@ public class IAMController {
      * Add user
      */
     @RequestMapping(value = "/user", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "Add user, whereas username, email, role (ADMIN, USER) and password are required. Username and email can be the same.")
+    @Operation(summary = "Add user, whereas username, email, role (ADMIN, USER) and password are required. Username and email can be the same.")
     public ResponseEntity<?> addUser(
-            @ApiParam(name = "mykatie", value = "When not set or set to true, then a personal MyKatie domain will be created", required = false)
+            @Parameter(name = "mykatie", description = "When not set or set to true, then a personal MyKatie domain will be created", required = false)
             @RequestParam(value = "mykatie", required = false) Boolean createMyKatie,
             @RequestBody User user,
             HttpServletRequest request) {
@@ -303,9 +302,9 @@ public class IAMController {
      * Update user
      */
     @RequestMapping(value = "/user/{id}", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value= "Update a particular user")
+    @Operation(summary = "Update a particular user")
     public ResponseEntity<?> updateUser(
-            @ApiParam(name = "id", value = "User Id",required = true)
+            @Parameter(name = "id", description = "User Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @RequestBody User user,
             HttpServletRequest request) {
@@ -322,9 +321,9 @@ public class IAMController {
      * Delete user
      */
     @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value= "Delete a particular user")
+    @Operation(summary = "Delete a particular user")
     public ResponseEntity<?> updateUser(
-            @ApiParam(name = "id", value = "User Id",required = true)
+            @Parameter(name = "id", description = "User Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
@@ -342,9 +341,9 @@ public class IAMController {
      * Get the profile picture of a particular user
      */
     @RequestMapping(value = "/user/{id}/profile-picture", method = RequestMethod.GET)
-    @ApiOperation(value= "Get the profile picture of a particular user")
+    @Operation(summary = "Get the profile picture of a particular user")
     public ResponseEntity<?> getProfilePicture(
-            @ApiParam(name = "id", value = "User Id",required = true)
+            @Parameter(name = "id", description = "User Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
@@ -371,9 +370,9 @@ public class IAMController {
      * Get the profile picture as base64 of a particular user
      */
     @RequestMapping(value = "/user/{id}/profile-picture_base64", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value= "Get the profile picture as base64 of a particular user")
+    @Operation(summary = "Get the profile picture as base64 of a particular user")
     public ResponseEntity<?> getProfilePictureAsBase64(
-            @ApiParam(name = "id", value = "User Id",required = true)
+            @Parameter(name = "id", description = "User Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
@@ -397,12 +396,12 @@ public class IAMController {
      * Update profile picture of a particular user
      */
     @RequestMapping(value = "/user/{id}/profile-picture", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value= "Update profile picture of a particular user")
+    @Operation(summary = "Update profile picture of a particular user")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> updateProfilePicture(
-            @ApiParam(name = "id", value = "Katie user Id, e.g. '9cfc7e09-fe62-4ae4-81b6-1605424d6f87'",required = true)
+            @Parameter(name = "id", description = "Katie user Id, e.g. '9cfc7e09-fe62-4ae4-81b6-1605424d6f87'",required = true)
             @PathVariable(value = "id", required = true) String id,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -446,7 +445,7 @@ public class IAMController {
      * Get username by providing a profile picture
      */
     @RequestMapping(value = "/user/forgot-username", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "Get username by providing a profile picture")
+    @Operation(summary = "Get username by providing a profile picture")
     public ResponseEntity<?> getUsernameByProfilePicture(
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
