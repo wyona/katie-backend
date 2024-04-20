@@ -422,19 +422,26 @@ public class AskController {
         }
 
         String username = authService.getUsername();
+        if (username == null) {
+            return new ResponseEntity<>(new Error("User is not signed in", "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
+        }
         User user = iamService.getUserByUsername(new Username(username), false, false);
-        log.info("Submit question '" + question + "' to expert ...");
-        log.info("TODO: Check whether user '" + username + "' is authorized to submit question for this particular domain?!");
         
         Language language = Language.valueOf(user.getLanguage());
 
         Context domain = null;
         try {
             domain = contextService.getContext(domainId); // INFO: getContext() return ROOT context when domain id is null
+            log.info("Check whether user '" + username + "' is authorized to submit question for this particular domain ...");
+            if (!contextService.isMemberOrAdmin(domainId)) {
+                return new ResponseEntity<>(new Error("User is neither member of domain '" + domainId + "' nor has role ADMIN", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+            }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "NO_SUCH_DOMAIN_ID"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
+
+        log.info("Submit question '" + question + "' to expert ...");
         contextService.answerQuestionByNaturalIntelligence(question, user, ChannelType.EMAIL, null, user.getEmail(), null, language, null, getRemoteAddress(request), domain);
         Date dateSubmitted = null;
         return new ResponseEntity<>(new ResponseAnswer(null, question, dateSubmitted, null, null, new ArrayList<String>(), null, null, user.getEmail(), null, null, PermissionStatus.UNKNOWN, null, null), HttpStatus.OK);
