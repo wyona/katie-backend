@@ -75,7 +75,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(PUT, "/api/v2/faq/qna").authenticated()
                 .antMatchers(GET, "/api/v1/submitQuestionToExpert").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/communication/process-emails").hasRole(ADMIN_ROLE)
-                .antMatchers(DELETE, "/api/v1/configuration/domain/*").hasRole(ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/configuration/domain/*/message-body-hostname").authenticated()
                 .antMatchers(GET, "/api/v1/summary/current").hasRole(ADMIN_ROLE)
                 .antMatchers(POST, "/api/v1/user").hasRole(ADMIN_ROLE)
