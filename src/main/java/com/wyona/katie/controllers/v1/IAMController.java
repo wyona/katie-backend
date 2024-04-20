@@ -158,7 +158,7 @@ public class IAMController {
     @RequestMapping(value = "/users", method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Get all users")
     public ResponseEntity<?> getUsers(
-        @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own users, etc.",required = false)
+        @ApiParam(name = "domainId", value = "Optional domain Id, for example 'df39dcaf-dd7e-4d04-bec4-ba60ee25834a', which represents a single realm containing its own users / members, etc.",required = false)
         @RequestParam(value = "domainId", required = false) String domainId,
         HttpServletRequest request) {
 
@@ -181,11 +181,11 @@ public class IAMController {
                 User[] users = iamService.getUsers();
                 return new ResponseEntity<>(users, HttpStatus.OK);
             }
-        } catch(java.nio.file.AccessDeniedException e) {
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -201,15 +201,17 @@ public class IAMController {
         try {
             User user = iamService.getUserById(id, true);
             JWT jwt = user.getJwtToken();
-            if (jwt  != null) {
+            if (jwt != null) {
                 log.info("User '" + user.getUsername() + "' has a JWT");
                 user.setJwtToken(jwtService.convert(jwt.getToken(), true));
             } else {
                 log.debug("User '" + user.getId() + "' has no token.");
             }
             return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
-            return new ResponseEntity<>(new Error(e.getMessage(), "GET_USER_FAILED"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
