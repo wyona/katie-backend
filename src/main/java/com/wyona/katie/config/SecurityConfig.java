@@ -77,7 +77,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/api/v1/communication/process-emails").hasRole(ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/configuration/domain/*/message-body-hostname").authenticated()
                 .antMatchers(GET, "/api/v1/summary/current").hasRole(ADMIN_ROLE)
-                .antMatchers(POST, "/api/v1/user").hasRole(ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/user/reset-password").permitAll()
                 .antMatchers(PUT, "/api/v1/user/*").authenticated()
                 .antMatchers(GET, "/api/v1/question/resubmitted/*").hasAnyRole(USER_ROLE, ADMIN_ROLE)
@@ -89,9 +88,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
                 .antMatchers(POST, "/tmp-test/push-notification/data").hasRole(ADMIN_ROLE)
                 .antMatchers(GET, "/tmp-test/push-notification/sample").hasRole(ADMIN_ROLE)
-                .antMatchers(GET, "/**").permitAll()
-                .antMatchers(PUT, "/**").permitAll()
-                .antMatchers(POST, "/**").permitAll()
+                //.antMatchers(GET, "/**").permitAll()
+                //.antMatchers(PUT, "/**").permitAll()
+                //.antMatchers(POST, "/**").permitAll()
                 //.antMatchers(PATCH, "/**").permitAll() // TODO: Check permissions
                 //.antMatchers(DELETE, "/**").permitAll() // TODO: Check permissions
                 //.anyRequest().permitAll() // TODO: Replace everything else by this line
