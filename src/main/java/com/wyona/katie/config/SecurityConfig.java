@@ -72,7 +72,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 //.antMatchers("/h2-console/**").permitAll()
-                .antMatchers(PUT, "/api/v1/configuration/domain/*/message-body-hostname").authenticated()
                 .antMatchers(GET, "/api/v1/summary/current").hasRole(ADMIN_ROLE)
                 .antMatchers(GET, "/api/v1/question/resubmitted/*").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 .antMatchers(PUT, "/api/v1/question/resubmitted/*").hasAnyRole(USER_ROLE, ADMIN_ROLE)
