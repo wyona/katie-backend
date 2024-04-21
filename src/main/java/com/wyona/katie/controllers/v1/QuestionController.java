@@ -106,24 +106,6 @@ public class QuestionController {
     }
 
     /**
-     * @return true when user has no access to domain and false when user has access to domain
-     */
-    private boolean accessToDomainDenied(HttpServletRequest request, String domainId) {
-        User user = authService.getUser(false, false);
-        if (user != null) {
-            if (user.getRole() == Role.ADMIN || contextService.isUserMemberOfDomain(user.getId(), domainId)) {
-                return false;
-            } else {
-                log.info("User '" + user.getUsername() + "' has no access to domain '" + domainId + "'.");
-                return true;
-            }
-        } else {
-            log.info("User is not signed in and therefore access to domain '" + domainId + "' denied.");
-            return true;
-        }
-    }
-
-    /**
      * REST interface to add/train a new QnA
      */
     @RequestMapping(value = "/trained/{domainid}", method = RequestMethod.POST, produces = "application/json")
@@ -142,8 +124,8 @@ public class QuestionController {
         try {
             authService.tryJWTLogin(request);
 
-            if (accessToDomainDenied(request, domainid)) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            if (!contextService.isMemberOrAdmin(domainid)) {
+                return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
             }
 
             Context domain = contextService.getContext(domainid);
@@ -520,8 +502,8 @@ public class QuestionController {
         ) {
         log.info("Update answer of trained question/answer '" + domainid + "' / '" + uuid + "': " + updatedAnswer.getAnswer());
         try {
-            if (accessToDomainDenied(request, domainid)) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            if (!contextService.isMemberOrAdmin(domainid)) {
+                return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
             }
 
             Context domain = contextService.getContext(domainid);
@@ -587,8 +569,8 @@ public class QuestionController {
     ) {
         log.info("Try to delete trained QnA '" + domainid + "/" + uuid + "' ...");
 
-        if (accessToDomainDenied(request, domainid)) {
-            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        if (!contextService.isMemberOrAdmin(domainid)) {
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
 
         try {
@@ -668,11 +650,11 @@ public class QuestionController {
         try {
             ResubmittedQuestion resubmittedQuestion = dataRepoService.getResubmittedQuestion(uuid, false);
 
-            if (accessToDomainDenied(request, resubmittedQuestion.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (resubmittedQuestion != null) {
+                if (!contextService.isMemberOrAdmin(resubmittedQuestion.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
+
                 User respondent = iamService.getUserByUsername(new com.wyona.katie.models.Username(authService.getUsername()), false, false);
                 log.info("Update resubmitted question '" + uuid + "' with question: '" + question.getQuestion() + "' (Respondent: '" + respondent.getUsername() + "') ...");
 
@@ -681,11 +663,11 @@ public class QuestionController {
 
                 return new ResponseEntity<>(resubmittedQuestion, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new Error("No such resubmitted question with UUID '" + uuid + "'", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new Error("No such resubmitted question with UUID '" + uuid + "'", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -709,11 +691,11 @@ public class QuestionController {
         try {
             ResubmittedQuestion resubmittedQuestion = dataRepoService.getResubmittedQuestion(uuid, false);
 
-            if (accessToDomainDenied(request, resubmittedQuestion.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (resubmittedQuestion != null) {
+                if (!contextService.isMemberOrAdmin(resubmittedQuestion.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
+
                 User respondent = iamService.getUserByUsername(new Username(authService.getUsername()), false, false);
                 log.info("Update question '" + uuid + "' with answer: '" + answeredQuestion.getAnswer() + "' (Ownership: '" + answeredQuestion.getOwnership() + "', Respondent: '" + respondent.getUsername() + "') ...");
 
@@ -732,11 +714,11 @@ public class QuestionController {
 
                 return new ResponseEntity<>(rqa, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new Error("No such resubmitted question with UUID '\" + uuid + \"'", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new Error("No such resubmitted question with UUID '\" + uuid + \"'", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -753,11 +735,11 @@ public class QuestionController {
         try {
             ResubmittedQuestion updatedQuestion = dataRepoService.getResubmittedQuestion(uuid, false);
 
-            if (accessToDomainDenied(request, updatedQuestion.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (updatedQuestion != null) {
+                if (!contextService.isMemberOrAdmin(updatedQuestion.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
+
                 dataRepoService.deleteResubmittedQuestion(uuid);
 
                 Context domain  = contextService.getContext(updatedQuestion.getContextId());
@@ -771,11 +753,11 @@ public class QuestionController {
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new Error("TODO", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new Error("TODO", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -796,11 +778,10 @@ public class QuestionController {
             qna.setAnswer(answer.getAnswer());
             qna.setAnswerClientSideEncryptedAlgorithm(answer.getAnswerClientSideEncryptionAlgorithm());
 
-            if (accessToDomainDenied(request, qna.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (qna != null) {
+                if (!contextService.isMemberOrAdmin(qna.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
                 String status = qna.getStatus();
                 if (status.equals(StatusResubmittedQuestion.STATUS_ANSWERED) || status.equals(StatusResubmittedQuestion.STATUS_ANSWER_SENT) || status.equals(StatusResubmittedQuestion.STATUS_ANSWER_RATED)) {
 
@@ -835,14 +816,14 @@ public class QuestionController {
                     qna = dataRepoService.getResubmittedQuestion(uuid, false);
                     return new ResponseEntity<>(qna, HttpStatus.OK);
                 } else {
-                    return new ResponseEntity<>(new Error("TODO_QuestionController", "RESUBMITTED_QUESTION_NOT_ANSWERED_YET"), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new Error("TODO_QuestionController", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
                 }
             } else {
                 return new ResponseEntity<>(new Error("No resubmitted question with uuid '" + uuid + "'", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -1173,11 +1154,11 @@ public class QuestionController {
         try {
             ResubmittedQuestion question = dataRepoService.getResubmittedQuestion(uuid, false);
 
-            if (accessToDomainDenied(request, question.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (question != null) {
+                if (!contextService.isMemberOrAdmin(question.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
+
                 if (question.getStatus().equals(StatusResubmittedQuestion.STATUS_ANSWERED) || question.getStatus().equals(StatusResubmittedQuestion.STATUS_ANSWER_SENT) || question.getStatus().equals(StatusResubmittedQuestion.STATUS_ANSWER_RATED)) {
                     Context domain = contextService.getContext(question.getContextId());
                     Answer qna = contextService.getQnA(null, uuid, domain);
@@ -1189,14 +1170,14 @@ public class QuestionController {
 
                     return new ResponseEntity<>(question, HttpStatus.OK);
                 } else {
-                    return new ResponseEntity<>(new Error("TODO", "RESUBMITTED_QUESTION_NOT_ANSWERED_YET"), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new Error("TODO", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return new ResponseEntity<>(new Error("TODO", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new Error("TODO", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 }
