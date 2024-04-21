@@ -1922,7 +1922,7 @@ public class ContextService {
      */
     public void updateMailBodyHostname(String domainId, Hostname hostname) throws Exception {
         if (!isMemberOrAdmin(domainId)) {
-            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+            throw new AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
 
         log.info("Update message body hostname of domain '" + domainId + "' by '" + hostname.getHostname() + "'");
