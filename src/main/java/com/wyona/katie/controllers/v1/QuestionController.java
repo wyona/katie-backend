@@ -774,14 +774,15 @@ public class QuestionController {
         try {
             ResubmittedQuestion qna = dataRepoService.getResubmittedQuestion(uuid, false);
 
-            Answer answer = contextService.getQnA(null, uuid, contextService.getContext(qna.getContextId()));
-            qna.setAnswer(answer.getAnswer());
-            qna.setAnswerClientSideEncryptedAlgorithm(answer.getAnswerClientSideEncryptionAlgorithm());
-
             if (qna != null) {
                 if (!contextService.isMemberOrAdmin(qna.getContextId())) {
                     return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
                 }
+
+                Answer answer = contextService.getQnA(null, uuid, contextService.getContext(qna.getContextId()));
+                qna.setAnswer(answer.getAnswer());
+                qna.setAnswerClientSideEncryptedAlgorithm(answer.getAnswerClientSideEncryptionAlgorithm());
+
                 String status = qna.getStatus();
                 if (status.equals(StatusResubmittedQuestion.STATUS_ANSWERED) || status.equals(StatusResubmittedQuestion.STATUS_ANSWER_SENT) || status.equals(StatusResubmittedQuestion.STATUS_ANSWER_RATED)) {
 
