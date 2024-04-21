@@ -72,8 +72,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 //.antMatchers("/h2-console/**").permitAll()
-                .antMatchers(GET, "/api/v1/question/resubmitted/*/sendAnswer").hasAnyRole(USER_ROLE, ADMIN_ROLE)
-                .antMatchers(GET, "/api/v1/question/resubmitted/*/train").hasAnyRole(USER_ROLE, ADMIN_ROLE)
                 // TODO: Consider removing push-notification functionality completely
                 .antMatchers(POST, "/tmp-test/push-notification/topic").hasRole(ADMIN_ROLE)
                 .antMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
@@ -82,8 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.antMatchers(GET, "/**").permitAll()
                 //.antMatchers(PUT, "/**").permitAll()
                 //.antMatchers(POST, "/**").permitAll()
-                //.antMatchers(PATCH, "/**").permitAll() // TODO: Check permissions
-                //.antMatchers(DELETE, "/**").permitAll() // TODO: Check permissions
+                //.antMatchers(PATCH, "/**").permitAll()
+                //.antMatchers(DELETE, "/**").permitAll()
                 //.anyRequest().permitAll() // TODO: Replace everything else by this line
                 .and()
                 .logout() // https://www.baeldung.com/spring-security-logout
