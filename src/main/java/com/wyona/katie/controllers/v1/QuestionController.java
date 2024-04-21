@@ -626,11 +626,11 @@ public class QuestionController {
         try {
             ResubmittedQuestion question = dataRepoService.getResubmittedQuestion(uuid, true);
 
-            if (accessToDomainDenied(request, question.getContextId())) {
-                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
-            }
-
             if (question != null) {
+                if (!contextService.isMemberOrAdmin(question.getContextId())) {
+                    return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+                }
+
                 if (analyze) {
                     Context domain = contextService.getContext(question.getContextId());
                     // TODO: Get classifications
@@ -640,11 +640,11 @@ public class QuestionController {
                 }
                 return new ResponseEntity<>(question, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new Error("No such resubmitted question with uuid '" + uuid + "'", "NO_RESUBMITTED_QUESTION_WITH_SUCH_UUID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new Error("No such resubmitted question with uuid '" + uuid + "'", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
