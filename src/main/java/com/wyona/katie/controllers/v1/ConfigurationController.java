@@ -453,9 +453,11 @@ public class ConfigurationController {
 
         try {
             contextService.updateMailBodyHostname(id, hostname);
+        } catch(AccessDeniedException e) {
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            // TODO: return error ResponseEntity
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
         String body = "{\"domain_id\":\"" + id + "\"}";
         return new ResponseEntity<>(body, HttpStatus.OK);
