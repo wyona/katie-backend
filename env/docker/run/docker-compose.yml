@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   katie:
-    image: wyona/katie:1.362.0
+    image: wyona/katie:1.363.0
     #image: wyona/katie-with-prefix:1.360.0
     #image: wyona/katie:1.363.0
     #image: wyona/katie-with-prefix:1.363.0
