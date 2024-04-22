@@ -530,6 +530,7 @@ public class ContextService {
      * @param text Text, e.g. "When was Michael born?"
      * @param clientMessageId Foreign message id
      * @param limit Maximum number of labels returned
+     * @param language User / Moderator language
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
     public PredictedLabelsResponse classifyText(String domainId, String text, String clientMessageId, int limit, String language) throws Exception {
@@ -561,6 +562,7 @@ public class ContextService {
 
     /**
      * @param logEntryUUID Log entry UUID (for feedback URLs)
+     * @param language User / Moderator language
      */
     private String getPredictedLabelsAsTopDeskHtml(HitLabel[] predictedLabels, Context domain, String logEntryUUID, String language) {
         //ContentType.TEXT_TOPDESK_HTML
@@ -571,7 +573,9 @@ public class ContextService {
         }
         sb.append("</ul>");
 
-        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>Yes: <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>No: <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
+        String yes = messageSource.getMessage("feedback.yes", null, new Locale(language));
+        String no = messageSource.getMessage("feedback.no", null, new Locale(language));
+        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
 
         return Utils.convertHtmlToTOPdeskHtml(sb.toString());
     }
