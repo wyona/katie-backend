@@ -149,7 +149,23 @@ public class QuestionAnsweringService {
      *
      * @return list of possible answers to question
      */
-    public List<ResponseAnswer> getAnswers(String question, boolean predictClassifications, List<String> classifications, String messageId, Context domain, Date dateSubmitted, String remoteAddress, ChannelType channelType, String channelRequestId, int limit, int offset, boolean checkAuthorization, ContentType requestedAnswerContentType, boolean includeFeedbackLinks, boolean includeClassifications) throws Exception {
+    public List<ResponseAnswer> getAnswers(
+            String question,
+            boolean predictClassifications,
+            List<String> classifications,
+            String messageId,
+            Context domain,
+            Date dateSubmitted,
+            String remoteAddress,
+            ChannelType channelType,
+            String channelRequestId,
+            int limit,
+            int offset,
+            boolean checkAuthorization,
+            ContentType requestedAnswerContentType,
+            boolean includeFeedbackLinks,
+            boolean includeClassifications) throws Exception {
+
         if (checkAuthorization && domain.getAnswersGenerallyProtected() && !contextService.isMemberOrAdmin(domain.getId())) {
             String msg = "Answers of domain '" + domain.getId() + "' are generally protected and user has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "'.";
             log.info(msg);
@@ -238,7 +254,7 @@ public class QuestionAnsweringService {
         double scoreTopAnswer = -1;
         PermissionStatus permissionStatusFirstAnswer = PermissionStatus.UNKNOWN;
         if (responseAnswers.size() > 0) {
-            ResponseAnswer topAnswer = (ResponseAnswer)responseAnswers.get(0);
+            ResponseAnswer topAnswer = (ResponseAnswer)responseAnswers.get(0); // TODO: Casting not really needed
             uuidTopAnswer = topAnswer.getUuid();
             answerTopAnswer = topAnswer.getAnswer();
             if (uuidTopAnswer != null) {
@@ -281,7 +297,8 @@ public class QuestionAnsweringService {
             }
 
             if (includeFeedbackLinks) {
-                ra = includeFeedbackLinks(ra, domain, logEntryUUID);
+                // TODO: Replace hard coded language by user / moderator language
+                ra = includeFeedbackLinks(ra, domain, logEntryUUID, "de");
             }
 
             if (requestedAnswerContentType != null) {
@@ -320,15 +337,16 @@ public class QuestionAnsweringService {
     }
 
     /**
-     *
+     * Add feedback links to response containing answer
+     * @param language User / Moderator language, e.g. "en" or "de"
      */
-    private ResponseAnswer includeFeedbackLinks(ResponseAnswer ra, Context domain, String logEntryUUID) {
-        String userLanguage = "en"; // TODO
-        // TODO: Use i18n for Yes and No ...
+    private ResponseAnswer includeFeedbackLinks(ResponseAnswer ra, Context domain, String logEntryUUID, String language) {
+        String yes = messageSource.getMessage("feedback.yes", null, new Locale(language));
+        String no = messageSource.getMessage("feedback.no", null, new Locale(language));
         if (ra.getAnswerContentType().equals(ContentType.TEXT_PLAIN.toString())) {
-            ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "\n\nYes: " + answerHelpfulLink(domain, logEntryUUID) + "\n\nNo: " + answerNotHelpfulLink(domain, logEntryUUID));
+            ra.setAnswer(ra.getAnswer() + "\n\n---\n\n" + messageSource.getMessage("answer.helpful", null, new Locale(language)) + "\n\n" + yes + ": " + answerHelpfulLink(domain, logEntryUUID) + "\n\n" + no + ": " + answerNotHelpfulLink(domain, logEntryUUID));
         } else if (ra.getAnswerContentType().equals(ContentType.TEXT_HTML.toString())) {
-            ra.setAnswer(ra.getAnswer() + "<p>" + messageSource.getMessage("answer.helpful", null, new Locale(userLanguage)) + "</p><p>Yes: <a href=\"" + answerHelpfulLink(domain, logEntryUUID) + "\">" + answerHelpfulLink(domain, logEntryUUID) + "</a></p><p>No: <a href=\"" + answerNotHelpfulLink(domain, logEntryUUID) + "\">" + answerNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
+            ra.setAnswer(ra.getAnswer() + "<p>" + messageSource.getMessage("answer.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + answerHelpfulLink(domain, logEntryUUID) + "\">" + answerHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + answerNotHelpfulLink(domain, logEntryUUID) + "\">" + answerNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
         } else {
             log.warn("Include feedback links not supported for content type '" + ra.getAnswerContentType() + "'.");
         }
