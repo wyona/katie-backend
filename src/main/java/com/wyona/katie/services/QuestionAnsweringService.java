@@ -298,7 +298,7 @@ public class QuestionAnsweringService {
 
             if (includeFeedbackLinks) {
                 // TODO: Replace hard coded language by user / moderator language
-                ra = includeFeedbackLinks(ra, domain, logEntryUUID, "de");
+                ra = includeFeedbackLinks(ra, domain, logEntryUUID, "en");
             }
 
             if (requestedAnswerContentType != null) {
