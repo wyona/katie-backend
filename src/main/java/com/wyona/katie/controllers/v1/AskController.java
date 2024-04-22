@@ -506,7 +506,7 @@ public class AskController {
             if (limit != null) {
                 _limit = limit.intValue();
             }
-            String requestedLanguage = "en"; // TODO
+            String requestedLanguage = "de"; // TODO: Make language configurable
             return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage), HttpStatus.OK);
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
