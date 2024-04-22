@@ -4,7 +4,15 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.controllers.v1.AskController;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,25 +59,29 @@ public class AskControllerV3 {
      * REST interface to get answer(s) to a question
      */
     @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Get answer(s) to a question")
+    @Operation(summary = "Get answer(s) to a question")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ResponseAnswer.class), array = @ArraySchema(schema = @Schema(implementation = List.class)))),
+            //@ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class))),
+            //@ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = Error.class)))
     })
+    // TODO: Replace @ApiImpliciteParams by @Parameters when switching to springdoc
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
+    //@Parameters({
+    //        @Parameter(name = "Authorization", description = "Bearer JWT",
+    //                required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<?> postQuestion(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned answers, e.g. return 10 answers", required = false)
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned answers, e.g. return 10 answers", required = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @ApiParam(name = "question-and-optional-params", value = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            @Parameter(name = "question-and-optional-params", description = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndOptionalParams,
-            @ApiParam(name = "include-feedback-links", value = "When true, then answer contains feedback links", required = false)
+            @Parameter(name = "include-feedback-links", description = "When true, then answer contains feedback links (false by default)", required = false)
             @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,
             HttpServletRequest request,
             HttpServletResponse response) {
