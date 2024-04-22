@@ -6,8 +6,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 
+import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,6 +45,32 @@ public class SegmentationService {
     private static final String QUESTION = "question";
     private static final String URL = "url";
     private static final String ANSWER = "answer";
+
+    /**
+     * @param language Text language, e.g. "en" or "de"
+     */
+    public List<String> getChunks(String text, String language, int chunkSize, int chunkOverlap) throws Exception {
+        // INFO: Load maximum entropy model
+        InputStream in = new ClassPathResource("opennlp/" + language + "-sent.bin").getInputStream();
+        SentenceModel maxEntropyModel = new SentenceModel(in);
+        in.close();
+
+        SentenceDetectorME detector = new SentenceDetectorME(maxEntropyModel);
+        String[] sentences = detector.sentDetect(text);
+
+        List<String> chunks = new ArrayList<>();
+        StringBuilder currentChunk = new StringBuilder();
+        for (String sentence : sentences) {
+            log.info("Sentence: " + sentence);
+            currentChunk.append(sentence);
+            if (currentChunk.length() > chunkSize) {
+                chunks.add(currentChunk.toString());
+                currentChunk = new StringBuilder();
+            }
+        }
+
+        return chunks;
+    }
 
     /**
      * Also see https://python.langchain.com/en/latest/modules/indexes/text_splitters/examples/character_text_splitter.html
