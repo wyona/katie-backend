@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.SegmentationService;
 import com.wyona.katie.services.Utils;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -135,9 +137,9 @@ public class SegmentationController {
             @RequestParam(value = "domainId", required = true) String domainId,
             @Parameter(name = "separator", description = "Separator, e.g. ' ' or '\\n'" ,required = false)
             @RequestParam(value = "separator", required = false) Character separator,
-            @Parameter(name = "chunk-size", description = "Chunk size" ,required = true)
+            @Parameter(name = "chunk-size", description = "Chunk size, e.g. 500 characters" ,required = true)
             @RequestParam(value = "chunk-size", required = true) Integer chunkSize,
-            @Parameter(name = "chunk-overlap", description = "Chunk overlap" ,required = true)
+            @Parameter(name = "chunk-overlap", description = "Chunk overlap, e.g. 100 characters" ,required = true)
             @RequestParam(value = "chunk-overlap", required = true) Integer chunkOverlap,
             @Parameter(description = "Plain text file to upload", required = true)
             @RequestPart(name = "file", required = true) MultipartFile file,
@@ -156,6 +158,49 @@ public class SegmentationController {
             Character _separator = '\n';
             //Character _separator = ' ';
             List<String> chunks = segmentationService.getSegments(text, _separator, chunkSize, chunkOverlap);
+
+            ObjectMapper mapper = new ObjectMapper();
+            ArrayNode katieImport = mapper.createArrayNode();
+            for (String chunk : chunks) {
+                ObjectNode answerNode = mapper.createObjectNode();
+                answerNode.put(ANSWER, chunk);
+                answerNode.put(QUESTION, "TODO");
+                katieImport.add(answerNode);
+            }
+
+            return new ResponseEntity<>(katieImport, HttpStatus.OK);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * REST interface to split plain text document into chunks containing a few sentences
+     */
+    @RequestMapping(value = "/sentence", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary="Split plain text document into chunks containing a few setences")
+    public ResponseEntity<?> getSentenceTextSplitter(
+            @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
+            @RequestParam(value = "domainId", required = true) String domainId,
+            @Parameter(name = "chunk-size", description = "Approximate chunk size, e.g. 500 characters" ,required = true)
+            @RequestParam(value = "chunk-size", required = true) Integer chunkSize,
+            @Parameter(name = "chunk-overlap", description = "When true, then chunks overlap by one sentence" ,required = true)
+            @RequestParam(value = "chunk-overlap", required = true) Boolean chunkOverlap,
+            @Parameter(description = "Plain text file to upload", required = true)
+            @RequestPart(name = "file", required = true) MultipartFile file,
+            HttpServletRequest requestIn) {
+
+        if (!domainService.isMemberOrAdmin(domainId)) {
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            InputStream in = file.getInputStream();
+            String text = Utils.convertInputStreamToString(in);
+            in.close();
+
+            List<String> chunks = segmentationService.splitBySentences(text, "en", chunkSize, chunkOverlap);
 
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode katieImport = mapper.createArrayNode();
