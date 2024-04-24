@@ -47,9 +47,14 @@ public class SegmentationService {
     private static final String ANSWER = "answer";
 
     /**
+     * Split large texts into chunks containing a few sentences
+     * @param text Text to be split into smaller chunks
      * @param language Text language, e.g. "en" or "de"
+     * @param chunkSize Approximate chunk size
+     * @param overlap When true, then chunks will overlap by one sentence, otherwise no overlap
+     * @return chunks containing a few sentences
      */
-    public List<String> getChunks(String text, String language, int chunkSize, int chunkOverlap) throws Exception {
+    public List<String> splitBySentences(String text, String language, int chunkSize, boolean overlap) throws Exception {
         // INFO: Load maximum entropy model
         InputStream in = new ClassPathResource("opennlp/" + language + "-sent.bin").getInputStream();
         SentenceModel maxEntropyModel = new SentenceModel(in);
@@ -59,13 +64,18 @@ public class SegmentationService {
         String[] sentences = detector.sentDetect(text);
 
         List<String> chunks = new ArrayList<>();
+
         StringBuilder currentChunk = new StringBuilder();
-        for (String sentence : sentences) {
-            log.info("Sentence: " + sentence);
-            currentChunk.append(sentence);
+        for (String currentSentence : sentences) {
+            log.info("Current sentence: " + currentSentence);
+            currentChunk.append(currentSentence);
+
             if (currentChunk.length() > chunkSize) {
                 chunks.add(currentChunk.toString());
                 currentChunk = new StringBuilder();
+                if (overlap) {
+                    currentChunk.append(currentSentence);
+                }
             }
         }
 
