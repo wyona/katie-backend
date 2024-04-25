@@ -79,35 +79,8 @@ public class SupabaseConnector implements Connector {
                 log.info("Add QnA ...");
                 return createQnA(domain, id, record, ksMeta, processId);
             } else {
-                log.info("Override QnA '" + katieUUID + "' ...");
-                try {
-                    Answer qna = domainService.getQnA(null, katieUUID, domain);
-                    qna.setOriginalQuestion(getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames()));
-                    qna.setAnswer(getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames()));
-                    qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
-
-                    qna.deleteAllClassifications();
-                    List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-                    for (String classification : classifications) {
-                        qna.addClassification(classification);
-                    }
-
-                    qna.setDateAnswerModified(new Date());
-
-                    // TODO: Let ConnectorService update and retrain QnA, whereas make sure, that ConnectorService is also handling Foreign Key
-                    domainService.saveQuestionAnswer(domain, katieUUID, qna);
-                    domainService.retrain(new QnA(qna), domain, false);
-                    try {
-                        domainService.saveDataObject(domain, qna.getUuid(), record);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
-                    backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": QnA '" + katieUUID + "' updated.");
-                    return null;
-                    //return qna;
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
+                log.info("Update QnA '" + katieUUID + "' ...");
+                updateQnA(domain, id, katieUUID, record, ksMeta, processId);
             }
         } else if (payload.getType().equals("INSERT")) {
             log.info("Create new Supabase item ...");
@@ -158,7 +131,45 @@ public class SupabaseConnector implements Connector {
     }
 
     /**
-     *
+     * Update QnA
+     * @param id Supabase record Id
+     * @param katieUUID Katie QnA UUID
+     */
+    private Answer updateQnA(Context domain, String id, String katieUUID, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
+        try {
+            Answer qna = domainService.getQnA(null, katieUUID, domain);
+            qna.setOriginalQuestion(getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames()));
+            qna.setAnswer(getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames()));
+            qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
+
+            qna.deleteAllClassifications();
+            List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
+            for (String classification : classifications) {
+                qna.addClassification(classification);
+            }
+
+            qna.setDateAnswerModified(new Date());
+
+            // TODO: Let ConnectorService update and retrain QnA, whereas make sure, that ConnectorService is also handling Foreign Key
+            domainService.saveQuestionAnswer(domain, katieUUID, qna);
+            domainService.retrain(new QnA(qna), domain, false);
+            try {
+                domainService.saveDataObject(domain, qna.getUuid(), record);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+            backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": QnA '" + katieUUID + "' updated.");
+            return null;
+            //return qna;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Create QnA
+     * @param id Supabase record Id
      */
     private Answer createQnA(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
         String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
