@@ -31,7 +31,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
- *
+ * Search inside SharePoint and sync SharePoint
  */
 @Slf4j
 @Component
@@ -123,7 +123,7 @@ public class SharepointConnector implements Connector {
         String siteId = ksMeta.getSharepointSiteId();
         String webBaseUrl = ksMeta.getSharepointWebBaseUrl();
 
-        backgroundProcessService.updateProcessStatus(processId, "Try to update SharePoint site: " + siteId + " | " + webBaseUrl);
+        backgroundProcessService.updateProcessStatus(processId, "Try to sync SharePoint site: " + siteId + " (" + webBaseUrl + ")");
 
         // TODO: Make configurable either by payload or meta config
         boolean retrieveSubSites = true;
@@ -401,7 +401,11 @@ public class SharepointConnector implements Connector {
 
     /**
      * Transform a document into a QnA or multiple QnAs
+     * @param siteId SharePoint site Id, e.g. "43c98e69-7d22-4dc1-af38-4498240516e0"
+     * @param fileId Document Id, e.g. "01X3SH2XSQWSMH4XZE7NDJDWPGASVM2CTJ"
+     * @param fileName File name, e.g. "chat-climate-SSRN-id4414628.pdf"
      * @param mimeType Document mime type, e.g. "application/pdf"
+     * @param processId Background process Id
      */
     private List<Answer> getDocument(String siteId, String fileId, String apiToken, Context domain, String webUrl, String fileName, String mimeType, String processId) {
         List<Answer> qnas = new ArrayList<Answer>();
@@ -417,10 +421,13 @@ public class SharepointConnector implements Connector {
                 String msg = "Extract text from PDF document '" + contentUrl + "' ...";
                 log.info(msg);
                 backgroundProcessService.updateProcessStatus(processId, msg);
+
                 PDDocument pdDoc = PDDocument.load(dumpFile);
                 String body = new PDFTextStripper().getText(pdDoc);
                 pdDoc.close();
-                //List<String> chunks = segmentationService.getSegments(body);
+
+                // TODO: Make text splitter configurable
+                //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
                 List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
                 for (String chunk : chunks) {
                     qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, null, null, null, null, null, null, null, null, fileName, null, false, null, false, null));
