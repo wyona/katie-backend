@@ -406,6 +406,7 @@ public class SharepointConnector implements Connector {
      * @param fileName File name, e.g. "chat-climate-SSRN-id4414628.pdf"
      * @param mimeType Document mime type, e.g. "application/pdf"
      * @param processId Background process Id
+     * @return list of QnAs
      */
     private List<Answer> getDocument(String siteId, String fileId, String apiToken, Context domain, String webUrl, String fileName, String mimeType, String processId) {
         List<Answer> qnas = new ArrayList<Answer>();
@@ -453,6 +454,7 @@ public class SharepointConnector implements Connector {
      * @param siteId Site Id, e.g. "ee203dc1-cfd8-4fce-8179-c11dd4db249c"
      * @param folderId Folder Id, e.g. "73e548e7-57e8-4546-8a15-0560852ed55a"
      * @param webBaseUrl SharePoint web base URL, e.g. "https://wyona.sharepoint.com"
+     * @return list / array of QnAs
      */
     private Answer[] getDocuments(String siteId, String folderId, String folderName, String apiToken, String webBaseUrl, Context domain, String processId, int maxItems, Counter counterItems) {
         List<Answer> qnas = new ArrayList<Answer>();
