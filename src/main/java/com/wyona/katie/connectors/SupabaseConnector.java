@@ -180,31 +180,34 @@ public class SupabaseConnector implements Connector {
      * @param id Supabase record Id
      */
     private void createQnA(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
-        String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
-        String answer = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
-        String url = ksMeta.getSupabaseBaseUrl() + "/" + id;
-        ContentType contentType = null;
-
-        List<String> classifications  = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-
-        Date dateAnswered = new Date();
-        Date dateAnswerModified = dateAnswered;
-        Date dateOriginalQuestionSubmitted = dateAnswered;
-        boolean isPublic = false;
-        Answer newQnA = new Answer(null, answer, contentType, url, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, question, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, null);
-
-        newQnA = domainService.addQuestionAnswer(newQnA, domain);
         try {
-            domainService.saveDataObject(domain, newQnA.getUuid(), record);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+            String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
+            // TODO: Detect language
+            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 500, true);
 
-        // TODO: Let ConnectorService import and train QnA, whereas make sure, that ConnectorService is also handling Foreign Key
-        try {
-            foreignKeyIndexService.addForeignKey(domain, ksMeta, id, newQnA.getUuid());
-            domainService.train(new QnA(newQnA), domain, false);
-            backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": New QnA '" + newQnA.getUuid() + "' added.");
+            if (chunks != null & chunks.size() > 0) {
+                String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
+                String url = ksMeta.getSupabaseBaseUrl() + "/" + id;
+                ContentType contentType = null;
+
+                List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
+
+                Date dateAnswered = new Date();
+                Date dateAnswerModified = dateAnswered;
+                Date dateOriginalQuestionSubmitted = dateAnswered;
+                boolean isPublic = false;
+                Answer newQnA = new Answer(null, chunks.get(0), contentType, url, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, question, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, null);
+
+                newQnA = domainService.addQuestionAnswer(newQnA, domain);
+                domainService.saveDataObject(domain, newQnA.getUuid(), record);
+
+                // TODO: Let ConnectorService import and train QnA, whereas make sure, that ConnectorService is also handling Foreign Key
+                foreignKeyIndexService.addForeignKey(domain, ksMeta, id, newQnA.getUuid());
+                domainService.train(new QnA(newQnA), domain, false);
+                backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": New QnA '" + newQnA.getUuid() + "' added.");
+            } else {
+                log.warn("No chunks!");
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
