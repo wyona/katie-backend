@@ -2,7 +2,6 @@ package com.wyona.katie.connectors;
 
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ContextService;
-import com.wyona.katie.services.ForeignKeyIndexService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.*;
@@ -16,14 +15,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * Search inside Supabase and sync Supabase
  */
 @Slf4j
 @Component
 public class SupabaseConnector implements Connector {
-
-    @Autowired
-    private ForeignKeyIndexService foreignKeyIndexService;
 
     @Autowired
     private ContextService domainService;
@@ -38,7 +34,7 @@ public class SupabaseConnector implements Connector {
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
      */
     public Hit[] getAnswers(Sentence question, int limit, KnowledgeSourceMeta ksMeta) {
-        log.info("TODO: Implement");
+        log.info("TODO: Implement getting answers from Supabase");
         return null;
     }
 
@@ -57,73 +53,27 @@ public class SupabaseConnector implements Connector {
 
         List<Answer> qnas = new ArrayList<Answer>();
 
-        if (payload.getType().equals("UPDATE")) {
-            log.info("Update Supabase item ...");
+        if (payload.getType().equals("INSERT") || payload.getType().equals("UPDATE")) {
             ObjectNode record = payload.getRecord();
             String id = record.get(ksMeta.getSupabaseIdName()).asText();
-            log.info("Supabase Id: " + id);
-            backgroundProcessService.updateProcessStatus(processId, "Update QnA based on Supabase Item '" + id + "' ...");
-            String katieUUID = foreignKeyIndexService.getUUID(domain, ksMeta, id);
-
-            if (katieUUID != null) {
-                // TODO: Move this check to ForeignKeyIndexService#getUUID()
-                if (!domainService.existsQnA(katieUUID, domain)) {
-                    String msg = "QnA '" + katieUUID + "' was probably deleted, but the foreign key index was not cleaned up properly!";
-                    log.warn(msg);
-                    backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.WARN);
-                    foreignKeyIndexService.deleteForeignKey(domain, ksMeta, id);
-                    katieUUID = null;
-                }
-            }
-
-            if (katieUUID == null) {
-                log.info("Add QnA ...");
-                createQnA(domain, id, record, ksMeta, processId);
+            if (payload.getType().equals("INSERT")) {
+                log.info("Insert Supabase item Id: " + id);
+                backgroundProcessService.updateProcessStatus(processId, "Add QnA(s) based on Supabase Item '" + id + "' ...");
             } else {
-                log.info("Update QnA '" + katieUUID + "' ...");
-                updateQnA(domain, id, katieUUID, record, ksMeta, processId);
+                log.info("Update Supabase item Id: " + id);
+                backgroundProcessService.updateProcessStatus(processId, "Update QnA(s) based on Supabase Item '" + id + "' ...");
             }
-        } else if (payload.getType().equals("INSERT")) {
-            log.info("Create new Supabase item ...");
-            ObjectNode record = payload.getRecord();
-            String id = record.get(ksMeta.getSupabaseIdName()).asText();
-            log.info("Supabase Id: " + id);
-            backgroundProcessService.updateProcessStatus(processId, "Create QnA based on Supabase Item '" + id + "' ...");
-
-            if (foreignKeyIndexService.existsUUID(domain, ksMeta, id)) {
-                String katieUUID = foreignKeyIndexService.getUUID(domain, ksMeta, id);
-                // TODO: Move this check to ForeignKeyIndexService#getUUID()
-                if (!domainService.existsQnA(katieUUID, domain)) {
-                    String msg = "QnA '" + katieUUID + "' was probably deleted, but the foreign key index was not cleaned up properly!";
-                    log.warn(msg);
-                    backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.WARN);
-                    foreignKeyIndexService.deleteForeignKey(domain, ksMeta, id);
-                }
-            }
-
-            if (foreignKeyIndexService.existsUUID(domain, ksMeta, id)) {
-                String katieUUID = foreignKeyIndexService.getUUID(domain, ksMeta, id);
-                String msg = "QnA '" + katieUUID + "' already exists for Supabase item '" + id + "'!";
-                log.error(msg);
-                backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.ERROR);
-            } else {
-                createQnA(domain, id, record, ksMeta, processId);
+            List<Answer> _qnas = splitIntoChunks(domain, id, record, ksMeta, processId);
+            for (Answer qna : _qnas) {
+                qnas.add(qna);
             }
         } else if (payload.getType().equals("DELETE")) {
             ObjectNode record = payload.getOld_record();
             String id = record.get(ksMeta.getSupabaseIdName()).asText();
             log.info("Try to delete Supabase item '" + id + "' ...");
-            if (foreignKeyIndexService.existsUUID(domain, ksMeta, id)) {
-                String uuid = foreignKeyIndexService.getUUID(domain, ksMeta, id);
-                try {
-                    domainService.deleteTrainedQnA(domain, uuid);
-                    foreignKeyIndexService.deleteForeignKey(domain, ksMeta, id);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            } else {
-                log.error("No such Supabase item '" + id + "'!");
-            }
+
+            String webUrl = ksMeta.getSupabaseBaseUrl() + "/" + id;
+            domainService.deletePreviouslyImportedChunks(webUrl, domain);
         } else {
             log.warn("Supabase payload type '" + payload.getType() + "' not implemented yet!");
         }
@@ -132,85 +82,43 @@ public class SupabaseConnector implements Connector {
     }
 
     /**
-     * Update QnA
+     * Split Supabase record into text chunks
      * @param id Supabase record Id
-     * @param katieUUID Katie QnA UUID, e.g. "854024e5-fd94-4907-887b-9ae828ffd21e"
+     * @param record Supabase record content
      */
-    private void updateQnA(Context domain, String id, String katieUUID, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
+    private List<Answer> splitIntoChunks(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
+        List<Answer> qnas = new ArrayList<>();
+
+        String contentUrl = ksMeta.getSupabaseBaseUrl() + "/" + id; // TODO: Is content URL and web URL really the same?!
+        String webUrl = ksMeta.getSupabaseBaseUrl() + "/" + id;
+
+        domainService.deletePreviouslyImportedChunks(webUrl, domain);
+        // TODO
+        //File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
+        domainService.saveMetaInformation(contentUrl, webUrl, new Date(), domain);
+
         try {
+            String msg = "Extract text from Supabase record '" + id + "' and split into chunks ...";
+            log.info(msg);
+            backgroundProcessService.updateProcessStatus(processId, msg);
+
+            String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
+            List<String> labels = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
+
             String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
             // TODO: Detect language
             List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 500, true);
-
-            if (chunks != null && chunks.size() > 0) {
-                // TODO: Create for a each chunk a QnA
-                Answer qna = domainService.getQnA(null, katieUUID, domain);
-
-                qna.setOriginalQuestion(getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames()));
-                qna.setAnswer(chunks.get(0));
-                qna.setUrl(ksMeta.getSupabaseBaseUrl() + "/" + id);
-                qna.deleteAllClassifications();
-                List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-                for (String classification : classifications) {
-                    qna.addClassification(classification);
-                }
-                qna.setDateAnswerModified(new Date());
-
-                try {
-                    domainService.saveDataObject(domain, qna.getUuid(), record);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-
-                // TODO: Let ConnectorService update and retrain QnA, whereas make sure, that ConnectorService is also handling Foreign Key
-                domainService.saveQuestionAnswer(domain, qna.getUuid(), qna);
-                domainService.retrain(new QnA(qna), domain, false);
-
-                backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": QnA '" + qna.getUuid() + "' updated.");
-            } else {
-                log.warn("No chunks!");
+            for (String chunk : chunks) {
+                qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, labels, null, null, null, null, null, null, null, question, null, false, null, false, null));
             }
+            msg = "Number of chunks extracted from Supabase record: " + chunks.size();
+            log.info(msg);
+            backgroundProcessService.updateProcessStatus(processId, msg);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-    }
 
-    /**
-     * Create QnA
-     * @param id Supabase record Id
-     */
-    private void createQnA(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
-        try {
-            String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
-            // TODO: Detect language
-            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 500, true);
-
-            if (chunks != null & chunks.size() > 0) {
-                String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
-                String url = ksMeta.getSupabaseBaseUrl() + "/" + id;
-                ContentType contentType = null;
-
-                List<String> classifications = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-
-                Date dateAnswered = new Date();
-                Date dateAnswerModified = dateAnswered;
-                Date dateOriginalQuestionSubmitted = dateAnswered;
-                boolean isPublic = false;
-                Answer newQnA = new Answer(null, chunks.get(0), contentType, url, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, question, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, null);
-
-                newQnA = domainService.addQuestionAnswer(newQnA, domain);
-                domainService.saveDataObject(domain, newQnA.getUuid(), record);
-
-                // TODO: Let ConnectorService import and train QnA, whereas make sure, that ConnectorService is also handling Foreign Key
-                foreignKeyIndexService.addForeignKey(domain, ksMeta, id, newQnA.getUuid());
-                domainService.train(new QnA(newQnA), domain, false);
-                backgroundProcessService.updateProcessStatus(processId, SupabaseConnector.class.getSimpleName() + ": New QnA '" + newQnA.getUuid() + "' added.");
-            } else {
-                log.warn("No chunks!");
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        return qnas;
     }
 
     /**
