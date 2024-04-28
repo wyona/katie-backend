@@ -462,12 +462,17 @@ public class XMLService {
     /**
      * Create XML file containing meta information re QnAs extraction
      */
-    public void createUrlMeta(File file, String contentUrl, String webUrl, long date) {
+    public URLMeta createUrlMeta(File file, String contentUrl, String webUrl, long date, ContentType contentType) {
         Document doc = createDocument(KATIE_NAMESPACE_1_0_0, "meta");
         doc.getDocumentElement().setAttribute("url", contentUrl);
         doc.getDocumentElement().setAttribute("web-url", webUrl);
         doc.getDocumentElement().setAttribute("date", "" + date);
+        if (contentType != null) {
+            doc.getDocumentElement().setAttribute("content-type", contentType.toString());
+        }
         save(doc, file);
+
+        return new URLMeta(contentUrl, date, contentType);
     }
 
     /**
@@ -477,7 +482,11 @@ public class XMLService {
         Document doc = read(file);
         String url = doc.getDocumentElement().getAttribute("url");
         long importDate = Long.parseLong(doc.getDocumentElement().getAttribute("date"));
-        URLMeta urlMeta = new URLMeta(url, importDate);
+        ContentType contentType = null;
+        if (doc.getDocumentElement().hasAttribute("content-type")) {
+            contentType = ContentType.valueOf(doc.getDocumentElement().getAttribute("content-type"));
+        }
+        URLMeta urlMeta = new URLMeta(url, importDate, contentType);
         return urlMeta;
     }
 
