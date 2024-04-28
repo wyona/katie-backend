@@ -58,6 +58,12 @@ public class KnowledgeSourceXMLFileService {
     private static final String THIRD_PARTY_RAG_ANSWER_JSON_POINTER_ATTR = "answer-json-pointer";
     private static final String THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR = "reference-json-pointer";
 
+    private static final String SUPABASE_TAG = "supabase";
+    private static final String SUPABASE_ANSWER_FIELD_NAMES_ATTR = "answer-field-names";
+    private static final String SUPABASE_CLASSIFICATIONS_FIELD_NAMES_ATTR = "classifications-field-names";
+    private static final String SUPABASE_QUESTION_FIELD_NAMES_ATTR = "question-field-names";
+    private static final String SUPABASE_URL_ATTR = "url";
+
     /**
      * Get knowledge sources
      */
@@ -102,23 +108,23 @@ public class KnowledgeSourceXMLFileService {
                 if (connector.equals(KnowledgeSourceConnector.SUPABASE)) {
                     ksMeta.setSupabaseIdName("id"); // TODO: Should this also be configurable?!
 
-                    Element supabaseEl = xmlService.getDirectChildByTagName(ksEl, "supabase");
-                    ksMeta.setSupabaseBaseUrl(supabaseEl.getAttribute("url"));
+                    Element supabaseEl = xmlService.getDirectChildByTagName(ksEl, SUPABASE_TAG);
+                    ksMeta.setSupabaseBaseUrl(supabaseEl.getAttribute(SUPABASE_URL_ATTR));
 
-                    String[] questionFieldNames = supabaseEl.getAttribute("question-field-names").split(",");
+                    String[] questionFieldNames = supabaseEl.getAttribute(SUPABASE_QUESTION_FIELD_NAMES_ATTR).split(",");
                     for (int k = 0; k < questionFieldNames.length; k++) {
                         // TODO
                         questionFieldNames[k] = questionFieldNames[k].trim();
                     }
                     ksMeta.setSupabaseQuestionNames(questionFieldNames);
 
-                    String[] answerFieldNames = supabaseEl.getAttribute("answer-field-names").split(",");
+                    String[] answerFieldNames = supabaseEl.getAttribute(SUPABASE_ANSWER_FIELD_NAMES_ATTR).split(",");
                     for (int k = 0; k < answerFieldNames.length; k++) {
                         answerFieldNames[k] = answerFieldNames[k].trim();
                     }
                     ksMeta.setSupabaseAnswerNames(answerFieldNames);
 
-                    String[] classificationFieldNames = supabaseEl.getAttribute("classifications-field-names").split(",");
+                    String[] classificationFieldNames = supabaseEl.getAttribute(SUPABASE_CLASSIFICATIONS_FIELD_NAMES_ATTR).split(",");
                     for (int k = 0; k < classificationFieldNames.length; k++) {
                         classificationFieldNames[k] = classificationFieldNames[k].trim();
                     }
@@ -548,6 +554,43 @@ public class KnowledgeSourceXMLFileService {
         if (referenceJsonPointer != null) {
             responseEl.setAttribute(THIRD_PARTY_RAG_REFERENCE_JSON_POINTER_ATTR, referenceJsonPointer);
         }
+
+        File config = getKnowledgeSourcesConfig(domainId);
+        xmlService.save(doc, config);
+
+        return uuid;
+    }
+
+    /**
+     * Add Supabase knowledge source
+     * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
+     * @return knowledge source Id
+     */
+    public String addSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url) throws Exception {
+        log.info("Add Supabase as knowledge source to domain '" + domainId + "' ...");
+        Document doc = getKnowledgeSourcesDocument(domainId);
+        if (doc == null) {
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+        }
+
+        Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
+        doc.getDocumentElement().appendChild(ksEl);
+        String uuid = UUID.randomUUID().toString();
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ID_ATTR, uuid);
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.SUPABASE.toString());
+
+        Element nameEl = doc.createElement("name");
+        ksEl.appendChild(nameEl);
+        nameEl.setTextContent(name);
+
+        Element supabaseEl = doc.createElement(SUPABASE_TAG);
+        ksEl.appendChild(supabaseEl);
+
+        supabaseEl.setAttribute(SUPABASE_ANSWER_FIELD_NAMES_ATTR, answerFieldNames);
+        supabaseEl.setAttribute(SUPABASE_CLASSIFICATIONS_FIELD_NAMES_ATTR, classificationsFieldNames);
+        supabaseEl.setAttribute(SUPABASE_QUESTION_FIELD_NAMES_ATTR, questionFieldNames);
+        supabaseEl.setAttribute(SUPABASE_URL_ATTR, url);
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);
