@@ -1,5 +1,6 @@
 package com.wyona.katie.connectors;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +57,8 @@ public class DiscourseConnector implements Connector {
                 // TODO: Consider using foreign key?!
                 // TODO: Consider saving as thread
                 String uuid = UUID.randomUUID().toString();
-                domainService.saveDataObject(domain, uuid, _payload.getPost());
+                String webUrl = ksMeta.getDirectusBaseUrl() + "/" + postId; // TODO: Check whether postId is the Id to be used?!
+                domainService.savePayloadData(domain, new URI(webUrl), _payload.getPost());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
