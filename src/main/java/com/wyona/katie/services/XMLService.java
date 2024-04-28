@@ -484,7 +484,7 @@ public class XMLService {
         long importDate = Long.parseLong(doc.getDocumentElement().getAttribute("date"));
         ContentType contentType = null;
         if (doc.getDocumentElement().hasAttribute("content-type")) {
-            contentType = ContentType.valueOf(doc.getDocumentElement().getAttribute("content-type"));
+            contentType = ContentType.fromString(doc.getDocumentElement().getAttribute("content-type"));
         }
         URLMeta urlMeta = new URLMeta(url, importDate, contentType);
         return urlMeta;

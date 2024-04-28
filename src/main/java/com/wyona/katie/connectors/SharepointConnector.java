@@ -419,7 +419,7 @@ public class SharepointConnector implements Connector {
             File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
             ContentType contentType = null;
             try {
-                contentType = ContentType.valueOf(mimeType);
+                contentType = ContentType.fromString(mimeType);
             } catch (Exception e) {
                 log.warn("Content type '" + mimeType + "' not supported yet by Katie");
             }
