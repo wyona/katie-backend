@@ -64,11 +64,11 @@ public class WebsiteConnector implements Connector {
             backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
             List<String> urls = dumpWebpages(domain, ksMeta, payload);
             for (String url : urls) {
-                backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + getChunkSize(ksMeta) + ", overlap: " + getChunkOverlap(ksMeta) + ", separator: '" + getChunkSeparator(ksMeta) + "') content of page '" + url + "' ...");
+                backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                 File dumpFile = domain.getUrlDumpFile(new URI(url));
                 String body = extractText(dumpFile);
                 String title = extractTitle(dumpFile, body);
-                String[] chunks = generateSegments(body, ksMeta);
+                String[] chunks = generateSegments(body, ksMeta, url, processId);
                 for (String chunk : chunks) {
                     qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
                 }
@@ -131,8 +131,13 @@ public class WebsiteConnector implements Connector {
     /**
      *
      */
-    private String[] generateSegments(String text, KnowledgeSourceMeta ksMeta) throws Exception {
-        List<String> chunks = segmentationService.getSegments(text, getChunkSeparator(ksMeta), getChunkSize(ksMeta), getChunkOverlap(ksMeta));
+    private String[] generateSegments(String text, KnowledgeSourceMeta ksMeta, String url, String processId) throws Exception {
+        backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + getChunkSize(ksMeta) + ", overlap: true) content of page '" + url + "' by sentence splitter ...");
+        List<String> chunks = segmentationService.splitBySentences(text, "en", getChunkSize(ksMeta), true);
+
+        //backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + getChunkSize(ksMeta) + ", overlap: " + getChunkOverlap(ksMeta) + ", separator: '" + getChunkSeparator(ksMeta) + "') content of page '" + url + "' ...");
+        //List<String> chunks = segmentationService.getSegments(text, getChunkSeparator(ksMeta), getChunkSize(ksMeta), getChunkOverlap(ksMeta));
+
         //List<String> chunks = segmentationService.getSegmentsUsingAI21(text);
         return chunks.toArray(new String[0]);
     }
