@@ -11,6 +11,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.*;
 
 import freemarker.template.Template;
@@ -283,11 +284,11 @@ public class QuestionAnsweringService {
 
             if (true) { // TODO: Make configurable per request, similar to "requestedAnswerContentType"
                 // INFO: Answers from external sources  do not have a UUID (e.g. when using query service, e.g. https://connector-grounded-qa.ukatie.com/api/v2)
-                if (ra.getUuid() != null && contextService.existsDataObject(ra.getUuid(), domain)) {
-                    DataObjectMetaInformation dataObjectMeta = contextService.getDataObjectMetaInformation(ra.getUuid(), domain);
+                if (ra.getUrl() != null && contextService.existsPayloadData(new URI(ra.getUrl()), domain)) {
+                    URLMeta dataObjectMeta = contextService.getUrlMeta(new URI(ra.getUrl()), domain);
                     log.info("Content type of data object: " + dataObjectMeta.getContentType());
-                    if (ContentType.fromString(dataObjectMeta.getContentType()).equals(ContentType.APPLICATION_JSON)) {
-                        ra.setData(contextService.getDataObjectAsJson(ra.getUuid(), domain));
+                    if (dataObjectMeta.getContentType().equals(ContentType.APPLICATION_JSON)) {
+                        ra.setData(contextService.getPayloadData(new URI(ra.getUuid()), domain));
                     }
                 }
             }
