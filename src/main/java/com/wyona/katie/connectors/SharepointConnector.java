@@ -374,7 +374,8 @@ public class SharepointConnector implements Connector {
                 String webUrl = webBaseUrl + "/" + bodyNode.get("webUrl").asText();
                 // TODO
                 //File dumpFile = utilsService.dumpPageContent(domain, new URI(contentUrl), apiToken);
-                domainService.saveMetaInformation(contentUrl, webUrl, new Date(), domain);
+                ContentType contentType = null; // TODO: Get content type
+                domainService.saveMetaInformation(contentUrl, webUrl, new Date(), contentType, domain);
                 domainService.deletePreviouslyImportedChunks(webUrl, domain);
 
                 String description = "NO_DESCRIPTION_AVAILABLE";
@@ -416,7 +417,13 @@ public class SharepointConnector implements Connector {
             String contentUrl = MS_GRAPH_BASE_URL + "/beta/sites/" + siteId + "/drive/items/" + fileId + "/content";
             domainService.deletePreviouslyImportedChunks(webUrl, domain);
             File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
-            domainService.saveMetaInformation(contentUrl, webUrl, new Date(), domain);
+            ContentType contentType = null;
+            try {
+                contentType = ContentType.valueOf(mimeType);
+            } catch (Exception e) {
+                log.warn("Content type '" + mimeType + "' not supported yet by Katie");
+            }
+            domainService.saveMetaInformation(contentUrl, webUrl, new Date(), contentType, domain);
 
             if (mimeType.equals("application/pdf")) {
                 String msg = "Extract text from PDF document '" + contentUrl + "' ...";
