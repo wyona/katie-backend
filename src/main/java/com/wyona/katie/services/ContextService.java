@@ -139,9 +139,6 @@ public class ContextService {
     @Autowired
     private BackgroundProcessService backgroundProcessService;
 
-    private final static String DATA_OBJECT_META_FILE = "meta.json";
-    private final static String DATA_OBJECZT_FILE = "data";
-
     /**
      *
      */
@@ -777,6 +774,20 @@ public class ContextService {
 
         //Context domain = getContext(domainId);
         String ksUUID = knowledgeSourceXMLFileService.addThirdPartyRAG(domainId, name, endpointUrl, payload, answerJsonPointer, referenceJsonPointer);
+    }
+
+    /**
+     * Add Supabase as knowledge source
+     * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
+     */
+    public void addKnowledgeSourceSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url) throws Exception {
+        if (!isMemberOrAdmin(domainId)) {
+            log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        //Context domain = getContext(domainId);
+        String ksUUID = knowledgeSourceXMLFileService.addSupabase(domainId, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url);
     }
 
     /**
@@ -3310,35 +3321,30 @@ public class ContextService {
     /**
      * Save data object in a particular knowledge base / domain
      * @param domain Domain data object is associated with
-     * @param uuid UUID associated with data object
+     * @param url URL associated with data object
      * @param data JSON data object
      * @return meta information about data object, e.g. content type, creation and modification date
      */
-    public DataObjectMetaInformation saveDataObject(Context domain, String uuid, JsonNode data) throws Exception {
-        File uuidDir = new File(domain.getDataObjectsPath(), uuid);
-        if (!uuidDir.isDirectory()) {
-            log.info("Directory containing data object is being created: " + uuidDir.getAbsolutePath());
-            uuidDir.mkdirs();
+    public URLMeta savePayloadData(Context domain, URI url, JsonNode data) throws Exception {
+        File file = domain.getUrlDumpFile(url);
+        if (!file.getParentFile().isDirectory()) {
+            file.getParentFile().mkdirs();
         }
-        File dataFile = new File(uuidDir, DATA_OBJECZT_FILE);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(dataFile, data);
 
-        DataObjectMetaInformation meta = new DataObjectMetaInformation(ContentType.APPLICATION_JSON);
-        File metaFile = new File(uuidDir, DATA_OBJECT_META_FILE);
-        objectMapper.writeValue(metaFile, meta);
-        return meta;
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(file, data);
+
+        return saveMetaInformation(url.toString(), url.toString(), new Date(), ContentType.APPLICATION_JSON, domain);
     }
 
     /**
-     * Check whether a particular data object exists
+     * Check whether a particular payload data object exists
      * @return true when data object with a particular UUID exists and false otherwise
      */
-    public boolean existsDataObject(String uuid, Context domain) {
-        File uuidDir = new File(domain.getDataObjectsPath(), uuid);
-        File metaFile = new File(uuidDir, DATA_OBJECT_META_FILE);
+    public boolean existsPayloadData(URI url, Context domain) {
+        File dumpFile = domain.getUrlDumpFile(url);
 
-        if (metaFile.isFile()) {
+        if (dumpFile.isFile()) {
             return true;
         } else {
             return false;
@@ -3347,16 +3353,13 @@ public class ContextService {
 
     /**
      * Get meta information of data object
-     * @param uuid UUID of data object
+     * @param url URL of imported data object
      * @retur meta information of data object
      */
-    public DataObjectMetaInformation getDataObjectMetaInformation(String uuid, Context domain) {
-        File uuidDir = new File(domain.getDataObjectsPath(), uuid);
-        File metaFile = new File(uuidDir, DATA_OBJECT_META_FILE);
-        ObjectMapper objectMapper = new ObjectMapper();
+    public URLMeta getUrlMeta(URI url, Context domain) {
+        File metaFile = domain.getUrlMetaFile(url);
         try {
-            DataObjectMetaInformation meta = objectMapper.readValue(metaFile, DataObjectMetaInformation.class);
-            return meta;
+            return xmlService.getUrlMeta(metaFile);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return null;
@@ -3366,9 +3369,8 @@ public class ContextService {
     /**
      * Get data object as JSON
      */
-    public JsonNode getDataObjectAsJson(String uuid, Context domain) {
-        File uuidDir = new File(domain.getDataObjectsPath(), uuid);
-        File dataFile = new File(uuidDir, DATA_OBJECZT_FILE);
+    public JsonNode getPayloadData(URI url, Context domain) {
+        File dataFile = domain.getUrlDumpFile(url);
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readTree(dataFile);
@@ -3593,7 +3595,8 @@ public class ContextService {
 
         if (qnas != null && qnas.length > 0) {
             log.info("Webpage '" + url + "' contains " + qnas.length + " QnAs.");
-            saveMetaInformation(url, url, currentDate, domain);
+            ContentType contentType = null; // TODO: Get content type
+            saveMetaInformation(url, url, currentDate, contentType, domain);
         } else {
             log.warn("No QnAs extracted from webpage '" + url + "'!");
             throw new Exception("No QnAs extracted from webpage '" + url + "'!");
@@ -3655,12 +3658,12 @@ public class ContextService {
      * @param webUrl Web URL, e.g. "https://szhglobal.sharepoint.com/sites/MSGR-00000778/Shared%20Documents/General/WIKI%20Energieberatung?wd=target%28F%C3%B6rderprogramme.one%7Cfb8f3fb7-e89b-4d08-b9f2-b52248c15f1e%2FFAQ%20F%C3%B6rderprogramme%7C9d034704-bbf1-43f6-8208-e5a29c649b04%2F%29"
      * @param date Date when text / QnAs got extracted
      */
-    public void saveMetaInformation(String contentUrl, String webUrl, Date date, Context domain) {
+    public URLMeta saveMetaInformation(String contentUrl, String webUrl, Date date, ContentType contentType, Context domain) {
         File metaFile = domain.getUrlMetaFile(URI.create(contentUrl));
         if (!metaFile.getParentFile().isDirectory()) {
             metaFile.getParentFile().mkdirs();
         }
-        xmlService.createUrlMeta(metaFile, contentUrl, webUrl, date.getTime());
+        return xmlService.createUrlMeta(metaFile, contentUrl, webUrl, date.getTime(), contentType);
     }
 
     /**
