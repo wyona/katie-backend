@@ -641,6 +641,42 @@ public class DomainController {
     }
 
     /**
+     * Add Supabase as knowledge source
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/supabase", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Add Supabase as knowledge source")
+    public ResponseEntity<?> addKnowledgeSourceSupabase(
+            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'My Supabase'", required = true)
+            @RequestParam(value = "name", required = true) String name,
+            @ApiParam(name = "answer-field-names", value = "Comma separated list of field names, e.g. 'abstract, text'", required = true)
+            @RequestParam(value = "answer-field-names", required = true) String answerFieldNames,
+            @ApiParam(name = "classifications-field-names", value = "Comma separated list of field names, e.g. 'tags, custom_tags, coauthors'", required = true)
+            @RequestParam(value = "classifications-field-names", required = true) String classificationsFieldNames,
+            @ApiParam(name = "question-field-names", value = "Comma separated list of field names, e.g. 'titel'", required = true)
+            @RequestParam(value = "question-field-names", required = true) String questionFieldNames,
+            @ApiParam(name = "url", value = "Base URL, e.g. 'https://repid.ch'", required = true)
+            @RequestParam(value = "url", required = true) String url,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            domainService.addKnowledgeSourceSupabase(id, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Delete a particular knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}", method = RequestMethod.DELETE, produces = "application/json")
