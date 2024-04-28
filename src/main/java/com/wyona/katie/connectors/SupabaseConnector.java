@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +64,19 @@ public class SupabaseConnector implements Connector {
                 log.info("Update Supabase item Id: " + id);
                 backgroundProcessService.updateProcessStatus(processId, "Update QnA(s) based on Supabase Item '" + id + "' ...");
             }
-            List<Answer> _qnas = splitIntoChunks(domain, id, record, ksMeta, processId);
+
+            String contentUrl = ksMeta.getSupabaseBaseUrl() + "/" + id;
+            String webUrl = contentUrl; // TODO: Is content URL and web URL really the same?!
+
+            try {
+                domainService.savePayloadData(domain, new URI(webUrl), record);
+                // INFO: Compare with
+                // File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
+            List<Answer> _qnas = splitIntoChunks(domain, webUrl, record, ksMeta, processId);
             for (Answer qna : _qnas) {
                 qnas.add(qna);
             }
@@ -83,22 +96,17 @@ public class SupabaseConnector implements Connector {
 
     /**
      * Split Supabase record into text chunks
-     * @param id Supabase record Id
+     * @param webUrl TODO
      * @param record Supabase record content
+     * @return list of answers based on chunks
      */
-    private List<Answer> splitIntoChunks(Context domain, String id, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
+    private List<Answer> splitIntoChunks(Context domain, String webUrl, JsonNode record, KnowledgeSourceMeta ksMeta, String processId) {
         List<Answer> qnas = new ArrayList<>();
 
-        String contentUrl = ksMeta.getSupabaseBaseUrl() + "/" + id; // TODO: Is content URL and web URL really the same?!
-        String webUrl = ksMeta.getSupabaseBaseUrl() + "/" + id;
-
         domainService.deletePreviouslyImportedChunks(webUrl, domain);
-        // TODO
-        //File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
-        domainService.saveMetaInformation(contentUrl, webUrl, new Date(), domain);
 
         try {
-            String msg = "Extract text from Supabase record '" + id + "' and split into chunks ...";
+            String msg = "Extract text from Supabase record '" + webUrl + "' and split into chunks ...";
             log.info(msg);
             backgroundProcessService.updateProcessStatus(processId, msg);
 
@@ -107,7 +115,7 @@ public class SupabaseConnector implements Connector {
 
             String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
             // TODO: Detect language
-            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 500, true);
+            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 800, true);
             for (String chunk : chunks) {
                 qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, labels, null, null, null, null, null, null, null, question, null, false, null, false, null));
             }
