@@ -96,7 +96,8 @@ public class WebsiteConnector implements Connector {
                 for (String url : ksMeta.getWebsiteIndividualURLs()) {
                     domainService.deletePreviouslyImportedChunks(url, domain);
                     File dumpFile = utilsService.dumpContent(domain, new URI(url), null);
-                    domainService.saveMetaInformation(url, url, new Date(), domain);
+                    ContentType contentType = ContentType.TEXT_HTML;
+                    domainService.saveMetaInformation(url, url, new Date(), contentType, domain);
                     urls.add(url);
                 }
             } catch (Exception e) {
