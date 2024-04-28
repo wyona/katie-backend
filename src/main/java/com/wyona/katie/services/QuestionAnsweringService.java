@@ -288,7 +288,7 @@ public class QuestionAnsweringService {
                     URLMeta dataObjectMeta = contextService.getUrlMeta(new URI(ra.getUrl()), domain);
                     log.info("Content type of data object: " + dataObjectMeta.getContentType());
                     if (dataObjectMeta.getContentType().equals(ContentType.APPLICATION_JSON)) {
-                        ra.setData(contextService.getPayloadData(new URI(ra.getUuid()), domain));
+                        ra.setData(contextService.getPayloadData(new URI(ra.getUrl()), domain));
                     }
                 }
             }
