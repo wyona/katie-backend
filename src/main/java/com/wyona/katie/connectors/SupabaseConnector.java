@@ -106,7 +106,7 @@ public class SupabaseConnector implements Connector {
         domainService.deletePreviouslyImportedChunks(webUrl, domain);
 
         try {
-            String msg = "Extract text from Supabase record '" + webUrl + "' and split into chunks ...";
+            String msg = "Extract text from Supabase record '" + webUrl + "' and split into chunks by sentences (Chunk size: " + ksMeta.getChunkSize() + ") ...";
             log.info(msg);
             backgroundProcessService.updateProcessStatus(processId, msg);
 
@@ -115,7 +115,7 @@ public class SupabaseConnector implements Connector {
 
             String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
             // TODO: Detect language
-            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", 800, true);
+            List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", ksMeta.getChunkSize(), true);
             for (String chunk : chunks) {
                 qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, labels, null, null, null, null, null, null, null, question, null, false, null, false, null));
             }
