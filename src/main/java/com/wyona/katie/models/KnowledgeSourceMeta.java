@@ -41,9 +41,12 @@ public class KnowledgeSourceMeta {
     private String websiteSeedUrl;
     private List<String> websiteURLs;
 
-    private int chunkSize;
-    private int chunkOverlap;
+    private Integer chunkSize;
+    private Integer chunkOverlap;
     private Character chunkSeparator;
+    private final int CHUNK_SIZE_DEFAULT = 500;
+    private final int CHUNK_OVERLAP_DEFAULT = 70;
+    private final char CHUNK_SEPARATOR_DEFAULT = '\n';
 
     private String microsoftGraphApiToken;
     private String msTenant;
@@ -110,8 +113,8 @@ public class KnowledgeSourceMeta {
         this.websiteSeedUrl = null;
         this.websiteURLs = new ArrayList<String>();
 
-        chunkSize = -1;
-        chunkOverlap = -1;
+        chunkSize = null;
+        chunkOverlap = null;
         chunkSeparator = null;
 
         this.microsoftGraphApiToken = null;
@@ -456,7 +459,11 @@ public class KnowledgeSourceMeta {
      *
      */
     public int getChunkSize() {
-        return chunkSize;
+        if (chunkSize != null) {
+            return chunkSize;
+        } else {
+            return CHUNK_SIZE_DEFAULT;
+        }
     }
 
     /**
@@ -470,7 +477,11 @@ public class KnowledgeSourceMeta {
      *
      */
     public int getChunkOverlap() {
-        return chunkOverlap;
+        if (chunkOverlap != null) {
+            return chunkOverlap;
+        } else {
+            return CHUNK_OVERLAP_DEFAULT;
+        }
     }
 
     /**
@@ -484,7 +495,11 @@ public class KnowledgeSourceMeta {
      *
      */
     public Character getChunkSeparator() {
-        return chunkSeparator;
+        if (chunkSeparator != null) {
+            return chunkSeparator;
+        } else {
+            return CHUNK_SEPARATOR_DEFAULT;
+        }
     }
 
     /**
