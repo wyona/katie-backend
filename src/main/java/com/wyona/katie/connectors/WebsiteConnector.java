@@ -32,10 +32,6 @@ public class WebsiteConnector implements Connector {
     @Autowired
     private BackgroundProcessService backgroundProcessService;
 
-    private final int CHUNK_SIZE_DEFAULT = 500;
-    private final int CHUNK_OVERLAP_DEFAULT = 70;
-    private final char CHUNK_SEPARATOR_DEFAULT = '\n';
-
     // WARN: Using '.' as separator can be misleading, because for example numbers can contain a dot 0.23% or abbreviations 'e.g.' or ...
     //private final char CHUNK_SEPARATOR_DEFAULT = '.';
 
@@ -133,46 +129,13 @@ public class WebsiteConnector implements Connector {
      *
      */
     private String[] generateSegments(String text, KnowledgeSourceMeta ksMeta, String url, String processId) throws Exception {
-        backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + getChunkSize(ksMeta) + ", overlap: true) content of page '" + url + "' by sentence splitter ...");
-        List<String> chunks = segmentationService.splitBySentences(text, "en", getChunkSize(ksMeta), true);
+        backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + ksMeta.getChunkSize() + ", overlap: true) content of page '" + url + "' by sentence splitter ...");
+        List<String> chunks = segmentationService.splitBySentences(text, "en", ksMeta.getChunkSize(), true);
 
-        //backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + getChunkSize(ksMeta) + ", overlap: " + getChunkOverlap(ksMeta) + ", separator: '" + getChunkSeparator(ksMeta) + "') content of page '" + url + "' ...");
-        //List<String> chunks = segmentationService.getSegments(text, getChunkSeparator(ksMeta), getChunkSize(ksMeta), getChunkOverlap(ksMeta));
+        //backgroundProcessService.updateProcessStatus(processId, "Chunk (size: " + ksMeta.getChunkSize() + ", overlap: " + ksMeta.getChunkOverlap() + ", separator: '" + ksMeta.getChunkSeparator() + "') content of page '" + url + "' ...");
+        //List<String> chunks = segmentationService.getSegments(text, ksMeta.getChunkSeparator(), ksMeta.getChunkSize(), ksMeta.getChunkOverlap());
 
         //List<String> chunks = segmentationService.getSegmentsUsingAI21(text);
         return chunks.toArray(new String[0]);
-    }
-
-    /**
-     *
-     */
-    private int getChunkSize(KnowledgeSourceMeta ksMeta) {
-        if (ksMeta.getChunkSize() > 0) {
-            return ksMeta.getChunkSize();
-        } else {
-            return CHUNK_SIZE_DEFAULT;
-        }
-    }
-
-    /**
-     *
-     */
-    private int getChunkOverlap(KnowledgeSourceMeta ksMeta) {
-        if (ksMeta.getChunkOverlap() > 0) {
-            return ksMeta.getChunkOverlap();
-        } else {
-            return CHUNK_OVERLAP_DEFAULT;
-        }
-    }
-
-    /**
-     *
-     */
-    private char getChunkSeparator(KnowledgeSourceMeta ksMeta) {
-        if (ksMeta.getChunkSeparator() != null) {
-            return ksMeta.getChunkSeparator();
-        } else {
-            return CHUNK_SEPARATOR_DEFAULT;
-        }
     }
 }
