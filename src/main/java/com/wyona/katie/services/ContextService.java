@@ -780,14 +780,14 @@ public class ContextService {
      * Add Supabase as knowledge source
      * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
      */
-    public void addKnowledgeSourceSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url) throws Exception {
+    public void addKnowledgeSourceSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url, Integer chunkSize) throws Exception {
         if (!isMemberOrAdmin(domainId)) {
             log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
 
         //Context domain = getContext(domainId);
-        String ksUUID = knowledgeSourceXMLFileService.addSupabase(domainId, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url);
+        String ksUUID = knowledgeSourceXMLFileService.addSupabase(domainId, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url, chunkSize);
     }
 
     /**

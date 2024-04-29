@@ -63,6 +63,7 @@ public class KnowledgeSourceXMLFileService {
     private static final String SUPABASE_CLASSIFICATIONS_FIELD_NAMES_ATTR = "classifications-field-names";
     private static final String SUPABASE_QUESTION_FIELD_NAMES_ATTR = "question-field-names";
     private static final String SUPABASE_URL_ATTR = "url";
+    private static final String SUPBASE_CHUNK_SIZE_ATTR = "chunk-size";
 
     /**
      * Get knowledge sources
@@ -110,6 +111,11 @@ public class KnowledgeSourceXMLFileService {
 
                     Element supabaseEl = xmlService.getDirectChildByTagName(ksEl, SUPABASE_TAG);
                     ksMeta.setSupabaseBaseUrl(supabaseEl.getAttribute(SUPABASE_URL_ATTR));
+
+                    if (supabaseEl.hasAttribute(SUPBASE_CHUNK_SIZE_ATTR)) {
+                        ksMeta.setChunkSize(Integer.parseInt(supabaseEl.getAttribute(SUPBASE_CHUNK_SIZE_ATTR)));
+
+                    }
 
                     String[] questionFieldNames = supabaseEl.getAttribute(SUPABASE_QUESTION_FIELD_NAMES_ATTR).split(",");
                     for (int k = 0; k < questionFieldNames.length; k++) {
@@ -566,7 +572,7 @@ public class KnowledgeSourceXMLFileService {
      * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
      * @return knowledge source Id
      */
-    public String addSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url) throws Exception {
+    public String addSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url, Integer chunkSize) throws Exception {
         log.info("Add Supabase as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
@@ -591,6 +597,10 @@ public class KnowledgeSourceXMLFileService {
         supabaseEl.setAttribute(SUPABASE_CLASSIFICATIONS_FIELD_NAMES_ATTR, classificationsFieldNames);
         supabaseEl.setAttribute(SUPABASE_QUESTION_FIELD_NAMES_ATTR, questionFieldNames);
         supabaseEl.setAttribute(SUPABASE_URL_ATTR, url);
+
+        if (chunkSize != 0) {
+            supabaseEl.setAttribute(SUPBASE_CHUNK_SIZE_ATTR, chunkSize.toString());
+        }
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);

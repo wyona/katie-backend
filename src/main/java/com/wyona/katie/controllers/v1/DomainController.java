@@ -658,6 +658,8 @@ public class DomainController {
             @RequestParam(value = "question-field-names", required = true) String questionFieldNames,
             @ApiParam(name = "url", value = "Base URL, e.g. 'https://repid.ch'", required = true)
             @RequestParam(value = "url", required = true) String url,
+            @ApiParam(name = "chunk-size", value = "Chunk size, e.g. 1000", required = false)
+            @RequestParam(value = "chunk-size", required = false) Integer chunkSize,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
@@ -665,7 +667,7 @@ public class DomainController {
         }
 
         try {
-            domainService.addKnowledgeSourceSupabase(id, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url);
+            domainService.addKnowledgeSourceSupabase(id, name, answerFieldNames, classificationsFieldNames, questionFieldNames, url, chunkSize);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
