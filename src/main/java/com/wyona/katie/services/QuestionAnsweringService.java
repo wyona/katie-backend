@@ -518,7 +518,11 @@ public class QuestionAnsweringService {
         if (domain.getGenerateCompleteAnswers() && !domain.getCompletionImpl().equals(CompletionImpl.UNSET)) {
             hits = generateAnswer(analyzedQuestion, domain, hits);
         } else {
-            log.info("Complete answer disabled.");
+            if (!domain.getGenerateCompleteAnswers()) {
+                log.info("Complete answer disabled.");
+            } else {
+                log.warn("Complete answer enabled, but no completion implementation configured");
+            }
         }
 
         return hits;
