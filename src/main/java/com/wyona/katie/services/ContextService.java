@@ -2814,12 +2814,19 @@ public class ContextService {
                 rootNode.put(HumanPreferenceLabel.REJECTED_LABEL_FIELD, labelNode);
             }
 
-            if (rating.getBestFittingLabelId() != null) {
+            if (rating.getBestFittingLabelId() != null && rating.getBestFittingLabelId().length() > 0) {
+                log.info("Best fitting label Id provided by user feedback: " + rating.getBestFittingLabelId());
                 ObjectNode bestFittingLabelNode = mapper.createObjectNode();
                 Classification bestFittingClassification = classificationRepositoryService.getClassification(domain, rating.getBestFittingLabelId());
-                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD, bestFittingClassification.getKatieId());
-                bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_NAME_FIELD, bestFittingClassification.getTerm());
-                rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, bestFittingLabelNode);
+                if (bestFittingClassification != null) {
+                    bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD, bestFittingClassification.getKatieId());
+                    bestFittingLabelNode.put(HumanPreferenceLabel.LABEL_NAME_FIELD, bestFittingClassification.getTerm());
+                    rootNode.put(HumanPreferenceLabel.CHOSEN_LABEL_FIELD, bestFittingLabelNode);
+                } else {
+                    log.warn("No such label: " + rating.getBestFittingLabelId());
+                }
+            } else {
+                log.info("No chosen / best fitting label provided by user feedback.");
             }
 
             // TODO: Label was not correct, but check whether it was part of predicted labels with lower score
