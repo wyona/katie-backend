@@ -125,7 +125,7 @@ public class QuestionAnsweringService {
     private String ollamaModel;
 
     @Value("${generative.ai.prompt}")
-    private String defaultPrompt;
+    private String defaultPromptTemplate;
 
     private static final String ANONYMOUS = "anonymous";
 
@@ -606,15 +606,20 @@ public class QuestionAnsweringService {
     }
 
     /**
-     *
+     * Generate prompt messages
+     * @param question Question asked by user
+     * @param context Retrieval result
+     * @param url Source URL of retrieval result
      */
     private List<PromptMessage> getPromptMessages(Context domain, Sentence question, String context, String url) throws Exception {
         List<PromptMessage> promptMessages = domain.getPromptMessages();
+
         if (promptMessages.size() == 0) {
+            log.info("Domain '" + domain.getId() + "' has not prompt templates configured, therefore use default prompt template ...");
             if (url != null) {
-                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPrompt)); // TODO: Prompt containing URL variable
+                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPromptTemplate)); // TODO: Prompt containing URL variable
             } else {
-                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPrompt)); // INFO: No retrieval results available
+                promptMessages.add(new PromptMessage(PromptMessageRole.USER, defaultPromptTemplate)); // INFO: No retrieval results available
             }
         }
 
