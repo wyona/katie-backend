@@ -943,14 +943,15 @@ public class Context {
     }
 
     /**
-     * @return prompt, e.g. "Please answer the following '{{QUESTION}}' based on the following context '{{CONTEXT}}'."
+     * Get domain specific prompt templates
+     * @return prompt templates, e.g. "Please answer the following '{{QUESTION}}' based on the following context '{{CONTEXT}}'."
      */
     public List<PromptMessage> getPromptMessages() {
         return promptMessages;
     }
 
     /**
-     *
+     * Set domain specific prompt templates
      */
     public void setPromptMessages(List<PromptMessage> promptMessages) {
         this.promptMessages = promptMessages;
