@@ -763,7 +763,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             int limit = 4;
             String question = actionParts[2];
             try {
-                List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, message.getId(), domain, new Date(), remoteAddress, ChannelType.MS_TEAMS, channelRequestId, limit, 1, true, null,false, false);
+                List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, message.getId(), domain, new Date(), remoteAddress, ChannelType.MS_TEAMS, channelRequestId, limit, 1, true, null,false, false, false);
 
                 StringBuilder response = new StringBuilder();
                 response.append("<div>");
@@ -980,7 +980,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         // TODO
         List<String> classifications = new ArrayList<String>();
         boolean checkAuthorization = false; // TODO: Set to true
-        List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, message.getId(), domain, dateSubmitted, remoteAddress, ChannelType.MS_TEAMS, channelRequestId, 2, 0, checkAuthorization, null, false, false);
+        List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, message.getId(), domain, dateSubmitted, remoteAddress, ChannelType.MS_TEAMS, channelRequestId, 2, 0, checkAuthorization, null, false, false, false);
 
         MicrosoftAdaptiveCard answerNotHelpfulCard = new MicrosoftAdaptiveCard(messageSource.getMessage("answer.helpful", null, locale));
 

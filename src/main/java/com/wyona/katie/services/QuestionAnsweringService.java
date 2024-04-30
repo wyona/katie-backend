@@ -147,6 +147,7 @@ public class QuestionAnsweringService {
      * @param requestedAnswerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
      * @param includeFeedbackLinks When true, then include feedback links at the end of answer (thumb up, thumb down)
      * @param includeClassifications When true, then include classifications of answers and predicted classifications into answers
+     * @param includePayloadData When true and payload data exists, then add payload to response
      *
      * @return list of possible answers to question
      */
@@ -165,7 +166,8 @@ public class QuestionAnsweringService {
             boolean checkAuthorization,
             ContentType requestedAnswerContentType,
             boolean includeFeedbackLinks,
-            boolean includeClassifications) throws Exception {
+            boolean includeClassifications,
+            boolean includePayloadData) throws Exception {
 
         if (checkAuthorization && domain.getAnswersGenerallyProtected() && !contextService.isMemberOrAdmin(domain.getId())) {
             String msg = "Answers of domain '" + domain.getId() + "' are generally protected and user has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "'.";
@@ -282,8 +284,7 @@ public class QuestionAnsweringService {
         for (ResponseAnswer ra: responseAnswers) {
             ra.setQuestionUUID(logEntryUUID);
 
-            if (true) { // TODO: Make configurable per request, similar to "requestedAnswerContentType"
-                // INFO: Answers from external sources  do not have a UUID (e.g. when using query service, e.g. https://connector-grounded-qa.ukatie.com/api/v2)
+            if (includePayloadData) {
                 if (ra.getUrl() != null && contextService.existsPayloadData(new URI(ra.getUrl()), domain)) {
                     URLMeta dataObjectMeta = contextService.getUrlMeta(new URI(ra.getUrl()), domain);
                     log.info("Content type of data object: " + dataObjectMeta.getContentType());

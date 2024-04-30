@@ -143,7 +143,7 @@ public class EmailService {
                         boolean isHtmlMessage = false;
                         ContentType requestedAnswerContentType = ContentType.TEXT_PLAIN;
 
-                        List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.EMAIL, channelRequestId, -1, -1, checkAuthorization, requestedAnswerContentType, includeFeedbackLinks, false);
+                        List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.EMAIL, channelRequestId, -1, -1, checkAuthorization, requestedAnswerContentType, includeFeedbackLinks, false, false);
                         if (answers != null && answers.size() > 0) {
                             numberOfAnswers++;
                             log.info("Answers found for email with subject '" + message.getSubject() + "'.");

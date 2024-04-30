@@ -17,6 +17,8 @@ public class AskQuestionBody {
 
     private String answerContentType;
 
+    private Boolean includePayloadData;
+
     /**
      *
      */
@@ -151,5 +153,19 @@ public class AskQuestionBody {
      */
     public Boolean getIncludeClassifications() {
         return includeClassifications;
+    }
+
+    /**
+     * @param includePayloadData When true, then payload of originally imported data should be included into answers
+     */
+    public void setIncludePayloadData(Boolean includePayloadData) {
+        this.includePayloadData = includePayloadData;
+    }
+
+    /**
+     * @return true when payload of originally imported data should be included into answers
+     */
+    public Boolean getIncludePayloadData() {
+        return includePayloadData;
     }
 }

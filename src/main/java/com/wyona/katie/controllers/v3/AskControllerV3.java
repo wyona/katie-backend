@@ -137,7 +137,12 @@ public class AskControllerV3 {
             }
         }
 
-        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, questionAndOptionalParams.getIncludeClassifications(), request, response);
+        boolean _includePayloadData = false;
+        if (questionAndOptionalParams.getIncludePayloadData() != null) {
+            _includePayloadData = questionAndOptionalParams.getIncludePayloadData();
+        }
+
+        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, questionAndOptionalParams.getIncludeClassifications(), _includePayloadData, request, response);
     }
 
     /**
@@ -148,6 +153,7 @@ public class AskControllerV3 {
      * @param answerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
      * @param includeFeedbackLinks When true, then include feedback links into answers
      * @param includeClassifications When true, then include classifications of answers and predicted classifications into answers
+     * @param includePayloadData When true, then payload of originally imported data should be included into answers
      */
     private ResponseEntity<?> getAnswers(String question,
                                          List<String> classifications,
@@ -163,6 +169,7 @@ public class AskControllerV3 {
                                          Integer offset,
                                          boolean includeFeedbackLinks,
                                          boolean includeClassifications,
+                                         boolean includePayloadData,
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
 
@@ -271,7 +278,7 @@ public class AskControllerV3 {
             }
 
             // TODO: Return AskResponse (including meta info) instead list of ResponseAnswer
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, predictClassifications, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, predictClassifications, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications, includePayloadData);
 
             if (responseAnswers != null) {
                 String questionUUID = null;
