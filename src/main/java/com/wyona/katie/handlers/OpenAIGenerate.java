@@ -57,10 +57,10 @@ public class OpenAIGenerate implements GenerateProvider {
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
             String requestUrl = openAIHost + "/v1/chat/completions";
-            log.info("Get chat completion: " + requestUrl);
+            log.info("Get chat completion: " + requestUrl + " (Body: " + requestBodyNode + ")");
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
             JsonNode responseBodyNode = response.getBody();
-            log.info("JSON: " + responseBodyNode);
+            log.info("JSON Response: " + responseBodyNode);
 
             JsonNode choicesNode = responseBodyNode.get("choices");
             if (choicesNode.isArray()) {
