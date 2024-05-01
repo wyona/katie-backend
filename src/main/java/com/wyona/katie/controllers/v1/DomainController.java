@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1129,11 +1130,20 @@ public class DomainController {
      * Get classification labels of a particular domain
      */
     @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Get classification labels")
+    @Operation(summary="Get classification labels")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getClassificationLabels(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
