@@ -29,6 +29,7 @@ import freemarker.template.Template;
 import org.apache.commons.io.FileUtils;
 
 import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * TODO: Consider renaming it to DomainService
@@ -91,6 +92,9 @@ public class ContextService {
 
     @Autowired
     private AuthenticationService authService;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private XMLService xmlService;
@@ -2290,6 +2294,56 @@ public class ContextService {
         }
         saveDomainConfig(domain);
         return domain;
+    }
+
+    /**
+     * Check whether valid access token provided or whether user is signed in and is either administrator or domain member
+     * @param domainId Domain Id
+     * @param request Request that might contain access token
+     * @param endpoint Endpoint, e.g. "/abb6edd3-34a9-4a84-b12a-13d5dfd8152f/classification/labels"
+     * @param scope Scope of access tokem, e.g. "read:labels" (see https://datatracker.ietf.org/doc/html/rfc8693#name-relationship-between-resour)
+     * @return true, when either valid JWT token for particular endpoint provided or when user is signed in and is member of domain or administrator, otherwise return false
+     */
+    public boolean isAuthorized(String domainId, HttpServletRequest request, String endpoint, String scope) {
+        String jwtToken = jwtService.getJWT(request);
+        if (jwtToken != null) {
+            // INFO: Check token validity, but do not login user
+            if (jwtService.isJWTValid(jwtToken, null)) {
+                String jwtTokenEndpoint = jwtService.getJWTClaimValue(jwtToken, "endpoint");
+                if (jwtTokenEndpoint != null && jwtTokenEndpoint.equals(endpoint)) {
+                    String[] scopes = jwtService.getJWTScope(jwtToken);
+                    if (containsScope(scopes, scope)) {
+                        return true;
+                    } else {
+                        log.warn("Scope '" + scope + "' does not match with scopes provided by JWT token.");
+                        return false;
+                    }
+                } else {
+                    log.warn("Endpoint '" + endpoint + "' does not match with endpoint provided by JWT token.");
+                    return false;
+                }
+            } else {
+                log.warn("Provided access token is not valid.");
+                return false;
+            }
+        }
+
+        // INFO: No access token provided, therefore check whether user is signed in ...
+        return isMemberOrAdmin(domainId);
+    }
+
+    /**
+     * @return true when scope is contained by array of scopes
+     */
+    private boolean containsScope(String[] scopes, String scope) {
+        if (scopes != null && scopes.length > 0) {
+            for (String _scope : scopes) {
+                if (_scope.equals(scope)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
