@@ -38,6 +38,8 @@ public class JwtService {
     private Long allowedClockSkewSeconds;
 
     public static final String JWT_CLAIM_DOMAIN_ID = "did";
+    public static final String JWT_CLAIM_SCOPE = "scope";
+    public static final String JWT_CLAIM_ENDPOINT = "endpoint";
 
     @Value("${config.data_path}")
     private String configDataPath;
@@ -419,7 +421,7 @@ public class JwtService {
      * @return array of scope(s), e.g. "read:labels"
      */
     public String[] getJWTScope(String jwtToken) {
-        String value = getJWTClaimValue(jwtToken, "scope");
+        String value = getJWTClaimValue(jwtToken, JWT_CLAIM_SCOPE);
         if (value != null && value.length() > 0) {
             return value.split(" ");
         }
