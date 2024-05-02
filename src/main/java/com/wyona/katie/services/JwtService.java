@@ -287,7 +287,7 @@ public class JwtService {
     /**
      * Check whether JWT is valid
      * https://auth0.com/docs/tokens/access-tokens/validate-access-tokens
-     * @param publicKey Custom public key
+     * @param publicKey Optional custom public key, e.g. to validate token from an external provider, like for example Microsoft
      * @return true when token is valid and false otherwise
      */
     public boolean isJWTValid(String jwtToken, java.security.PublicKey publicKey) {
