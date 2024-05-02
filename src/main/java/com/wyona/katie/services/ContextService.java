@@ -576,9 +576,30 @@ public class ContextService {
 
         String yes = messageSource.getMessage("feedback.yes", null, new Locale(language));
         String no = messageSource.getMessage("feedback.no", null, new Locale(language));
-        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID) + "</a></p>");
+        String jwtToken = generateJWTAccessToken("/" + domain.getId() + "/classification/labels", JwtService.SCOPE_READ_LABELS, 259200);
+        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "</a></p>");
 
         return Utils.convertHtmlToTOPdeskHtml(sb.toString());
+    }
+
+    /**
+     *
+     */
+    private String generateJWTAccessToken(String endpoint, String scope, long seconds) {
+        JWTPayload jwtPayload = new JWTPayload();
+        jwtPayload.setIss("Katie");
+        HashMap<String, String> claims = new HashMap<String, String>();
+        claims.put(jwtService.JWT_CLAIM_ENDPOINT, endpoint);
+        claims.put(jwtService.JWT_CLAIM_SCOPE, scope);
+
+        jwtPayload.setPrivateClaims(claims);
+
+        try {
+            return jwtService.generateJWT(jwtPayload, seconds, null);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
     /**
@@ -591,8 +612,12 @@ public class ContextService {
     /**
      * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
      */
-    private String labelsNotHelpfulLink(Context domain, String requestUUID) {
-        return domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=false";
+    private String labelsNotHelpfulLink(Context domain, String requestUUID, String jwtToken) {
+        String link = domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=false";
+        if (jwtToken != null) {
+            link = link + "&token=" + jwtToken;
+        }
+        return link;
     }
 
     /**
