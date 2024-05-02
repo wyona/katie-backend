@@ -41,6 +41,8 @@ public class JwtService {
     public static final String JWT_CLAIM_SCOPE = "scope";
     public static final String JWT_CLAIM_ENDPOINT = "endpoint";
 
+    public static final String SCOPE_READ_LABELS = "read:labels";
+
     @Value("${config.data_path}")
     private String configDataPath;
 
