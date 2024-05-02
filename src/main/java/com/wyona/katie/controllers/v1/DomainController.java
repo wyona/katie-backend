@@ -56,6 +56,9 @@ public class DomainController {
     private AuthenticationService authenticationService;
 
     @Autowired
+    private JwtService jwtService;
+
+    @Autowired
     private DataRepositoryService dataRepoService;
 
     @Autowired
@@ -1110,7 +1113,7 @@ public class DomainController {
         }
 
         try {
-            Context domain = domainService.getDomain(id);
+            Context domain = domainService.getDomain(id); // INFO: Checks authorization
 
             // TODO: Implement offset and limit
             int offset = 0;
@@ -1139,10 +1142,9 @@ public class DomainController {
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
-        try {
-            authenticationService.tryJWTLogin(request);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
+        if (!domainService.isAuthorized(id, request, "/" + id + "/classification/labels", JwtService.SCOPE_READ_LABELS)) {
+            log.warn("Not authorized to get classification labels");
+            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
         }
 
         if (!domainService.existsContext(id)) {
@@ -1150,7 +1152,7 @@ public class DomainController {
         }
 
         try {
-            Context domain = domainService.getDomain(id);
+            Context domain = domainService.getContext(id); // INFO: Does not check authorization
 
             // TODO: Implement offset and limit
             int offset = 0;
