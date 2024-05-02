@@ -22,10 +22,7 @@ import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Date;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,10 +41,6 @@ public class JwtService {
 
     @Value("${config.data_path}")
     private String configDataPath;
-
-    @Autowired
-    public JwtService() {
-    }
 
     /**
      * Generate identity JWT token
@@ -420,6 +413,17 @@ public class JwtService {
             log.warn(e.getMessage());
             return -1;
         }
+    }
+
+    /**
+     * @return array of scope(s), e.g. "read:labels"
+     */
+    public String[] getJWTScope(String jwtToken) {
+        String value = getJWTClaimValue(jwtToken, "scope");
+        if (value != null && value.length() > 0) {
+            return value.split(" ");
+        }
+        return null;
     }
 
     /**
