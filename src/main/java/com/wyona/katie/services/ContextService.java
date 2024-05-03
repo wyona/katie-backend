@@ -2360,7 +2360,7 @@ public class ContextService {
     /**
      * @return true when scope is contained by array of scopes
      */
-    private boolean containsScope(String[] scopes, String scope) {
+    public boolean containsScope(String[] scopes, String scope) {
         if (scopes != null && scopes.length > 0) {
             for (String _scope : scopes) {
                 if (_scope.equals(scope)) {
