@@ -96,7 +96,7 @@ public class SlackController {
                 return new ResponseEntity<>(new Error("Approval failed", "APPROVAL_FAILED"), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } catch(AccessDeniedException e) {
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
