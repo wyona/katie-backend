@@ -75,6 +75,14 @@ public class DomainService {
         String teamId = jwtService.getJWTClaimValue(token, JWTClaims.TEAM_ID);
         String channelId = jwtService.getJWTClaimValue(token, JWTClaims.CHANNEL_ID);
 
+        // TODO: Use scope instead comparing tokens below
+        String[] scopes = jwtService.getJWTScope(token);
+        if (contextService.containsScope(scopes, jwtService.SCOPE_CONNECT_WITH_DOMAIN)) {
+            log.info("Authorized to connect Slack channel with Katie domain.");
+        } else {
+            log.warn("Not authorized to connect Slack channel with Katie domain!");
+        }
+
         SlackDomainMapping mapping = getDomainMappingForSlackTeamChannel(teamId, channelId);
         if (mapping != null && mapping.getApprovalToken().equals(token)) {
             if (mapping.getStatus() == ConnectStatus.APPROVED) {

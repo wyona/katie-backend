@@ -559,6 +559,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         HashMap<String, String> claims = new HashMap<String, String>();
         claims.put(JWTClaims.TEAM_ID, teamId);
         claims.put(JWTClaims.CHANNEL_ID, channelId);
+        claims.put(jwtService.JWT_CLAIM_SCOPE, jwtService.SCOPE_CONNECT_WITH_DOMAIN);
 
         // TODO: Not really used
         claims.put(JWTClaims.DOMAIN_ID, domainId);
@@ -1811,7 +1812,9 @@ public class SlackMessageSender extends CommonMessageSender  {
         HashMap<String, String> claims = new HashMap<String, String>();
         claims.put(JWT_CLAIM_UUID, uuid);
         claims.put(JWT_CLAIM_QUESTION_ASKED, question);
-        elementNode.put("value", jwtService.generateJWT(null, domain.getId(), 600, claims)); // TODO: Make token validity configurable
+        String jwtToken = jwtService.generateJWT(null, domain.getId(), 600, claims); // TODO: Make token validity configurable
+
+        elementNode.put("value", jwtToken);
         elementNode.put("action_id", "" + ChannelAction.GET_PROTECTED_ANSWER);
 
         return actionsNode;
