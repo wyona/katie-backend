@@ -2334,7 +2334,7 @@ public class ContextService {
         if (jwtToken != null) {
             // INFO: Check token validity, but do not login user
             if (jwtService.isJWTValid(jwtToken, null)) {
-                String jwtTokenEndpoint = jwtService.getJWTClaimValue(jwtToken, "endpoint");
+                String jwtTokenEndpoint = jwtService.getJWTClaimValue(jwtToken, jwtService.JWT_CLAIM_ENDPOINT);
                 if (jwtTokenEndpoint != null && jwtTokenEndpoint.equals(endpoint)) {
                     String[] scopes = jwtService.getJWTScope(jwtToken);
                     if (containsScope(scopes, scope)) {
