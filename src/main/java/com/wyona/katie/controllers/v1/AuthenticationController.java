@@ -54,10 +54,10 @@ public class AuthenticationController {
     private HttpServletRequest request;
 
     /**
-     * Create generic JWT token
+     * Create generic JWT token (only Administrators)
      */
     @RequestMapping(value = "/token/generic", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Create generic JWT token")
+    @ApiOperation(value="Create generic JWT token (only Administrators)")
     public ResponseEntity<?> generateGenericJWT(@RequestBody JWTPayload payload,
         @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
@@ -65,7 +65,7 @@ public class AuthenticationController {
         HttpServletResponse response) {
 
         if (!domainService.isAdmin()) {
-            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
 
         try {
