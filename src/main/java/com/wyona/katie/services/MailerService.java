@@ -94,12 +94,16 @@ public class MailerService {
     /**
      * Send email
      * @param email Email address to which email will be sent, e.g. michael.wechner@wyona.com
-     * @param fromEmail Sender email, e.g. "no-reply@wyona.com" or "Katie <no-reply@katie.qa>"
+     * @param fromEmail Optional sender email, e.g. "no-reply@wyona.com" or "Katie <no-reply@katie.qa>"
      * @param subject Email subject
      * @param text Email body text
      * @param isHTMLMessage If true, then text is HTML
      */
     public void send(String email, String fromEmail, String subject, String text, boolean isHTMLMessage) throws MessagingException {
+        if (fromEmail == null) {
+            fromEmail = mailDefaultSenderAddress;
+        }
+
         if (false) { // TODO: Add global switch (or per domain) to disable notifications
             log.info("Don't send email to '" + email + "', because notifications have been disabled.");
         } else {
