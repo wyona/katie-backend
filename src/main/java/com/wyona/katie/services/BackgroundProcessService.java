@@ -12,23 +12,25 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.*;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
 public class BackgroundProcessService {
+
+    @Value("${new.context.mail.body.host}")
+    private String katieHost;
 
     @Value("${background.processes.data_path}")
     private String processesDataPath;
 
     @Autowired
     private XMLService xmlService;
+
+    @Autowired
+    private MailerService mailerService;
 
     private static final String NAMESPACE_1_0_0 = "http://katie.qa/background-process/1.0.0";
 
@@ -98,6 +100,40 @@ public class BackgroundProcessService {
             log.error(e.getMessage(), e);
         }
         //processStatusFile.delete();
+
+        if (true) { // TODO: Make configurable
+            notifyUsers(id);
+        }
+    }
+
+    /**
+     * Notify users when error(s) occured during the execution of a background process
+     * @param id Process Id
+     */
+    private void notifyUsers(String id) {
+        boolean errorOccured = false;
+
+        try {
+            BackgroundProcess backgroundProcess = getStatusOfCompletedProcess(id);
+            for (String description : backgroundProcess.getStatusDescriptions()) {
+                log.info("Description: " + description);
+                if (description.startsWith(BackgroundProcessStatusType.ERROR.toString())) {
+                    errorOccured = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (errorOccured) {
+            // TODO: If background process is connected with a domain, the notify owners and administrators of domain about error(s)
+            String subject = "WARNING: Error(s) occurred during the execution of a background process";
+            StringBuilder body = new StringBuilder("Error(s) occurred during the execution of the background process " + id + "");
+            body.append("\n\n");
+            body.append(katieHost + "/swagger-ui/#/background-process-controller/getStatusOfCompletedProcessUsingGET");
+            mailerService.notifyAdministrator(subject, body.toString(), null, false);
+        }
     }
 
     /**
@@ -136,7 +172,7 @@ public class BackgroundProcessService {
      */
     public BackgroundProcess getStatusOfRunningProcess(String id) throws Exception {
         File processStatusFile = getStatusFileOfRunningProcess(id);
-        return getStatus(id, processStatusFile);
+        return getStatusLog(id, processStatusFile);
     }
 
     /**
@@ -145,14 +181,14 @@ public class BackgroundProcessService {
      */
     public BackgroundProcess getStatusOfCompletedProcess(String id) throws Exception {
         File processStatusFile = getStatusFileOfCompletedProcess(id);
-        return getStatus(id, processStatusFile);
+        return getStatusLog(id, processStatusFile);
     }
 
     /**
-     * Get status of a running process
-     * @param id Process Id
+     * Get status log of a running or completed background process
+     * @param id Background process Id
      */
-    private BackgroundProcess getStatus(String id, File processStatusFile) throws Exception {
+    private BackgroundProcess getStatusLog(String id, File processStatusFile) throws Exception {
         Document doc = xmlService.read(processStatusFile);
         BackgroundProcess process = new BackgroundProcess(id);
         Element rootEl = doc.getDocumentElement();
@@ -161,6 +197,7 @@ public class BackgroundProcessService {
         NodeList statusList = rootEl.getElementsByTagName("status");
         for (int i = 0; i < statusList.getLength(); i++) {
             Element statusEl = (Element) statusList.item(i);
+            // TODO: Introduce / Use BackgroundProcessStatus object
             String type = statusEl.getAttribute("type");
             process.addStatusDescription(type + " --- " + statusEl.getAttribute("description"));
         }
