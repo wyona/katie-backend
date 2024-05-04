@@ -1180,7 +1180,8 @@ public class XMLService {
      * Parse members configuration file of domain
      * @param domainId Domain Id
      * @param onlyExperts If true, then only return users which are experts
-     * @param onlyModerators If true, then only return users which are moderators 
+     * @param onlyModerators If true, then only return users which are moderators
+     * @return users, including user Id, user role, but without first or last name, etc.
      */
     public User[] getMembers(String domainId, boolean onlyExperts, boolean onlyModerators) throws Exception {
         File config = getDomainMembersConfig(domainId);
