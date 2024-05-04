@@ -89,7 +89,7 @@ public class ConnectorService {
                     String msg = "Knowledge source '" + domainId + " / " + ksId + "' is disabled.";
                     log.warn(msg);
                     backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.WARN);
-                    backgroundProcessService.stopProcess(processId);
+                    backgroundProcessService.stopProcess(processId, domainId);
                     return;
                 }
                 Context domain = domainService.getContext(domainId);
@@ -139,7 +139,7 @@ public class ConnectorService {
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
 
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domainId);
     }
 
     /**

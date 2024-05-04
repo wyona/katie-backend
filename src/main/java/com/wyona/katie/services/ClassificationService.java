@@ -67,7 +67,7 @@ public class ClassificationService {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
-        backgroundProcessService.stopProcess(bgProcessId);
+        backgroundProcessService.stopProcess(bgProcessId, domain.getId());
     }
 
     /**

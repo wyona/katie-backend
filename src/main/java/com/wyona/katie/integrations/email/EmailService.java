@@ -197,7 +197,7 @@ public class EmailService {
         stats.append(", number-of-answers: " + numberOfAnswers);
 
         backgroundProcessService.updateProcessStatus(processId, "All unread emails processed: " + stats.toString());
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domain.getId());
     }
 
     /**

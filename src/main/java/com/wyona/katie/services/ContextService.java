@@ -226,6 +226,21 @@ public class ContextService {
     }
 
     /**
+     *
+     */
+    public void notifyDomainOwnersAndAdmins(String subject, String message, String domainId) {
+        try {
+            User[] owners = getMembers(domainId, false, RoleDomain.OWNER);
+            mailerService.notifyUsers(owners, subject, message);
+
+            User[] admins = getMembers(domainId, false, RoleDomain.ADMIN);
+            mailerService.notifyUsers(admins, subject, message);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Notify experts to answer resubmitted question
      * @param question Resubmitted question
      * @param email Email of user which submitted question
@@ -1432,7 +1447,7 @@ public class ContextService {
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
 
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domainId);
         removeReindexLock(domainId);
     }
 
@@ -2450,7 +2465,7 @@ public class ContextService {
             classificationService.importSample(domain, sample);
         }
         backgroundProcessService.updateProcessStatus(processId, "Import finished");
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domain.getId());
     }
 
     /**
@@ -2515,7 +2530,7 @@ public class ContextService {
             }
         }
 
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domain.getId());
     }
 
     /**
@@ -3697,7 +3712,7 @@ public class ContextService {
             addToUuidUrlIndex(uuid, url, domain);
         }
 
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, domain.getId());
     }
 
     /**

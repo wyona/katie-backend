@@ -1,7 +1,6 @@
 package com.wyona.katie.services;
 
-import com.wyona.katie.models.BackgroundProcess;
-import com.wyona.katie.models.BackgroundProcessStatusType;
+import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,9 @@ public class BackgroundProcessService {
 
     @Autowired
     private MailerService mailerService;
+
+    @Autowired
+    private IAMService iamService;
 
     private static final String NAMESPACE_1_0_0 = "http://katie.qa/background-process/1.0.0";
 
@@ -84,9 +86,11 @@ public class BackgroundProcessService {
     }
 
     /**
+     * Stop background process
      * @param id Process Id
+     * @param domainId Optional domain Id
      */
-    public void stopProcess(String id) {
+    public void stopProcess(String id, String domainId) {
         if (id == null) {
             log.warn("No process Id provided.");
             return;
@@ -102,15 +106,16 @@ public class BackgroundProcessService {
         //processStatusFile.delete();
 
         if (true) { // TODO: Make configurable
-            notifyUsers(id);
+            notifyUsers(id, domainId);
         }
     }
 
     /**
      * Notify users when error(s) occured during the execution of a background process
      * @param id Process Id
+     * @param domainId Domain Id
      */
-    private void notifyUsers(String id) {
+    private void notifyUsers(String id, String domainId) {
         boolean errorOccured = false;
 
         try {
@@ -127,12 +132,27 @@ public class BackgroundProcessService {
         }
 
         if (errorOccured) {
-            // TODO: If background process is connected with a domain, the notify owners and administrators of domain about error(s)
             String subject = "WARNING: Error(s) occurred during the execution of a background process";
             StringBuilder body = new StringBuilder("Error(s) occurred during the execution of the background process " + id + "");
             body.append("\n\n");
             body.append(katieHost + "/swagger-ui/#/background-process-controller/getStatusOfCompletedProcessUsingGET");
-            mailerService.notifyAdministrator(subject, body.toString(), null, false);
+
+            if (domainId != null) {
+                try {
+                    User[] users = xmlService.getMembers(domainId, false, false);
+                    for (User user : users) {
+                        if (user.getDomainRole().equals(RoleDomain.ADMIN) || user.getDomainRole().equals(RoleDomain.OWNER)) {
+                            user = iamService.getUserByIdWithoutAuthCheck(user.getId());
+                            log.info("Notify user " + user.getFirstname() + " (" + user.getEmail()+ ") about occured error(s) ...");
+                            mailerService.send(user.getEmail(), null, subject, body.toString(), false);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else {
+                mailerService.notifyAdministrator(subject, body.toString(), null, false);
+            }
         }
     }
 

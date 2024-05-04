@@ -215,7 +215,7 @@ public class BenchmarkService {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
-        backgroundProcessService.stopProcess(processId);
+        backgroundProcessService.stopProcess(processId, null);
     }
 
     /**

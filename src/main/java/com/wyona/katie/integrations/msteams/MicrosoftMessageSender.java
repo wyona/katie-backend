@@ -521,7 +521,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
             String body = getMailBodyForRegisteringMSTeamsUser(userName, userId, domainId);
             notifyAdministrators(subject, body);
             if (domainId != null) {
-                notifyDomainOwnersAndAdmins(subject, body, domainId);
+                contextService.notifyDomainOwnersAndAdmins(subject, body, domainId);
             }
 
             responseMsg.setText("Katie System Administrator has been notified re Katie registration request of user '" + userName + "' (" + userId + ").");
@@ -577,26 +577,12 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     }
 
     /**
+     * TODO: Move this method to Katie core
      * Notify administrators of Katie instance
      */
     private void notifyAdministrators(String subject, String message) throws Exception {
         User[] admins = iamService.getAdministrators();
         mailerService.notifyUsers(admins, subject, message);
-    }
-
-    /**
-     *
-     */
-    private void notifyDomainOwnersAndAdmins(String subject, String message, String domainId) {
-        try {
-            User[] owners = contextService.getMembers(domainId, false, RoleDomain.OWNER);
-            mailerService.notifyUsers(owners, subject, message);
-
-            User[] admins = contextService.getMembers(domainId, false, RoleDomain.ADMIN);
-            mailerService.notifyUsers(admins, subject, message);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
     }
 
     /**
