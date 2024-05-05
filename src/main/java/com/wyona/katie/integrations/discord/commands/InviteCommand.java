@@ -1,11 +1,14 @@
 package com.wyona.katie.integrations.discord.commands;
 
 import com.wyona.katie.integrations.discord.listeners.DiscordNewMessageListener;
+import com.wyona.katie.integrations.discord.services.DiscordDomainService;
 import com.wyona.katie.models.ChannelAction;
+import com.wyona.katie.models.discord.DiscordDomainMapping;
 import com.wyona.katie.services.Utils;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
@@ -16,11 +19,15 @@ import java.util.Locale;
 /**
  * Invite Katie to channel
  */
+@Slf4j
 @Component
 public class InviteCommand implements SlashCommand {
 
     @Autowired
     private ResourceBundleMessageSource messageSource;
+
+    @Autowired
+    private DiscordDomainService discordDomainService;
 
     @Override
     public String getName() {
@@ -32,7 +39,17 @@ public class InviteCommand implements SlashCommand {
         String guildId = event.getInteraction().getGuildId().get().asString();
         String channelId = event.getInteraction().getChannelId().asString();
 
-        // TODO: Check whether channel already connected with Katie domain
+        try {
+            log.info("Check whether channel already connected with Katie domain");
+            DiscordDomainMapping[] mappings = discordDomainService.getAllDomains(false);
+            for (DiscordDomainMapping mapping : mappings) {
+                if (mapping.getGuildId().equals(guildId) && mapping.getChannelId().equals(channelId)) {
+                    log.warn("Discord channel '" + guildId + " / " + channelId+ "' already connected with Katie domain '" + mapping.getDomainId() + "'.");
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         // TODO: Add buttons
         ActionRow buttons = getButtons(guildId, channelId, "en");

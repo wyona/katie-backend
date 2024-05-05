@@ -8,6 +8,7 @@ import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.QuestionAnsweringService;
 import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -161,15 +162,15 @@ public class DiscordBotController {
      * Get all Katie domains which are connected with Discord channels
      */
     @RequestMapping(value = "/domains", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all Katie domains which are connected with Discord channels")
+    @Operation(summary="Get all Katie domains which are connected with Discord channels")
     public ResponseEntity<?> getDomains(
             HttpServletRequest request
     ) {
         try {
-            DiscordDomainMapping[] mappings = discordDomainService.getAllDomains();
+            DiscordDomainMapping[] mappings = discordDomainService.getAllDomains(true);
             return new ResponseEntity<>(mappings, HttpStatus.OK);
         } catch(AccessDeniedException e) {
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
     }
 }

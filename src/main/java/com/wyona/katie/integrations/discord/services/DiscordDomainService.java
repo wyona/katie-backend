@@ -118,13 +118,14 @@ public class DiscordDomainService {
 
     /**
      * Get all domains which are connected with Discord channels
+     * @param checkAuthorization True when authorization must be checked
      */
-    public DiscordDomainMapping[] getAllDomains() throws  AccessDeniedException {
-        if (domainService.isAdmin()) {
+    public DiscordDomainMapping[] getAllDomains(boolean checkAuthorization) throws  AccessDeniedException {
+        if (checkAuthorization && !domainService.isAdmin()) {
+            throw new AccessDeniedException("User has not role " + Role.ADMIN + "!");
+        } else {
             DiscordDomainMapping[] mappings = dataRepositoryService.getAllDomainsConnectedWithDiscordChannels();
             return mappings;
-        } else {
-            throw new AccessDeniedException("User has not role " + Role.ADMIN + "!");
         }
     }
 }
