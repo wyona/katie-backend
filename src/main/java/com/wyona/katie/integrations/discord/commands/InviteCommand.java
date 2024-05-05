@@ -45,6 +45,7 @@ public class InviteCommand implements SlashCommand {
 
         String domainId = alreadyConnectedWithADomain(guildId, channelId);
         if (domainId != null) {
+            // TODO: Use messageSource / i18n
             return event.reply()
                     .withEphemeral(true)
                     .withContent("Channel " + channelId + " (Guild Id: " + guildId + ") is already connected with domain " + katieHost + "/#/domain/" + domainId);
@@ -54,7 +55,10 @@ public class InviteCommand implements SlashCommand {
         ActionRow buttons = getButtons(guildId, channelId, "en");
         //client.get().getChannelById(Snowflake.of(channelId)).ofType(MessageChannel.class).flatMap(channel -> channel.createMessage(msg).withMessageReference(Snowflake.of(msgId)).withComponents(buttons)).subscribe();
 
-        String msg = messageSource.getMessage("hi.my.name.is.katie.ask.create.connect.domain", null, new Locale("en")) + " (Guild Id: " + guildId + ", Channel Id: " + channelId + ")";
+        String[] args = new String[2];
+        args[0] = guildId;
+        args[1] = channelId;
+        String msg = messageSource.getMessage("hi.my.name.is.katie.ask.create.connect.domain", args, new Locale("en"));
         // We reply to the invite command and make sure it is ephemeral (only the command user can see it)
         return event.reply()
             .withEphemeral(true)
