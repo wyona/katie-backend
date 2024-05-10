@@ -319,6 +319,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
 
         try {
             IndexReader reader = DirectoryReader.open(getIndexDirectory(domain));
+            StoredFields storedFields = reader.storedFields();
             IndexSearcher searcher = new IndexSearcher(reader);
             Analyzer analyzer = initAnalyzer();
 
@@ -346,7 +347,9 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
                 for (ScoreDoc hit : results.scoreDocs) {
                     log.info("Lucene hit: " + hit.toString());
                     //log.info("Lucene Score: " + hit.score);
-                    Document doc = searcher.doc(hit.doc);
+                    //Document doc = searcher.doc(hit.doc);
+                    Document doc = storedFields.document(hit.doc);
+
                     String akUuid = doc.get(PATH_FIELD);
                     String orgQuestion = null;
                     if (akUuid != null) {
