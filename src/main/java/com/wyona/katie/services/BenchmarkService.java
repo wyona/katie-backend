@@ -73,6 +73,9 @@ public class BenchmarkService {
     @Autowired
     private AIService aiService;
 
+    @Autowired
+    private ClassificationService classificationService;
+
     @Value("${benchmarks.data_path}")
     private String benchmarksDataPath;
 
@@ -231,9 +234,42 @@ public class BenchmarkService {
             LocalDateTime currentDateTime = LocalDateTime.now();
             String benchmarkId = getBenchmarkId(currentDateTime);
 
+            HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId);
+            int successful = 0;
+            int failed = 0;
+            int total = preferences.length;
+            for (HumanPreferenceLabel preference : preferences) {
+                if (throttleTimeInMillis > 0) {
+                    try {
+                        log.info("Sleep for " + throttleTimeInMillis + " milliseconds ...");
+                        Thread.sleep(throttleTimeInMillis);
+                    } catch(Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+                HitLabel[] labels = classificationService.predictLabels(domain, preference.getText(), 3);
+                if (labels != null && labels.length > 0) {
+                    backgroundProcessService.updateProcessStatus(processId, "Classify text '" + preference.getText() + "' and compare prediction with preference ...");
+                    if (preference.getChosenLabel() != null && labels[0].getLabel().getId().equals(preference.getChosenLabel().getId())) {
+                        backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference match");
+                        successful++;
+                    } else {
+                        backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference do not match", BackgroundProcessStatusType.WARN);
+                        failed++;
+                    }
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "No labels predicted for text '" + preference.getText() + "'", BackgroundProcessStatusType.WARN);
+                    failed++;
+                }
+            }
+
+            double accuracy = Double.valueOf(successful) / Double.valueOf(total);
+            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failed + ")";
+            backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
+
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
-                String body = "<div>TODO</div>";
+                String body = "<div>" + benchmarkResult + "</div>";
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
             }
         } catch (Exception e) {
