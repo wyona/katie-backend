@@ -3950,7 +3950,7 @@ public class ContextService {
     public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId) throws Exception {
         List<HumanPreferenceLabel> preferences = new ArrayList<>();
 
-        Context domain = getDomain(domainId);
+        Context domain = getContext(domainId);
         File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
         File[] ratingFiles = ratingsDir.listFiles();
         ObjectMapper mapper = new ObjectMapper();
