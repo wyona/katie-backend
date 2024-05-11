@@ -210,7 +210,7 @@ public class BenchmarkService {
 
             if (email != null) {
                 String subject = mailSubjectTag + " Benchmark completed (" + benchmarkId + ")";
-                mailerService.send(email, domain.getMailSenderEmail(), subject, getBenchmarkCompletedEmailBody(domain.getHost(), benchmarkInfo, "en"), true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getCompletedBenchmarkEmailBody(domain.getHost(), benchmarkInfo, "en"), true);
             }
 
             backgroundProcessService.updateProcessStatus(processId, "Benchmark finished: " + benchmarkId);
@@ -236,7 +236,7 @@ public class BenchmarkService {
 
             HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId);
             int successful = 0;
-            int failed = 0;
+            List<HumanPreferenceLabel> failedPredictions = new ArrayList<>();
             int total = preferences.length;
             for (HumanPreferenceLabel preference : preferences) {
                 if (throttleTimeInMillis > 0) {
@@ -255,22 +255,24 @@ public class BenchmarkService {
                         successful++;
                     } else {
                         backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference do not match", BackgroundProcessStatusType.WARN);
-                        failed++;
+                        failedPredictions.add(preference);
                     }
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "No labels predicted for text '" + preference.getText() + "'", BackgroundProcessStatusType.WARN);
-                    failed++;
+                    failedPredictions.add(preference);
                 }
             }
 
             double accuracy = Double.valueOf(successful) / Double.valueOf(total);
-            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failed + ")";
+            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ")";
             backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
+
+            // TODO: List the failed ones, such that these can be improved
 
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
-                String body = "<div>" + benchmarkResult + "</div>";
-                mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
+
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getConpletedClassificationBenchmarkEmailBody(benchmarkResult, failedPredictions), true);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -281,9 +283,32 @@ public class BenchmarkService {
     }
 
     /**
+     *
+     */
+    private String getConpletedClassificationBenchmarkEmailBody(String benchmarkResult, List<HumanPreferenceLabel> failedPredictions) {
+        StringBuilder body = new StringBuilder("<div>" + benchmarkResult + "</div>");
+        body.append("<h3>Failed predictions</h3>");
+        body.append("<ol>");
+        for (HumanPreferenceLabel failedPrediction : failedPredictions) {
+            body.append("<li>Text: " + failedPrediction.getText() + " (");
+            body.append("Wrong label: " + failedPrediction.getRejectedLabel().getTerm());
+            body.append(" | Correct label: ");
+            if (failedPrediction.getChosenLabel() != null) {
+                body.append(failedPrediction.getChosenLabel().getTerm());
+            } else {
+                body.append("No correct label provided by human feedback");
+            }
+            body.append(")</li>");
+        }
+        body.append("</ol>");
+
+        return body.toString();
+    }
+
+    /**
      * Get email body containing information about completed benchmark
      */
-    private String getBenchmarkCompletedEmailBody(String hostname, BenchmarkInfo benchmarkInfo, String userLanguage) throws Exception {
+    private String getCompletedBenchmarkEmailBody(String hostname, BenchmarkInfo benchmarkInfo, String userLanguage) throws Exception {
         BenchmarkResult[] benchmarkResults = getBenchmarkResults(benchmarkInfo.getId());
         // TODO: Make reference benchmark configurable or add to dataset
         String referenceBenchmarkId = "231005_210106";
