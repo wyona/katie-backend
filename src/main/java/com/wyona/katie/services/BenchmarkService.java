@@ -219,6 +219,32 @@ public class BenchmarkService {
     }
 
     /**
+     * TODO
+     */
+    @Async
+    public void runClassificationBenchmark(String domainId, int throttleTimeInMillis, String email, User user, String processId) {
+        backgroundProcessService.startProcess(processId, "Run classification benchmark ...", user.getId());
+
+        try {
+            Context domain = contextService.getContext(domainId);
+
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            String benchmarkId = getBenchmarkId(currentDateTime);
+
+            if (email != null) {
+                String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
+                String body = "<div>TODO</div>";
+                mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
+
+        backgroundProcessService.stopProcess(processId, domainId);
+    }
+
+    /**
      * Get email body containing information about completed benchmark
      */
     private String getBenchmarkCompletedEmailBody(String hostname, BenchmarkInfo benchmarkInfo, String userLanguage) throws Exception {
