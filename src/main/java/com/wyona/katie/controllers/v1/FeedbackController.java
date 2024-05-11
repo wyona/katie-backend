@@ -7,8 +7,8 @@ import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.RememberMeService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +44,7 @@ public class FeedbackController {
      * REST interface such that user can rate received answer
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rate-answer", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Rate answer to question")
+    @Operation(summary = "Rate answer to question")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
@@ -120,7 +120,7 @@ public class FeedbackController {
      * TODO: Filtering, Sorting, Pagination: https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
      */
     @RequestMapping(value = "/ratings-of-answers", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get ratings of answers to asked questions (as preference dataset)")
+    @Operation(summary = "Get ratings of answers to asked questions (as preference dataset)")
     public ResponseEntity<?> getRatingsOfAnswersToAskedQuestions(
             @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
@@ -164,7 +164,7 @@ public class FeedbackController {
      * REST interface such that user can rate predicted labels
      */
     @RequestMapping(value = "/rate-predicted-labels", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Rate predicted labels")
+    @Operation(summary = "Rate predicted labels")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
@@ -233,7 +233,7 @@ public class FeedbackController {
      * TODO: Filtering, Sorting, Pagination: https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
      */
     @RequestMapping(value = "/ratings-of-predicted-labels", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get ratings of predicted labels (as preference dataset)")
+    @Operation(summary = "Get ratings of predicted labels (as preference dataset)")
     public ResponseEntity<?> getRatingsOfPredictedLabels(
             @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
