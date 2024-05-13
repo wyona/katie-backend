@@ -33,6 +33,18 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
     public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
+        String requestUrl = openAIHost + "/v1/engines/" + openAIModel + "/embeddings";
+
+        // INFO: OpenAI compatible embedding endpoint
+        //String requestUrl = "http://localhost:3000/v1/embeddings";
+
+        return getEmbeddingFromOpenAICompatibleInterface(requestUrl, sentence, openAIKey);
+    }
+
+    /**
+     * @param requestUrl URL of OpenAI compatible embedding endpoint, e.g. "http://localhost:3000/v1/embeddings"
+     */
+    protected Vector getEmbeddingFromOpenAICompatibleInterface(String requestUrl, String sentence, String token) throws Exception {
         log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;
@@ -42,10 +54,8 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
             inputNode.put("input", sentence);
 
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = getHttpHeaders(openAIKey);
+            HttpHeaders headers = getHttpHeaders(token);
             HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
-
-            String requestUrl = openAIHost + "/v1/engines/" + openAIModel + "/embeddings";
 
             log.info("Get embedding: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
