@@ -35,6 +35,9 @@ services:
       # Discord https://app.katie.qa/discord.html
       - DISCORD_ENABLED=false
       - DISCORD_BOT_TOKEN=TODO
+      # MS Teams Credentials, such that Katie can reply to MS Teams messages, https://app.katie.qa/ms-teams.html
+      - MS_CLIENT_ID=TODO
+      - MS_CLIENT_SECRET=TODO
       # Question classification implementation
       - QC_IMPLEMENTATION=OPEN_NLP
     ports:
