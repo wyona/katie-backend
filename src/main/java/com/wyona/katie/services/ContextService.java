@@ -1406,6 +1406,7 @@ public class ContextService {
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
+     * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken Embedding implementation API token
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
      * @param indexAllQnAs When set to true, then index all QnAs, also the ones which were not indexed yet
@@ -1413,7 +1414,7 @@ public class ContextService {
      * @param userId Id of signed in user
      */
     @Async
-    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
+    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
         if (existsReindexLock(domainId)) {
             String existingProcessId = getReindexProcessId(domainId);
             log.warn("Reindexing of domain '" + domainId + "' already in progress (Process Id: " + existingProcessId + "), therefore no other reindex process will be started.");
@@ -1441,7 +1442,7 @@ public class ContextService {
          */
 
         try {
-            reindex(domainId, detectDuplicatedQuestionsImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
+            reindex(domainId, detectDuplicatedQuestionsImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -1496,13 +1497,14 @@ public class ContextService {
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
+     * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken Embedding implementation API token
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
      * @param indexAllQnAs When set to true, then index all QnAs, also the ones which were not indexed yet
      * @param processId Background process UUID
      * @param throttleTimeInMillis Time in milliseconds to throttle re-indexing, because OpenAI, Cohere, etc. do have rate limits
      */
-    protected void reindex(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
+    protected void reindex(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
         Context domain = getContext(domainId);
         log.info("Reindex domain '" + domainId + "' and replace current index implementation '" + domain.getDetectDuplicatedQuestionImpl() + "' by '" + detectDuplicatedQuestionsImpl+ "' ...");
 
@@ -1546,7 +1548,7 @@ public class ContextService {
         String aiServiceBaseUrl = aiService.createTenant(domain, detectDuplicatedQuestionsImpl);
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);
 
-        domain = setQuestionAnswerImplementation(domain, detectDuplicatedQuestionsImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingValueType, apiToken);
+        domain = setQuestionAnswerImplementation(domain, detectDuplicatedQuestionsImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken);
         saveDomainConfig(domain);
 
 
@@ -1827,8 +1829,9 @@ public class ContextService {
 
         String defaultEmbeddingModel = null; // TODO: Make configurable
         EmbeddingValueType defaultEmbeddingValueType = EmbeddingValueType.float32; // TODO: Make configurable
+        String defaultEmbeddingEndpoint = null; // TOOD: Make configurable
 
-        newContext = setQuestionAnswerImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, defaultEmbeddingValueType, newContext.getEmbeddingsApiToken());
+        newContext = setQuestionAnswerImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, defaultEmbeddingValueType, defaultEmbeddingEndpoint, newContext.getEmbeddingsApiToken());
         saveDomainConfig(newContext);
 
         return newContext;
@@ -1875,9 +1878,10 @@ public class ContextService {
      * @param aiServiceBaseUrl DeepKatie base URL or index or corpus Id, e.g. "https://deeppavlov.wyona.com" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
+     * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken API Token of Embeddings Implementation
      */
-    private Context setQuestionAnswerImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String apiToken) {
+    private Context setQuestionAnswerImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
         if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH)) {
@@ -1901,6 +1905,7 @@ public class ContextService {
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
             domain.setEmbeddingsImpl(embeddingImpl);
+            domain.setEmbeddingsEndpoint(embeddingEndpoint);
             domain.setEmbeddingsApiToken(apiToken);
 
             String vectorSimilarityMetric = defaultVectorSearchSimilarityMetric;

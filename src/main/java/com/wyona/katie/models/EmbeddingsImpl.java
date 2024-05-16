@@ -8,6 +8,7 @@ public enum EmbeddingsImpl {
     SBERT,
     OPENAI,
     OPENAI_AZURE,
+    OPENAI_COMPATIBLE,
     COHERE,
     ALEPH_ALPHA,
     NUMENTA,

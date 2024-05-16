@@ -33,29 +33,29 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
     public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
-        String requestUrl = openAIHost + "/v1/engines/" + openAIModel + "/embeddings";
+        // INFO: https://platform.openai.com/docs/guides/embeddings/what-are-embeddings
+        String requestUrl = openAIHost + "/v1/embeddings";
 
-        // INFO: OpenAI compatible embedding endpoint
-        //String requestUrl = "http://localhost:3000/v1/embeddings";
-
-        return getEmbeddingFromOpenAICompatibleInterface(requestUrl, sentence, openAIKey);
+        return getEmbeddingFromOpenAICompatibleInterface(requestUrl, openAIModel, sentence, openAIKey);
     }
 
     /**
-     * @param requestUrl URL of OpenAI compatible embedding endpoint, e.g. "http://localhost:3000/v1/embeddings"
+     * @param requestUrl URL of OpenAI compatible embedding endpoint, e.g. "http://localhost:3000/v1/embeddings" or "https://api.mistral.ai/v1/embeddings"
+     * @param modelName Model name, e.g. "mistral-embed"
      */
-    protected Vector getEmbeddingFromOpenAICompatibleInterface(String requestUrl, String sentence, String token) throws Exception {
-        log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
+    public Vector getEmbeddingFromOpenAICompatibleInterface(String requestUrl, String modelName, String sentence, String token) throws Exception {
+        log.info("Get embedding from OpenAI compatible endpoint for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            ObjectNode inputNode = mapper.createObjectNode();
-            inputNode.put("input", sentence);
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("input", sentence); // TODO: Array of strings for batch processing
+            rootNode.put("model", modelName);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(token);
-            HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
+            HttpEntity<String> request = new HttpEntity<String>(rootNode.toString(), headers);
 
             log.info("Get embedding: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);

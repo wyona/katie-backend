@@ -30,6 +30,7 @@ public class Context {
     private EmbeddingsImpl embeddingsImpl;
     private String embeddingsModel;
     private EmbeddingValueType embeddingValueType;
+    private String embeddingsEndpoint;
     private String embeddingsApiToken;
     private VectorSimilarityFunction vectorSimilarityMetric;
 
@@ -255,6 +256,20 @@ public class Context {
      */
     public EmbeddingValueType getEmbeddingValueType() {
         return embeddingValueType;
+    }
+
+    /**
+     * @param endpoint OpenAI compatble embeddings endpoint, e.g. https://api.mistral.ai/v1/embeddings
+     */
+    public void setEmbeddingsEndpoint(String endpoint) {
+        this.embeddingsEndpoint = endpoint;
+    }
+
+    /**
+     *
+     */
+    public String getEmbeddingsEndpoint() {
+        return embeddingsEndpoint;
     }
 
     /**

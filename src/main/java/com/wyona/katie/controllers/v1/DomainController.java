@@ -1528,7 +1528,7 @@ public class DomainController {
      * Reindex all QnAs of a particular domain
      */
     @RequestMapping(value = "/{id}/reindex", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Reindex all QnAs of a particular domain")
+    @Operation(summary = "Reindex all QnAs of a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
@@ -1547,6 +1547,8 @@ public class DomainController {
             @RequestParam(value = "embedding-model", required = false) String embeddingModel,
             @ApiParam(name = "embedding-value-type", value = "Embedding value type",required = false)
             @RequestParam(value = "embedding-value-type", required = false) EmbeddingValueType embeddingValueType,
+            @ApiParam(name = "embedding-endpoint", value = "OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings", required = false)
+            @RequestParam(value = "embedding-endpoint", required = false) String embeddingEndpoint,
             @ApiParam(name = "api-token", value = "Embedding implementation API token",required = false)
             @RequestParam(value = "api-token", required = false) String apiToken,
             @ApiParam(name = "index-alternative-questions", value = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
@@ -1619,7 +1621,7 @@ public class DomainController {
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
 
-        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
+        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
 
         /* INFO: Delay response to test frontend spinner
         try {

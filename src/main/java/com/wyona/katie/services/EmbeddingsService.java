@@ -45,7 +45,7 @@ public class EmbeddingsService {
      */
     public Vector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
         try {
-            return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsApiToken());
+            return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
         } catch (Exception e) {
             throw e;
         } finally {
@@ -81,12 +81,13 @@ public class EmbeddingsService {
      * Get embedding for a text
      * @param sentence Text
      * @param impl Embedding provider
-     * @param model Model of embeddings implementation
+     * @param model Model of embeddings implementation, e.g. "mistral-embed"
      * @param embeddingType Embedding type
+     * @param embeddingEndpoint OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken API token of embedding provider
      * @return embedding vector
      */
-    public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) throws Exception {
+    public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String embeddingEndpoint, String apiToken) throws Exception {
         Vector vector = null;
         if (impl.equals(EmbeddingsImpl.SBERT) || impl.equals(EmbeddingsImpl.UNSET)) {
             vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, apiToken);
@@ -94,6 +95,8 @@ public class EmbeddingsService {
             vector = openAIImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
             vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
+        } else if (impl.equals(EmbeddingsImpl.OPENAI_COMPATIBLE)) {
+            vector = openAIImpl.getEmbeddingFromOpenAICompatibleInterface(embeddingEndpoint, model, sentence, apiToken);
         } else if (impl.equals(EmbeddingsImpl.COHERE)) {
             log.info("Get embedding from Cohere (Model: " + model + ", Input Type: " + embeddingType + ", Value Type: " + valueType + ") ...");
             vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);

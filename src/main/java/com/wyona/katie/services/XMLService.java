@@ -138,6 +138,7 @@ public class XMLService {
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_MODEL_ATTR = "model";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR = "value-type";
+    private static final String CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR = "embeddings-endpoint";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR = "api-token";
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR = "similarity-metric";
 
@@ -1493,6 +1494,9 @@ public class XMLService {
             if (context.getEmbeddingValueType() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR, context.getEmbeddingValueType().toString());
             }
+            if (context.getEmbeddingsEndpoint() != null) {
+                luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR, context.getEmbeddingsEndpoint());
+            }
             if (context.getEmbeddingsApiToken() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR, context.getEmbeddingsApiToken());
             }
@@ -1664,6 +1668,7 @@ public class XMLService {
         EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.UNSET;
         String embeddingsModel = null;
         EmbeddingValueType embeddingValueType = null;
+        String embeddingsEndpoint = null;
         String embeddingsApiToken = null;
         String similarityMetricStr = null;
         NodeList luceneVectorSearchNL = doc.getElementsByTagName(CONTEXT_LUCENE_VECTOR_SEARCH_TAG);
@@ -1680,6 +1685,9 @@ public class XMLService {
                 embeddingValueType = EmbeddingValueType.valueOf(luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR));
             } else {
                 embeddingValueType = EmbeddingValueType.float32;
+            }
+            if (luceneVectorSearchEl.hasAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
+                embeddingsEndpoint = luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
             }
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR)) {
                 embeddingsApiToken = luceneVectorSearchEl.getAttribute(CONTEXT_LUCENE_VECTOR_SEARCH_API_TOKEN_ATTR);
@@ -1894,6 +1902,7 @@ public class XMLService {
             domain.setEmbeddingsImpl(embeddingsImpl);
             domain.setEmbeddingsModel(embeddingsModel);
             domain.setEmbeddingValueType(embeddingValueType);
+            domain.setEmbeddingsEndpoint(embeddingsEndpoint);
             domain.setEmbeddingsApiToken(embeddingsApiToken);
             if (similarityMetricStr != null) {
                 domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(similarityMetricStr));
