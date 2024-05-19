@@ -119,7 +119,7 @@ public class BackgroundProcessService {
         boolean errorOccured = false;
 
         try {
-            BackgroundProcess backgroundProcess = getStatusOfCompletedProcess(id);
+            BackgroundProcess backgroundProcess = getStatus(id);
             for (String description : backgroundProcess.getStatusDescriptions()) {
                 log.info("Description: " + description);
                 if (description.startsWith(BackgroundProcessStatusType.ERROR.toString())) {
@@ -187,28 +187,25 @@ public class BackgroundProcessService {
     }
 
     /**
-     * Get status of a running process
+     * Get status of a background process
      * @param id Process Id
      */
-    public BackgroundProcess getStatusOfRunningProcess(String id) throws Exception {
-        File processStatusFile = getStatusFileOfRunningProcess(id);
-        return getStatusLog(id, processStatusFile);
-    }
-
-    /**
-     * Get status of a completed process
-     * @param id Process Id
-     */
-    public BackgroundProcess getStatusOfCompletedProcess(String id) throws Exception {
-        File processStatusFile = getStatusFileOfCompletedProcess(id);
-        return getStatusLog(id, processStatusFile);
+    public BackgroundProcess getStatus(String id) throws Exception {
+        File completedProcessStatusFile = getStatusFileOfCompletedProcess(id);
+        if (completedProcessStatusFile.isFile()) {
+            return getStatusLog(id, completedProcessStatusFile, "COMPLETED");
+        } else {
+            return getStatusLog(id, getStatusFileOfRunningProcess(id), "IN_PROGRESS");
+        }
     }
 
     /**
      * Get status log of a running or completed background process
      * @param id Background process Id
+     * @param processStatusFile File containing status information
+     * @param status Process status, either "IN_PROGRESS" or "COMPLETED"
      */
-    private BackgroundProcess getStatusLog(String id, File processStatusFile) throws Exception {
+    private BackgroundProcess getStatusLog(String id, File processStatusFile, String status) throws Exception {
         Document doc = xmlService.read(processStatusFile);
         BackgroundProcess process = new BackgroundProcess(id);
         Element rootEl = doc.getDocumentElement();
@@ -221,6 +218,7 @@ public class BackgroundProcessService {
             String type = statusEl.getAttribute("type");
             process.addStatusDescription(type + " --- " + statusEl.getAttribute("description"));
         }
+        process.setStatus(status);
         return process;
     }
 }

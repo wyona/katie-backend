@@ -14,8 +14,8 @@ public class BackgroundProcess {
     private String id;
     private String userId;
     private String description;
-
-    List<String> statusDescriptions = new ArrayList<String>();
+    private List<String> statusDescriptions = new ArrayList<String>();
+    private String status;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -85,5 +85,19 @@ public class BackgroundProcess {
      */
     public String[] getStatusDescriptions() {
         return statusDescriptions.toArray(new String[0]);
+    }
+
+    /**
+     * @param status Current status of background process, either "IN_PROGRESS" or "COMPLETED"
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    /**
+     * @return current status of background process, either "IN_PROGRESS" or "COMPLETED"
+     */
+    public String getStatus() {
+        return status;
     }
 }

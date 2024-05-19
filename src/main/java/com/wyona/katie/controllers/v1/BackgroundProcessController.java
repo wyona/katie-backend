@@ -8,6 +8,7 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.BackgroundProcessService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,10 +36,10 @@ public class BackgroundProcessController {
     private BackgroundProcessService backgroundProcessService;
 
     /**
-     * REST interface to get a particular status of a running process
+     * REST interface to get status of a particular background process (running or completed)
      */
     @RequestMapping(value = "/{process-id}/status", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get a particular status of a running process")
+    @Operation(summary = "Get status of a particular background process (running or completed)")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
@@ -60,46 +61,7 @@ public class BackgroundProcessController {
                 return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
             }
 
-            BackgroundProcess process = backgroundProcessService.getStatusOfRunningProcess(processId);
-            if (!(process.getUserId().equals(signedInUser.getId()) || signedInUser.getRole().equals(Role.ADMIN))) {
-                log.warn("User is not authorized to view process status!");
-                return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
-            }
-
-            return new ResponseEntity<>(process, HttpStatus.OK);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    /**
-     * REST interface to get a particular status of a completed process
-     */
-    @RequestMapping(value = "/{process-id}/status-completed", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get a particular status of a completed process")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
-    public ResponseEntity<?> getStatusOfCompletedProcess(
-            @ApiParam(name = "process-id", value = "Process Id",required = true)
-            @PathVariable(value = "process-id", required = true) String processId,
-            HttpServletRequest request) {
-
-        try {
-            authenticationService.tryJWTLogin(request);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        try {
-            User signedInUser = authenticationService.getUser(false, false);
-            if (signedInUser == null) {
-                log.warn("User is not signed in!");
-                return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
-            }
-
-            BackgroundProcess process = backgroundProcessService.getStatusOfCompletedProcess(processId);
+            BackgroundProcess process = backgroundProcessService.getStatus(processId);
             if (!(process.getUserId().equals(signedInUser.getId()) || signedInUser.getRole().equals(Role.ADMIN))) {
                 log.warn("User is not authorized to view process status!");
                 return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
