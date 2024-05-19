@@ -2505,10 +2505,10 @@ public class ContextService {
     @Async
     public void importQnAs(QnA[] qnas, Context domain, String processId, String userId) throws Exception {
         log.info("Import " + qnas.length + " QnAs ...");
-        backgroundProcessService.startProcess(processId, "Import " + qnas.length + " QnAs into domain '" + domain.getId() + "'.", userId);
+        final int BATCH_SIZE = 20;
+        backgroundProcessService.startProcess(processId, "Import " + qnas.length + " QnAs into domain '" + domain.getId() + "' (Batch size: " + BATCH_SIZE + ").", userId);
 
         int counter = 0;
-        final int BATCH_SIZE = 20;
         for (QnA qna : qnas) {
             if (qna.getQuestion() != null) {
                 log.info("Import QnA: " + qna.getQuestion());
@@ -2534,6 +2534,8 @@ public class ContextService {
                 backgroundProcessService.updateProcessStatus(processId, counter + " QnAs imported, " + (qnas.length - counter) + " QnAs remaining ...");
             }
         }
+
+        backgroundProcessService.updateProcessStatus(processId, qnas.length  + " QnAs imported.");
 
         backgroundProcessService.stopProcess(processId, domain.getId());
     }
