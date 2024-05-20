@@ -2503,7 +2503,7 @@ public class ContextService {
      *
      */
     @Async
-    public void importQnAs(QnA[] qnas, Context domain, String processId, String userId) throws Exception {
+    public void importQnAs(QnA[] qnas, Context domain, String processId, String userId) {
         log.info("Import " + qnas.length + " QnAs ...");
         final int BATCH_SIZE = 20;
         backgroundProcessService.startProcess(processId, "Import " + qnas.length + " QnAs into domain '" + domain.getId() + "' (Batch size: " + BATCH_SIZE + ").", userId);
@@ -2527,7 +2527,12 @@ public class ContextService {
             }
             answer = addQuestionAnswer(answer, domain);
             qna.setUuid(answer.getUuid());
-            train(qna, domain, true);
+            try {
+                train(qna, domain, true);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            }
 
             counter++;
             if (counter % BATCH_SIZE == 0) {
