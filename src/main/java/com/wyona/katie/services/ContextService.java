@@ -2500,7 +2500,7 @@ public class ContextService {
     }
 
     /**
-     *
+     * Import QnAs in the background
      */
     @Async
     public void importQnAs(QnA[] qnas, Context domain, String processId, String userId) {
@@ -2508,6 +2508,7 @@ public class ContextService {
         final int BATCH_SIZE = 20;
         backgroundProcessService.startProcess(processId, "Import " + qnas.length + " QnAs into domain '" + domain.getId() + "' (Batch size: " + BATCH_SIZE + ").", userId);
 
+        int successfullyImported = 0;
         int counter = 0;
         for (QnA qna : qnas) {
             if (qna.getQuestion() != null) {
@@ -2529,6 +2530,7 @@ public class ContextService {
             qna.setUuid(answer.getUuid());
             try {
                 train(qna, domain, true);
+                successfullyImported++;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -2540,7 +2542,7 @@ public class ContextService {
             }
         }
 
-        backgroundProcessService.updateProcessStatus(processId, qnas.length  + " QnAs imported.");
+        backgroundProcessService.updateProcessStatus(processId, successfullyImported  + " QnAs successfully imported.");
 
         backgroundProcessService.stopProcess(processId, domain.getId());
     }
