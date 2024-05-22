@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   katie:
-    image: wyona/katie:1.364.0
+    image: wyona/katie:1.365.0
     #image: wyona/katie-with-prefix:1.360.0
     #image: 4d047c16cdb9
     #image: ${DOCKER_IMAGE_TAG}
