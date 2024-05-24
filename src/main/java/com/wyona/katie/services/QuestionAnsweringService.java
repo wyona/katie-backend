@@ -556,13 +556,14 @@ public class QuestionAnsweringService {
             // TODO: Make flag "alwaysUseLLM" configurable
             boolean alwaysUseLLM = true; // INFO: When set to false and hits.size() == 0, then LLM will not be used
             if (hits.size() > 0 || alwaysUseLLM) {
-                Answer topAnswer = null;
+                // TODO: Use more contexts than just top result
+                Answer topRetrievalResult = null;
                 String context = null;
                 String url = null;
                 if (hits.size() > 0) {
-                    topAnswer = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
-                    context = topAnswer.getAnswer();
-                    url = topAnswer.getUrl();
+                    topRetrievalResult = getTextAnswerV2(hits.get(0).getAnswer().getAnswer(), domain);
+                    context = topRetrievalResult.getAnswer();
+                    url = topRetrievalResult.getUrl();
                 } else {
                     log.warn("No retrieval results / hits available, therefore get knowledge from LLM '" + domain.getCompletionImpl() + "' itself ...");
                 }
@@ -572,6 +573,7 @@ public class QuestionAnsweringService {
                 String apiToken = contextService.getApiToken(domain.getCompletionImpl());
                 log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + model + " ...");
                 Double temperature = null;
+                // INFO: Get answer from LLM
                 String completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
 
                 log.info("Completed text: " + completedText);
@@ -587,7 +589,8 @@ public class QuestionAnsweringService {
                     newAnswer.append("<p>NOTE: The search query (retrieval component) did not return any results, so the answer is based only on the knowledge of the LLM</p>");
                 }
 
-                if (topAnswer != null) {
+                if (topRetrievalResult != null) {
+                    // INFO: Overwrite retrieved answer by LLM answer
                     hits.get(0).getAnswer().setAnswer(newAnswer.toString());
                     if (url != null) {
                         hits.get(0).getAnswer().setUrl(url);
@@ -745,7 +748,10 @@ public class QuestionAnsweringService {
     }
 
     /**
+     * Result might only contain UUID of QnA, therefore we have to parse the result whether it contains only the UUID of QnA, or the answer itself
      * @param answer Either UUID, e.g. "ak-uuid:b0bc5269-ce62-4bd6-848d-23bc1cbd74d9" or actual answer, e.g. "Bern is the capital of Switzerland"
+     * @param domain Domain containing QnAs
+     * @return actual content
      */
     private Answer getTextAnswerV2(String answer, Context domain) throws Exception {
         if (answer.startsWith(Answer.AK_UUID_COLON)) {
