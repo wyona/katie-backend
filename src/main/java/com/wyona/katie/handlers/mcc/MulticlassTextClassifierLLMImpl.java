@@ -7,6 +7,7 @@ import com.wyona.katie.handlers.OpenAIGenerate;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ClassificationRepositoryService;
+import com.wyona.katie.services.GenerativeAIService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,23 +30,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     BackgroundProcessService backgroundProcessService;
 
     @Autowired
-    private MistralAIGenerate mistralAIGenerate;
-    @Value("${mistral.api.key}")
-    private String mistralAIKey;
-    @Value("${mistral.ai.completion.model}")
-    private String mistralAIModel;
-
-    @Autowired
-    private OllamaGenerate ollamaGenerate;
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
-
-    @Autowired
-    private OpenAIGenerate openAIGenerate;
-    @Value("${openai.key}")
-    private String openAIKey;
-    @Value("${openai.generate.model}")
-    private String openAIModel;
+    GenerativeAIService generativeAIService;
 
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
@@ -63,21 +48,21 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         ClassificationDataset dataset = classificationRepositoryService.getDataset(domain, true, 0,-1);
 
+        if (dataset.getLabels().length == 0) {
+            log.warn("No labels configured for domain '" + domain.getId() + "'!");
+            return hitLabels.toArray(new HitLabel[0]);
+        }
+
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels())));
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
-        // TODO: Create LLMService / GenAIService, which can also be used by LLMReRank,etc.
-        GenerateProvider generateMistralCloud = mistralAIGenerate;
-        GenerateProvider generateOllama = ollamaGenerate;
-        GenerateProvider generateOpenAI = openAIGenerate;
         String completedText = null;
-        if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-            completedText = generateMistralCloud.getCompletion(promptMessages, mistralAIModel, temperature, mistralAIKey);
-        } else if (completionImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
-            completedText = generateOllama.getCompletion(promptMessages, ollamaModel, temperature, null);
-        } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
-            completedText = generateOpenAI.getCompletion(promptMessages, openAIModel, temperature, openAIKey);
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+        String model = generativeAIService.getCompletionModel(completionImpl);
+        String apiToken = generativeAIService.getApiToken(completionImpl);
+        if (generateProvider != null) {
+            completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
         } else {
             log.error("Completion provider '" + completionImpl + "' not implemented yet!");
         }
