@@ -285,7 +285,15 @@ public class AskControllerV3 {
                 if (responseAnswers.size() > 0) {
                     responseAnswers.get(0).getQuestionUUID(); // TODO: Do not get from response answers
                 }
-                AskResponse askResponse = new AskResponse(question, questionUUID, classifications, domain.getDetectDuplicatedQuestionImpl(), domain.getEmbeddingsImpl(), domain.getVectorSimilarityMetric());
+
+                CompletionImpl genAIImpl = null;
+                String genAIModel = null;
+                if (domain.getGenerateCompleteAnswers()) {
+                    genAIImpl = domain.getCompletionImpl();;
+                    genAIModel = contextService.getCompletionModel(genAIImpl);
+                }
+                
+                AskResponse askResponse = new AskResponse(question, questionUUID, classifications, domain.getDetectDuplicatedQuestionImpl(), domain.getEmbeddingsImpl(), domain.getVectorSimilarityMetric(), genAIImpl, genAIModel);
                 askResponse.setAnswers(responseAnswers);
                 askResponse.setOffset(_offset);
                 askResponse.setLimit(_limit);

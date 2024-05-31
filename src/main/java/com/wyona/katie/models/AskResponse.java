@@ -24,6 +24,9 @@ public class AskResponse {
     private EmbeddingsImpl embeddingsImpl;
     private VectorSimilarityFunction similarityMetric;
 
+    private CompletionImpl generateImpl;
+    private String generateModel;
+
     private HitLabel[] predictedLabels = null;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
@@ -31,7 +34,7 @@ public class AskResponse {
      * @param askedQuestion Question asked by user
      * @param submittedclassifications Classifications to narrow the search / response range
      */
-    public AskResponse(String askedQuestion, String questionUUID, List<String> submittedclassifications, DetectDuplicatedQuestionImpl retrievalImpl, EmbeddingsImpl embeddingsImpl, VectorSimilarityFunction similarityMetric) {
+    public AskResponse(String askedQuestion, String questionUUID, List<String> submittedclassifications, DetectDuplicatedQuestionImpl retrievalImpl, EmbeddingsImpl embeddingsImpl, VectorSimilarityFunction similarityMetric, CompletionImpl generateImpl, String generateModel) {
         this.askedQuestion = askedQuestion;
         this.questionUUID = questionUUID;
         this.submittedclassifications = submittedclassifications;
@@ -39,6 +42,9 @@ public class AskResponse {
         this.retrievalImpl = retrievalImpl;
         this.embeddingsImpl = embeddingsImpl;
         this.similarityMetric = similarityMetric;
+
+        this.generateImpl = generateImpl;
+        this.generateModel = generateModel;
 
         this.answers = new ArrayList<ResponseAnswer>();
         this.knowledgeBaseEmpty = null;
@@ -93,6 +99,20 @@ public class AskResponse {
      */
     public VectorSimilarityFunction getSimilarityMetric() {
         return similarityMetric;
+    }
+
+    /**
+     * Get generative AI implementation, e.g. "OPENAI"
+     */
+    public CompletionImpl getGenAIImpl() {
+        return generateImpl;
+    }
+
+    /**
+     * Get generative AI model, e.g. "gpt-3.5-turbo"
+     */
+    public String getGenAIModel() {
+        return generateModel;
     }
 
     /**
