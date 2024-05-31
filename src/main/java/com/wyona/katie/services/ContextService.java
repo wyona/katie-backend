@@ -57,9 +57,6 @@ public class ContextService {
     @Value("${openai.azure.key}")
     private String openAIAzureKey;
 
-    @Value("${mistral.api.key}")
-    private String mistralAIKey;
-
     @Value("${google.key}")
     private String googleKey;
 
@@ -1853,23 +1850,6 @@ public class ContextService {
             return googleKey;
         } else {
             // INFO: SBERT
-            return null;
-        }
-    }
-
-    /**
-     * Get API token of completion implementation
-     */
-    protected String getApiToken(CompletionImpl generateImpl) {
-        if (generateImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
-            return alephAlphaToken;
-        } else if (generateImpl.equals(CompletionImpl.OPENAI)) {
-            return openAIKey;
-            //} else if (generateImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-            //    return openAIAzureKey;
-        } else if (generateImpl.equals(CompletionImpl.MISTRAL_AI)) {
-            return mistralAIKey;
-        } else {
             return null;
         }
     }
