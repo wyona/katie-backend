@@ -39,15 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 @DependsOn("IAMService")
 public class ContextService {
 
-    @Value("${mistral.ai.completion.model}")
-    private String mistralAIModel;
-
-    @Value("${openai.generate.model}")
-    private String openAIModel;
-
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
-
     @Value("${question.answer.implementation}")
     private DetectDuplicatedQuestionImpl defaultDetectDuplicatedQuestionImpl;
 
@@ -1881,26 +1872,6 @@ public class ContextService {
         } else {
             return null;
         }
-    }
-
-    /**
-     *
-     */
-    public String getCompletionModel(CompletionImpl generateImpl) {
-        String model = null;
-        if (generateImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
-            model = "luminous-base"; // TODO: Make configurable
-        } else if (generateImpl.equals(CompletionImpl.OPENAI)) {
-            model = openAIModel;
-        } else if (generateImpl.equals(CompletionImpl.MISTRAL_AI)) {
-            model = mistralAIModel;
-        } else if (generateImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
-            model = ollamaModel;
-        } else {
-            log.error("No such completion implemention supported yet: " + generateImpl);
-            model = null;
-        }
-        return model;
     }
 
     /**
