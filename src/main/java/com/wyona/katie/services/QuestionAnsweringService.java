@@ -104,13 +104,7 @@ public class QuestionAnsweringService {
     private EnerGISConnector enerGISConnector;
 
     @Autowired
-    private OpenAIGenerate openAIGenerate;
-    @Autowired
-    private AlephAlphaGenerate alephAlphaGenerate;
-    @Autowired
-    private MistralAIGenerate mistralAIGenerate;
-    @Autowired
-    private OllamaGenerate ollamaGenerate;
+    private GenerativeAIService generativeAIService;
 
     @Value("${aft.implementation}")
     private String aftImpl;
@@ -524,20 +518,11 @@ public class QuestionAnsweringService {
      * @param hits Retrieval results
      */
     private List<Hit> generateAnswer(Sentence question, Context domain, List<Hit> hits) {
-        GenerateProvider generateProvider = null;
-        String model = contextService.getCompletionModel(domain.getCompletionImpl());
-        if (domain.getCompletionImpl().equals(CompletionImpl.ALEPH_ALPHA)) {
-            generateProvider = alephAlphaGenerate;
-        } else if (domain.getCompletionImpl().equals(CompletionImpl.OPENAI)) {
-            generateProvider = openAIGenerate;
-        } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_AI)) {
-            generateProvider = mistralAIGenerate;
-        } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_OLLAMA)) {
-            generateProvider = ollamaGenerate;
-        } else {
-            log.error("No such completion implemention supported yet: " + domain.getCompletionImpl());
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        if (generateProvider == null) {
             return hits;
         }
+        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
 
         try {
             // TODO: Make flag "alwaysUseLLM" configurable
@@ -579,6 +564,7 @@ public class QuestionAnsweringService {
                 if (topRetrievalResult != null) {
                     // INFO: Overwrite retrieved answer by LLM answer
                     hits.get(0).getAnswer().setAnswer(newAnswer.toString());
+                    // TODO
                     // TODO: Add more relevant contexts than just top result
                     if (url != null) {
                         // TODO: Also add relevant content
