@@ -1,5 +1,6 @@
 {
     "katie": {
+        "answer_by_llm": "Antwort generiert von LLM",
         "your_linkedin_url": "Deine LinkedIn URL",
         "set_password": "Wähle ein Password für Deinen Account",
         "create_your_account": "Erstelle Deinen Account",
