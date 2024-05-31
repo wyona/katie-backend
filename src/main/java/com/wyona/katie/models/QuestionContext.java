@@ -1,7 +1,7 @@
 package com.wyona.katie.models;
 
 /**
- *
+ * Additional context provided by user when user is asking a question
  */
 public class QuestionContext {
 
