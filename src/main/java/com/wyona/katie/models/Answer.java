@@ -24,6 +24,7 @@ public class Answer {
     private String answerClientSideEncryptionAlgorithm;
 
     private String url;
+    private List<AnswerContext> relevantContexts = new ArrayList<>();
 
     private QnAType type;
     private List<String> classifications;
@@ -77,6 +78,7 @@ public class Answer {
         this.answerContentType = answerContentType;
 
         this.url = url;
+
         this.classifications = classifications;
         this.type = type;
         this.answerClientSideEncryptionAlgorithm = answerClientSideEncryptionAlgorithm;
@@ -170,6 +172,20 @@ public class Answer {
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    /**
+     *
+     */
+    public List<AnswerContext> getRelevantContexts() {
+        return relevantContexts;
+    }
+
+    /**
+     *
+     */
+    public void addRelevantContext(AnswerContext context) {
+        relevantContexts.add(context);
     }
 
     /**
