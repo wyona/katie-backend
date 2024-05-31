@@ -542,7 +542,7 @@ public class QuestionAnsweringService {
                 List<PromptMessage> promptMessages = getPromptMessages(domain, question, context, url); // TODO: When there are no retrieval results, then use different prompt
 
                 // TODO: Domain specific API token, similar to domain.getEmbeddingsApiToken();
-                String apiToken = contextService.getApiToken(domain.getCompletionImpl());
+                String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
                 log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + model + " ...");
                 Double temperature = null;
                 // INFO: Get answer from LLM
@@ -564,7 +564,6 @@ public class QuestionAnsweringService {
                 if (topRetrievalResult != null) {
                     // INFO: Overwrite retrieved answer by LLM answer
                     hits.get(0).getAnswer().setAnswer(newAnswer.toString());
-                    // TODO
                     // TODO: Add more relevant contexts than just top result
                     if (url != null) {
                         // TODO: Also add relevant content
