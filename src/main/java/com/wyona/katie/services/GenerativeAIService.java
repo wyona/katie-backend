@@ -80,7 +80,7 @@ public class GenerativeAIService {
     /**
      * Get API token of completion implementation
      */
-    protected String getApiToken(CompletionImpl generateImpl) {
+    public String getApiToken(CompletionImpl generateImpl) {
         if (generateImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
             return alephAlphaToken;
         } else if (generateImpl.equals(CompletionImpl.OPENAI)) {
