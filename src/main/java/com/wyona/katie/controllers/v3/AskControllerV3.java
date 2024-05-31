@@ -55,6 +55,9 @@ public class AskControllerV3 {
     @Autowired
     private QuestionAnalyzerService questionAnalyzerService;
 
+    @Autowired
+    private GenerativeAIService generativeAIService;
+
     /**
      * REST interface to get answer(s) to a question
      */
@@ -290,7 +293,7 @@ public class AskControllerV3 {
                 String genAIModel = null;
                 if (domain.getGenerateCompleteAnswers()) {
                     genAIImpl = domain.getCompletionImpl();;
-                    genAIModel = contextService.getCompletionModel(genAIImpl);
+                    genAIModel = generativeAIService.getCompletionModel(genAIImpl);
                 }
                 
                 AskResponse askResponse = new AskResponse(question, questionUUID, classifications, domain.getDetectDuplicatedQuestionImpl(), domain.getEmbeddingsImpl(), domain.getVectorSimilarityMetric(), genAIImpl, genAIModel);
