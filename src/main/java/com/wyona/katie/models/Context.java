@@ -884,7 +884,7 @@ public class Context {
     }
 
     /**
-     * @return true when answers should be generated / completed and false otherwise
+     * @return true when answers should be generated / completed using a GenAI model and false otherwise
      */
     public boolean getGenerateCompleteAnswers() {
         return useGenerativeAI;
