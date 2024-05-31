@@ -115,15 +115,6 @@ public class QuestionAnsweringService {
     @Value("${aft.implementation}")
     private String aftImpl;
 
-    @Value("${mistral.ai.completion.model}")
-    private String mistralAIModel;
-
-    @Value("${openai.generate.model}")
-    private String openAIModel;
-
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
-
     @Value("${generative.ai.prompt}")
     private String defaultPromptTemplate;
 
@@ -534,19 +525,15 @@ public class QuestionAnsweringService {
      */
     private List<Hit> generateAnswer(Sentence question, Context domain, List<Hit> hits) {
         GenerateProvider generateProvider = null;
-        String model = null;
+        String model = contextService.getCompletionModel(domain.getCompletionImpl());
         if (domain.getCompletionImpl().equals(CompletionImpl.ALEPH_ALPHA)) {
             generateProvider = alephAlphaGenerate;
-            model = "luminous-base"; // TODO: Make configurable
         } else if (domain.getCompletionImpl().equals(CompletionImpl.OPENAI)) {
             generateProvider = openAIGenerate;
-            model = openAIModel;
         } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_AI)) {
             generateProvider = mistralAIGenerate;
-            model = mistralAIModel;
         } else if (domain.getCompletionImpl().equals(CompletionImpl.MISTRAL_OLLAMA)) {
             generateProvider = ollamaGenerate;
-            model = ollamaModel;
         } else {
             log.error("No such completion implemention supported yet: " + domain.getCompletionImpl());
             return hits;
@@ -592,7 +579,10 @@ public class QuestionAnsweringService {
                 if (topRetrievalResult != null) {
                     // INFO: Overwrite retrieved answer by LLM answer
                     hits.get(0).getAnswer().setAnswer(newAnswer.toString());
+                    // TODO: Add more relevant contexts than just top result
                     if (url != null) {
+                        // TODO: Also add relevant content
+                        // TODO: Use URI instead URL
                         hits.get(0).getAnswer().setUrl(url);
                     }
                 } else {
