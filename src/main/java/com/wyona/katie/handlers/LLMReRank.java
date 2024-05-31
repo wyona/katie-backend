@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.CompletionImpl;
 import com.wyona.katie.models.PromptMessage;
 import com.wyona.katie.models.PromptMessageRole;
+import com.wyona.katie.services.GenerativeAIService;
 import com.wyona.katie.services.Utils;
 import com.wyona.katie.models.CompletionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +24,7 @@ import java.util.ArrayList;
 public class LLMReRank implements ReRankProvider {
 
     @Autowired
-    private MistralAIGenerate mistralAIGenerate;
-    @Value("${mistral.api.key}")
-    private String mistralAIKey;
-    @Value("${mistral.ai.completion.model}")
-    private String mistralAIModel;
-
-    @Autowired
-    private OllamaGenerate ollamaGenerate;
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
-
-    @Autowired
-    private OpenAIGenerate openAIGenerate;
-    @Value("${openai.key}")
-    private String openAIKey;
-    @Value("${openai.generate.model}")
-    private String openAIModel;
+    GenerativeAIService generativeAIService;
 
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
@@ -55,22 +40,17 @@ public class LLMReRank implements ReRankProvider {
 
         List<Integer> reRankedIndex = new ArrayList<Integer>();
 
-        GenerateProvider generateMistralCloud = mistralAIGenerate;
-        GenerateProvider generateOllama = ollamaGenerate;
-        GenerateProvider generateOpenAI = openAIGenerate;
-
         int item_number_none_of_the_answers = answers.length + 1;
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
         try {
             String completedText = null;
-            if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-                completedText = generateMistralCloud.getCompletion(promptMessages, mistralAIModel, temperature, mistralAIKey);
-            } else if (completionImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
-                completedText = generateOllama.getCompletion(promptMessages, ollamaModel, temperature, null);
-            } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
-                completedText = generateOpenAI.getCompletion(promptMessages, openAIModel, temperature, openAIKey);
+            GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+            String model = generativeAIService.getCompletionModel(completionImpl);
+            String apiToken = generativeAIService.getApiToken(completionImpl);
+            if (generateProvider != null) {
+                completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
                 return reRankedIndex.toArray(new Integer[0]);
