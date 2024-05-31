@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,9 @@ public class ResponseAnswer {
     private Date dateOriginalQuestion;
     private PermissionStatus permissionStatus;
     private QnAType type;
+
     private String url;
+    private List<AnswerContext> relevantContexts = new ArrayList<>();
 
     private JsonNode dataObjectAsJson;
 
@@ -68,6 +71,7 @@ public class ResponseAnswer {
         this.dateOriginalQuestion = dateOriginalQuestion;
         this.permissionStatus = permissionStatus;
         this.type = type;
+
         this.url = url;
 
         this.dataObjectAsJson = null;
@@ -310,5 +314,19 @@ public class ResponseAnswer {
      */
     public String getUrl() {
         return url;
+    }
+
+    /**
+     *
+     */
+    public List<AnswerContext> getRelevantContexts() {
+        return relevantContexts;
+    }
+
+    /**
+     *
+     */
+    public void addRelevantContext(AnswerContext context) {
+        relevantContexts.add(context);
     }
 }
