@@ -16,12 +16,19 @@ public class GenerativeAIService {
 
     @Value("${mistral.ai.completion.model}")
     private String mistralAIModel;
+    @Value("${mistral.api.key}")
+    private String mistralAIKey;
 
     @Value("${openai.generate.model}")
     private String openAIModel;
+    @Value("${openai.key}")
+    private String openAIKey;
 
     @Value("${ollama.completion.model}")
     private String ollamaModel;
+
+    @Value("${aleph-alpha.token}")
+    private String alephAlphaToken;
 
     @Autowired
     private OpenAIGenerate openAIGenerate;
@@ -68,5 +75,22 @@ public class GenerativeAIService {
             model = null;
         }
         return model;
+    }
+
+    /**
+     * Get API token of completion implementation
+     */
+    protected String getApiToken(CompletionImpl generateImpl) {
+        if (generateImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
+            return alephAlphaToken;
+        } else if (generateImpl.equals(CompletionImpl.OPENAI)) {
+            return openAIKey;
+            //} else if (generateImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
+            //    return openAIAzureKey;
+        } else if (generateImpl.equals(CompletionImpl.MISTRAL_AI)) {
+            return mistralAIKey;
+        } else {
+            return null;
+        }
     }
 }
