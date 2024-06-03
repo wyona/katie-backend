@@ -12,6 +12,8 @@ import com.wyona.katie.models.insights.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -139,6 +141,9 @@ public class ContextService {
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
+
+    @Autowired
+    SegmentationService segmentationService;
 
     /**
      *
@@ -2528,6 +2533,42 @@ public class ContextService {
     }
 
     /**
+     * Import PDF in the background
+     * @param in PDF as InputStream
+     */
+    @Async
+    public void importPDF(InputStream in, Context domain, String bgProcessId, String userId) {
+        String filename = "TODO";
+        backgroundProcessService.startProcess(bgProcessId, "Import PDF into domain '" + domain.getId() + "'.", userId);
+        try {
+            PDDocument pdDocument = PDDocument.load(in);
+            String body = new PDFTextStripper().getText(pdDocument);
+            pdDocument.close();
+            in.close();
+
+            List<Answer> qnas = new ArrayList<Answer>();
+
+            // TODO: Make text splitter configurable
+            //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
+            List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            for (String chunk : chunks) {
+                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, filename, null, null, null, null, null, null, null, null, filename, null, false, null, false, null);
+                qnas.add(qna);
+                String uuid = addQuestionAnswer(qna, domain).getUuid();
+                addToUuidUrlIndex(uuid, qna.getUrl(), domain);
+                train(new QnA(qna), domain, true);
+            }
+            String msg = "Number of chunks extracted from PDF document: " + chunks.size();
+            log.info(msg);
+            backgroundProcessService.updateProcessStatus(bgProcessId, msg);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
+        backgroundProcessService.stopProcess(bgProcessId, domain.getId());
+    }
+
+    /**
      * Import FAQ
      * @param domain Domain FAQs are being associated with
      * @param language Two-letter language code of FAQ, e.g. "de" or "en"
@@ -3763,6 +3804,8 @@ public class ContextService {
 
     /**
      * Add UUID to index file
+     * @param uuid TODO
+     * @param url TODO
      */
     protected void addToUuidUrlIndex(String uuid, String url, Context domain) throws Exception {
         File file = domain.getUuidUrlIndex(URI.create(url));
