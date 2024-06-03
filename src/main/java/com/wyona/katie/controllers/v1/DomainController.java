@@ -262,6 +262,54 @@ public class DomainController {
     }
 
     /**
+     * Import PDF
+     */
+    @RequestMapping(value = "/{id}/import/pdf", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Import PDF into a particular domain")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
+    public ResponseEntity<?> importPDF(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @RequestPart("file") MultipartFile file,
+            HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            User user = authenticationService.getUser(false, false);
+            if (user == null) {
+                throw new AccessDeniedException("User is not signed in!");
+            }
+            if (!domainService.isMemberOrAdmin(id)) {
+                throw new AccessDeniedException("User '" + user.getUsername() + "' is neither member of domain '" + id + "' nor admin!");
+            }
+
+            Context domain = domainService.getContext(id);
+
+            String processId = UUID.randomUUID().toString();
+            domainService.importPDF(file.getInputStream(), domain, processId, user.getId());
+
+            return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * REST interface to update the mail sender email address, e.g. "Katie <no-reply@wyona.com>"
      */
     @RequestMapping(value = "/{id}/mail-sender", method = RequestMethod.PATCH, produces = "application/json")
