@@ -296,13 +296,19 @@ public class DomainController {
 
             Context domain = domainService.getContext(id);
 
+            // TODO: Check size: file.getSize();
+            log.info("Content type of uploaded file: " + file.getContentType());
+            if (!ContentType.fromString(file.getContentType()).equals(ContentType.APPLICATION_PDF)) {
+                return new ResponseEntity<>(new Error("Content type is not application/pdf", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            }
+            log.info("Name of uploaded file: " + file.getOriginalFilename());
             String processId = UUID.randomUUID().toString();
-            domainService.importPDF(file.getInputStream(), domain, processId, user.getId());
+            domainService.importPDF(file.getOriginalFilename(), file.getInputStream(), domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);

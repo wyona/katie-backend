@@ -2537,9 +2537,9 @@ public class ContextService {
      * @param in PDF as InputStream
      */
     @Async
-    public void importPDF(InputStream in, Context domain, String bgProcessId, String userId) {
-        String filename = "TODO";
-        backgroundProcessService.startProcess(bgProcessId, "Import PDF into domain '" + domain.getId() + "'.", userId);
+    public void importPDF(String filename, InputStream in, Context domain, String bgProcessId, String userId) {
+        backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
+        filename = filename.replace(" ", "+");
         try {
             PDDocument pdDocument = PDDocument.load(in);
             String body = new PDFTextStripper().getText(pdDocument);
