@@ -87,6 +87,7 @@ public class BenchmarkService {
 
     /**
      * @param indexAlternativeQuestions When true, then index alternative questions, when false, then do not index alternative questions
+     * @param reRankAnswers When true, then re-rank results
      */
     @Async
     public void runBenchmark(CustomBenchmarkDataset bmDataset, String searchImplementations, Boolean indexAlternativeQuestions, Boolean reRankAnswers, int throttleTimeInMillis, Boolean deleteDomain, String email, User user, String processId) {
@@ -104,6 +105,7 @@ public class BenchmarkService {
             Context domain = contextService.createDomain(false, domainName, domainName, false, user);
             if (reRankAnswers) {
                 domain = contextService.enableReRankAnswers(domain.getId());
+                // INFO: By default SBERT re-ranker will be used
             }
 
             List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<BenchmarkQuestion>();
