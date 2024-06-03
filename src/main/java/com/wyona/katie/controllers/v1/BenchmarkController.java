@@ -399,7 +399,8 @@ public class BenchmarkController {
             InputStream inputStream = new BufferedInputStream(file.getInputStream());
             return inputStream;
         } else {
-            // INFO: Use default dataset if none was given. TODO: Make configurable
+            // INFO: Use default dataset if none was given.
+            // TODO: Make configurable
             //String datasetPathName = "weaviate-size2-v1.json";
             //String datasetPathName = "weaviate-size7-v1.json";
             String datasetPathName = "weaviate-size121-v2.json";
