@@ -2537,7 +2537,7 @@ public class ContextService {
      * @param in PDF as InputStream
      */
     @Async
-    public void importPDF(String filename, InputStream in, Context domain, String bgProcessId, String userId) {
+    public void importPDF(String filename, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
         filename = filename.replace(" ", "+");
         try {
@@ -2548,9 +2548,17 @@ public class ContextService {
 
             List<Answer> qnas = new ArrayList<Answer>();
 
-            // TODO: Make text splitter configurable
-            //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
-            List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            List<String> chunks = new ArrayList<>();
+            if (textSplitterImpl.equals(TextSplitterImpl.SENTENCE)) {
+                chunks = segmentationService.splitBySentences(body, "en", 700, true);
+            } else if (textSplitterImpl.equals(TextSplitterImpl.AI21)) {
+                chunks = segmentationService.getSegmentsUsingAI21(body);
+            } else if (textSplitterImpl.equals(TextSplitterImpl.FIXED_SIZE)) {
+                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            } else {
+                log.error("No such text splitter implementation '" + textSplitterImpl + "'! Use fixed size text splitter ...");
+                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            }
             for (String chunk : chunks) {
                 Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, filename, null, null, null, null, null, null, null, null, filename, null, false, null, false, null);
                 qnas.add(qna);

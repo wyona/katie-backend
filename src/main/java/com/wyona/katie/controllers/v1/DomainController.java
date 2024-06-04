@@ -265,13 +265,15 @@ public class DomainController {
      * Import PDF
      */
     @RequestMapping(value = "/{id}/import/pdf", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Import PDF into a particular domain")
+    @Operation(summary = "Import PDF into a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> importPDF(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @ApiParam(name = "id", value = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "text-splitter", value = "Text Splitter", required = true)
+            @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
 
@@ -303,7 +305,7 @@ public class DomainController {
             }
             log.info("Name of uploaded file: " + file.getOriginalFilename());
             String processId = UUID.randomUUID().toString();
-            domainService.importPDF(file.getOriginalFilename(), file.getInputStream(), domain, processId, user.getId());
+            domainService.importPDF(file.getOriginalFilename(), file.getInputStream(), textSplitterImpl, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
