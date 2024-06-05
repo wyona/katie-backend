@@ -33,6 +33,8 @@ public class TOPdeskConnector implements Connector {
     @Autowired
     private ClassificationService classificationService;
 
+    private static final String CATEGORY_SUBCATEGORY_SEPARATOR = "_";
+
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
      */
@@ -197,7 +199,7 @@ public class TOPdeskConnector implements Connector {
                     JsonNode subcategoryNode = bodyNode.get(i);
                     log.info("Subcategory Id: " + subcategoryNode.get("id").asText());
                     JsonNode categoryNode = subcategoryNode.get("category");
-                    subcategoryIDs.add(categoryNode.get("id").asText() + "_" + subcategoryNode.get("id").asText());
+                    subcategoryIDs.add(categoryNode.get("id").asText() + CATEGORY_SUBCATEGORY_SEPARATOR + subcategoryNode.get("id").asText());
                 }
             }
 
@@ -229,6 +231,21 @@ public class TOPdeskConnector implements Connector {
                     classifier.retrain(domain, processId);
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "No labels deleted.");
+                }
+
+                // INFO: Check for categories / subcategories
+                for (String subcategoryId : subcategoryIDs) {
+                    boolean subcategoryIsNew = true;
+                    for (Classification label : labels) {
+                        if (label.getId().equals(subcategoryId)) {
+                            subcategoryIsNew = false;
+                            break;
+                        }
+                    }
+                    if (subcategoryIsNew) {
+                        backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + subcategoryId);
+                        // TODO: Add new category / subcategory as classification
+                    }
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -330,7 +347,7 @@ public class TOPdeskConnector implements Connector {
      */
     private Classification getLabel(Classification category, Classification subcategory) {
         String className = category.getTerm() + ", " + subcategory.getTerm();
-        String classId = category.getId() + "_" + subcategory.getId();
+        String classId = category.getId() + CATEGORY_SUBCATEGORY_SEPARATOR + subcategory.getId();
         Classification classification = new Classification(className, classId, null);
         return classification;
     }
