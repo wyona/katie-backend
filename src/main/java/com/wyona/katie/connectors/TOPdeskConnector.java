@@ -103,9 +103,10 @@ public class TOPdeskConnector implements Connector {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
         // TODO: Document request types
-        int requestType = 0;
-        //int requestType = 1;
-        //int requestType = 2;
+        //int requestType = 0; // INFO: Import batch of incidents, e.g. 1000 incidents
+        //int requestType = 1; // INFO: Import one particular incident
+        //int requestType = 2; // INFO: Get visible replies of a particular incident
+        int requestType = 3; // INFO: Sync categories / subcategories
 
         if (requestType == 2) {
             boolean visibleReplies = false;
@@ -183,6 +184,42 @@ public class TOPdeskConnector implements Connector {
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
+            }
+        } else if (requestType == 3) {
+            List<String> subcategoryIDs = new ArrayList<>();
+
+            backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
+            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/subcategories";
+            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+            if (bodyNode.isArray()) {
+                for (int i = 0; i < bodyNode.size(); i++) {
+                    JsonNode subcategoryNode = bodyNode.get(i);
+                    log.info("Subcategory Id: " + subcategoryNode.get("id").asText());
+                    JsonNode categoryNode = subcategoryNode.get("category");
+                    subcategoryIDs.add(categoryNode.get("id").asText() + "_" + subcategoryNode.get("id").asText());
+                }
+            }
+
+            try {
+                ClassificationDataset dataset = classificationService.getDataset(domain, true, 0, 10000);
+                Classification[] labels = dataset.getLabels();
+                for (Classification label : labels) {
+                    log.info("Label Id: " + label.getId());
+                    boolean labelExistsInTopDesk = false;
+                    for (String id : subcategoryIDs) {
+                        if (id.equals(label.getId())) {
+                            labelExistsInTopDesk = true;
+                            log.info("Label exists in TOPdesk: " + label.getId() + ", " + label.getTerm());
+                            break;
+                        }
+                    }
+                    if (!labelExistsInTopDesk) {
+                        // TODO: Remove label from classifier
+                        backgroundProcessService.updateProcessStatus(processId, "Label '" + label.getTerm() + "' removed from Classifier.");
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         } else {
             log.warn("No such request type '" + requestType + "' implemented!");
