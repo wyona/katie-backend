@@ -3,6 +3,7 @@ package com.wyona.katie.handlers.mcc;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
@@ -100,6 +101,13 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      */
     public void retrain(Context domain, String bgProcessId) throws Exception {
         log.info("Retrain ...");
+
+        File classifierDir = getClassifierDir(domain);
+        if (classifierDir.isDirectory()) {
+            FileUtils.deleteDirectory(classifierDir);
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Lucene indexes deleted inside directory '" + classifierDir.getAbsolutePath() + "'.");
+        }
+
         backgroundProcessService.updateProcessStatus(bgProcessId, "Load dataset ...");
         ClassificationDataset dataset = classificationRepoService.getDataset(domain, false, 0, -1);
 
@@ -334,7 +342,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     }
 
     /**
-     * @param indexName Name of index, e.g. "lucene-classifications"
+     * @param indexName Name of index, e.g. "lucene-samples" or "lucene-centroids"
      */
     private Directory getIndexDirectory(Context domain, String indexName) throws Exception {
         File indexDir = new File(getClassifierDir(domain), indexName);

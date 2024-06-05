@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+
 /**
  * Classification service to predict labels for text(s)
  */
@@ -47,13 +49,18 @@ public class ClassificationService {
         for (HitLabel hitLabel : hitLabels) {
             String labelKatieId = hitLabel.getLabel().getKatieId();
             Classification classification = classificationRepoService.getClassification(domain, labelKatieId);
-            hitLabel.getLabel().setTerm(classification.getTerm());
-            hitLabel.getLabel().setId(classification.getId());
+            if (classification != null) {
+                hitLabel.getLabel().setTerm(classification.getTerm());
+                hitLabel.getLabel().setId(classification.getId());
+            } else {
+                log.error("No such classification '" + labelKatieId + "'!");
+            }
         }
         return hitLabels;
     }
 
     /**
+     * Retrain classifier
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      * @param bgProcessId Background process Id
      */
@@ -75,6 +82,16 @@ public class ClassificationService {
      */
     public void importSample(Context domain, TextSample sample) throws Exception {
         classificationRepoService.saveSample(domain, sample);
+    }
+
+    /**
+     * Remove classification / label from training dataset
+     */
+    public void removeClassification(Context domain, Classification classification) throws Exception {
+        classificationRepoService.removeClassification(domain, classification);
+
+        // TODO: Retrain classifier, whereas only retrain for batch removal
+        //MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
     }
 
     /**

@@ -3,6 +3,7 @@ package com.wyona.katie.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +73,7 @@ public class ClassificationRepositoryService {
      *
      */
     public void saveSample(Context domain, TextSample sample) throws Exception {
-        String katieId = getLabelKatieId(domain, sample.getClassification().getId());
+        String katieId = getOrAddLabelKatieId(domain, sample.getClassification().getId());
 
         sample.getClassification().setKatieId(katieId);
 
@@ -93,6 +94,19 @@ public class ClassificationRepositoryService {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(sampleFile, sample);
 ;    }
+
+    /**
+     * Remove classification / label from training dataset
+     */
+    public void removeClassification(Context domain, Classification classification) throws Exception {
+        File samplesDir = getSamplesDir(domain, classification.getKatieId());
+        // TODO: Return removed sample IDs
+
+        File labelDir = getLabelDir(domain, classification.getKatieId());
+        FileUtils.deleteDirectory(labelDir);
+
+        removeLabelKatieId(domain, classification.getKatieId());
+    }
 
     /**
      * @param labelKatieId Label Id assigned by Katie, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
@@ -161,18 +175,14 @@ public class ClassificationRepositoryService {
     }
 
     /**
+     * Get or add Katie label Id for a particular foreign Id
      * @param foreignId Foreign Id, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062" or "https://jena.apache.org/2f61f866-bcd8-4db3-833b-37e6f7877e52"
      * @return Katie Id, e.g. "abb6edd3-34a9-4a84-b12a-13d5dfd8152f"
      */
-    private String getLabelKatieId(Context domain, String foreignId) throws Exception {
+    private String getOrAddLabelKatieId(Context domain, String foreignId) throws Exception {
         String labelId = null;
-        
-        File classifcationsDir = domain.getClassificationsDirectory();
-        if (!classifcationsDir.isDirectory()) {
-            classifcationsDir.mkdirs();
-        }
 
-        File idTableFile = new File(classifcationsDir, "id-table.txt");
+        File idTableFile = getIdTableFile(domain);
         List<String> entries = new ArrayList<>();
         if (idTableFile.isFile()) {
             entries = readIdTable(idTableFile);
@@ -190,8 +200,46 @@ public class ClassificationRepositoryService {
     }
 
     /**
+     *
+     */
+    private void removeLabelKatieId(Context domain, String labelKatieId) throws Exception {
+        File idTableFile = getIdTableFile(domain);
+        if (idTableFile.isFile()) {
+            List<String> entries = readIdTable(idTableFile);
+            List<String> newEntries = new ArrayList<>();
+            for (String entry : entries) {
+                String[] katieId_foreignId = entry.split(SEPARATOR);
+                if (katieId_foreignId[0].equals(labelKatieId)) {
+                    log.info("Drop entry '" + entry + "'.");
+                } else {
+                    newEntries.add(entry);
+                }
+            }
+
+            writeIdTable(idTableFile, newEntries);
+        } else {
+            log.error("No such file '" + idTableFile.getAbsolutePath() + "'!");
+        }
+    }
+
+    /**
+     *
+     */
+    private File getIdTableFile(Context domain) {
+        File classifcationsDir = domain.getClassificationsDirectory();
+        if (!classifcationsDir.isDirectory()) {
+            classifcationsDir.mkdirs();
+        }
+
+        File idTableFile = new File(classifcationsDir, "id-table.txt");
+
+        return idTableFile;
+    }
+
+    /**
      * Get Katie label Id for a particular foreign Id
      * @param foreignId Foreign Id
+     * @param entries List of entries (Entry example "83d0ba12-9c3b-483e-bfca-48303bb26c37,eaef049b-2cbf-4a16-835e-dd7769dc99ca_402c0ad2-acd5-4025-b6ae-bdf3ffec6fbc")
      * @return Katie id if it already exists and otherwise null
      */
     private String labelIdAlreadyExists(String foreignId, List<String> entries) {

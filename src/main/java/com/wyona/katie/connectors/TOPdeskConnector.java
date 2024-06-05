@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ClassificationService;
@@ -102,7 +103,7 @@ public class TOPdeskConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
-        // TODO: Document request types
+        // TODO: Make request types configurable using payload
         //int requestType = 0; // INFO: Import batch of incidents, e.g. 1000 incidents
         //int requestType = 1; // INFO: Import one particular incident
         //int requestType = 2; // INFO: Get visible replies of a particular incident
@@ -203,6 +204,7 @@ public class TOPdeskConnector implements Connector {
             try {
                 ClassificationDataset dataset = classificationService.getDataset(domain, true, 0, 10000);
                 Classification[] labels = dataset.getLabels();
+                boolean labelsDeleted = false;
                 for (Classification label : labels) {
                     log.info("Label Id: " + label.getId());
                     boolean labelExistsInTopDesk = false;
@@ -214,9 +216,19 @@ public class TOPdeskConnector implements Connector {
                         }
                     }
                     if (!labelExistsInTopDesk) {
-                        // TODO: Remove label from classifier
+                        labelsDeleted = true;
+                        classificationService.removeClassification(domain, label);
                         backgroundProcessService.updateProcessStatus(processId, "Label '" + label.getTerm() + "' removed from Classifier.");
                     }
+                }
+
+                // TODO: Implement batch removal and move retraining into classification service
+                if (labelsDeleted) {
+                    backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
+                    MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
+                    classifier.retrain(domain, processId);
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "No labels deleted.");
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
