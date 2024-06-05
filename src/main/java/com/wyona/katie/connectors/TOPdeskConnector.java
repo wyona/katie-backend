@@ -102,6 +102,7 @@ public class TOPdeskConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
+        // TODO: Document request types
         int requestType = 0;
         //int requestType = 1;
         //int requestType = 2;
@@ -135,13 +136,17 @@ public class TOPdeskConnector implements Connector {
             String incidentId = pl.getIncidentId();
             try {
                 TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
-                classificationService.importSample(domain, sample);
+                if (sample != null) {
+                    classificationService.importSample(domain, sample);
+                } else {
+                    log.warn("Incident '" + incidentId + "' not imported.");
+                }
             } catch (Exception e) {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
             }
         } else if (requestType == 0) {
-            // https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+            // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0; // TODO: Introduce pagination
             int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
             backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
@@ -156,7 +161,11 @@ public class TOPdeskConnector implements Connector {
                     log.info("Get incident '" + incidentNumber + "' as classification training sample ...");
                     try {
                         TextSample sample = getIncidentAsClassificationSample(incidentNumber, ksMeta, processId);
-                        classificationService.importSample(domain, sample);
+                        if (sample != null) {
+                            classificationService.importSample(domain, sample);
+                        } else {
+                            log.warn("Incident '" + incidentNumber + "' not imported.");
+                        }
                     } catch (Exception e) {
                         backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                         log.error(e.getMessage(), e);
@@ -201,7 +210,9 @@ public class TOPdeskConnector implements Connector {
             category = new Classification(categoryNode.get("name").asText(), categoryNode.get("id").asText(), null);
             log.info("Category: " + category.getTerm());
         } else {
-            throw new Exception("Incident '" + incidentId + "' does not have a category!");
+            String msg = "Incident '" + incidentId + "' does not have a category!";
+            backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.WARN);
+            return null;
         }
 
         Classification subcategory = null;
@@ -209,7 +220,9 @@ public class TOPdeskConnector implements Connector {
             JsonNode subcategoryNode = bodyNode.get("subcategory");
             subcategory = new Classification(subcategoryNode.get("name").asText(), subcategoryNode.get("id").asText(), null);
         } else {
-            throw new Exception("Incident '" + incidentId + "' does not have a subcategory!");
+            String msg = "Incident '" + incidentId + "' does not have a subcategory!";
+            backgroundProcessService.updateProcessStatus(processId, msg, BackgroundProcessStatusType.WARN);
+            return null;
         }
         log.info("Subcategory: " + subcategory.getTerm());
 
@@ -218,6 +231,8 @@ public class TOPdeskConnector implements Connector {
 
     /**
      * Get data from TOPdesk
+     * @param url request URL, e.g. "https://topdesk.wyona.com/tas/api/incidents?fields=number&pageStart=0&pageSize=100"
+     * @param processId Background process Id
      */
     private JsonNode getData(String url, KnowledgeSourceMeta ksMeta, String processId) {
         log.info("Request URL: " + url);
