@@ -752,14 +752,14 @@ public class KnowledgeSourceMeta {
     }
 
     /**
-     *
+     * Set limit on how many TOPdesk incidents should be used for training
      */
     public void setTopDeskIncidentsRetrievalLimit(Integer topDeskIncidentsRetrievalLimit) {
         this.topDeskIncidentsRetrievalLimit = topDeskIncidentsRetrievalLimit;
     }
 
     /**
-     *
+     * Get limit on how many TOPdesk incidents should be used for training
      */
     public int getTopDeskIncidentsRetrievalLimit() {
         return topDeskIncidentsRetrievalLimit.intValue();
