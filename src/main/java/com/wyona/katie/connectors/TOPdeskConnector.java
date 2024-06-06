@@ -150,6 +150,7 @@ public class TOPdeskConnector implements Connector {
                 log.error(e.getMessage(), e);
             }
         } else if (requestType == 0) {
+            // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
             // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0; // TODO: Introduce pagination
             int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
@@ -244,12 +245,16 @@ public class TOPdeskConnector implements Connector {
                     if (subcategoryIsNew) {
                         backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + topDeskLabel.getTerm());
 
-                        // TODO: Add new category / subcategory as classification
-                        // TODO: Get test samples for this category / subcategory
-                        // https://sdesk.uzh.ch/tas/api/incidents?query=subcategory.id==c3b7f1fa-e1dc-4439-bd8c-f2b58a1d5a7f&fields=number,status&pageStart=0&pageSize=10
-                        //TextSample sample = new TextSample("TODO", "TODO", topDeskLabel);
-                        //classificationService.importSample(domain, sample);
-                        //labelsAdded = true;
+                        String subcategoryId = topDeskLabel.getId().split(CATEGORY_SUBCATEGORY_SEPARATOR)[1];
+                        List<TextSample> samples = getIncidentsAsClassificationSamplePerSubcategory(subcategoryId, ksMeta, processId);
+                        if (samples.size() > 0) {
+                            labelsAdded = true;
+                            for (TextSample sample : samples) {
+                                classificationService.importSample(domain, sample);
+                            }
+                        } else {
+                            backgroundProcessService.updateProcessStatus(processId, "No text samples could be retrieved for category / subcategory '" + topDeskLabel.getTerm() + "' (" + topDeskLabel.getId() + ")!", BackgroundProcessStatusType.ERROR);
+                        }
                     }
                 }
 
@@ -257,8 +262,7 @@ public class TOPdeskConnector implements Connector {
                     backgroundProcessService.updateProcessStatus(processId, "No labels added.");
                 }
 
-                // TODO: If deleted or new, then retrain classifier
-                // TODO: Implement batch removal and move retraining into classification service
+                // TODO: Implement batch removal / ingestion and move retraining into classification service
                 if (labelsDeleted || labelsAdded) {
                     backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
                     MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
@@ -274,6 +278,28 @@ public class TOPdeskConnector implements Connector {
         }
 
         return null;
+    }
+
+    /**
+     * Get incidents for a particular subcategory and return as text samples
+     * @param subcategory Subcategory Id, e.g. "545ac83b-4d79-4386-9e5f-cc5213ede3cf"
+     */
+    private List<TextSample> getIncidentsAsClassificationSamplePerSubcategory(String subcategory, KnowledgeSourceMeta ksMeta, String processId) throws Exception {
+        List<TextSample> samples = new ArrayList<>();
+        int limitPerSubcategory = 3; // TODO: Make configurable
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?query=subcategory.id==" + subcategory + "&fields=number,status&pageStart=0&pageSize=" + limitPerSubcategory;
+        JsonNode rootNode = getData(requestUrl, ksMeta, processId);
+        if (rootNode != null && rootNode.isArray() && rootNode.size() > 0) {
+            for (int i = 0; i < rootNode.size(); i++) {
+                JsonNode entryNode = rootNode.get(i);
+                String incidentId = entryNode.get("number").asText();
+                String incidentStatus = entryNode.get("status").asText();
+                // TODO: Consider checking status firstLine / secondLine
+                TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
+                samples.add(sample);
+            }
+        }
+        return samples;
     }
 
     /**
