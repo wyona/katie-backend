@@ -4004,11 +4004,19 @@ public class ContextService {
                 HumanPreferenceLabel humanPreference = mapper.readValue(ratingFile, HumanPreferenceLabel.class);
                 if (humanPreference.getChosenLabel() != null) {
                     Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getChosenLabel().getKatieId());
-                    humanPreference.getChosenLabel().setId(classification.getId());
+                    if (classification != null) {
+                        humanPreference.getChosenLabel().setId(classification.getId());
+                    } else {
+                        log.warn("No such label with Katie Id '" + humanPreference.getChosenLabel().getKatieId() + "'! Label probably got deleted.");
+                    }
                 }
                 if (humanPreference.getRejectedLabel() != null) {
                     Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getRejectedLabel().getKatieId());
-                    humanPreference.getRejectedLabel().setId(classification.getId());
+                    if (classification != null) {
+                        humanPreference.getRejectedLabel().setId(classification.getId());
+                    } else {
+                        log.warn("No such label with Katie Id '" + humanPreference.getRejectedLabel().getKatieId() + "'! Label probably got deleted.");
+                    }
                 }
                 preferences.add(humanPreference);
             }
