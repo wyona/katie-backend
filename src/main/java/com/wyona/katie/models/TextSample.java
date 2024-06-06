@@ -16,7 +16,7 @@ public class TextSample {
     }
 
     /**
-     *
+     * @param id Sample Id, e.g. "I-240605-0858"
      */
     public TextSample(String id, String text, Classification classification) {
         this.id = id;
