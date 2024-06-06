@@ -246,7 +246,7 @@ public class TOPdeskConnector implements Connector {
 
                         // TODO: Add new category / subcategory as classification
                         // TODO: Get test samples for this category / subcategory
-                        // https://sdesk.uzh.ch/tas/api/incidents?query=category!=NULL&fields=number,status&pageStart=0&pageSize=10
+                        // https://sdesk.uzh.ch/tas/api/incidents?query=subcategory.id==c3b7f1fa-e1dc-4439-bd8c-f2b58a1d5a7f&fields=number,status&pageStart=0&pageSize=10
                         //TextSample sample = new TextSample("TODO", "TODO", topDeskLabel);
                         //classificationService.importSample(domain, sample);
                         //labelsAdded = true;
