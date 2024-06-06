@@ -227,16 +227,12 @@ public class TOPdeskConnector implements Connector {
                     }
                 }
 
-                // TODO: Implement batch removal and move retraining into classification service
-                if (labelsDeleted) {
-                    backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
-                    MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
-                    classifier.retrain(domain, processId);
-                } else {
+                if (!labelsDeleted) {
                     backgroundProcessService.updateProcessStatus(processId, "No labels deleted.");
                 }
 
                 // INFO: Check for new categories / subcategories
+                boolean labelsAdded = false;
                 for (Classification topDeskLabel : topDeskLabels) {
                     boolean subcategoryIsNew = true;
                     for (Classification label : labels) {
@@ -247,8 +243,28 @@ public class TOPdeskConnector implements Connector {
                     }
                     if (subcategoryIsNew) {
                         backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + topDeskLabel.getTerm());
+
                         // TODO: Add new category / subcategory as classification
+                        // TODO: Get test samples for this category / subcategory
+                        // https://sdesk.uzh.ch/tas/api/incidents?query=category!=NULL&fields=number,status&pageStart=0&pageSize=10
+                        //TextSample sample = new TextSample("TODO", "TODO", topDeskLabel);
+                        //classificationService.importSample(domain, sample);
+                        //labelsAdded = true;
                     }
+                }
+
+                if (!labelsAdded) {
+                    backgroundProcessService.updateProcessStatus(processId, "No labels added.");
+                }
+
+                // TODO: If deleted or new, then retrain classifier
+                // TODO: Implement batch removal and move retraining into classification service
+                if (labelsDeleted || labelsAdded) {
+                    backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
+                    MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
+                    classifier.retrain(domain, processId);
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "Classifier not retrained.");
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -262,6 +278,7 @@ public class TOPdeskConnector implements Connector {
 
     /**
      * Generate text sample from incident
+     * @param incidentId Incident Id, e.g. "I-240605-0858"
      */
     private TextSample getIncidentAsClassificationSample(String incidentId, KnowledgeSourceMeta ksMeta, String processId) throws Exception{
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
