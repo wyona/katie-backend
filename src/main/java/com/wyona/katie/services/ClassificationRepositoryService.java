@@ -109,6 +109,7 @@ public class ClassificationRepositoryService {
     }
 
     /**
+     * Get classification for a particular label Katie Id
      * @param labelKatieId Label Id assigned by Katie, e.g. "64e3bb24-1522-4c49-8f82-f99b34a82062"
      * @return label name, e.g. "Managed Device Services, MacOS Clients"
      */
