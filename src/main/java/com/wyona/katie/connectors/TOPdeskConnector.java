@@ -189,7 +189,7 @@ public class TOPdeskConnector implements Connector {
                 }
             }
         } else if (requestType == 3) {
-            List<String> subcategoryIDs = new ArrayList<>();
+            List<Classification> topDeskLabels = new ArrayList<>();
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/subcategories";
@@ -199,7 +199,10 @@ public class TOPdeskConnector implements Connector {
                     JsonNode subcategoryNode = bodyNode.get(i);
                     log.info("Subcategory Id: " + subcategoryNode.get("id").asText());
                     JsonNode categoryNode = subcategoryNode.get("category");
-                    subcategoryIDs.add(categoryNode.get("id").asText() + CATEGORY_SUBCATEGORY_SEPARATOR + subcategoryNode.get("id").asText());
+                    String labelName = categoryNode.get("name").asText() + ", " + subcategoryNode.get("name").asText();
+                    String foreignId = categoryNode.get("id").asText() + CATEGORY_SUBCATEGORY_SEPARATOR + subcategoryNode.get("id").asText();
+                    Classification topDeskLabel = new Classification(labelName, foreignId, null);
+                    topDeskLabels.add(topDeskLabel);
                 }
             }
 
@@ -210,8 +213,8 @@ public class TOPdeskConnector implements Connector {
                 for (Classification label : labels) {
                     log.info("Label Id: " + label.getId());
                     boolean labelExistsInTopDesk = false;
-                    for (String id : subcategoryIDs) {
-                        if (id.equals(label.getId())) {
+                    for (Classification topDeskLabel : topDeskLabels) {
+                        if (topDeskLabel.getId().equals(label.getId())) {
                             labelExistsInTopDesk = true;
                             log.info("Label exists in TOPdesk: " + label.getId() + ", " + label.getTerm());
                             break;
@@ -233,17 +236,17 @@ public class TOPdeskConnector implements Connector {
                     backgroundProcessService.updateProcessStatus(processId, "No labels deleted.");
                 }
 
-                // INFO: Check for categories / subcategories
-                for (String subcategoryId : subcategoryIDs) {
+                // INFO: Check for new categories / subcategories
+                for (Classification topDeskLabel : topDeskLabels) {
                     boolean subcategoryIsNew = true;
                     for (Classification label : labels) {
-                        if (label.getId().equals(subcategoryId)) {
+                        if (label.getId().equals(topDeskLabel.getId())) {
                             subcategoryIsNew = false;
                             break;
                         }
                     }
                     if (subcategoryIsNew) {
-                        backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + subcategoryId);
+                        backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + topDeskLabel.getTerm());
                         // TODO: Add new category / subcategory as classification
                     }
                 }
