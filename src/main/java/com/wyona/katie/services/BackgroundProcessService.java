@@ -106,16 +106,16 @@ public class BackgroundProcessService {
         //processStatusFile.delete();
 
         if (true) { // TODO: Make configurable
-            notifyUsers(id, domainId);
+            notifyUsersWhenErrorOccured(id, domainId);
         }
     }
 
     /**
      * Notify users when error(s) occured during the execution of a background process
-     * @param id Process Id
+     * @param id Background process Id
      * @param domainId Domain Id
      */
-    private void notifyUsers(String id, String domainId) {
+    private void notifyUsersWhenErrorOccured(String id, String domainId) {
         boolean errorOccured = false;
 
         try {
