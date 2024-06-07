@@ -274,7 +274,7 @@ public class BenchmarkService {
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
 
-                mailerService.send(email, domain.getMailSenderEmail(), subject, getConpletedClassificationBenchmarkEmailBody(domain, benchmarkResult, failedPredictions), true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getCompletedClassificationBenchmarkEmailBody(domain, benchmarkResult, failedPredictions), true);
 
                 backgroundProcessService.updateProcessStatus(processId, "E-Mail notification sent to " + email);
             }
@@ -289,7 +289,7 @@ public class BenchmarkService {
     /**
      * Get email body re completed classification benchmark
      */
-    private String getConpletedClassificationBenchmarkEmailBody(Context domain, String benchmarkResult, List<HumanPreferenceLabel> failedPredictions) {
+    private String getCompletedClassificationBenchmarkEmailBody(Context domain, String benchmarkResult, List<HumanPreferenceLabel> failedPredictions) {
         String domainLink = domain.getHost() + "/#/domain/" + domain.getId();
         StringBuilder body = new StringBuilder();
         body.append("<div>Classification benchmark completed for domain '" + domain.getName() + "' (" + domainLink + "):</div>");
@@ -300,7 +300,11 @@ public class BenchmarkService {
         body.append("<ol>");
         for (HumanPreferenceLabel failedPrediction : failedPredictions) {
             body.append("<li>Text: " + failedPrediction.getText() + " (");
-            body.append("Wrong label: " + failedPrediction.getRejectedLabel().getTerm());
+            if (failedPrediction.getRejectedLabel() != null) {
+                body.append("Wrong label: " + failedPrediction.getRejectedLabel().getTerm());
+            } else {
+                body.append("Wrong label has been deleted in the meantime");
+            }
             body.append(" | Correct label: ");
             if (failedPrediction.getChosenLabel() != null) {
                 body.append(failedPrediction.getChosenLabel().getTerm());
