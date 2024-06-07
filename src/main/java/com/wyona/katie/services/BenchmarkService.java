@@ -275,6 +275,8 @@ public class BenchmarkService {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
 
                 mailerService.send(email, domain.getMailSenderEmail(), subject, getConpletedClassificationBenchmarkEmailBody(benchmarkResult, failedPredictions), true);
+
+                backgroundProcessService.updateProcessStatus(processId, "E-Mail notification sent to " + email);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
