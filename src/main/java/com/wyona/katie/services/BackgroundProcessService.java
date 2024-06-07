@@ -22,6 +22,9 @@ public class BackgroundProcessService {
     @Value("${new.context.mail.body.host}")
     private String katieHost;
 
+    @Value("${mail.subject.tag}")
+    private String mailSubjectTag;
+
     @Value("${background.processes.data_path}")
     private String processesDataPath;
 
@@ -107,6 +110,7 @@ public class BackgroundProcessService {
 
         if (true) { // TODO: Make configurable
             notifyUsersWhenErrorOccured(id, domainId);
+            // DEBUG: notifyUsersWhenErrorOccured("977f8bf9-9677-4e32-b902-0ccd85bcc3cb", domainId);
         }
     }
 
@@ -119,10 +123,11 @@ public class BackgroundProcessService {
         boolean errorOccured = false;
 
         try {
+            log.info("Check background process log '" + id + "' whether errors occured ...");
             BackgroundProcess backgroundProcess = getStatus(id);
-            for (String description : backgroundProcess.getStatusDescriptions()) {
-                log.info("Description: " + description);
-                if (description.startsWith(BackgroundProcessStatusType.ERROR.toString())) {
+            for (BackgroundProcessStatus status : backgroundProcess.getStatusDescriptions()) {
+                //log.debug("Description: " + status.getDescription());
+                if (status.getType() == BackgroundProcessStatusType.ERROR) {
                     errorOccured = true;
                     break;
                 }
@@ -132,7 +137,8 @@ public class BackgroundProcessService {
         }
 
         if (errorOccured) {
-            String subject = "WARNING: Error(s) occurred during the execution of a background process";
+            log.warn("Error(s) occured during the execution of the background process '" + id + "'.");
+            String subject = mailSubjectTag + " WARNING: Error(s) occurred during the execution of a background process";
             StringBuilder body = new StringBuilder("Error(s) occurred during the execution of the background process " + id + "");
             body.append("\n\n");
             body.append(katieHost + "/swagger-ui/#/background-process-controller/getStatusOfCompletedProcessUsingGET");
@@ -153,6 +159,8 @@ public class BackgroundProcessService {
             } else {
                 mailerService.notifyAdministrator(subject, body.toString(), null, false);
             }
+        } else {
+            log.info("No error(s) occured during the execution of the background process '" + id + "'.");
         }
     }
 
@@ -214,9 +222,9 @@ public class BackgroundProcessService {
         NodeList statusList = rootEl.getElementsByTagName("status");
         for (int i = 0; i < statusList.getLength(); i++) {
             Element statusEl = (Element) statusList.item(i);
-            // TODO: Introduce / Use BackgroundProcessStatus object
-            String type = statusEl.getAttribute("type");
-            process.addStatusDescription(type + " --- " + statusEl.getAttribute("description"));
+            BackgroundProcessStatusType type = BackgroundProcessStatusType.valueOf(statusEl.getAttribute("type"));
+            String description = statusEl.getAttribute("description");
+            process.addStatusDescription(new BackgroundProcessStatus(description, type));
         }
         process.setStatus(status);
         return process;
