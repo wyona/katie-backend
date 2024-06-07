@@ -274,7 +274,7 @@ public class BenchmarkService {
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
 
-                mailerService.send(email, domain.getMailSenderEmail(), subject, getConpletedClassificationBenchmarkEmailBody(benchmarkResult, failedPredictions), true);
+                mailerService.send(email, domain.getMailSenderEmail(), subject, getConpletedClassificationBenchmarkEmailBody(domain, benchmarkResult, failedPredictions), true);
 
                 backgroundProcessService.updateProcessStatus(processId, "E-Mail notification sent to " + email);
             }
@@ -287,10 +287,15 @@ public class BenchmarkService {
     }
 
     /**
-     *
+     * Get email body re completed classification benchmark
      */
-    private String getConpletedClassificationBenchmarkEmailBody(String benchmarkResult, List<HumanPreferenceLabel> failedPredictions) {
-        StringBuilder body = new StringBuilder("<div>" + benchmarkResult + "</div>");
+    private String getConpletedClassificationBenchmarkEmailBody(Context domain, String benchmarkResult, List<HumanPreferenceLabel> failedPredictions) {
+        String domainLink = domain.getHost() + "/#/domain/" + domain.getId();
+        StringBuilder body = new StringBuilder();
+        body.append("<div>Classification benchmark completed for domain '" + domain.getName() + "' (" + domainLink + "):</div>");
+        body.append("<br/><br/>");
+        body.append("<div>" + benchmarkResult + "</div>");
+        body.append("<br/>");
         body.append("<h3>Failed predictions</h3>");
         body.append("<ol>");
         for (HumanPreferenceLabel failedPrediction : failedPredictions) {
