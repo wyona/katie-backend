@@ -306,11 +306,27 @@ public class SegmentationService {
 
         HttpEntity<String> request = new HttpEntity<String>(createRequestBody(text), headers);
 
+        // TODO: Make base url configurable
         String requestUrl = "https://api.ai21.com/studio/v1/segmentation";
-        log.info("Get segmentation: " + requestUrl);
+        log.info("Send request to segmentation endpoint: " + requestUrl);
         ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
         JsonNode bodyNode = response.getBody();
         log.info("Response JSON: " + bodyNode);
+        /*
+        {
+          "id":"910626cd-da80-ea77-10a2-b6350b9933ea",
+          "segments":[
+            {
+              "segmentText":"How to improve Jaccard’s feature-based \nsimilarity measure",
+              "segmentType":"normal_text_short"
+            },
+            {
+              "segmentText":"Similarity is one of the most straightforward ways to relate two objects and guide the human perception of the \nworld.\n\nIt has an important role in many areas, such as Information Retrieval, Natural Language Processing (NLP), Semantic Web \nand \nRecommender Systems.\n\nTo help applications in these areas achieve satisfying results in finding similar concepts, it is \nimportant \nto simulate human perception of similarity and assess which similarity measure is the most adequate.",
+              "segmentType":"normal_text"
+            }
+          ]
+        }
+         */
 
         ObjectMapper mapper = new ObjectMapper();
 
