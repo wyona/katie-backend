@@ -68,13 +68,19 @@ public class SegmentationService {
             log.info("Current sentence: " + currentSentence);
             currentChunk.append(currentSentence);
 
-            if (currentChunk.length() > chunkSize) {
+            if (currentChunk.length() >= chunkSize) {
                 chunks.add(currentChunk.toString());
+                log.info("Start new chunk ...");
                 currentChunk = new StringBuilder();
                 if (overlap) {
                     currentChunk.append(currentSentence);
                 }
             }
+        }
+
+        // INFO: If last chunk is shorter than max chunk size, then add it anyway
+        if (currentChunk.length() < chunkSize) {
+            chunks.add(currentChunk.toString());
         }
 
         return chunks;
