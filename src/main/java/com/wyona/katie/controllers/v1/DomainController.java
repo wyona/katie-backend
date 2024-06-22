@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
@@ -306,6 +307,57 @@ public class DomainController {
             log.info("Name of uploaded file: " + file.getOriginalFilename());
             String processId = UUID.randomUUID().toString();
             domainService.importPDF(file.getOriginalFilename(), file.getInputStream(), textSplitterImpl, domain, processId, user.getId());
+
+            return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Import HTML web page
+     */
+    @RequestMapping(value = "/{id}/import/html-web-page", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Import HTML web page into a particular domain")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
+    public ResponseEntity<?> importHTMLWebPage(
+            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "text-splitter", value = "Text Splitter", required = true)
+            @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
+            @ApiParam(name = "url", value = "URL of HTML web page", required = true)
+            @RequestParam(value = "url", required = true) URL url,
+            HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            User user = authenticationService.getUser(false, false);
+            if (user == null) {
+                throw new AccessDeniedException("User is not signed in!");
+            }
+            if (!domainService.isMemberOrAdmin(id)) {
+                throw new AccessDeniedException("User '" + user.getUsername() + "' is neither member of domain '" + id + "' nor admin!");
+            }
+
+            Context domain = domainService.getContext(id);
+
+            String processId = UUID.randomUUID().toString();
+            domainService.importHTMLWebPage(url, textSplitterImpl, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
