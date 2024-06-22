@@ -62,8 +62,8 @@ public class WebsiteConnector implements Connector {
             for (String url : urls) {
                 backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                 File dumpFile = domain.getUrlDumpFile(new URI(url));
-                String body = extractText(dumpFile);
-                String title = extractTitle(dumpFile, body);
+                String body = domainService.extractText(dumpFile);
+                String title = domainService.extractTitle(dumpFile, body);
                 String[] chunks = generateSegments(body, ksMeta, url, processId);
                 for (String chunk : chunks) {
                     qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
@@ -102,27 +102,6 @@ public class WebsiteConnector implements Connector {
         }
 
         return urls;
-    }
-
-    /**
-     *
-     */
-    private String extractTitle(File dumpFile, String text) {
-        // TODO: Get value of <title> from dumpFile
-        return text.substring(0, text.indexOf('\n')).trim();
-    }
-
-    /**
-     *
-     */
-    private String extractText(File dumpFile) throws Exception {
-        String content = Utils.convertInputStreamToString(new FileInputStream(dumpFile));
-        String text = Utils.stripHTML(content, true, true);
-        log.info("Extracted text: " + text);
-        text = text.trim();
-        Utils.saveText(text, new File(dumpFile.getParentFile(), "data-text-extracted.txt"), false);
-        return text;
-        //return Utils.convertInputStreamToString(new FileInputStream(new File(dumpFile.getParentFile(), "data-text-extracted.txt")));
     }
 
     /**
