@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 
@@ -88,6 +89,9 @@ public class ContextService {
 
     @Value("${qnasfwp.implementation}")
     private QnAExtractorImpl qnasFromWebpageDefaultImpl;
+
+    @Autowired
+    private UtilsService utilsService;
 
     @Autowired
     private AuthenticationService authService;
@@ -2546,6 +2550,8 @@ public class ContextService {
             pdDocument.close();
             in.close();
 
+            String title = filename; // TODO: Get PDF title
+
             List<Answer> qnas = new ArrayList<Answer>();
 
             List<String> chunks = new ArrayList<>();
@@ -2560,7 +2566,7 @@ public class ContextService {
                 chunks = segmentationService.getSegments(body, '\n', 2000, 100);
             }
             for (String chunk : chunks) {
-                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, filename, null, null, null, null, null, null, null, null, filename, null, false, null, false, null);
+                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, filename, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
                 qnas.add(qna);
                 String uuid = addQuestionAnswer(qna, domain).getUuid();
                 addToUuidUrlIndex(uuid, qna.getUrl(), domain);
@@ -2574,6 +2580,79 @@ public class ContextService {
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
         backgroundProcessService.stopProcess(bgProcessId, domain.getId());
+    }
+
+    /**
+     * Import HTML web page in the background
+     * @param url URL of HTML web page
+     */
+    @Async
+    public void importHTMLWebPage(URL url, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
+        backgroundProcessService.startProcess(bgProcessId, "Import HTML web page '" + url + "' into domain '" + domain.getId() + "'.", userId);
+        try {
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Dump web page ...");
+            deletePreviouslyImportedChunks(url.toString(), domain);
+            File dumpFile = utilsService.dumpContent(domain, url.toURI(), null);
+            ContentType contentType = ContentType.TEXT_HTML;
+            saveMetaInformation(url.toString(), url.toString(), new Date(), contentType, domain);
+
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Extract text from dumped web page ...");
+            String body = extractText(dumpFile);
+            String title = extractTitle(dumpFile, body);
+
+            List<Answer> qnas = new ArrayList<Answer>();
+
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Chunk extracted text into segments ...");
+            List<String> chunks = new ArrayList<>();
+            if (textSplitterImpl.equals(TextSplitterImpl.SENTENCE)) {
+                //chunks = segmentationService.splitBySentences(body, "en", 700, true);
+                chunks = segmentationService.splitBySentences(body, "en", 700, false);
+            } else if (textSplitterImpl.equals(TextSplitterImpl.AI21)) {
+                chunks = segmentationService.getSegmentsUsingAI21(body);
+            } else if (textSplitterImpl.equals(TextSplitterImpl.FIXED_SIZE)) {
+                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            } else {
+                log.error("No such text splitter implementation '" + textSplitterImpl + "'! Use fixed size text splitter ...");
+                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+            }
+            for (String chunk : chunks) {
+                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, url.toString(), null, null, null, null, null, null, null, null, title, null, false, null, false, null);
+                qnas.add(qna);
+                String uuid = addQuestionAnswer(qna, domain).getUuid();
+                addToUuidUrlIndex(uuid, qna.getUrl(), domain);
+                train(new QnA(qna), domain, true);
+            }
+            String msg = "Number of chunks extracted from HTML web page: " + chunks.size();
+            log.info(msg);
+            backgroundProcessService.updateProcessStatus(bgProcessId, msg);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
+        backgroundProcessService.stopProcess(bgProcessId, domain.getId());
+    }
+
+    /**
+     * Extract plain text from HTML file
+     * @param dumpFile File containing HTML
+     */
+    public String extractText(File dumpFile) throws Exception {
+        String content = Utils.convertInputStreamToString(new FileInputStream(dumpFile));
+        String text = Utils.stripHTML(content, true, true);
+        log.info("Extracted text: " + text);
+        text = text.trim();
+        Utils.saveText(text, new File(dumpFile.getParentFile(), "data-text-extracted.txt"), false);
+        return text;
+        //return Utils.convertInputStreamToString(new FileInputStream(new File(dumpFile.getParentFile(), "data-text-extracted.txt")));
+    }
+
+    /**
+     * Extract title from HTML file
+     * @param dumpFile File containing HTML
+     */
+    public String extractTitle(File dumpFile, String text) {
+        // TODO: Get value of <title> from dumpFile
+        return text.substring(0, text.indexOf('\n')).trim();
     }
 
     /**
