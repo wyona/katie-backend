@@ -2585,9 +2585,10 @@ public class ContextService {
     /**
      * Import HTML web page in the background
      * @param url URL of HTML web page
+     * @param cssSelector CSS selector, element[attribute=value], e.g. div[id="content"] or [div="text"]
      */
     @Async
-    public void importHTMLWebPage(URL url, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
+    public void importHTMLWebPage(URL url, String cssSelector, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import HTML web page '" + url + "' into domain '" + domain.getId() + "'.", userId);
         try {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Dump web page ...");
@@ -2597,7 +2598,7 @@ public class ContextService {
             saveMetaInformation(url.toString(), url.toString(), new Date(), contentType, domain);
 
             backgroundProcessService.updateProcessStatus(bgProcessId, "Extract text from dumped web page ...");
-            String body = extractText(dumpFile);
+            String body = extractText(dumpFile, cssSelector);
             String title = extractTitle(dumpFile, body);
 
             List<Answer> qnas = new ArrayList<Answer>();
@@ -2636,8 +2637,9 @@ public class ContextService {
      * Extract plain text from HTML file
      * @param dumpFile File containing HTML
      */
-    public String extractText(File dumpFile) throws Exception {
+    public String extractText(File dumpFile, String cssSelector) throws Exception {
         String content = Utils.convertInputStreamToString(new FileInputStream(dumpFile));
+        // TODO: Implement CSS selector (see https://www.w3schools.com/cssref/sel_attribute_value.php)
         String text = Utils.stripHTML(content, true, true);
         log.info("Extracted text: " + text);
         text = text.trim();

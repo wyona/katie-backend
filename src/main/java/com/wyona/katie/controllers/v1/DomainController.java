@@ -333,6 +333,8 @@ public class DomainController {
             @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
             @ApiParam(name = "url", value = "URL of HTML web page", required = true)
             @RequestParam(value = "url", required = true) URL url,
+            @ApiParam(name = "css-selector", value = "CSS selector, element[attribute=value], e.g. div[id='content'] or [id='text']", required = false)
+            @RequestParam(value = "css-selector", required = false) String cssSelector,
             HttpServletRequest request) {
 
         try {
@@ -357,7 +359,7 @@ public class DomainController {
             Context domain = domainService.getContext(id);
 
             String processId = UUID.randomUUID().toString();
-            domainService.importHTMLWebPage(url, textSplitterImpl, domain, processId, user.getId());
+            domainService.importHTMLWebPage(url, cssSelector, textSplitterImpl, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {

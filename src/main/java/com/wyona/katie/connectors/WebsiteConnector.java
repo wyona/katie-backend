@@ -62,7 +62,8 @@ public class WebsiteConnector implements Connector {
             for (String url : urls) {
                 backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                 File dumpFile = domain.getUrlDumpFile(new URI(url));
-                String body = domainService.extractText(dumpFile);
+                String cssSelector = null; // TODO: Allow CSS selector, e.g. div[id="content"] resp. [id="content"], because id is supposed to be unique
+                String body = domainService.extractText(dumpFile, cssSelector);
                 String title = domainService.extractTitle(dumpFile, body);
                 String[] chunks = generateSegments(body, ksMeta, url, processId);
                 for (String chunk : chunks) {
