@@ -4072,8 +4072,13 @@ public class ContextService {
 
     /**
      * Get preferences / ratings of predicted labels of a particular domain
+     * @param getChosen When true, then return ratings where label was not rejected
+     * @param getRejected When true, then return ratings where label was rejected
+     * @return preferences / ratings of predicted labels
      */
-    public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId) throws Exception {
+    public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId, boolean getChosen, boolean getRejected) throws Exception {
+        log.info("Get chosen labels: " + getChosen);
+        log.info("Get rejected labels: " + getRejected);
         List<HumanPreferenceLabel> preferences = new ArrayList<>();
 
         Context domain = getContext(domainId);
@@ -4099,7 +4104,18 @@ public class ContextService {
                         log.warn("No such label with Katie Id '" + humanPreference.getRejectedLabel().getKatieId() + "'! Label probably got deleted.");
                     }
                 }
-                preferences.add(humanPreference);
+
+                if (humanPreference.getRejectedLabel() != null) {
+                    log.info("Rejected label: " + humanPreference.getRejectedLabel().getTerm());
+                    if (getRejected) {
+                        preferences.add(humanPreference);
+                    }
+                } else {
+                    log.info("Chosen label: " + humanPreference.getChosenLabel().getTerm());
+                    if (getChosen) {
+                        preferences.add(humanPreference);
+                    }
+                }
             }
         } else {
             log.warn("No preferences / ratings yet.");

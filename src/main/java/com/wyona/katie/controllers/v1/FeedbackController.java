@@ -237,6 +237,10 @@ public class FeedbackController {
     public ResponseEntity<?> getRatingsOfPredictedLabels(
             @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "get-chosen", value = "Labels which were predicted correctly", required = false, defaultValue = "true")
+            @RequestParam(value = "get-chosen", required = false) Boolean getChosen,
+            @ApiParam(name = "get-rejected", value = "Labels which were rejected respectively not predicted correctly", required = false, defaultValue = "true")
+            @RequestParam(value = "get-rejected", required = false) Boolean getRejected,
             @ApiParam(name = "limit", value = "Pagination: Limit the number of returned ratings", required = true, defaultValue = "10")
             @RequestParam(value = "limit", required = true) int limit,
             @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned ratings", required = true, defaultValue = "0")
@@ -262,7 +266,7 @@ public class FeedbackController {
                 }
                  */
 
-                HumanPreferenceLabel[] preferences = domainService.getRatingsOfPredictedLabels(domainId);
+                HumanPreferenceLabel[] preferences = domainService.getRatingsOfPredictedLabels(domainId, getChosen, getRejected);
                 return new ResponseEntity<>(preferences, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);

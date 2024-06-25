@@ -224,7 +224,7 @@ public class BenchmarkService {
     }
 
     /**
-     * TODO
+     * Run classification benchmark
      */
     @Async
     public void runClassificationBenchmark(String domainId, int throttleTimeInMillis, String email, User user, String processId) {
@@ -236,7 +236,7 @@ public class BenchmarkService {
             LocalDateTime currentDateTime = LocalDateTime.now();
             String benchmarkId = getBenchmarkId(currentDateTime);
 
-            HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId);
+            HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId, true, true);
             int successful = 0;
             List<HumanPreferenceLabel> failedPredictions = new ArrayList<>();
             int total = preferences.length;
