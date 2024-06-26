@@ -16,7 +16,7 @@ By default, <strong>Katie</strong> uses [Apache Lucene](https://lucene.apache.or
 
 ## Quickstart
 
-To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/wyona/katie/tags) (with Prefix [/katie](https://hub.docker.com/repository/docker/wyona/katie-with-prefix/tags)) and run Katie locally, please follow the steps below
+To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/wyona/katie/tags) (with prefix [/katie](https://hub.docker.com/repository/docker/wyona/katie-with-prefix/tags)) and run Katie locally, please follow the steps below
 
 * Download docker compose [file](https://github.com/wyona/katie-backend/blob/main/env/docker/run/docker-compose.yml)
 * Open docker compose file and configure volume path (search for TODO_REPLACE_DIRECTORY_PATH)
