@@ -12,10 +12,10 @@ COPY java.security /usr/local/openjdk-11/conf/security/.
 
 RUN mkdir /opt/tomcat/
 WORKDIR /opt/tomcat
-RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.99/bin/apache-tomcat-8.5.99.tar.gz
+RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.100/bin/apache-tomcat-8.5.100.tar.gz
 #RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
 RUN tar xvfz apache*.tar.gz
-RUN mv apache-tomcat-8.5.99/* /opt/tomcat/.
+RUN mv apache-tomcat-8.5.100/* /opt/tomcat/.
 #RUN mv apache-tomcat-9.0.56/* /opt/tomcat/.
 RUN chmod -R 775 /opt/tomcat
 
