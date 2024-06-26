@@ -103,7 +103,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 * Configure Tomcat path inside build.sh (see TOMCAT_HOME)
 * Configure 'volume.base.path' and comment/disable 'server.servlet.session.cookie.secure' inside src/main/resources/application-prod.properties
 * Either remove &lt;base href="/"&gt; or set &lt;base href="/katie/"&gt; inside src/main/webapp/index.html
-* Set i18n path to "./assets/i18n/" (1 location) and TinyMCE path to 'base_url:"./tinymce"' (6 locations) inside src/main/webapp/main.js
+* Set i18n path to "./assets/i18n/" (1 location) and TinyMCE path to 'base_url:"./tinymce"' (7 locations) inside src/main/webapp/main.js
 * Build webapp as war, run: 'sh build.sh'
 * Startup Tomcat: ./bin/startup.sh
 * Request in browser: http://127.0.0.1:8080/katie/
