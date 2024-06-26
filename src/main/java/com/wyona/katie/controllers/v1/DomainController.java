@@ -1286,6 +1286,8 @@ public class DomainController {
     public ResponseEntity<?> retrainClassifier(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
+            // TODO: Add description for file, e.g. "Preference Dataset" and if not provided, then the existing samples are being used
+            @RequestPart(name = "file", required = false) MultipartFile preferenceDataset,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
@@ -1296,7 +1298,7 @@ public class DomainController {
             Context domain = domainService.getDomain(id);
             String bgProcessId = UUID.randomUUID().toString();
             String userId = authenticationService.getUserId();
-            classificationService.retrain(domain, 80, bgProcessId, userId);
+            classificationService.retrain(domain, preferenceDataset, 80, bgProcessId, userId);
             String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch(AccessDeniedException e) {

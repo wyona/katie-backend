@@ -285,7 +285,7 @@ public class BenchmarkController {
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> performBenchmark(
-            // TODO: Add description for file, e.g. "Dataset" and that if not provided a default set is being used
+            // TODO: Add description for file, e.g. "Test Dataset" and if not provided, then a default test dataset is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
             @ApiParam(name = "search-implementations", value = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
             @RequestParam(value = "search-implementations", required = true) String searchImplementations,

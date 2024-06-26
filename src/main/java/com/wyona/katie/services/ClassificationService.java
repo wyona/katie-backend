@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 
@@ -61,12 +62,20 @@ public class ClassificationService {
 
     /**
      * Retrain classifier
+     * @param preferenceDataset Optional preference dataset
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      * @param bgProcessId Background process Id
      */
     @Async
-    public void retrain(Context domain, int trainPercentage, String bgProcessId, String userId) {
+    public void retrain(Context domain, MultipartFile preferenceDataset, int trainPercentage, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
+
+        if (preferenceDataset != null) {
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
+        } else {
+            backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples.");
+        }
+
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
         try {
             classifier.retrain(domain, bgProcessId);
