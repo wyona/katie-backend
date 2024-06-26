@@ -1,0 +1,41 @@
+{
+  "name": "Example classification dataset",
+  "labels": [
+    {
+      "id": "6f7fe175-d556-4e50-86dc-78034f76f1d4_7ac4cf1d-3c25-412e-9eae-93e95050c719",
+      "frequency": 1,
+      "term": "Communication and Collaboration, M365-Teams"
+    },
+    {
+      "id": "64e3bb24-1522-4c49-8f82-f99b34a82062_b20bea7a-7e77-48cd-86b9-f5bdfb5339ea",
+      "frequency": 1,
+      "term": "Network, Connectivity Wired"
+    }
+  ],
+  "samples": [
+    {
+      "id": "I-240326-0860",
+      "text": "Dear Wyona Support Team In a team on MS Teams, I have added two people with non-company email addresses as guests to the team: calvin@yulup.com hobbes@yulup.com The two people are affiliated with the University.  When added to the team, the persons receive an invitation - see attachment \"invitation.png\". However, when clicking on the corresponding link, access to the team does not work, the team is not found.  What do I have to do/set up so that guests can access the team?  For your information: The two people have already contacted the University Information Desk, but they were unable to resolve the problem, as the problem appears to lie with the team settings.  Best regards Michael Wechner",
+      "classification": {
+        "id": "6f7fe175-d556-4e50-86dc-78034f76f1d4_7ac4cf1d-3c25-412e-9eae-93e95050c719",
+        "term": "Communication and Collaboration, M365-Teams"
+      }
+    },
+    {
+      "id": "I-240326-0912",
+      "text": "Subject: Update to new Teams does not work Good evening Unfortunately, I cannot update my Teams Classic to the new Teams.  Operating system: MAC, managed computer, C-500021 Client problem? Best regards Michael",
+      "classification": {
+        "id": "6f7fe175-d556-4e50-86dc-78034f76f1d4_7ac4cf1d-3c25-412e-9eae-93e95050c719",
+        "term": "Communication and Collaboration, M365-Teams"
+      }
+    },
+    {
+      "id": "I-240326-0949",
+      "text": "Hi, my laptop connects to the local Wifi, but otherwise I am not able to connect to the internet. Any idea what might be wrong? Thanks!",
+      "classification": {
+        "id": "64e3bb24-1522-4c49-8f82-f99b34a82062_b20bea7a-7e77-48cd-86b9-f5bdfb5339ea",
+        "term": "Network, Connectivity Wired"
+      }
+    }
+  ]
+}
