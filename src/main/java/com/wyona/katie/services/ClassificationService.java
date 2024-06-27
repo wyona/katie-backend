@@ -78,7 +78,11 @@ public class ClassificationService {
         if (preferences != null) {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
             for (HumanPreferenceLabel preference : preferences) {
-                backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + preference.getText() + "'");
+                if (preference.getChosenLabel() != null) {
+                    backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + preference.getText() + "' (Label: " + preference.getChosenLabel().getTerm() + ", Katie Id: " + preference.getChosenLabel().getKatieId() + ", Client message Id: " + preference.getMeta().getClientMessageId() + ")");
+                } else {
+                    backgroundProcessService.updateProcessStatus(bgProcessId, "Human preference of text '" + preference.getText() + "' has no chosen label!", BackgroundProcessStatusType.WARN);
+                }
             }
         } else {
             backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples.");
