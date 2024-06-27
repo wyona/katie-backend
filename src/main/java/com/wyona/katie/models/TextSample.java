@@ -17,6 +17,8 @@ public class TextSample {
 
     /**
      * @param id Sample Id, e.g. "I-240605-0858"
+     * @param text Sample text, e.g. "My TS Teams does not connect anymore"
+     * @param classification Sample classification, e.g. "Communication and Collaboration, M365-Teams"
      */
     public TextSample(String id, String text, Classification classification) {
         this.id = id;
@@ -25,14 +27,14 @@ public class TextSample {
     }
 
     /**
-     *
+     * Set sample Id, e.g. "I-240605-0858"
      */
     public void setId(String id) {
         this.id = id;
     }
 
     /**
-     *
+     * Get sample Id, e.g. "I-240605-0858"
      */
     public String getId() {
         return id;
