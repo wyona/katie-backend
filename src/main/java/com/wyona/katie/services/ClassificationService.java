@@ -1,5 +1,7 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierEmbeddingsCentroidsImpl;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierLLMImpl;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Classification service to predict labels for text(s)
@@ -72,6 +76,21 @@ public class ClassificationService {
 
         if (preferenceDataset != null) {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                JsonNode rootNode = mapper.readTree(preferenceDataset.getInputStream());
+                List<HumanPreferenceLabel> preferences = new ArrayList<>();
+                if (rootNode.isArray()) {
+                    for (int i = 0; i < rootNode.size(); i++) {
+                        JsonNode preferenceNode= rootNode.get(i);
+                        String text = preferenceNode.get("text").asText();
+                        log.info("Text: " + text);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            }
         } else {
             backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples.");
         }
@@ -125,5 +144,58 @@ public class ClassificationService {
      */
     public ClassificationDataset getDataset(Context domain, boolean labelsOnly, int offset, int limit) throws Exception {
         return classificationRepoService.getDataset(domain, labelsOnly, offset, limit);
+    }
+
+    /**
+     * Get preferences / ratings of predicted labels of a particular domain
+     * @param getChosen When true, then return ratings where label was not rejected
+     * @param getRejected When true, then return ratings where label was rejected
+     * @return preferences / ratings of predicted labels
+     */
+    public HumanPreferenceLabel[] getRatingsOfPredictedLabels(Context domain, boolean getChosen, boolean getRejected) throws Exception {
+        log.info("Get chosen labels: " + getChosen);
+        log.info("Get rejected labels: " + getRejected);
+        List<HumanPreferenceLabel> preferences = new ArrayList<>();
+
+        File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
+        File[] ratingFiles = ratingsDir.listFiles();
+        ObjectMapper mapper = new ObjectMapper();
+        if (ratingFiles != null) {
+            for (File ratingFile : ratingFiles) {
+                HumanPreferenceLabel humanPreference = mapper.readValue(ratingFile, HumanPreferenceLabel.class);
+                if (humanPreference.getChosenLabel() != null) {
+                    Classification classification = classificationRepoService.getClassification(domain, humanPreference.getChosenLabel().getKatieId());
+                    if (classification != null) {
+                        humanPreference.getChosenLabel().setId(classification.getId());
+                    } else {
+                        log.warn("No such label with Katie Id '" + humanPreference.getChosenLabel().getKatieId() + "'! Label probably got deleted.");
+                    }
+                }
+                if (humanPreference.getRejectedLabel() != null) {
+                    Classification classification = classificationRepoService.getClassification(domain, humanPreference.getRejectedLabel().getKatieId());
+                    if (classification != null) {
+                        humanPreference.getRejectedLabel().setId(classification.getId());
+                    } else {
+                        log.warn("No such label with Katie Id '" + humanPreference.getRejectedLabel().getKatieId() + "'! Label probably got deleted.");
+                    }
+                }
+
+                if (humanPreference.getRejectedLabel() != null) {
+                    log.info("Rejected label: " + humanPreference.getRejectedLabel().getTerm());
+                    if (getRejected) {
+                        preferences.add(humanPreference);
+                    }
+                } else {
+                    log.info("Chosen label: " + humanPreference.getChosenLabel().getTerm());
+                    if (getChosen) {
+                        preferences.add(humanPreference);
+                    }
+                }
+            }
+        } else {
+            log.warn("No preferences / ratings yet.");
+        }
+
+        return preferences.toArray(new HumanPreferenceLabel[0]);
     }
 }

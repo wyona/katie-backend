@@ -4077,51 +4077,8 @@ public class ContextService {
      * @return preferences / ratings of predicted labels
      */
     public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId, boolean getChosen, boolean getRejected) throws Exception {
-        log.info("Get chosen labels: " + getChosen);
-        log.info("Get rejected labels: " + getRejected);
-        List<HumanPreferenceLabel> preferences = new ArrayList<>();
-
         Context domain = getContext(domainId);
-        File ratingsDir = domain.getRatingsOfPredictedLabelsDirectory();
-        File[] ratingFiles = ratingsDir.listFiles();
-        ObjectMapper mapper = new ObjectMapper();
-        if (ratingFiles != null) {
-            for (File ratingFile : ratingFiles) {
-                HumanPreferenceLabel humanPreference = mapper.readValue(ratingFile, HumanPreferenceLabel.class);
-                if (humanPreference.getChosenLabel() != null) {
-                    Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getChosenLabel().getKatieId());
-                    if (classification != null) {
-                        humanPreference.getChosenLabel().setId(classification.getId());
-                    } else {
-                        log.warn("No such label with Katie Id '" + humanPreference.getChosenLabel().getKatieId() + "'! Label probably got deleted.");
-                    }
-                }
-                if (humanPreference.getRejectedLabel() != null) {
-                    Classification classification = classificationRepositoryService.getClassification(domain, humanPreference.getRejectedLabel().getKatieId());
-                    if (classification != null) {
-                        humanPreference.getRejectedLabel().setId(classification.getId());
-                    } else {
-                        log.warn("No such label with Katie Id '" + humanPreference.getRejectedLabel().getKatieId() + "'! Label probably got deleted.");
-                    }
-                }
-
-                if (humanPreference.getRejectedLabel() != null) {
-                    log.info("Rejected label: " + humanPreference.getRejectedLabel().getTerm());
-                    if (getRejected) {
-                        preferences.add(humanPreference);
-                    }
-                } else {
-                    log.info("Chosen label: " + humanPreference.getChosenLabel().getTerm());
-                    if (getChosen) {
-                        preferences.add(humanPreference);
-                    }
-                }
-            }
-        } else {
-            log.warn("No preferences / ratings yet.");
-        }
-
-        return preferences.toArray(new HumanPreferenceLabel[0]);
+        return classificationService.getRatingsOfPredictedLabels(domain, getChosen, getRejected);
     }
 
     /**
