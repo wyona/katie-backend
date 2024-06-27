@@ -1328,10 +1328,29 @@ public class DomainController {
                 if (rootNode.isArray()) {
                     for (int i = 0; i < rootNode.size(); i++) {
                         JsonNode preferenceNode= rootNode.get(i);
-                        HumanPreferenceLabel preference = new HumanPreferenceLabel();
                         String text = preferenceNode.get("text").asText();
+                        HumanPreferenceLabel preference = new HumanPreferenceLabel();
                         preference.setText(text);
-                        // TODO: Add rest of data
+                        if (preferenceNode.has("rejectedLabel")) {
+                            JsonNode rejectedNode = preferenceNode.get("rejectedLabel");
+                            // TODO: Add rest of data
+                        }
+                        if (preferenceNode.has("chosenLabel")) {
+                            JsonNode chosenNode = preferenceNode.get("chosenLabel");
+                            // TODO: Add rest of data
+                            String label = chosenNode.get("term").asText();
+                            String foreignId = chosenNode.get("id").asText();
+                            String katieId = chosenNode.get("katieId").asText();
+                            Classification chosenLabel = new Classification(label, foreignId, katieId);
+                            preference.setChosenLabel(chosenLabel);
+                        }
+                        if (preferenceNode.has("meta")) {
+                            JsonNode metaNode = preferenceNode.get("meta");
+                            String clientMessageId = metaNode.get("clientMessageId").asText();
+                            HumanPreferenceMeta meta = new HumanPreferenceMeta();
+                            meta.setClientMessageId(clientMessageId);
+                            preference.setMeta(meta);
+                        }
                         preferences.add(preference);
                     }
                 }
