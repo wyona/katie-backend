@@ -79,7 +79,24 @@ public class ClassificationService {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
-                    backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + preference.getText() + "' (Label: " + preference.getChosenLabel().getTerm() + ", Katie Id: " + preference.getChosenLabel().getKatieId() + ", Client message Id: " + preference.getMeta().getClientMessageId() + ")");
+                    String clientMsgId = preference.getMeta().getClientMessageId();
+
+                    Classification classification = new Classification();
+                    classification.setKatieId(preference.getChosenLabel().getKatieId());
+                    classification.setId(preference.getChosenLabel().getId());
+                    classification.setTerm(preference.getChosenLabel().getTerm());
+
+                    TextSample sample = new TextSample(clientMsgId, preference.getText(), classification);
+                    backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + sample.getText() + "' (Label: " + sample.getClassification().getTerm() + ", Katie Id: " + classification.getKatieId() + ", Client message Id: " + sample.getId() + ")");
+                    /*
+                    try {
+                        importSample(domain, sample);
+                    } catch (Exception e) {
+                        backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+                        log.error(e.getMessage(), e);
+                    }
+
+                     */
                 } else {
                     backgroundProcessService.updateProcessStatus(bgProcessId, "Human preference of text '" + preference.getText() + "' has no chosen label!", BackgroundProcessStatusType.WARN);
                 }
