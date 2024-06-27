@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
@@ -1281,7 +1282,7 @@ public class DomainController {
     /**
      * Retrain classifier
      */
-    @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value="Retrain classifier")
     public ResponseEntity<?> retrainClassifier(
             @ApiParam(name = "id", value = "Domain Id",required = true)
@@ -1298,7 +1299,12 @@ public class DomainController {
             Context domain = domainService.getDomain(id);
             String bgProcessId = UUID.randomUUID().toString();
             String userId = authenticationService.getUserId();
-            classificationService.retrain(domain, preferenceDataset, 80, bgProcessId, userId);
+
+            // INFO: The method retrain(...) is using @Async, therefore we have to read the preference dataset before
+            List<HumanPreferenceLabel> preferences = getHumanPreferences(preferenceDataset);
+
+            classificationService.retrain(domain, preferences, 80, bgProcessId, userId);
+
             String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -1308,6 +1314,33 @@ public class DomainController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Get human preferences from file
+     */
+    private List<HumanPreferenceLabel> getHumanPreferences(MultipartFile preferenceDataset) {
+        if (preferenceDataset != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                JsonNode rootNode = mapper.readTree(new BufferedInputStream(preferenceDataset.getInputStream()));
+                List<HumanPreferenceLabel> preferences = new ArrayList<>();
+                if (rootNode.isArray()) {
+                    for (int i = 0; i < rootNode.size(); i++) {
+                        JsonNode preferenceNode= rootNode.get(i);
+                        HumanPreferenceLabel preference = new HumanPreferenceLabel();
+                        String text = preferenceNode.get("text").asText();
+                        preference.setText(text);
+                        // TODO: Add rest of data
+                        preferences.add(preference);
+                    }
+                }
+                return preferences;
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        return null;
     }
 
     /**

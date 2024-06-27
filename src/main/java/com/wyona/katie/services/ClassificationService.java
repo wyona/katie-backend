@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,30 +67,18 @@ public class ClassificationService {
 
     /**
      * Retrain classifier
-     * @param preferenceDataset Optional preference dataset
+     * @param preferences Optional human preferences
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      * @param bgProcessId Background process Id
      */
     @Async
-    public void retrain(Context domain, MultipartFile preferenceDataset, int trainPercentage, String bgProcessId, String userId) {
+    public void retrain(Context domain, List<HumanPreferenceLabel> preferences, int trainPercentage, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
 
-        if (preferenceDataset != null) {
+        if (preferences != null) {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                JsonNode rootNode = mapper.readTree(preferenceDataset.getInputStream());
-                List<HumanPreferenceLabel> preferences = new ArrayList<>();
-                if (rootNode.isArray()) {
-                    for (int i = 0; i < rootNode.size(); i++) {
-                        JsonNode preferenceNode= rootNode.get(i);
-                        String text = preferenceNode.get("text").asText();
-                        log.info("Text: " + text);
-                    }
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            for (HumanPreferenceLabel preference : preferences) {
+                backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + preference.getText() + "'");
             }
         } else {
             backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples.");
