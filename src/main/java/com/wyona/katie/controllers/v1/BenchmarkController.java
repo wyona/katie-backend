@@ -195,7 +195,7 @@ public class BenchmarkController {
             @RequestParam(value = "sentence-two", required = true) String sentenceTwo,
             @ApiParam(name = "embeddings-impl", value = "Embeddings implementation / provider",required = true)
             @RequestParam(value = "embeddings-impl", required = true) EmbeddingsImpl embeddingsImpl,
-            @ApiParam(name = "get-embeddings", value = "When set to true, then embeddings will be returned as well (false by default)",required = false)
+            @ApiParam(name = "get-embeddings", value = "When set to true, then embeddings will be returned as well", required = false, defaultValue = "false")
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
