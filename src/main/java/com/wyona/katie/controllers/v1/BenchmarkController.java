@@ -186,6 +186,9 @@ public class BenchmarkController {
      */
     @RequestMapping(value = "/similarity-sentences", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Get confidence score whether two sentences are similar")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> getSentencesSimilarity(
             @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -199,8 +202,9 @@ public class BenchmarkController {
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
-        if (!contextService.isMemberOrAdmin(domainId)) {
-            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        if (!contextService.isAuthorized(domainId, request, "/similarity-sentences", JwtService.GET_SENTENCE_SIMILARITY)) {
+            log.warn("Not authorized to get similarity of sentences!");
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
 
         // TODO: Billing per domain for embeddings, e.g. Cohere, OpenAPI, Aleph Alpha, ...
