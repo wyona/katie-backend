@@ -43,6 +43,7 @@ public class JwtService {
 
     public static final String SCOPE_READ_LABELS = "read:labels";
     public static final String SCOPE_CONNECT_WITH_DOMAIN = "connect-with-domain";
+    public static final String GET_SENTENCE_SIMILARITY = "get-sentence-similarity";
 
     @Value("${config.data_path}")
     private String configDataPath;
