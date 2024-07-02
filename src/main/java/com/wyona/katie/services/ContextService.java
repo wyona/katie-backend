@@ -604,7 +604,9 @@ public class ContextService {
     }
 
     /**
-     *
+     * Generate access token
+     * @param endpoint Rest interface endpoint, e.g. "/similarity-sentences"
+     * @param scope Scope of access tokem, e.g. "get-sentence-similarity"
      */
     private String generateJWTAccessToken(String endpoint, String scope, long seconds) {
         JWTPayload jwtPayload = new JWTPayload();
@@ -2331,7 +2333,7 @@ public class ContextService {
     }
 
     /**
-     * Check whether valid access token provided or whether user is signed in and is either administrator or domain member
+     * Check whether valid access token provided ("scope" and "endpoint" as private claims) or whether user is signed in and is either administrator or domain member
      * @param domainId Domain Id
      * @param request Request that might contain access token
      * @param endpoint Endpoint, e.g. "/abb6edd3-34a9-4a84-b12a-13d5dfd8152f/classification/labels"
@@ -2347,6 +2349,7 @@ public class ContextService {
                 if (jwtTokenEndpoint != null && jwtTokenEndpoint.equals(endpoint)) {
                     String[] scopes = jwtService.getJWTScope(jwtToken);
                     if (containsScope(scopes, scope)) {
+                        log.info("Scope and endpoint of JWT match :-)");
                         return true;
                     } else {
                         log.warn("Scope '" + scope + "' does not match with scopes provided by JWT token.");
