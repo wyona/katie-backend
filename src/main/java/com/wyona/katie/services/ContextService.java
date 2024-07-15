@@ -2336,8 +2336,8 @@ public class ContextService {
      * Check whether valid access token provided ("scope" and "endpoint" as private claims) or whether user is signed in and is either administrator or domain member
      * @param domainId Domain Id
      * @param request Request that might contain access token
-     * @param endpoint Endpoint, e.g. "/abb6edd3-34a9-4a84-b12a-13d5dfd8152f/classification/labels"
-     * @param scope Scope of access tokem, e.g. "read:labels" (see https://datatracker.ietf.org/doc/html/rfc8693#name-relationship-between-resour)
+     * @param endpoint Endpoint, e.g. "/abb6edd3-34a9-4a84-b12a-13d5dfd8152f/classification/labels" or "/similarity-sentences"
+     * @param scope Scope of access tokem, e.g. "read:labels" (see https://datatracker.ietf.org/doc/html/rfc8693#name-relationship-between-resour) or "get-sentence-similarity"
      * @return true, when either valid JWT token for particular endpoint provided or when user is signed in and is member of domain or administrator, otherwise return false
      */
     public boolean isAuthorized(String domainId, HttpServletRequest request, String endpoint, String scope) {
