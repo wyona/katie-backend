@@ -3451,6 +3451,18 @@ public class ContextService {
     }
 
     /**
+     *
+     */
+    public boolean deleteLabelRating(String domainId, String ratingId) throws Exception {
+        if (!isMemberOrAdmin(domainId)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+        Context domain = getContext(domainId);
+        File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(ratingId, domain);
+        return ratingFile.delete();
+    }
+
+    /**
      * Update trained QnA
      * @param answer Updated answer
      * @param faqLanguage FAQ language, e.g. "en" or "de"
