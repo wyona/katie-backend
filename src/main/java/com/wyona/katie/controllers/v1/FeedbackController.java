@@ -276,4 +276,38 @@ public class FeedbackController {
             return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
+
+    /**
+     * Delete label rating
+     */
+    @RequestMapping(value = "/{domain-id}/rating-label/{rating-id}", method = RequestMethod.DELETE, produces = "application/json")
+    @Operation(summary="Delete label rating")
+    public ResponseEntity<?> deleteAutocompletionEntry(
+            @ApiParam(name = "domain-id", value = "Domain Id",required = true)
+            @PathVariable(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "rating-id", value = "Rating Id",required = true)
+            @PathVariable(value = "rating-id", required = true) String ratingId,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(domainId)) {
+            return new ResponseEntity<>(new Error("Domain '" + domainId + "' does not exist!", "NOT_FOUND"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            boolean deleted = domainService.deleteLabelRating(domainId, ratingId);
+            if (deleted) {
+                return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                String errMsg = "Label rating '" + ratingId + "' did not get deleted.";
+                log.error(errMsg);
+                return new ResponseEntity<>(new Error(errMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            }
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
