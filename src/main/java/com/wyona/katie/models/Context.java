@@ -496,7 +496,7 @@ public class Context {
     }
 
     /**
-     *
+     * Get directory path containing ratings of predicted labels
      */
     public File getRatingsOfPredictedLabelsDirectory() {
         return new File(getClassificationsDirectory(), "ratings");
