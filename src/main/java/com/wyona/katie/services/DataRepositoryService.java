@@ -1584,7 +1584,7 @@ public class DataRepositoryService {
     }
 
     /**
-     *
+     * Get file containing rating of predicted classification
      */
     protected File getRatingOfPredictedClassificationsFile(String uuid, Context domain) {
         return new File(domain.getRatingsOfPredictedLabelsDirectory(), uuid + ".json");
