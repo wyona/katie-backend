@@ -2011,7 +2011,7 @@ public class DomainController {
      * Toggle whether a particular user is a moderator
      */
     @RequestMapping(value = "/{id}/user/{username}/moderator", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether a particular user is a moderator")
+    @Operation(summary="Toggle whether a particular user is a moderator")
     public ResponseEntity<?> toggleModerator(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String domainId,
@@ -2020,7 +2020,7 @@ public class DomainController {
             HttpServletRequest request) {
 
         if (!domainService.existsContext(domainId)) {
-            return new ResponseEntity<>(new Error("Domain '" + domainId + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new Error("Domain '" + domainId + "' does not exist!", "NOT_FOUND"), HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -2039,7 +2039,7 @@ public class DomainController {
 
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
-            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
