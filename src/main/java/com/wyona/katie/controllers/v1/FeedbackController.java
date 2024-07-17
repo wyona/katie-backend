@@ -310,4 +310,33 @@ public class FeedbackController {
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Toggle approval of a label rating
+     */
+    @RequestMapping(value = "/{domain-id}/rating-label/{rating-id}/approve-disapprove", method = RequestMethod.PUT, produces = "application/json")
+    @Operation(summary="Toggle approval of a label rating")
+    public ResponseEntity<?> toggleApprovalOfLabelRating(
+            @ApiParam(name = "domain-id", value = "Domain Id",required = true)
+            @PathVariable(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "rating-id", value = "Rating Id",required = true)
+            @PathVariable(value = "rating-id", required = true) String ratingId,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(domainId)) {
+            return new ResponseEntity<>(new Error("Domain '" + domainId + "' does not exist!", "NOT_FOUND"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            log.info("Toggle approval of a label rating '" + ratingId + "'");
+            boolean isApproved = domainService.toggleApprovalOfLabelRating(domainId, ratingId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
