@@ -3475,20 +3475,21 @@ public class ContextService {
         try {
             JsonNode rootNode = mapper.readTree(ratingFile);
             JsonNode metaNode = rootNode.get("meta");
-            if (metaNode.has("approved")) {
-                JsonNode approvedNode = metaNode.get("approved");
-                Boolean isApproved = approvedNode.asBoolean();
+            Boolean isApproved = false;
+            if (metaNode.has(HumanPreferenceLabel.APPROVED_FIELD)) {
+                JsonNode approvedNode = metaNode.get(HumanPreferenceLabel.APPROVED_FIELD);
+                isApproved = approvedNode.asBoolean();
                 if (isApproved) {
                     log.info("Label rating is approved");
                 } else {
                     log.info("Label rating is disapproved");
                 }
-                ((ObjectNode) metaNode).put("approved", !isApproved);
             } else {
-                Boolean isApproved = false;
+                isApproved = false;
                 log.info("Label rating is disapproved");
-                ((ObjectNode) metaNode).put("approved", !isApproved);
             }
+
+            ((ObjectNode) metaNode).put(HumanPreferenceLabel.APPROVED_FIELD, !isApproved);
 
             mapper.writeValue(ratingFile, rootNode);
         } catch (Exception e) {
