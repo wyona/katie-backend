@@ -3470,8 +3470,30 @@ public class ContextService {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
         Context domain = getContext(domainId);
-        //File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(ratingId, domain);
-        //return ratingFile.delete();
+        File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(ratingId, domain);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode rootNode = mapper.readTree(ratingFile);
+            JsonNode metaNode = rootNode.get("meta");
+            if (metaNode.has("approved")) {
+                JsonNode approvedNode = metaNode.get("approved");
+                Boolean isApproved = approvedNode.asBoolean();
+                if (isApproved) {
+                    log.info("Label rating is approved");
+                } else {
+                    log.info("Label rating is disapproved");
+                }
+                ((ObjectNode) metaNode).put("approved", !isApproved);
+            } else {
+                Boolean isApproved = false;
+                log.info("Label rating is disapproved");
+                ((ObjectNode) metaNode).put("approved", !isApproved);
+            }
+
+            mapper.writeValue(ratingFile, rootNode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
         return true;
     }
 
