@@ -21,6 +21,7 @@ public class HumanPreferenceMeta {
     private String humanFeedback;
     private String userEmail;
     private String clientMessageId;
+    private Boolean approved;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -29,6 +30,7 @@ public class HumanPreferenceMeta {
     public HumanPreferenceMeta() {
         this.rating = null;
         this.epochTime = null;
+        this.approved = false;
     }
 
     /**
@@ -155,5 +157,19 @@ public class HumanPreferenceMeta {
      */
     public String getClientMessageId() {
         return clientMessageId;
+    }
+
+    /**
+     * @return true when label rating was approved by another expert, otherwise return false
+     */
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    /**
+     * @param approved True when label rating was approved by another expert, otherwise set to false
+     */
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
     }
 }
