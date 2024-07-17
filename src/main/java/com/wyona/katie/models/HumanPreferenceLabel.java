@@ -15,6 +15,7 @@ public class HumanPreferenceLabel {
     public final static String LABEL_KATIE_ID_FIELD = "katieId";
     public final static String CHOSEN_LABEL_FIELD = "chosenLabel";
     public final static String REJECTED_LABEL_FIELD = "rejectedLabel";
+    public final static String APPROVED_FIELD = "approved";
 
     private String text;
     private Classification chosenLabel;
