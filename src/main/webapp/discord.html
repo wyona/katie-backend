@@ -138,7 +138,7 @@ Consider Katie as a human being who is eager to learn, but with a much better me
   <li>Add an App icon and a short Description</li>
   <li>Click in the right menu on "Bot" and click on "Reset Token" and copy the generated token and very IMPORTANT, enable "Message Content Intent", because otherwise no messages will be sent to Katie.</li>
   <li>Enable Discord (set application property <em>discord.enabled</em> or <em>DISCORD_ENABLED</em> to true)</li>
-  <li>Add the token to Katie (set application property <em>discord.bot.token</em> or <em>DISCORD_BOT_TOKEN</em>), such that Katie can register with Discord</li>
+  <li>Add the token to Katie (set application property <em>discord.bot.token</em> (inside secret-keys.properties) or <em>DISCORD_BOT_TOKEN</em>), such that Katie can register with Discord</li>
   <li><a href="https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links" target="_blank">Add bot to your Discord server</a>, e.g. https://discord.com/oauth2/authorize?client_id=1196487754297643058&scope=bot&permissions=277025508352</li>
   <li>Enter the command <em>/invite</em> in one of your Discord server channels and Katie will ask whether you want to connect this channel with a Katie domain</li>
   <li>Connect the Discord channel with a Katie domain using <a href="/swagger-ui/#/discord-bot-controller/connectGuildChannelWithDomainUsingGET" target="_blank">/swagger-ui/#/discord-bot-controller/connectGuildChannelWithDomainUsingGET</a>, whereas generate a JWT token using <a href="/swagger-ui/#/authentication-controller/generateGenericJWTUsingPOST" target="_blank">/swagger-ui/#/authentication-controller/generateGenericJWTUsingPOST</a>
