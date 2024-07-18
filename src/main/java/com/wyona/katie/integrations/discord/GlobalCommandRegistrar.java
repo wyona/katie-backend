@@ -36,8 +36,11 @@ public class GlobalCommandRegistrar implements ApplicationRunner {
 
             // Convenience variables for the sake of easier to read code below.
             PathMatchingResourcePatternResolver matcher = new PathMatchingResourcePatternResolver();
+            log.info("Get Discord application service ...");
             final ApplicationService applicationService = client.get().getApplicationService();
+            log.info("Get Discord application Id ...");
             final long applicationId = client.get().getApplicationId().block();
+            log.info("Discord application Id: " + applicationId);
 
             //Get our commands json from resources as command data
             List<ApplicationCommandRequest> commands = new ArrayList<>();
