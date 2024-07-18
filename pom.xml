@@ -474,7 +474,7 @@
       <!-- IMPORTANT: Remove log4j version when upgrading Spring Boot version and Spring Boot has a recent log4j dependency -->
       <log4j2.version>2.17.1</log4j2.version>
       <!--<discord.version>3.2.2</discord.version>-->
-      <discord.version>3.3.0-SNAPSHOT</discord.version>
+      <discord.version>3.3.0-RC1</discord.version>
     </properties>
 
 <build>
