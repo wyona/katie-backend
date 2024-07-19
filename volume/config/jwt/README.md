@@ -10,3 +10,5 @@ Generate private and public keys https://gist.github.com/destan/b708d11bd4f40350
 - #openssl genrsa -out private_key.pem 4096
 - openssl rsa -pubout -in private_key.pem -out public_key.pem
 - openssl pkcs8 -topk8 -in private_key.pem -inform pem -out private_key_pkcs8.pem -outform pem -nocrypt
+
+and add them (private_key.pem, private_key_pkcs8.pem, public_key.pem) to the directory volume/config/jwt
