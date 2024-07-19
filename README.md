@@ -146,6 +146,7 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 
 * https://app.katie.qa/swagger-ui/
 * Postman: env/postman/AskKatie.postman_collection.json
+* Private and public keys to generate JWTs: https://github.com/wyona/katie-backend/blob/main/volume/config/jwt/README.md
 
 ## Database / Flyway
 
