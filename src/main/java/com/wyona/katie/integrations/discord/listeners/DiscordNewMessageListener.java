@@ -87,7 +87,11 @@ public class DiscordNewMessageListener extends CommonMessageSender {
         Message message = event.getMessage();
 
         if (message.getAuthor().map(User::isBot).orElse(true)) {
-            log.info("Message from bot '" + message.getAuthor() + "', therefore ignore in order to prevent loops!");
+            if (message.getAuthor().isEmpty()) {
+                log.info("Message was sent by bot, therefore ignore in order to prevent loops!");
+            } else {
+                log.info("Message was sent by bot '" + message.getAuthor() + "', therefore ignore in order to prevent loops!");
+            }
             return Mono.empty();
         }
 
