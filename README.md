@@ -157,7 +157,7 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED          S
 * Add containers to network
     * ```docker network connect --ip 172.20.128.2 multi-host-network 5b0cddb97d32```
     * ```docker network connect --ip 172.20.128.3 multi-host-network 29ef347da530```
-* Connect Katie with Embedding Service
+* Connect Katie with Embedding Service, for example by manually editing the Katie domain configuration file ```config.xml```
     * ```<sbert-lucene api-token="23a4c91ff5ddf949847859389cc45c0da301028104b0ca7c4103b9821d89c697" embeddings-endpoint="http://172.20.128.2:3000/v1/embeddings" embeddings-impl="OPENAI_COMPATIBLE" similarity-metric="COSINE" value-type="float32"/>```
 
 ## API and Testing API
