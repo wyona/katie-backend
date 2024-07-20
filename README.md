@@ -142,6 +142,24 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie-tomcat
 * http://localhost:7070/katie/
 
+## Connect Katie Docker with an Embedding Service Docker
+
+* Setup Katie Docker and Embedding Service Docker (e.g. https://github.com/Repositorium-ch/embedding-service)
+* In order to connect these two Docker containers locally one can create a Docker network: ```docker network create --subnet 172.20.0.0/16 --ip-range 172.20.240.0/20 multi-host-networ```
+* Connect the two Docker containers with this network ```docker ps -a```
+
+``
+CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+5b0cddb97d32   embedding_server      "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp   bold_ride
+29ef347da530   wyona/katie:1.365.0   "java -jar /app.war"     20 minutes ago   Up 20 minutes   0.0.0.0:8044->8080/tcp, :::8044->8080/tcp   katie
+```
+
+* Add containers to network
+    * ```docker network connect --ip 172.20.128.2 multi-host-network 5b0cddb97d32```
+    * ```docker network connect --ip 172.20.128.3 multi-host-network 29ef347da530```
+* Connect Katie with Embedding Service
+    * ```<sbert-lucene api-token="23a4c91ff5ddf949847859389cc45c0da301028104b0ca7c4103b9821d89c697" embeddings-endpoint="http://172.20.128.2:3000/v1/embeddings" embeddings-impl="OPENAI_COMPATIBLE" similarity-metric="COSINE" value-type="float32"/>```
+
 ## API and Testing API
 
 * https://app.katie.qa/swagger-ui/
