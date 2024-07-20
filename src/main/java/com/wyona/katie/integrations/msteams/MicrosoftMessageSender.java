@@ -813,7 +813,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         MicrosoftAdaptiveCard feedbackCard = new MicrosoftAdaptiveCard(messageSource.getMessage("provide.better.answer", null, locale));
 
         MicrosoftAdaptiveCardBody betterResponse = new MicrosoftAdaptiveCardBody(messageSource.getMessage("better.answer", null, locale) + ":");
-        betterResponse.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_BETTER_ANSWER, messageSource.getMessage( "what.would.be.helpful.answer", null, locale), true));
+        betterResponse.addItem(new MicrosoftAdaptiveCardInputText(MessageValue.TEXT_INPUT_BETTER_ANSWER, messageSource.getMessage("what.would.be.helpful.answer", null, locale), true));
         feedbackCard.addBody(betterResponse);
 
         MicrosoftAdaptiveCardBody betterResponseSourceUrl = new MicrosoftAdaptiveCardBody("URL:");
