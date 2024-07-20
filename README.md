@@ -145,8 +145,8 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 ## Connect Katie Docker with an Embedding Service Docker
 
 * Setup Katie Docker and Embedding Service Docker (e.g. https://github.com/Repositorium-ch/embedding-service)
-* In order to connect these two Docker containers locally one can create a Docker network: ```docker network create --subnet 172.20.0.0/16 --ip-range 172.20.240.0/20 multi-host-networ```
-* Connect the two Docker containers with this network ```docker ps -a```
+* In order to connect these two Docker containers locally one can create a Docker network: ```docker network create --subnet 172.20.0.0/16 --ip-range 172.20.240.0/20 multi-host-network```
+* In order to connect the two Docker containers with this network, get the container IDs ```docker ps -a```
 
 ```
 CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                                       NAMES
