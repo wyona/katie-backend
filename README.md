@@ -148,7 +148,7 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 * In order to connect these two Docker containers locally one can create a Docker network: ```docker network create --subnet 172.20.0.0/16 --ip-range 172.20.240.0/20 multi-host-networ```
 * Connect the two Docker containers with this network ```docker ps -a```
 
-``
+```
 CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                                       NAMES
 5b0cddb97d32   embedding_server      "docker-entrypoint.s…"   17 minutes ago   Up 17 minutes   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp   bold_ride
 29ef347da530   wyona/katie:1.365.0   "java -jar /app.war"     20 minutes ago   Up 20 minutes   0.0.0.0:8044->8080/tcp, :::8044->8080/tcp   katie
