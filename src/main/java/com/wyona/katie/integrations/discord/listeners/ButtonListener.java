@@ -92,6 +92,8 @@ public class ButtonListener extends CommonMessageSender {
                 domainService.thumbUpDown(askedQuestion, false, domain);
                 log.info("Thumb down saved successfully.");
                 return event.createFollowup(messageSource.getMessage("thanks.for.negative.feedback", null, Utils.getLocale(lang)));
+            } else if (buttonClicked.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
+                return event.createFollowup("Please submit your better answer ...");
             } else if (buttonClicked.equals(ChannelAction.SEE_MORE_ANSWERS)) {
                 return event.createFollowup(getSeeMoreAnswers(domain, askedQuestion.getQuestion()));
             } else if (buttonClicked.equals(ChannelAction.MORE_INFO)) {

@@ -78,14 +78,16 @@ public class MessageSender {
     private  ActionRow getButtons(String questionUuid, String language) {
         String correct = messageSource.getMessage("correct.answer", null, Utils.getLocale(language));
         String wrong = messageSource.getMessage("wrong.answer", null, Utils.getLocale(language));
+        String provideBetterAnswer = messageSource.getMessage("provide.better.answer", null, Utils.getLocale(language));
         String seeMoreAnswers = messageSource.getMessage("see.more.answers", null, Utils.getLocale(language)) + " ...";
         String moreInfo = messageSource.getMessage("more.info", null, Utils.getLocale(language)) + " ...";
 
         Button thumbUpButton = Button.success(ChannelAction.THUMB_UP.toString() + DiscordNewMessageListener.DELIMITER + questionUuid, ReactionEmoji.unicode(Emoji.THUMB_UP), correct);
         Button thumbDownButton = Button.danger(ChannelAction.THUMB_DOWN.toString() + DiscordNewMessageListener.DELIMITER + questionUuid, ReactionEmoji.unicode(Emoji.THUMB_DOWN), wrong);
+        Button provideBetterAnswerButton = Button.primary(ChannelAction.ENTER_BETTER_ANSWER.toString() + DiscordNewMessageListener.DELIMITER + questionUuid, provideBetterAnswer);
         Button moreAnswersButton = Button.primary(ChannelAction.SEE_MORE_ANSWERS.toString() + DiscordNewMessageListener.DELIMITER + questionUuid, seeMoreAnswers);
         Button moreInfoButton = Button.primary(ChannelAction.MORE_INFO.toString() + DiscordNewMessageListener.DELIMITER + questionUuid, moreInfo);
 
-        return ActionRow.of(thumbUpButton, thumbDownButton, moreAnswersButton, moreInfoButton);
+        return ActionRow.of(thumbUpButton, thumbDownButton, provideBetterAnswerButton, moreAnswersButton, moreInfoButton);
     }
 }
