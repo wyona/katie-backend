@@ -5,7 +5,10 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent;
+import discord4j.core.object.component.ActionRow;
+import discord4j.core.object.component.TextInput;
 import discord4j.core.object.entity.Message;
+import discord4j.core.spec.InteractionPresentModalSpec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,10 +16,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -59,7 +59,8 @@ public class ButtonListener extends CommonMessageSender {
      * Handle button interaction
      * @param event Button interaction event, when user clicked a button
      */
-    private Mono<Message> handle(ButtonInteractionEvent event, String lang) {
+    private Mono<?> handle(ButtonInteractionEvent event, String lang) {
+        //private Mono<Message> handle(ButtonInteractionEvent event, String lang) {
         log.info("Handle Discord button event '" + event.getMessage() + "' ...");
 
         String[] buttonIdQuestionUUID = event.getCustomId().split(DiscordNewMessageListener.DELIMITER);
@@ -94,6 +95,19 @@ public class ButtonListener extends CommonMessageSender {
                 log.info("Thumb down saved successfully.");
                 return event.createFollowup(messageSource.getMessage("thanks.for.negative.feedback", null, Utils.getLocale(lang)));
             } else if (buttonClicked.equals(ChannelAction.ENTER_BETTER_ANSWER)) {
+                log.info("Generate modal such that user can provide better answer ...");
+                // https://github.com/Discord4J/Discord4J/blob/master/core/src/test/java/discord4j/core/ExampleModal.java
+                /*
+                return event.presentModal(InteractionPresentModalSpec.builder()
+                        .title("TODO")
+                        .customId("TODO_1")
+                        .addAllComponents(Arrays.asList(
+                                ActionRow.of(TextInput.small("TODO_2", "A title?").required(false)),
+                                ActionRow.of(TextInput.paragraph("TODO_3", "Tell us something...", 250, 928).placeholder("...in more than 250 characters but less than 928").required(true))
+                        ))
+                        .build());
+
+                 */
                 return event.createFollowup("Please submit your better answer ...");
             } else if (buttonClicked.equals(ChannelAction.SEE_MORE_ANSWERS)) {
                 return event.createFollowup(getSeeMoreAnswers(domain, askedQuestion.getQuestion()));
