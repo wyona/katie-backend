@@ -15,6 +15,7 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -635,8 +636,8 @@ public class QuestionsController {
      * TODO: Filtering, Sorting, Pagination: https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
      */
     @RequestMapping(value = "/asked", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all asked questions")
-    public ResponseEntity<?> getAskedQuestions(
+    @Operation(summary="Get all questions asked")
+    public ResponseEntity<?> getQuestionsAsked(
         @ApiParam(name = "contextId", value = "Domain Id of asked questions (e.g. 'wyona' or 'ROOT')",required = false)
         @RequestParam(value = "contextId", required = false) String contextId,
         @ApiParam(name = "limit", value = "Pagination: Limit the number of returned questions",required = true, defaultValue = "10")
@@ -677,6 +678,55 @@ public class QuestionsController {
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "SQL_ERROR"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * REST interface to delete all questions asked
+     */
+    @RequestMapping(value = "/asked", method = RequestMethod.DELETE, produces = "application/json")
+    @Operation(summary="Delete all questions asked of a particular user")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
+    public ResponseEntity<?> deleteQuestionsAsked(
+            @ApiParam(name = "user-id", value = "User Id, e.g. 'superadmin'", required = true)
+            @RequestParam(value = "user-id", required = true) String userId,
+            @ApiParam(name = "domain-id", value = "Domain Id, e.g. 'd99008db-78e8-46de-864c-0dfe10f88125'", required = true)
+            @RequestParam(value = "domain-id", required = true) String domainId,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        rememberMeService.tryAutoLogin(request, response);
+
+        log.info("Delete all questions asked by a particular user '" + userId + "' within a particular domain '" + domainId + "' ...");
+
+        // TEST: Uncomment lines below to test frotend spinner
+        /*
+        try {
+            for (int i = 0; i < 1; i++) {
+                log.info("Sleep for 2 seconds ...");
+                Thread.sleep(2000);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+         */
+
+        try {
+            contextService.deleteAllQuestionsAsked(userId, domainId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (AccessDeniedException e) {
+            log.warn(e.getMessage(), e);
+            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -791,7 +841,7 @@ public class QuestionsController {
      * REST interface to delete all trained questions/answers of a particular domain
      */
     @RequestMapping(value = "/trained", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete all trained QnAs of a particular domain")
+    @Operation(summary="Delete all trained QnAs of a particular domain")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })

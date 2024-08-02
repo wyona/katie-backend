@@ -118,6 +118,7 @@ public class QuestionAnsweringService {
      * Get answers to a question or message containing a question
      *
      * @param question Question / message asked by user, e.g. "What is a moderator?" or "Hi, I have forgotten my password, how can I reset it? Thanks, Michael"
+     * @param privacyOptions Optional privacy options
      * @param predictClassifications When true, then predict labels based on submitted question / message
      * @param classifications Provided Classifications to narrow down search space, e.g. "gravel bike", "bug", "instruction", "fact", "social", ...
      * @param messageId Message Id sent by client together with question
@@ -138,6 +139,7 @@ public class QuestionAnsweringService {
      */
     public List<ResponseAnswer> getAnswers(
             String question,
+            AskQuestionPrivacyOptions privacyOptions,
             boolean predictClassifications,
             List<String> classifications,
             String messageId,
@@ -263,11 +265,21 @@ public class QuestionAnsweringService {
 
         String moderationStatus = getModerationStatus(domain, question, channelType, responseAnswers.size());
         // TODO: Log when score of top answer was below score threshold
-        String logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidTopAnswer, answerTopAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+        String logEntryUUID = null;
+        if (privacyOptions != null && !privacyOptions.getLogRequest()) {
+            log.info("Do not log request");
+        } else if (privacyOptions != null && privacyOptions.getLogRequest() && !privacyOptions.getLogQuestion()) {
+            // INFO: Log request, but do not log question
+            logEntryUUID = dataRepoService.logQuestion("***", classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidTopAnswer, answerTopAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+        } else {
+            logEntryUUID = dataRepoService.logQuestion(question, classifications, messageId, remoteAddress, dateSubmitted, domain, usernameKatie, uuidTopAnswer, answerTopAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+        }
         //log.debug("Link to approve answer: " + getApproveAnswerLink(domain, logEntryUUID));
 
         for (ResponseAnswer ra: responseAnswers) {
-            ra.setQuestionUUID(logEntryUUID);
+            if (logEntryUUID != null) {
+                ra.setQuestionUUID(logEntryUUID);
+            }
 
             if (includePayloadData) {
                 if (ra.getUrl() != null && contextService.existsPayloadData(new URI(ra.getUrl()), domain)) {
@@ -283,7 +295,7 @@ public class QuestionAnsweringService {
                 ra = includeClassifications(ra, predictedLabels);
             }
 
-            if (includeFeedbackLinks) {
+            if (includeFeedbackLinks && logEntryUUID != null) {
                 // TODO: Replace hard coded language by user / moderator language
                 ra = includeFeedbackLinks(ra, domain, logEntryUUID, "en");
             }
@@ -293,7 +305,7 @@ public class QuestionAnsweringService {
             }
         }
 
-        if (domain.getAnswersMustBeApprovedByModerator()) {
+        if (domain.getAnswersMustBeApprovedByModerator() && logEntryUUID != null) {
             String usernameChannel = usernameKatie; // TODO: Get username of user inside channel
             notifyModerators(domain, question, responseAnswers.size(), channelType, logEntryUUID, usernameChannel);
         }

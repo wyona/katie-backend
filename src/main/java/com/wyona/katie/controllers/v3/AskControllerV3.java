@@ -145,12 +145,13 @@ public class AskControllerV3 {
             _includePayloadData = questionAndOptionalParams.getIncludePayloadData();
         }
 
-        return getAnswers(question, classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, questionAndOptionalParams.getIncludeClassifications(), _includePayloadData, request, response);
+        return getAnswers(question, questionAndOptionalParams.getPrivacyOptions(), classifications, questionAndOptionalParams.getPredictClassifications(), messageId, questionerLanguage, answerContentType, email, fcmToken, answerLinkType, domainId, _limit, _offset, _includeFeedbackLinks, questionAndOptionalParams.getIncludeClassifications(), _includePayloadData, request, response);
     }
 
     /**
      * Get answer(s) to a question / message
      * @param question Asked question / sent message
+     * @param privacyOptions Privacy options
      * @param classifications Provided classifications / labels to narrow down search / answer space
      * @param predictClassifications Truw when Katie should predict classifications based on asked question / sent message
      * @param answerContentType Content type of answer accepted by client, e.g. "text/plain" resp. ContentType.TEXT_PLAIN
@@ -159,6 +160,7 @@ public class AskControllerV3 {
      * @param includePayloadData When true, then payload of originally imported data should be included into answers
      */
     private ResponseEntity<?> getAnswers(String question,
+                                         AskQuestionPrivacyOptions privacyOptions,
                                          List<String> classifications,
                                          boolean predictClassifications,
                                          String messageId,
@@ -281,7 +283,7 @@ public class AskControllerV3 {
             }
 
             // TODO: Return AskResponse (including meta info) instead list of ResponseAnswer
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, predictClassifications, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications, includePayloadData);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, privacyOptions, predictClassifications, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, channelRequestId, _limit, _offset, true, answerContentType, includeFeedbackLinks, includeClassifications, includePayloadData);
 
             if (responseAnswers != null) {
                 String questionUUID = null;

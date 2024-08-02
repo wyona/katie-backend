@@ -62,7 +62,7 @@ public class AskCommand implements SlashCommand {
             boolean checkAuthorization = false; // TODO
             String messageId = null; // TODO
             String channelRequestId = null; // TODO
-            List<ResponseAnswer> answers = qaService.getAnswers(question,false,null, messageId, domain, new Date(), null, ChannelType.UNDEFINED, channelRequestId, -1, -1, checkAuthorization, null, false, false, false);
+            List<ResponseAnswer> answers = qaService.getAnswers(question, null,false,null, messageId, domain, new Date(), null, ChannelType.UNDEFINED, channelRequestId, -1, -1, checkAuthorization, null, false, false, false);
             if (answers != null && answers.size() > 0) {
                 topAnswer = answers.get(0).getAnswer();
             }

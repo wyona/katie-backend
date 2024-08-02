@@ -9,6 +9,7 @@ public class AskQuestionBody {
     private String question;
     private Language questionerLanguage;
     private AskQuestionContactInfo contactInfo;
+    private AskQuestionPrivacyOptions privacyOptions;
     private String classification;
     private String[] classifications;
 
@@ -103,6 +104,20 @@ public class AskQuestionBody {
      */
     public void setClassification(String classification) {
         this.classification = classification;
+    }
+
+    /**
+     *
+     */
+    public void setPrivacyOptions(AskQuestionPrivacyOptions privacyOptions) {
+        this.privacyOptions = privacyOptions;
+    }
+
+    /**
+     *
+     */
+    public AskQuestionPrivacyOptions getPrivacyOptions() {
+        return privacyOptions;
     }
 
     /**

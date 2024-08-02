@@ -106,6 +106,7 @@ public class DataRepositoryService {
     private static final String OWNERSHIP = "OWNERSHIP";
 
     private static final String QUESTION_QUESTION = "QUESTION";
+    private static final String QUESTION_USER_NAME = "USER_NAME";
     private static final String QUESTION_DOMAIN_ID = "DOMAIN_ID";
     private static final String QUESTION_ANSWER_UUID = "ANSWER_UUID";
     private static final String QUESTION_ANSWER_SCORE = "SCORE";
@@ -844,8 +845,8 @@ public class DataRepositoryService {
             _scoreThreshold = scoreThreshold;
         }
 
-        insertAskedQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
-        saveAskedQuestion(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, answer, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        insertQuestionAsked(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain.getId(), username, answerUUID, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
+        saveQuestionAsked(uuid, question, _classifications, messageId, remoteAddress, dateSubmitted, domain, username, answerUUID, answer, score, _scoreThreshold, permissionStatus, moderationStatus, channelType, channelRequestId, offset);
 
         return uuid;
     }
@@ -861,13 +862,13 @@ public class DataRepositoryService {
     }
 
     /**
-     * Save asked question, including answer, etc.
+     * Save question asked, including answer, etc.
      * @param uuid UUID of question
      * @param question Asked question
      * @param answerUUID UUID of answer / QnA
      * @param answer Actual answer (in particular when answer is not based on a QnA)
      */
-    private void saveAskedQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
+    private void saveQuestionAsked(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, Context domain, String username, String answerUUID, String answer, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) {
         if (!domain.getAskedQuestionsDirectory().isDirectory()) {
             domain.getAskedQuestionsDirectory().mkdir();
         }
@@ -965,9 +966,9 @@ public class DataRepositoryService {
     }
 
     /**
-     * Add asked question to database
+     * Add question asked to database
      */
-    private void insertAskedQuestion(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
+    private void insertQuestionAsked(String uuid, String question, String _classifications, String messageId, String remoteAddress, Date dateSubmitted, String domainId, String username, String answerUUID, double score, Double _scoreThreshold, PermissionStatus permissionStatus, String moderationStatus, ChannelType channelType, String channelRequestId, int offset) throws Exception {
 
         String sql = "INSERT INTO " + TABLE_QUESTION + " VALUES ('" + uuid + "' , '" + domainId + "', '" + question + "', '" + remoteAddress + "', '" + dateSubmitted.getTime() + "', " + addQuotes(username) + ", " + addQuotes(answerUUID) + ", " + addQuotes(permissionStatus.toString()) + ", " + addQuotes(moderationStatus) + ", '" + channelType + "', " + addQuotes(channelRequestId)+ ", " + offset + ", " + addQuotes(messageId) + ", " + addQuotes(_classifications) + ", " + score + ", " + _scoreThreshold + ")";
         log.info("Add question to database: " + sql);
@@ -1607,7 +1608,7 @@ public class DataRepositoryService {
             String remoteAddress = rs.getString("REMOTE_ADDRESS");
             log.info("Question '" + question + "'.");
             long epochTimestamp = Long.parseLong(rs.getString(TIMESTAMP));
-            String username = rs.getString("USER_NAME");
+            String username = rs.getString(QUESTION_USER_NAME);
             String qnaUUID = rs.getString(QUESTION_ANSWER_UUID);
             double score = rs.getDouble(QUESTION_ANSWER_SCORE);
             Double scoreThreshold = rs.getDouble(QUESTION_ANSWER_SCORE_THRESHOLD);
@@ -1814,7 +1815,7 @@ public class DataRepositoryService {
     }
 
     /**
-     * Get all asked questions from database for a specific domain
+     * Get all questions asked from database for a specific domain
      * @param domainId Domain Id, e.g. "wyona"
      * @param limit Limit number of returned entries
      * @param offset From where to start returning entries
@@ -1857,7 +1858,7 @@ public class DataRepositoryService {
             String remoteAddress = rs.getString("REMOTE_ADDRESS");
             log.debug("Question '" + question + "'.");
             long epochTimestamp = Long.parseLong(rs.getString(TIMESTAMP));
-            String username = rs.getString("USER_NAME");
+            String username = rs.getString(QUESTION_USER_NAME);
             String qnaUUID = rs.getString(QUESTION_ANSWER_UUID);
             double score = rs.getDouble(QUESTION_ANSWER_SCORE);
             Double scoreThreshold = rs.getDouble(QUESTION_ANSWER_SCORE_THRESHOLD);
@@ -1901,6 +1902,24 @@ public class DataRepositoryService {
         conn.close();
 
         return questions.toArray(new AskedQuestion[0]);
+    }
+
+    /**
+     * Delete all questions asked by a particular user within a particular domain
+     */
+    public void deleteQuestionsAsked(String userId, String domainId) throws Exception  {
+        log.info("Delete all questions asked by user '" + userId + "' within domain '" + domainId + "' ...");
+
+        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + "='" + userId + "' and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+
+        Class.forName(driverClassName);
+        Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate(sql);
+        stmt.close();
+
+        conn.close();
     }
 
     /**
