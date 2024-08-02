@@ -4739,6 +4739,19 @@ public class ContextService {
     }
 
     /**
+     *
+     */
+    public void deleteAllQuestionsAsked(String userId, String domainId) throws Exception {
+        if (!isAdmin()) {
+            String msg = "User has not system role " + Role.ADMIN + "!";
+            log.info(msg);
+            throw new java.nio.file.AccessDeniedException(msg);
+        }
+
+        dataRepositoryService.deleteQuestionsAsked(userId, domainId);
+    }
+
+    /**
      * Delete all trained QnAs of a particular domain, which the user is authorized to access
      * @param domainId Domain Id
      */
