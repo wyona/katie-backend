@@ -15,6 +15,7 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -635,7 +636,7 @@ public class QuestionsController {
      * TODO: Filtering, Sorting, Pagination: https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
      */
     @RequestMapping(value = "/asked", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all asked questions")
+    @Operation(summary="Get all questions asked")
     public ResponseEntity<?> getAskedQuestions(
         @ApiParam(name = "contextId", value = "Domain Id of asked questions (e.g. 'wyona' or 'ROOT')",required = false)
         @RequestParam(value = "contextId", required = false) String contextId,
