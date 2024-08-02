@@ -43,6 +43,12 @@ public class ButtonListener extends CommonMessageSender {
     @Value("${discord.katie.username}")
     private String usernameTechnicalUser;
 
+    // TODO: Refactor code https://github.com/DreamExposure/TicketBird-Discord-Bot/blob/b3df404bcd69d1688967e30c6912bf9cafe6fa38/src/main/kotlin/org/dreamexposure/ticketbird/listeners/discord/ButtonInteractionListener.kt#L36
+    // You cannot use modals if you used .defer before
+    // The first reply must be either .reply/.deferX/.presentModal
+    // And if you defer, then you can only .editReply/.deleteReply/.createFollowup
+    // You need to check your button id before doing anything and then do what you want in consequence
+    // Either defer or send a modal
     public ButtonListener(Optional<GatewayDiscordClient> client) {
         log.info("Init Discord button listener ...");
         String lang = "en"; // TODO
