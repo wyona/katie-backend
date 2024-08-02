@@ -106,6 +106,7 @@ public class DataRepositoryService {
     private static final String OWNERSHIP = "OWNERSHIP";
 
     private static final String QUESTION_QUESTION = "QUESTION";
+    private static final String QUESTION_USER_NAME = "USER_NAME";
     private static final String QUESTION_DOMAIN_ID = "DOMAIN_ID";
     private static final String QUESTION_ANSWER_UUID = "ANSWER_UUID";
     private static final String QUESTION_ANSWER_SCORE = "SCORE";
@@ -1607,7 +1608,7 @@ public class DataRepositoryService {
             String remoteAddress = rs.getString("REMOTE_ADDRESS");
             log.info("Question '" + question + "'.");
             long epochTimestamp = Long.parseLong(rs.getString(TIMESTAMP));
-            String username = rs.getString("USER_NAME");
+            String username = rs.getString(QUESTION_USER_NAME);
             String qnaUUID = rs.getString(QUESTION_ANSWER_UUID);
             double score = rs.getDouble(QUESTION_ANSWER_SCORE);
             Double scoreThreshold = rs.getDouble(QUESTION_ANSWER_SCORE_THRESHOLD);
@@ -1857,7 +1858,7 @@ public class DataRepositoryService {
             String remoteAddress = rs.getString("REMOTE_ADDRESS");
             log.debug("Question '" + question + "'.");
             long epochTimestamp = Long.parseLong(rs.getString(TIMESTAMP));
-            String username = rs.getString("USER_NAME");
+            String username = rs.getString(QUESTION_USER_NAME);
             String qnaUUID = rs.getString(QUESTION_ANSWER_UUID);
             double score = rs.getDouble(QUESTION_ANSWER_SCORE);
             Double scoreThreshold = rs.getDouble(QUESTION_ANSWER_SCORE_THRESHOLD);
@@ -1901,6 +1902,24 @@ public class DataRepositoryService {
         conn.close();
 
         return questions.toArray(new AskedQuestion[0]);
+    }
+
+    /**
+     * Delete all questions asked by a particular user within a particular domain
+     */
+    public void deleteQuestionsAsked(String userId, String domainId) throws Exception  {
+        log.info("Delete all questions asked by user '" + userId + "' within domain '" + domainId + "' ...");
+
+        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + "='" + userId + "' and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+
+        Class.forName(driverClassName);
+        Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate(sql);
+        stmt.close();
+
+        conn.close();
     }
 
     /**
