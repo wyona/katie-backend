@@ -116,7 +116,10 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build webapp as war, run: 'sh build.sh'
 * Build image: docker build -t katie .
-* Tag image: docker tag katie wyona/katie:1.368.0
+* Tag image:
+    * docker tag katie wyona/katie:1.368.0
+    * docker tag katie wyona/katie-mac-m:1.368.0
+    * docker tag katie wyona/katie-with-prefix:1.368.0
 * Push image to Docker Hub: docker login -u USERNAME -p PASSWORD docker.io && docker push wyona/katie:1.368.0
 * Run image:
     * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie ("/ask-katie" is set inside application-prod.properties)
