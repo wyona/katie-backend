@@ -1356,7 +1356,8 @@ public class SlackMessageSender extends CommonMessageSender  {
                 }
                 boolean checkAuthorization = false; // TODO
                 String messageId = event.getClient_msg_id();
-                List<ResponseAnswer> answers = qaService.getAnswers(analyzedMessage.getMessage(), false, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.SLACK, channelRequestId, 2, 0, checkAuthorization, null,false, false, false);
+                AskQuestionPrivacyOptions privacyOptions = null;
+                List<ResponseAnswer> answers = qaService.getAnswers(analyzedMessage.getMessage(), privacyOptions, false, classifications, messageId, domain, dateSubmitted, remoteAddress, ChannelType.SLACK, channelRequestId, 2, 0, checkAuthorization, null,false, false, false);
 
                 if (answers != null && answers.size() > 0) {
                     topAnswer = answers.get(0);

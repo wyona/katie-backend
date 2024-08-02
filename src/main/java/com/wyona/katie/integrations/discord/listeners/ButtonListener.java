@@ -140,7 +140,7 @@ public class ButtonListener extends CommonMessageSender {
             int offset = 1;
             int limit = 10;
             String messageId = null; // TODO
-            List<ResponseAnswer> answers = qaService.getAnswers(question, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.DISCORD, channelRequestId, limit, offset, true, null,false, false, false);
+            List<ResponseAnswer> answers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.DISCORD, channelRequestId, limit, offset, true, null,false, false, false);
 
             StringBuilder response = new StringBuilder();
             response.append("<div>");
