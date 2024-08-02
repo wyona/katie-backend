@@ -271,7 +271,7 @@ public class AskControllerV2 {
             }
 
             boolean includeFeedbackLinks = false;
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, false, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, null, _limit, _offset, true, answerContentType, includeFeedbackLinks, false, false);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, dateSubmitted, AskController.getRemoteAddress(request), ChannelType.UNDEFINED, null, _limit, _offset, true, answerContentType, includeFeedbackLinks, false, false);
 
             if (responseAnswers != null) {
                 if (responseAnswers.size() == 0 && !contextService.hasTrainedQnAs(domain)) {
