@@ -314,7 +314,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
      */
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
-        log.info("Get answer using Lucene BM25 (Version: " + getVersion() + ") for question '" + question + "' ...");
+        log.info("Get answer using Lucene BM25 (Lucene version: " + getVersion() + ") implementation for question '" + question + "' ...");
 
         List<Hit> answers = new ArrayList<Hit>();
 
