@@ -105,15 +105,10 @@ public class TOPdeskConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
-        // TODO: Make request types configurable using payload
-        //int requestType = 0; // INFO: Import batch of incidents, e.g. 1000 incidents
-        //int requestType = 1; // INFO: Import one particular incident
-        //int requestType = 2; // INFO: Get visible replies of a particular incident
-        int requestType = 3; // INFO: Sync categories / subcategories
-
-        if (requestType == 2) {
+        if (pl.getRequestType() == 2) {
             boolean visibleReplies = false;
             String incidentId = pl.getIncidentId();
+            backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             if (bodyNode.isArray()) {
@@ -136,7 +131,8 @@ public class TOPdeskConnector implements Connector {
                     log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                 }
             }
-        } else if (requestType == 1) {
+        } else if (pl.getRequestType() == 1) {
+            backgroundProcessService.updateProcessStatus(processId, "Import one particular incident ...");
             String incidentId = pl.getIncidentId();
             try {
                 TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
@@ -149,7 +145,8 @@ public class TOPdeskConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
             }
-        } else if (requestType == 0) {
+        } else if (pl.getRequestType() == 0) {
+            backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
             // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
             // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0; // TODO: Introduce pagination
@@ -189,7 +186,7 @@ public class TOPdeskConnector implements Connector {
                     log.error(e.getMessage(), e);
                 }
             }
-        } else if (requestType == 3) {
+        } else if (pl.getRequestType() == 3) {
             List<Classification> topDeskLabels = new ArrayList<>();
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
@@ -274,7 +271,7 @@ public class TOPdeskConnector implements Connector {
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.warn("No such request type '" + requestType + "' implemented!");
+            log.warn("No such request type '" + pl.getRequestType() + "' implemented!");
         }
 
         return null;
