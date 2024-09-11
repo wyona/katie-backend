@@ -297,7 +297,7 @@ public class TOPdeskConnector implements Connector {
         int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
         backgroundProcessService.updateProcessStatus(processId, "Get Analytics of incidents (Batch size: " + limit + ") ...");
 
-        //Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
+        Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
         Map<Integer, Integer> numberOfVisibleMessages = new HashMap<>();
 
         List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
@@ -306,6 +306,13 @@ public class TOPdeskConnector implements Connector {
             List<String> visibleReplies = getVisibleReplies(id, processId, ksMeta);
             backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
             log.info("Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
+
+            numberOfTotalMessages = increaseCounter(numberOfTotalMessages, visibleReplies.size()); // TODO: Replace visibleReplies by totalMessages
+            StringBuilder distributionTotalMessages = new StringBuilder();
+            for (Map.Entry<Integer, Integer> entry : numberOfTotalMessages.entrySet()) {
+                distributionTotalMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
+            }
+            backgroundProcessService.updateProcessStatus(processId, "Distribution of total messages: " + distributionTotalMessages.toString());
 
             numberOfVisibleMessages = increaseCounter(numberOfVisibleMessages, visibleReplies.size());
             StringBuilder distributionVisibleMessages = new StringBuilder();
