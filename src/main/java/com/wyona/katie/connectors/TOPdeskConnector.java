@@ -297,7 +297,7 @@ public class TOPdeskConnector implements Connector {
         int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
         backgroundProcessService.updateProcessStatus(processId, "Get Analytics of incidents (Batch size: " + limit + ") ...");
 
-        Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
+        //Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
         Map<Integer, Integer> numberOfVisibleMessages = new HashMap<>();
 
         List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
@@ -307,8 +307,32 @@ public class TOPdeskConnector implements Connector {
             backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
             log.info("Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
 
-            // TODO: Increase counter
+            numberOfVisibleMessages = increaseCounter(numberOfVisibleMessages, visibleReplies.size());
+            StringBuilder distributionVisibleMessages = new StringBuilder();
+            for (Map.Entry<Integer, Integer> entry : numberOfVisibleMessages.entrySet()) {
+                distributionVisibleMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
+            }
+            backgroundProcessService.updateProcessStatus(processId, "Distribution of visible messages: " + distributionVisibleMessages.toString());
         }
+    }
+
+    /**
+     * Increase Y value
+     * @param counter Counter, e.g. "(0,0) (1,3) (2, 5) (3, 4) (4, 6) ... (12, 1)"
+     * @param value X value
+     * @return updated counter
+     */
+    private Map<Integer, Integer> increaseCounter(Map<Integer, Integer> counter, Integer value) {
+        for (Map.Entry<Integer, Integer> entry : counter.entrySet()) {
+            if (entry.getKey() == value) {
+                counter.put(value, entry.getValue() + 1);
+                return counter;
+            }
+        }
+
+        counter.put(value, 1);
+
+        return counter;
     }
 
     /**
@@ -317,7 +341,7 @@ public class TOPdeskConnector implements Connector {
     private List<String> getVisibleReplies(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
         List<String> visibleReplies = new ArrayList<>();
 
-        backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
+        backgroundProcessService.updateProcessStatus(processId, "Get visible messages of TOPdesk incident '" + incidentId + "' ...");
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         if (bodyNode != null && bodyNode.isArray()) {
