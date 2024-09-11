@@ -303,18 +303,20 @@ public class TOPdeskConnector implements Connector {
         List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
         for (String id : ids) {
             log.info("Get TOPdesk incident '" + id + "' to analyze ...");
-            List<String> visibleReplies = getVisibleReplies(id, processId, ksMeta);
-            backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
-            log.info("Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
+            Integer[] numbers = getNumberOfMessagesOfIncident(id, processId, ksMeta);
+            Integer totalNumberOfMessagesOfIncident = numbers[0];
+            Integer numberOfVisibleMessagesOfIncident= numbers[1];
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + numberOfVisibleMessagesOfIncident + " visible messages.");
+            log.info("Incident '" + id + "' has " + numberOfVisibleMessagesOfIncident + " visible messages.");
 
-            numberOfTotalMessages = increaseCounter(numberOfTotalMessages, visibleReplies.size()); // TODO: Replace visibleReplies by totalMessages
+            numberOfTotalMessages = increaseCounter(numberOfTotalMessages, totalNumberOfMessagesOfIncident);
             StringBuilder distributionTotalMessages = new StringBuilder();
             for (Map.Entry<Integer, Integer> entry : numberOfTotalMessages.entrySet()) {
                 distributionTotalMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
             }
             backgroundProcessService.updateProcessStatus(processId, "Distribution of total messages: " + distributionTotalMessages.toString());
 
-            numberOfVisibleMessages = increaseCounter(numberOfVisibleMessages, visibleReplies.size());
+            numberOfVisibleMessages = increaseCounter(numberOfVisibleMessages, numberOfVisibleMessagesOfIncident);
             StringBuilder distributionVisibleMessages = new StringBuilder();
             for (Map.Entry<Integer, Integer> entry : numberOfVisibleMessages.entrySet()) {
                 distributionVisibleMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
@@ -343,23 +345,26 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * Get total number of messages and number of visible messages of a incident
+     * @return total number of messages and number of visible messages
      */
-    private List<String> getVisibleReplies(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
+    private Integer[] getNumberOfMessagesOfIncident(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
+        Integer totalNumberOfMessages = 0;
+        Integer numberOfVisibleMessages= 0;
+
         List<String> visibleReplies = new ArrayList<>();
 
         backgroundProcessService.updateProcessStatus(processId, "Get visible messages of TOPdesk incident '" + incidentId + "' ...");
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         if (bodyNode != null && bodyNode.isArray()) {
-            backgroundProcessService.updateProcessStatus(processId, "Incident '" + incidentId + "' has a total of " + bodyNode.size() + " messages.");
-            boolean hasVisibleReplies = false;
+            totalNumberOfMessages = bodyNode.size();
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + incidentId + "' has a total of " + totalNumberOfMessages + " messages.");
             for (int i = 0; i < bodyNode.size(); i++) {
                 JsonNode entryNode = bodyNode.get(i);
                 boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
                 if (!invisibleForCaller) {
                     if (entryNode.has("memoText")) {
-                        hasVisibleReplies = true;
                         String _answer = entryNode.get("memoText").asText();
                         log.info("Response to user: " + _answer);
                         visibleReplies.add(_answer);
@@ -367,14 +372,20 @@ public class TOPdeskConnector implements Connector {
                 }
             }
 
-            if (!hasVisibleReplies) {
+            if (visibleReplies.size() == 0) {
                 log.warn("Incident '" + incidentId + "' does not contain any visible messages yet.");
+            } else {
+                numberOfVisibleMessages = visibleReplies.size();
             }
         } else {
             log.warn("No body received for " + requestUrl);
         }
 
-        return visibleReplies;
+        Integer[] numbers = new Integer[2];
+        numbers[0] = totalNumberOfMessages;
+        numbers[1] = numberOfVisibleMessages;
+
+        return numbers;
     }
 
     /**
