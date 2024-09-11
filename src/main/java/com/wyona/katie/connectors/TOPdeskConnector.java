@@ -1,7 +1,9 @@
 package com.wyona.katie.connectors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
@@ -150,18 +152,7 @@ public class TOPdeskConnector implements Connector {
                 log.error(e.getMessage(), e);
             }
         } else if (pl.getRequestType() == 4) {
-            int offset = 0; // TODO: Introduce pagination
-            int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
-            backgroundProcessService.updateProcessStatus(processId, "Analytics of batch of incidents (" + limit + ") ...");
-
-            List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
-
-            for (String id : ids) {
-                log.info("Get TOPdesk incident '" + id + "' to analyze ...");
-                List<String> visibleReplies = getVisibleReplies(id, processId, ksMeta);
-                backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + visibleReplies.size() + " visible replies.");
-                log.info("Incident '" + id + "' has " + visibleReplies.size() + " visible replies.");
-            }
+            getAnalyticsOfIncidents(processId, ksMeta);
         } else if (pl.getRequestType() == 0) {
             backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
             // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
@@ -301,6 +292,28 @@ public class TOPdeskConnector implements Connector {
     /**
      *
      */
+    private void getAnalyticsOfIncidents(String processId, KnowledgeSourceMeta ksMeta) {
+        int offset = 0; // TODO: Introduce pagination
+        int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
+        backgroundProcessService.updateProcessStatus(processId, "Get Analytics of incidents (Batch size: " + limit + ") ...");
+
+        Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
+        Map<Integer, Integer> numberOfVisibleMessages = new HashMap<>();
+
+        List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+        for (String id : ids) {
+            log.info("Get TOPdesk incident '" + id + "' to analyze ...");
+            List<String> visibleReplies = getVisibleReplies(id, processId, ksMeta);
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
+            log.info("Incident '" + id + "' has " + visibleReplies.size() + " visible messages.");
+
+            // TODO: Increase counter
+        }
+    }
+
+    /**
+     *
+     */
     private List<String> getVisibleReplies(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
         List<String> visibleReplies = new ArrayList<>();
 
@@ -308,7 +321,7 @@ public class TOPdeskConnector implements Connector {
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         if (bodyNode != null && bodyNode.isArray()) {
-            backgroundProcessService.updateProcessStatus(processId, "Incident '" + incidentId + "' contains " + bodyNode.size() + " answers.");
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + incidentId + "' has a total of " + bodyNode.size() + " messages.");
             boolean hasVisibleReplies = false;
             for (int i = 0; i < bodyNode.size(); i++) {
                 JsonNode entryNode = bodyNode.get(i);
@@ -324,7 +337,7 @@ public class TOPdeskConnector implements Connector {
             }
 
             if (!hasVisibleReplies) {
-                log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
+                log.warn("Incident '" + incidentId + "' does not contain any visible messages yet.");
             }
         } else {
             log.warn("No body received for " + requestUrl);
@@ -488,6 +501,7 @@ public class TOPdeskConnector implements Connector {
     private HttpHeaders getHttpHeaders(KnowledgeSourceMeta ksMeta) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
+        //headers.set("Accept", "application/json;odata=verbose");
 
         //log.info("Basic Auth Credentials: U: " + ksMeta.getTopDeskUsername() + ", P: " + ksMeta.getTopDeskAPIPassword());
         headers.setBasicAuth(ksMeta.getTopDeskUsername(), ksMeta.getTopDeskAPIPassword());
