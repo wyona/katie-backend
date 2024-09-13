@@ -195,7 +195,7 @@ Access database from command line (WARN: Might not work properly when database i
 * Enter:
     * jdbc:h2:file:/Users/michaelwechner/src/katie-backend/volume/askkatie-h2
     * org.h2.Driver
-    * Username and Password see application.properties
+    * Username and Password see secret-keys.properties (db.username, db.password)
     * show tables;
     * show columns from QUESTION;
     * select * from public."flyway_schema_history";
