@@ -1939,8 +1939,11 @@ public class DataRepositoryService {
             log.info("Delete all questions asked by anonymous users within domain '" + domainId + "' ...");
         }
 
-        // TODO: Also allow deleting questions of anonymous users
+        // TODO: Also allow deleting questions of anonymous users (null)
         String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + "='" + userId + "' and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+        if (userId == null) {
+            sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + " is null and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+        }
 
         Class.forName(driverClassName);
         Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
