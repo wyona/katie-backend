@@ -685,13 +685,13 @@ public class QuestionsController {
      * REST interface to delete all questions asked
      */
     @RequestMapping(value = "/asked", method = RequestMethod.DELETE, produces = "application/json")
-    @Operation(summary="Delete all questions asked of a particular user")
+    @Operation(summary="Delete all questions asked by a particular user or by anonymous users when domain public and users not signed in")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> deleteQuestionsAsked(
-            @ApiParam(name = "user-id", value = "User Id, e.g. 'superadmin'", required = true)
-            @RequestParam(value = "user-id", required = true) String userId,
+            @ApiParam(name = "user-id", value = "User Id (e.g. 'superadmin') or empty string when deleting questions asked by anonymous users", required = false)
+            @RequestParam(value = "user-id", required = false) String userId,
             @ApiParam(name = "domain-id", value = "Domain Id, e.g. 'd99008db-78e8-46de-864c-0dfe10f88125'", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
             HttpServletRequest request, HttpServletResponse response) {
@@ -719,8 +719,9 @@ public class QuestionsController {
          */
 
         try {
-            contextService.deleteAllQuestionsAsked(userId, domainId);
-            return new ResponseEntity<>(HttpStatus.OK);
+            int n = contextService.deleteAllQuestionsAsked(userId, domainId);
+            String body = "{\"number-of-deleted-questions-asked\":" + n + "}";
+            return new ResponseEntity<>(body, HttpStatus.OK);
         } catch (AccessDeniedException e) {
             log.warn(e.getMessage(), e);
             return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
