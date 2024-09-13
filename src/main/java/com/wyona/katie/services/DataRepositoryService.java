@@ -1905,6 +1905,28 @@ public class DataRepositoryService {
     }
 
     /**
+     * Delete all questions asked within a particular domain
+     * @param domainId Domain Id
+     * @return number of deleted questions which were asked within a particular donain
+     */
+    public int deleteQuestionsAsked(String domainId) throws Exception  {
+        log.info("Delete all questions asked within domain '" + domainId + "' ...");
+
+        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+
+        Class.forName(driverClassName);
+        Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+
+        Statement stmt = conn.createStatement();
+        int n = stmt.executeUpdate(sql);
+        log.info(n + " questions asked got deleted.");
+        stmt.close();
+
+        conn.close();
+        return n;
+    }
+
+    /**
      * Delete all questions asked by a particular user within a particular domain
      * @param userId User Id, e.g. "superadmin"
      * @param domainId Domain Id
