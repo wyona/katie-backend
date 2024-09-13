@@ -1765,8 +1765,7 @@ public class ContextService {
                 removeMember(domainId, member.getId(), false);
             }
 
-            // TODO: Make sure all questions asked within domain are being deleted when domain is being deleted
-            //deleteAllQuestionsAsked()
+            dataRepositoryService.deleteQuestionsAsked(domainId);
 
             deleteDomainDirectory(domainId);
         } catch(Exception e) {
