@@ -1,7 +1,9 @@
 package com.wyona.katie.connectors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
@@ -105,19 +107,18 @@ public class TOPdeskConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadTOPdesk pl = (WebhookPayloadTOPdesk) payload;
 
-        // TODO: Make request types configurable using payload
-        //int requestType = 0; // INFO: Import batch of incidents, e.g. 1000 incidents
-        //int requestType = 1; // INFO: Import one particular incident
-        //int requestType = 2; // INFO: Get visible replies of a particular incident
-        int requestType = 3; // INFO: Sync categories / subcategories
-
-        if (requestType == 2) {
-            boolean visibleReplies = false;
+        if (pl.getRequestType() == 2) {
             String incidentId = pl.getIncidentId();
+
+            // TODO: Use getVisibleReplies(...)
+            //List<String> visibleReplies = getVisibleReplies(incidentId, processId, ksMeta);
+
+            backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             if (bodyNode.isArray()) {
                 backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
+                boolean visibleReplies = false;
                 for (int i = 0; i < bodyNode.size(); i++) {
                     JsonNode entryNode = bodyNode.get(i);
                     boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
@@ -136,7 +137,8 @@ public class TOPdeskConnector implements Connector {
                     log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                 }
             }
-        } else if (requestType == 1) {
+        } else if (pl.getRequestType() == 1) {
+            backgroundProcessService.updateProcessStatus(processId, "Import one particular incident ...");
             String incidentId = pl.getIncidentId();
             try {
                 TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
@@ -149,12 +151,19 @@ public class TOPdeskConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
             }
-        } else if (requestType == 0) {
+        } else if (pl.getRequestType() == 4) {
+            getAnalyticsOfIncidents(processId, ksMeta);
+        } else if (pl.getRequestType() == 0) {
+            backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
             // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
             // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
             int offset = 0; // TODO: Introduce pagination
             int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
             backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
+
+            // TODO: Use getListOfIncidentIDs(...)
+            // List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             log.info("Get individual incidents ...");
@@ -189,7 +198,7 @@ public class TOPdeskConnector implements Connector {
                     log.error(e.getMessage(), e);
                 }
             }
-        } else if (requestType == 3) {
+        } else if (pl.getRequestType() == 3) {
             List<Classification> topDeskLabels = new ArrayList<>();
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
@@ -274,10 +283,129 @@ public class TOPdeskConnector implements Connector {
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.warn("No such request type '" + requestType + "' implemented!");
+            log.warn("No such request type '" + pl.getRequestType() + "' implemented!");
         }
 
         return null;
+    }
+
+    /**
+     *
+     */
+    private void getAnalyticsOfIncidents(String processId, KnowledgeSourceMeta ksMeta) {
+        int offset = 0; // TODO: Introduce pagination
+        int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
+        backgroundProcessService.updateProcessStatus(processId, "Get Analytics of incidents (Batch size: " + limit + ") ...");
+
+        Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
+        Map<Integer, Integer> numberOfVisibleMessages = new HashMap<>();
+
+        List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+        for (String id : ids) {
+            log.info("Get TOPdesk incident '" + id + "' to analyze ...");
+            Integer[] numbers = getNumberOfMessagesOfIncident(id, processId, ksMeta);
+            Integer totalNumberOfMessagesOfIncident = numbers[0];
+            Integer numberOfVisibleMessagesOfIncident= numbers[1];
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + id + "' has " + numberOfVisibleMessagesOfIncident + " visible messages.");
+            log.info("Incident '" + id + "' has " + numberOfVisibleMessagesOfIncident + " visible messages.");
+
+            numberOfTotalMessages = increaseCounter(numberOfTotalMessages, totalNumberOfMessagesOfIncident);
+            StringBuilder distributionTotalMessages = new StringBuilder();
+            for (Map.Entry<Integer, Integer> entry : numberOfTotalMessages.entrySet()) {
+                distributionTotalMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
+            }
+            backgroundProcessService.updateProcessStatus(processId, "Distribution of total messages: " + distributionTotalMessages.toString());
+
+            numberOfVisibleMessages = increaseCounter(numberOfVisibleMessages, numberOfVisibleMessagesOfIncident);
+            StringBuilder distributionVisibleMessages = new StringBuilder();
+            for (Map.Entry<Integer, Integer> entry : numberOfVisibleMessages.entrySet()) {
+                distributionVisibleMessages.append("(" + entry.getKey() + "," + entry.getValue() + ") ");
+            }
+            backgroundProcessService.updateProcessStatus(processId, "Distribution of visible messages: " + distributionVisibleMessages.toString());
+        }
+    }
+
+    /**
+     * Increase Y value
+     * @param counter Counter, e.g. "(0,0) (1,3) (2, 5) (3, 4) (4, 6) ... (12, 1)"
+     * @param value X value
+     * @return updated counter
+     */
+    private Map<Integer, Integer> increaseCounter(Map<Integer, Integer> counter, Integer value) {
+        for (Map.Entry<Integer, Integer> entry : counter.entrySet()) {
+            if (entry.getKey() == value) {
+                counter.put(value, entry.getValue() + 1);
+                return counter;
+            }
+        }
+
+        counter.put(value, 1);
+
+        return counter;
+    }
+
+    /**
+     * Get total number of messages and number of visible messages of a incident
+     * @return total number of messages and number of visible messages
+     */
+    private Integer[] getNumberOfMessagesOfIncident(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
+        Integer totalNumberOfMessages = 0;
+        Integer numberOfVisibleMessages= 0;
+
+        List<String> visibleReplies = new ArrayList<>();
+
+        backgroundProcessService.updateProcessStatus(processId, "Get visible messages of TOPdesk incident '" + incidentId + "' ...");
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        if (bodyNode != null && bodyNode.isArray()) {
+            totalNumberOfMessages = bodyNode.size();
+            backgroundProcessService.updateProcessStatus(processId, "Incident '" + incidentId + "' has a total of " + totalNumberOfMessages + " messages.");
+            for (int i = 0; i < bodyNode.size(); i++) {
+                JsonNode entryNode = bodyNode.get(i);
+                boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
+                if (!invisibleForCaller) {
+                    if (entryNode.has("memoText")) {
+                        String _answer = entryNode.get("memoText").asText();
+                        log.info("Response to user: " + _answer);
+                        visibleReplies.add(_answer);
+                    }
+                }
+            }
+
+            if (visibleReplies.size() == 0) {
+                log.warn("Incident '" + incidentId + "' does not contain any visible messages yet.");
+            } else {
+                numberOfVisibleMessages = visibleReplies.size();
+            }
+        } else {
+            log.warn("No body received for " + requestUrl);
+        }
+
+        Integer[] numbers = new Integer[2];
+        numbers[0] = totalNumberOfMessages;
+        numbers[1] = numberOfVisibleMessages;
+
+        return numbers;
+    }
+
+    /**
+     *
+     */
+    private List<String> getListOfIncidentIDs(int offset, int limit, String processId, KnowledgeSourceMeta ksMeta) {
+        List<String> ids = new ArrayList<>();
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        if (bodyNode.isArray()) {
+            // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
+            for (int i = 0; i < bodyNode.size(); i++) {
+                JsonNode numberNode = bodyNode.get(i);
+                String incidentNumber = numberNode.get("number").asText();
+                ids.add(incidentNumber);
+            }
+        } else {
+            log.error("No TOPdesk incidents available!");
+        }
+        return ids;
     }
 
     /**
@@ -344,7 +472,9 @@ public class TOPdeskConnector implements Connector {
     /**
      * Get data from TOPdesk
      * @param url request URL, e.g. "https://topdesk.wyona.com/tas/api/incidents?fields=number&pageStart=0&pageSize=100"
+     * @param ksMeta TODO
      * @param processId Background process Id
+     * @return TODO
      */
     private JsonNode getData(String url, KnowledgeSourceMeta ksMeta, String processId) {
         log.info("Request URL: " + url);
@@ -413,6 +543,7 @@ public class TOPdeskConnector implements Connector {
     private HttpHeaders getHttpHeaders(KnowledgeSourceMeta ksMeta) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
+        //headers.set("Accept", "application/json;odata=verbose");
 
         //log.info("Basic Auth Credentials: U: " + ksMeta.getTopDeskUsername() + ", P: " + ksMeta.getTopDeskAPIPassword());
         headers.setBasicAuth(ksMeta.getTopDeskUsername(), ksMeta.getTopDeskAPIPassword());

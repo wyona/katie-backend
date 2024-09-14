@@ -1905,21 +1905,60 @@ public class DataRepositoryService {
     }
 
     /**
-     * Delete all questions asked by a particular user within a particular domain
+     * Delete all questions asked within a particular domain
+     * @param domainId Domain Id
+     * @return number of deleted questions which were asked within a particular donain
      */
-    public void deleteQuestionsAsked(String userId, String domainId) throws Exception  {
-        log.info("Delete all questions asked by user '" + userId + "' within domain '" + domainId + "' ...");
+    public int deleteQuestionsAsked(String domainId) throws Exception  {
+        log.info("Delete all questions asked within domain '" + domainId + "' ...");
 
-        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + "='" + userId + "' and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
 
         Class.forName(driverClassName);
         Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
 
         Statement stmt = conn.createStatement();
-        stmt.executeUpdate(sql);
+        int n = stmt.executeUpdate(sql);
+        log.info(n + " questions asked got deleted.");
         stmt.close();
 
         conn.close();
+        return n;
+    }
+
+    /**
+     * Delete all questions asked by a particular user within a particular domain
+     * @param userId User Id, e.g. "superadmin"
+     * @param domainId Domain Id
+     * @return number of deleted questions which were asked by a particular user
+     */
+    public int deleteQuestionsAsked(String userId, String domainId) throws Exception  {
+        if (userId != null) {
+            log.info("Delete all questions asked by user '" + userId + "' within domain '" + domainId + "' ...");
+        } else {
+            log.info("Delete all questions asked by anonymous users within domain '" + domainId + "' ...");
+        }
+
+        // TODO: Also allow deleting questions of anonymous users (null)
+        String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + "='" + userId + "' and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+        if (userId == null) {
+            sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_USER_NAME + " is null and " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
+        }
+
+        Class.forName(driverClassName);
+        Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+
+        Statement stmt = conn.createStatement();
+        int n = stmt.executeUpdate(sql);
+        if (userId != null) {
+            log.info(n + " questions asked by user '" + userId + "' got deleted.");
+        } else {
+            log.info(n + " questions asked by anonymous users got deleted.");
+        }
+        stmt.close();
+
+        conn.close();
+        return n;
     }
 
     /**

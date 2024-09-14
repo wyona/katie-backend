@@ -45,6 +45,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
     private static final String FEATURE_FIELD = "feature";
 
     /**
+     * Get Lucene version
      * @return lucene version, e.g. "9.8.0"
      */
     public String getVersion() {
@@ -313,7 +314,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
      */
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
-        log.info("Get answer from Lucene implementation for question '" + question + "' ...");
+        log.info("Get answer using Lucene BM25 (Lucene version: " + getVersion() + ") implementation for question '" + question + "' ...");
 
         List<Hit> answers = new ArrayList<Hit>();
 

@@ -353,7 +353,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
      * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
      */
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) throws Exception {
-        log.info("Get answer from Lucene-Vector-Search (Lucene version: " + Version.LATEST + ") implementation for question '" + question + "' ...");
+        log.info("Get answer using Lucene Vector Search (Lucene version: " + Version.LATEST + ") implementation for question '" + question + "' ...");
 
         try {
             // TODO: Make BooleanClause.Occur configurable (see https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/BooleanClause.Occur.html)

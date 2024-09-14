@@ -7,6 +7,7 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -510,7 +511,7 @@ public class ConfigurationController {
      * REST interface to delete a particular domain
      */
     @RequestMapping(value = "/configuration/domain/{id}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete domain configuration")
+    @Operation(summary="Delete domain")
     public ResponseEntity<?> deleteDomain(
         @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,

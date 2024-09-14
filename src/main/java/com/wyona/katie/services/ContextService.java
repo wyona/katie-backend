@@ -1765,6 +1765,8 @@ public class ContextService {
                 removeMember(domainId, member.getId(), false);
             }
 
+            dataRepositoryService.deleteQuestionsAsked(domainId);
+
             deleteDomainDirectory(domainId);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -4739,16 +4741,16 @@ public class ContextService {
     }
 
     /**
-     *
+     * @return number of deleted questions which were asked by a particular user
      */
-    public void deleteAllQuestionsAsked(String userId, String domainId) throws Exception {
+    public int deleteAllQuestionsAsked(String userId, String domainId) throws Exception {
         if (!isAdmin()) {
             String msg = "User has not system role " + Role.ADMIN + "!";
             log.info(msg);
             throw new java.nio.file.AccessDeniedException(msg);
         }
 
-        dataRepositoryService.deleteQuestionsAsked(userId, domainId);
+        return dataRepositoryService.deleteQuestionsAsked(userId, domainId);
     }
 
     /**
