@@ -1909,7 +1909,7 @@ public class DataRepositoryService {
      * @param domainId Domain Id
      * @return number of deleted questions which were asked within a particular donain
      */
-    public int deleteQuestionsAsked(String domainId) throws Exception  {
+    protected int deleteQuestionsAsked(String domainId) throws Exception  {
         log.info("Delete all questions asked within domain '" + domainId + "' ...");
 
         String sql = "Delete from " + TABLE_QUESTION + " where " + QUESTION_DOMAIN_ID + "='" + domainId + "'";
@@ -1932,7 +1932,7 @@ public class DataRepositoryService {
      * @param domainId Domain Id
      * @return number of deleted questions which were asked by a particular user
      */
-    public int deleteQuestionsAsked(String userId, String domainId) throws Exception  {
+    protected int deleteQuestionsAsked(String userId, String domainId) throws Exception  {
         if (userId != null) {
             log.info("Delete all questions asked by user '" + userId + "' within domain '" + domainId + "' ...");
         } else {
