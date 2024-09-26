@@ -570,6 +570,7 @@ public class KnowledgeSourceXMLFileService {
     /**
      * Add Supabase knowledge source
      * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
+     * @param chunkSize Chunk size
      * @return knowledge source Id
      */
     public String addSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url, Integer chunkSize) throws Exception {
