@@ -233,7 +233,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     /**
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
-    public void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception {
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode parentNode = mapper.createArrayNode();
@@ -287,6 +287,9 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
         log.info("Response status: " + response.getStatusCode());
         JsonNode bodyNode = response.getBody();
         log.info("Response JSON: " + bodyNode);
+
+        // TODO: Only return QnAs which got trained successfully
+        return qnas;
     }
 
     /**

@@ -41,8 +41,9 @@ public interface QuestionAnswerHandler {
      * @param qnas Array of questions and answers
      * @param domain Domain, e.g. "wyona"
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
+     * @return trained QnAs
      */
-    public void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception;
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception;
 
     /**
      * Retrain a particular question/answer associated with a particular domain

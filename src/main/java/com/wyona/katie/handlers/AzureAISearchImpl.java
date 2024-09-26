@@ -90,11 +90,16 @@ public class AzureAISearchImpl implements QuestionAnswerHandler {
     /**
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
-    public void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
         log.warn("TODO: Finish implementation to index more than one QnA at the same time!");
+        List<QnA> trainedQnAs = new ArrayList<>();
         for (QnA qna: qnas) {
             train(qna, domain, indexAlternativeQuestions);
+
+            // TODO: Only add QnA when it got trained successfully
+            trainedQnAs.add(qna);
         }
+        return trainedQnAs.toArray(new QnA[0]);
     }
 
     /**

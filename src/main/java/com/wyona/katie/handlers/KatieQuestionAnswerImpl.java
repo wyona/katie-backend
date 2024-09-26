@@ -81,11 +81,14 @@ public class KatieQuestionAnswerImpl implements QuestionAnswerHandler {
     /**
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
-    public void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
         log.warn("TODO: Finish implementation to index more than one QnA at the same time!");
         for (QnA qna: qnas) {
             train(qna, domain, indexAlternativeQuestions);
         }
+
+        // TODO: Only return QnAs which got trained successfully
+        return qnas;
     }
 
     /**

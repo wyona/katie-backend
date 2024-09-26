@@ -274,19 +274,23 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     /**
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
-    public void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception {
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) throws Exception {
         log.warn("TODO: Improve performance of batch indexing!");
+        List<QnA> trainedQnAs = new ArrayList<>();
         int counter = 0;
         for (QnA qna: qnas) {
             try {
                 train(qna, domain, indexAlternativeQuestions);
                 counter++;
+                trainedQnAs.add(qna);
             } catch(Exception e) {
-                Exception ee = new Exception(counter + " QnAs of " + qnas.length + " trained, but training of QnA '" + qna.getUuid() + "' failed, because of the following error: " + e.getMessage());
-                ee.setStackTrace(e.getStackTrace());
-                throw ee;
+                Exception ee = new Exception(counter + " QnAs of " + qnas.length + " trained so far, but training of QnA '" + qna.getUuid() + "' failed, because of the following error: " + e.getMessage());
+                log.error(ee.getMessage(), e);
+                //ee.setStackTrace(e.getStackTrace());
+                //throw ee;
             }
         }
+        return trainedQnAs.toArray(new QnA[0]);
     }
 
     /**
