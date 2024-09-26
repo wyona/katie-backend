@@ -210,7 +210,12 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         Vector vector = null;
         try {
+            if (text.trim().length() == 0) {
+                // TODO: Do we really want to index an empty string!?
+                log.warn("Text is empty!");
+            }
             vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
+            //log.debug("Vector: " + vector);
         } catch (Exception e) {
             log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
             throw e;
