@@ -1578,7 +1578,7 @@ public class ContextService {
                     log.error(e.getMessage(), e);
                 }
             }
-
+            
             int batchSize = 100; // TOOD: Make configurable
             backgroundProcessService.updateProcessStatus(processId, "Start indexing of " + qnas.size() + " QnAs ...");
             log.info("Re-train all " + qnas.size() + " QnAs which were trained before ...");
@@ -3755,22 +3755,25 @@ public class ContextService {
             }
 
             try {
-                aiService.train(batchQnAs.toArray(new QnA[0]), domain, indexAlternativeQuestions, processId);
-                /*
-                for (QnA qna : batchQnAs) {
+                QnA[] trainedQnAs = aiService.train(batchQnAs.toArray(new QnA[0]), domain, indexAlternativeQuestions, processId);
+
+                for (QnA qna : trainedQnAs) {
                     backgroundProcessService.updateProcessStatus(processId, "QnA '" + qna.getUuid() + "' trained.");
                 }
-                 */
-                backgroundProcessService.updateProcessStatus(processId, batchEnd + " QnAs of total " + qnas.length + " trained.");
+
+                if (trainedQnAs.length < batchQnAs.size()) {
+                    backgroundProcessService.updateProcessStatus(processId, "Only " + trainedQnAs.length + " of " + batchQnAs.size() + " QnAs have been trained successfully!", BackgroundProcessStatusType.ERROR);
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, batchEnd + " QnAs of total " + qnas.length + " trained.");
+                }
+
+                backgroundProcessService.updateProcessStatus(processId, "Update status of trained QnAs ...");
+                for (QnA qna : trainedQnAs) {
+                    updateTrained(domain, qna.getUuid(), true);
+                }
             } catch(Exception e) {
                 backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
             }
-        }
-
-        backgroundProcessService.updateProcessStatus(processId, "Update status of QnAs ...");
-        for (QnA qna : qnas) {
-            // TODO: Only set true when QnA got trained successfully
-            updateTrained(domain, qna.getUuid(), true);
         }
     }
 
@@ -4749,6 +4752,11 @@ public class ContextService {
             log.info(msg);
             throw new java.nio.file.AccessDeniedException(msg);
         }
+
+        Context domain = getContext(domainId);
+        File askedQuestionsDir = domain.getAskedQuestionsDirectory();
+        // TODO: Also delete questions inside askedQuestionsDir
+        // TODO: Consider moving to DataRepositoryService#deleteQuestionsAsked(...)
 
         return dataRepositoryService.deleteQuestionsAsked(userId, domainId);
     }
