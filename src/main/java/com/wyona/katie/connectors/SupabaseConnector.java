@@ -1,5 +1,6 @@
 package com.wyona.katie.connectors;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ContextService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Search inside Supabase and sync Supabase
@@ -112,7 +111,7 @@ public class SupabaseConnector implements Connector {
 
             String question = getConcatenatedValue(record, ksMeta.getSupabaseQuestionNames());
             List<String> labels = getClassificationValues(record, ksMeta.getSupabaseClassificationsNames());
-
+            
             String concatenatedText = getConcatenatedValue(record, ksMeta.getSupabaseAnswerNames());
             // TODO: Detect language
             List<String> chunks = segmentationService.splitBySentences(concatenatedText, "de", ksMeta.getChunkSize(), true);
@@ -157,12 +156,41 @@ public class SupabaseConnector implements Connector {
         StringBuilder value = new StringBuilder();
         for (String fieldName : fieldNames) {
             if (record.has(fieldName)) {
-                value.append(record.get(fieldName).asText());
+                log.info("Get text from field '" + fieldName + "' ...");
+                String extractedText = getText(record.get(fieldName), "");
+                log.info("Extracted text: " + extractedText);
+                value.append(extractedText);
                 value.append(" "); // TODO: Do not add for last fieldName
             } else {
                 log.warn("No such field '" + fieldName + "'!");
             }
         }
         return value.toString();
+    }
+
+    /**
+     * Extract all text values recursively from a JsonNode
+     * @param node JsonNode, e.g. "data": {"en":"Some text", "de":"Ein Text"}
+     * @param text Concatenated text
+     * @return text
+     */
+    private String getText(JsonNode node, String text) {
+        if (node instanceof TextNode) {
+            return text + " " + node.asText();
+        }
+
+        if (node.isObject()) {
+            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                text = getText(fields.next().getValue(), text);
+            }
+            return text;
+        } else if (node.isArray()) {
+            // TODO: Extract all text values recursively from array
+            return "TODO_ARRAY";
+        } else {
+            log.error("JsonNode is neither object nor array!");
+            return "";
+        }
     }
 }
