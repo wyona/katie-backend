@@ -700,8 +700,9 @@ public class AIService {
      * @param domain Domain
      * @param indexAlternativeQuestions When set to true, then alternative questions are also indexed
      * @param processId Background process Id
+     * @return trained QnAs
      */
-    protected void train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions, String processId) throws Exception {
+    protected QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions, String processId) throws Exception {
         log.info("Train " + qnas.length + " QnAs ...");
 
         for (int i = 0; i < qnas.length; i++) {
@@ -709,12 +710,15 @@ public class AIService {
         }
 
         QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(domain.getDetectDuplicatedQuestionImpl());
-        answerQuestionImpl.train(qnas, domain, indexAlternativeQuestions);
 
-        for (QnA qna: qnas) {
+        QnA[] trainedQnAs = answerQuestionImpl.train(qnas, domain, indexAlternativeQuestions);
+
+        for (QnA qna: trainedQnAs) {
             extractKeywordsAndAddToAutocompletionIndex(qna, domain);
             updateTaxonomyIndex(qna, domain);
         }
+
+        return trainedQnAs;
     }
 
     /**
