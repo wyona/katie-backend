@@ -147,7 +147,7 @@ public class BackgroundProcessService {
                 try {
                     User[] users = xmlService.getMembers(domainId, false, false);
                     for (User user : users) {
-                        if (user.getDomainRole().equals(RoleDomain.ADMIN) || user.getDomainRole().equals(RoleDomain.OWNER)) {
+                        if (user.getDomainRole() != null && (user.getDomainRole().equals(RoleDomain.ADMIN) || user.getDomainRole().equals(RoleDomain.OWNER))) {
                             user = iamService.getUserByIdWithoutAuthCheck(user.getId());
                             log.info("Notify user " + user.getFirstname() + " (" + user.getEmail()+ ") about occured error(s) ...");
                             mailerService.send(user.getEmail(), null, subject, body.toString(), false);
