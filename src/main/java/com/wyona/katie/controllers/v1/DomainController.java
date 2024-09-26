@@ -773,7 +773,7 @@ public class DomainController {
             @RequestParam(value = "question-field-names", required = true) String questionFieldNames,
             @ApiParam(name = "url", value = "Base URL, e.g. 'https://repid.ch'", required = true)
             @RequestParam(value = "url", required = true) String url,
-            @ApiParam(name = "chunk-size", value = "Chunk size, e.g. 1000", required = false)
+            @ApiParam(name = "chunk-size", value = "Chunk size, e.g. 1000", required = false, defaultValue = "1000")
             @RequestParam(value = "chunk-size", required = false) Integer chunkSize,
             HttpServletRequest request) {
 
