@@ -148,6 +148,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
                 log.warn("Response did not contain embedding!");
             }
         } catch(Exception e) {
+            log.error("Something went wrong while trying to get embedding from SentenceBERT for text '" + sentence + "'!");
             log.error(e.getMessage(), e);
             throw e;
         }
