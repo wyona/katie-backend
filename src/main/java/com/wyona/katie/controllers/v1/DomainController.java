@@ -1325,30 +1325,34 @@ public class DomainController {
             try {
                 JsonNode rootNode = mapper.readTree(new BufferedInputStream(preferenceDataset.getInputStream()));
                 List<HumanPreferenceLabel> preferences = new ArrayList<>();
+
                 if (rootNode.isArray()) {
                     for (int i = 0; i < rootNode.size(); i++) {
                         JsonNode preferenceNode= rootNode.get(i);
-                        String text = preferenceNode.get("text").asText();
+                        String text = preferenceNode.get(HumanPreferenceLabel.TEXT_FIELD).asText();
                         HumanPreferenceLabel preference = new HumanPreferenceLabel();
                         preference.setText(text);
-                        if (preferenceNode.has("rejectedLabel")) {
-                            JsonNode rejectedNode = preferenceNode.get("rejectedLabel");
+                        if (preferenceNode.has(HumanPreferenceLabel.REJECTED_LABEL_FIELD)) {
+                            JsonNode rejectedNode = preferenceNode.get(HumanPreferenceLabel.REJECTED_LABEL_FIELD);
                             // TODO: Add rest of data
                         }
-                        if (preferenceNode.has("chosenLabel")) {
-                            JsonNode chosenNode = preferenceNode.get("chosenLabel");
-                            // TODO: Add rest of data
-                            String label = chosenNode.get("term").asText();
+                        if (preferenceNode.has(HumanPreferenceLabel.CHOSEN_LABEL_FIELD)) {
+                            JsonNode chosenNode = preferenceNode.get(HumanPreferenceLabel.CHOSEN_LABEL_FIELD);
+                            // TODO: Add rest of data, e.g. frequency
+                            String label = chosenNode.get(HumanPreferenceLabel.LABEL_NAME_FIELD).asText();
                             String foreignId = chosenNode.get("id").asText();
-                            String katieId = chosenNode.get("katieId").asText();
+                            String katieId = chosenNode.get(HumanPreferenceLabel.LABEL_KATIE_ID_FIELD).asText();
                             Classification chosenLabel = new Classification(label, foreignId, katieId);
                             preference.setChosenLabel(chosenLabel);
                         }
                         if (preferenceNode.has("meta")) {
                             JsonNode metaNode = preferenceNode.get("meta");
-                            String clientMessageId = metaNode.get("clientMessageId").asText();
+                            // TODO: Add rest of data
+                            String clientMessageId = metaNode.get(HumanPreferenceMeta.CLIENT_MESSAGE_ID).asText();
+                            Boolean approved = metaNode.get("approved").asBoolean();
                             HumanPreferenceMeta meta = new HumanPreferenceMeta();
                             meta.setClientMessageId(clientMessageId);
+                            meta.setApproved(approved);
                             preference.setMeta(meta);
                         }
                         preferences.add(preference);
