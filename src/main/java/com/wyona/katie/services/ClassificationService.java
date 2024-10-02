@@ -123,7 +123,7 @@ public class ClassificationService {
 
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
         try {
-            //classifier.retrain(domain, bgProcessId);
+            classifier.retrain(domain, bgProcessId);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
