@@ -1,6 +1,5 @@
 package com.wyona.katie.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifierEmbeddingsCentroidsImpl;
@@ -11,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +63,7 @@ public class ClassificationService {
     }
 
     /**
-     * Retrain classifier
+     * Retrain classifier, using existing samples and with new samples from human preferences dataset
      * @param preferences Optional human preferences
      * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      * @param bgProcessId Background process Id
@@ -79,30 +76,39 @@ public class ClassificationService {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
-                    String clientMsgId = preference.getMeta().getClientMessageId();
+                    if (preference.getMeta().getApproved()) {
+                        String clientMsgId = preference.getMeta().getClientMessageId();
 
-                    Classification classification = new Classification();
-                    classification.setKatieId(preference.getChosenLabel().getKatieId());
-                    classification.setId(preference.getChosenLabel().getId());
-                    classification.setTerm(preference.getChosenLabel().getTerm());
+                        Classification classification = new Classification();
+                        classification.setKatieId(preference.getChosenLabel().getKatieId());
+                        classification.setId(preference.getChosenLabel().getId());
+                        classification.setTerm(preference.getChosenLabel().getTerm());
 
-                    TextSample sample = new TextSample(clientMsgId, preference.getText(), classification);
-                    backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + sample.getText() + "' (Label: " + sample.getClassification().getTerm() + ", Katie Id: " + classification.getKatieId() + ", Client message Id: " + sample.getId() + ")");
-                    /*
-                    try {
-                        importSample(domain, sample);
-                    } catch (Exception e) {
-                        backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
-                        log.error(e.getMessage(), e);
+                        TextSample sample = new TextSample(clientMsgId, preference.getText(), classification);
+                        try {
+                            if (sample.getClassification().getKatieId() != null && sample.getId() != null && sample.getId() != "null") {
+                                backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + sample.getText() + "' (Label: " + sample.getClassification().getTerm() + ", Katie Id: " + sample.getClassification().getKatieId() + ", Client message Id: " + sample.getId() + ")");
+                                log.info("Add sample '" + sample.getClassification().getKatieId() + "' / '" + sample.getId() + "' ...");
+                                log.warn("TODO: Add sample and remove from preference dataset");
+                                //importSample(domain, sample);
+                            } else {
+                                String warnMsg = "Trying to add human preference rating '" + preference.getMeta().getId() + "' as sample, but either Katie Id '" + sample.getClassification().getKatieId() + "' or sample Id (client message Id) '" + sample.getId() + "' is null!";
+                                log.warn(warnMsg);
+                                backgroundProcessService.updateProcessStatus(bgProcessId, warnMsg, BackgroundProcessStatusType.WARN);
+                            }
+                        } catch (Exception e) {
+                            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+                            log.error(e.getMessage(), e);
+                        }
+                    } else {
+                        backgroundProcessService.updateProcessStatus(bgProcessId, "Human preference of text '" + preference.getText() + "' with Katie label Id '" + preference.getChosenLabel().getKatieId() + "' has not yet been approved!", BackgroundProcessStatusType.WARN);
                     }
-
-                     */
                 } else {
                     backgroundProcessService.updateProcessStatus(bgProcessId, "Human preference of text '" + preference.getText() + "' has no chosen label!", BackgroundProcessStatusType.WARN);
                 }
             }
         } else {
-            backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples.");
+            backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples only.");
         }
 
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
