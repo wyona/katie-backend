@@ -25,7 +25,7 @@ public class ClassificationRepositoryService {
     private final static String SEPARATOR = ",";
 
     /**
-     * Get dataset (labels and samples)
+     * Get classification dataset (labels and samples)
      * @param domain
      * @param labelsOnly When set to true, then return only labels and no samples
      * @param offset Offset of returned samples
@@ -140,7 +140,7 @@ public class ClassificationRepositoryService {
     }
 
     /**
-     *
+     * Get directory containing classification dataset (labels and samples)
      */
     private File getClassifcationsDir(Context domain) {
         return new File(domain.getClassificationsDirectory(),"classifications-dataset");
