@@ -21,7 +21,7 @@ public class WebhookPayloadTOPdesk extends WebhookPayload {
      * 0 - Import batch of incidents, e.g. 1000 incidents
      * 1 - Import one particular incident
      * 2 - Get visible replies of a particular incident
-     * 3 - Sync categories / subcategories
+     * 3 - Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories)
      * 4 - Analytics of batch of incidents, e.g. Analytics of 1000 incidents
      * @param requestType Request type
      */
