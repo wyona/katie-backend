@@ -77,6 +77,8 @@ public class ClassificationService {
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
                     if (preference.getMeta().getApproved()) {
+                        String ratingId = preference.getMeta().getId();
+
                         String clientMsgId = preference.getMeta().getClientMessageId();
 
                         Classification classification = new Classification();
@@ -90,9 +92,17 @@ public class ClassificationService {
                                 backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + sample.getText() + "' (Label: " + sample.getClassification().getTerm() + ", Katie Id: " + sample.getClassification().getKatieId() + ", Client message Id: " + sample.getId() + ")");
                                 log.info("Add sample '" + sample.getClassification().getKatieId() + "' / '" + sample.getId() + "' ...");
                                 importSample(domain, sample);
-                                log.warn("TODO: Remove from preference dataset");
+
+                                log.info("Remove from rating '" + ratingId + "' from preference dataset ...");
+                                File ratingFile = dataRepoService.getRatingOfPredictedClassificationsFile(ratingId, domain);
+                                boolean deleted = ratingFile.delete();
+                                if (deleted) {
+                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' deleted from human preference dataset.");
+                                } else {
+                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' not deleted from human preference dataset!", BackgroundProcessStatusType.WARN);
+                                }
                             } else {
-                                String warnMsg = "Trying to add human preference rating '" + preference.getMeta().getId() + "' as sample, but either Katie Id '" + sample.getClassification().getKatieId() + "' or sample Id (client message Id) '" + sample.getId() + "' is null!";
+                                String warnMsg = "Trying to add human preference rating '" + ratingId + "' as sample, but either Katie Id '" + sample.getClassification().getKatieId() + "' or sample Id (client message Id) '" + sample.getId() + "' is null!";
                                 log.warn(warnMsg);
                                 backgroundProcessService.updateProcessStatus(bgProcessId, warnMsg, BackgroundProcessStatusType.WARN);
                             }
@@ -113,7 +123,7 @@ public class ClassificationService {
 
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
         try {
-            classifier.retrain(domain, bgProcessId);
+            //classifier.retrain(domain, bgProcessId);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
