@@ -147,6 +147,7 @@ public class ClassificationRepositoryService {
     }
 
     /**
+     * Get directory containing meta information of a particular label and sample data associated with label
      * @param labelKatieId Label Id assigned by Katie
      */
     private File getLabelDir(Context domain, String labelKatieId) {
