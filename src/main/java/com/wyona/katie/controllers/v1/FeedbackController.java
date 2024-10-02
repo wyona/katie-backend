@@ -282,7 +282,7 @@ public class FeedbackController {
      */
     @RequestMapping(value = "/{domain-id}/rating-label/{rating-id}", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Delete label rating")
-    public ResponseEntity<?> deleteAutocompletionEntry(
+    public ResponseEntity<?> deleteLabelRating(
             @ApiParam(name = "domain-id", value = "Domain Id",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
             @ApiParam(name = "rating-id", value = "Rating Id",required = true)
