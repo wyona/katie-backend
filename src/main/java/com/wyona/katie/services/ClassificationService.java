@@ -89,8 +89,8 @@ public class ClassificationService {
                             if (sample.getClassification().getKatieId() != null && sample.getId() != null && sample.getId() != "null") {
                                 backgroundProcessService.updateProcessStatus(bgProcessId, "Add sample: '" + sample.getText() + "' (Label: " + sample.getClassification().getTerm() + ", Katie Id: " + sample.getClassification().getKatieId() + ", Client message Id: " + sample.getId() + ")");
                                 log.info("Add sample '" + sample.getClassification().getKatieId() + "' / '" + sample.getId() + "' ...");
-                                log.warn("TODO: Add sample and remove from preference dataset");
-                                //importSample(domain, sample);
+                                importSample(domain, sample);
+                                log.warn("TODO: Remove from preference dataset");
                             } else {
                                 String warnMsg = "Trying to add human preference rating '" + preference.getMeta().getId() + "' as sample, but either Katie Id '" + sample.getClassification().getKatieId() + "' or sample Id (client message Id) '" + sample.getId() + "' is null!";
                                 log.warn(warnMsg);
