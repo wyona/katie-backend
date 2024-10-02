@@ -162,7 +162,7 @@ public class ClassificationService {
     }
 
     /**
-     * Get dataset
+     * Get classification dataset (labels and samples)
      * @param domain
      * @param labelsOnly When set to true, then return only labels and no samples
      * @param offset Offset of returned samples
