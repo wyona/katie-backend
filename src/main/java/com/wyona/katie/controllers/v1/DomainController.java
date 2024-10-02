@@ -1283,7 +1283,7 @@ public class DomainController {
      * Retrain classifier
      */
     @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Retrain classifier")
+    @Operation(summary="Retrain classifier (using existing samples and with new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
     public ResponseEntity<?> retrainClassifier(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
