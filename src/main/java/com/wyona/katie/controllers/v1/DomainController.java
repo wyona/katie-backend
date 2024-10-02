@@ -1350,7 +1350,9 @@ public class DomainController {
                             // TODO: Add rest of data
                             String clientMessageId = metaNode.get(HumanPreferenceMeta.CLIENT_MESSAGE_ID).asText();
                             Boolean approved = metaNode.get("approved").asBoolean();
+                            String ratingId = metaNode.get("id").asText();
                             HumanPreferenceMeta meta = new HumanPreferenceMeta();
+                            meta.setId(ratingId);
                             meta.setClientMessageId(clientMessageId);
                             meta.setApproved(approved);
                             preference.setMeta(meta);
