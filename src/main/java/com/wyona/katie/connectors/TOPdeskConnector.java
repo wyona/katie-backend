@@ -199,9 +199,12 @@ public class TOPdeskConnector implements Connector {
                 }
             }
         } else if (pl.getRequestType() == 3) {
+            boolean testRun = false; // INFO: When true, then do not delete obsolete or add new categories and also do not retrain classifier
             List<Classification> topDeskLabels = new ArrayList<>();
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
+
+            // INFO: Get all categories and subcategories from TOPdesk
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/subcategories";
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             if (bodyNode.isArray()) {
@@ -219,6 +222,8 @@ public class TOPdeskConnector implements Connector {
             try {
                 ClassificationDataset dataset = classificationService.getDataset(domain, true, 0, 10000);
                 Classification[] labels = dataset.getLabels();
+
+                // INFO: Check for obsolete categories / subcategories
                 boolean labelsDeleted = false;
                 for (Classification label : labels) {
                     log.info("Label Id: " + label.getId());
@@ -232,7 +237,9 @@ public class TOPdeskConnector implements Connector {
                     }
                     if (!labelExistsInTopDesk) {
                         labelsDeleted = true;
-                        classificationService.removeClassification(domain, label);
+                        if (!testRun) {
+                            classificationService.removeClassification(domain, label);
+                        }
                         backgroundProcessService.updateProcessStatus(processId, "Label '" + label.getTerm() + "' removed from Classifier.");
                     }
                 }
@@ -255,11 +262,15 @@ public class TOPdeskConnector implements Connector {
                         backgroundProcessService.updateProcessStatus(processId, "New category / subcategory detected: " + topDeskLabel.getTerm());
 
                         String subcategoryId = topDeskLabel.getId().split(CATEGORY_SUBCATEGORY_SEPARATOR)[1];
-                        List<TextSample> samples = getIncidentsAsClassificationSamplePerSubcategory(subcategoryId, ksMeta, processId);
+                        int maxNumberOfSamplesPerCategory = 3; // TODO: Make configurable
+                        backgroundProcessService.updateProcessStatus(processId, "Get maximum " + maxNumberOfSamplesPerCategory + " samples from TOPdesk for category / subcategory '" + topDeskLabel.getTerm() + "' ...");
+                        List<TextSample> samples = getIncidentsAsClassificationSamplePerSubcategory(subcategoryId, maxNumberOfSamplesPerCategory, ksMeta, processId);
                         if (samples.size() > 0) {
                             labelsAdded = true;
                             for (TextSample sample : samples) {
-                                classificationService.importSample(domain, sample);
+                                if (!testRun) {
+                                    classificationService.importSample(domain, sample);
+                                }
                             }
                         } else {
                             backgroundProcessService.updateProcessStatus(processId, "No text samples could be retrieved for category / subcategory '" + topDeskLabel.getTerm() + "' (" + topDeskLabel.getId() + ")!", BackgroundProcessStatusType.ERROR);
@@ -275,7 +286,9 @@ public class TOPdeskConnector implements Connector {
                 if (labelsDeleted || labelsAdded) {
                     backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
                     MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
-                    classifier.retrain(domain, processId);
+                    if (!testRun) {
+                        classifier.retrain(domain, processId);
+                    }
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "Classifier not retrained.");
                 }
@@ -411,11 +424,11 @@ public class TOPdeskConnector implements Connector {
     /**
      * Get incidents for a particular subcategory and return as text samples
      * @param subcategory Subcategory Id, e.g. "545ac83b-4d79-4386-9e5f-cc5213ede3cf"
+     * @param maxNumberOfSamples Maximum number of samples
      */
-    private List<TextSample> getIncidentsAsClassificationSamplePerSubcategory(String subcategory, KnowledgeSourceMeta ksMeta, String processId) throws Exception {
+    private List<TextSample> getIncidentsAsClassificationSamplePerSubcategory(String subcategory, int maxNumberOfSamples, KnowledgeSourceMeta ksMeta, String processId) throws Exception {
         List<TextSample> samples = new ArrayList<>();
-        int limitPerSubcategory = 3; // TODO: Make configurable
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?query=subcategory.id==" + subcategory + "&fields=number,status&pageStart=0&pageSize=" + limitPerSubcategory;
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?query=subcategory.id==" + subcategory + "&fields=number,status&pageStart=0&pageSize=" + maxNumberOfSamples;
         JsonNode rootNode = getData(requestUrl, ksMeta, processId);
         if (rootNode != null && rootNode.isArray() && rootNode.size() > 0) {
             for (int i = 0; i < rootNode.size(); i++) {
