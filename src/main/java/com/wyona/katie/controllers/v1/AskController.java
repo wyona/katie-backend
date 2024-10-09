@@ -1,5 +1,7 @@
 package com.wyona.katie.controllers.v1;
 
+import com.wyona.katie.handlers.GenerateProvider;
+import com.wyona.katie.handlers.OllamaGenerate;
 import com.wyona.katie.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -7,7 +9,9 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.models.Username;
 import com.wyona.katie.services.*;
 import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,6 +49,13 @@ public class AskController {
 
     @Autowired
     private QuestionAnalyzerService questionAnalyzerService;
+
+    @Autowired
+    GenerativeAIService generativeAIService;
+    @Autowired
+    private OllamaGenerate ollamaGenerate;
+    @Value("${ollama.completion.model}")
+    private String ollamaModel;
 
     @Autowired
     public AskController(QuestionAnsweringService qaService, IAMService iamService, RememberMeService rememberMeService, AuthenticationService authService, DataRepositoryService dataRepoService, ContextService contextService) {
@@ -544,7 +555,7 @@ public class AskController {
      * REST interface to get semantic analysis of a text
      */
     @RequestMapping(value = "/ask/{domain-id}/semantics", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Get semantic analysis of message, for example that message is a question asking for instructions or that message is an announcement")
+    @Operation(summary="Get semantic analysis of message, for example that message is a question asking for instructions or that message is an announcement")
     public ResponseEntity<?> analyzeMessage(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
@@ -557,12 +568,44 @@ public class AskController {
         rememberMeService.tryAutoLogin(request, response);
 
         try {
+            // TODO: Use getDomain(String) in order to check authorization
+            //Context domain = contextService.getDomain(domainId);
             Context domain = contextService.getContext(domainId);
             AnalyzedMessage analyzedMessage = questionAnalyzerService.analyze(message, domain, qcImpl);
 
             return new ResponseEntity<>(analyzedMessage, HttpStatus.OK);
         } catch(AccessDeniedException e) {
-            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * REST interface to chat with a LLM
+     */
+    @RequestMapping(value = "/chat/completions/{domain-id}", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary="Chat with a LLM")
+    public ResponseEntity<?> chatCompletions(
+            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @PathVariable(value = "domain-id", required = true) String domainId,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        rememberMeService.tryAutoLogin(request, response);
+
+        try {
+            Context domain = contextService.getDomain(domainId);
+            
+            GenerateProvider generateProvider = ollamaGenerate;
+            List<PromptMessage> promptMessages = new ArrayList<>();
+            promptMessages.add(new PromptMessage(PromptMessageRole.USER, "Please translate the sentence 'Good morning' to portuguese."));
+            String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, 0.7, null);
+            String responseJSON = "{\"choices\":[{\"message\":{\"content\":\"" + completedText + "\"}}]}";
+
+            return new ResponseEntity<>(responseJSON, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
