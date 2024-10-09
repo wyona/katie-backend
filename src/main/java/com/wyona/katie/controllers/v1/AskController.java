@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.wyona.katie.handlers.GenerateProvider;
 import com.wyona.katie.handlers.OllamaGenerate;
 import com.wyona.katie.models.*;
@@ -596,14 +597,24 @@ public class AskController {
 
         try {
             Context domain = contextService.getDomain(domainId);
-            
+
             GenerateProvider generateProvider = ollamaGenerate;
             List<PromptMessage> promptMessages = new ArrayList<>();
             promptMessages.add(new PromptMessage(PromptMessageRole.USER, "Please translate the sentence 'Good morning' to portuguese."));
             String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, 0.7, null);
-            String responseJSON = "{\"choices\":[{\"message\":{\"content\":\"" + completedText + "\"}}]}";
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode body = mapper.createObjectNode();
+            ArrayNode choices = mapper.createArrayNode();
+            body.put("choices", choices);
+            ObjectNode choice = mapper.createObjectNode();
+            ObjectNode message = mapper.createObjectNode();
+            message.put("role", "assistant");
+            message.put("content", completedText);
+            choice.put("id", 0);
+            choice.put("message", message);
+            choices.add(choice);
 
-            return new ResponseEntity<>(responseJSON, HttpStatus.OK);
+            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
