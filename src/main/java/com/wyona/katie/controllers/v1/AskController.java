@@ -588,10 +588,19 @@ public class AskController {
      */
     @RequestMapping(value = "/chat/completions/{domain-id}", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Chat with a LLM")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> chatCompletions(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
             HttpServletRequest request, HttpServletResponse response) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         rememberMeService.tryAutoLogin(request, response);
 
@@ -600,6 +609,7 @@ public class AskController {
 
             GenerateProvider generateProvider = ollamaGenerate;
             List<PromptMessage> promptMessages = new ArrayList<>();
+            // TODO: Replace hard coded prompt
             promptMessages.add(new PromptMessage(PromptMessageRole.USER, "Please translate the sentence 'Good morning' to portuguese."));
             String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, 0.7, null);
             ObjectMapper mapper = new ObjectMapper();
