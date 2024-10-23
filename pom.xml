@@ -209,9 +209,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.amithkoujalgi</groupId>
+            <groupId>io.github.ollama4j</groupId>
             <artifactId>ollama4j</artifactId>
-            <version>1.0.44</version>
+            <version>1.0.84</version>
         </dependency>
 <!--
         <dependency>
