@@ -8,7 +8,8 @@ public enum PromptMessageRole {
     // INFO: enum constants calling the enum constructor
     USER("user"),
     SYSTEM("system"),
-    ASSISTANT("assistant");
+    ASSISTANT("assistant"),
+    TOOL("tool");
 
     private String role;
 
