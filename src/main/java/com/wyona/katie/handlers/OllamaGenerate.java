@@ -1,10 +1,10 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.PromptMessage;
-import io.github.amithkoujalgi.ollama4j.core.OllamaAPI;
-import io.github.amithkoujalgi.ollama4j.core.models.OllamaResult;
-import io.github.amithkoujalgi.ollama4j.core.utils.Options;
-import io.github.amithkoujalgi.ollama4j.core.utils.OptionsBuilder;
+import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.models.response.OllamaResult;
+import io.github.ollama4j.utils.Options;
+import io.github.ollama4j.utils.OptionsBuilder;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -49,7 +49,7 @@ public class OllamaGenerate implements GenerateProvider {
         }
         Options options = optionsBuilder.build();
         // TODO: Use all messages and not just last message, see for example OpenAIGenerate
-        OllamaResult result = ollamaAPI.ask(model, promptMessages.get(promptMessages.size() - 1).getContent(), options);
+        OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
         completedText = result.getResponse();
 
         return completedText;
