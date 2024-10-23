@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiImplicitParam;
@@ -58,7 +57,7 @@ public class AuthenticationController {
      * Create generic JWT token (only Administrators)
      */
     @RequestMapping(value = "/token/generic", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Create generic JWT token (only Administrators)")
+    @Operation(summary="Create generic JWT token (only Administrators)")
     public ResponseEntity<?> generateGenericJWT(@RequestBody JWTPayload payload,
         @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
@@ -90,13 +89,13 @@ public class AuthenticationController {
      * Create a JWT token for a particular Katie user which exists inside the IAM of Katie
      */
     @RequestMapping(value = "/token/katie", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Create a JWT token for a particular Katie user which exists inside the IAM of Katie")
+    @Operation(summary="Create a JWT token for a particular Katie user which exists inside the IAM of Katie")
     public ResponseEntity<?> generateJWT(
         @ApiParam(name = "username", value = "Username (e.g. 'louise@wyona.com' or 'lawrence')",required = true)
         @RequestParam(value = "username", required = true) String username,
         @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
-        @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64",required = true)
+        @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, defaultValue = "false")
         @RequestParam(value = "addProfile", required = true) boolean addProfile,
         @ApiParam(name = "linkAccount", value = "When true, then add JWT to user account",required = true)
         @RequestParam(value = "linkAccount", required = true) boolean linkWithUserAccount,
@@ -183,7 +182,7 @@ public class AuthenticationController {
      * Get public key (in PEM format) to validate JWT token
      */
     @RequestMapping(value = "/token-public-key", method = RequestMethod.GET, produces = "text/plain")
-    @ApiOperation(value="Get public key (in PEM format) to validate JWT token")
+    @Operation(summary="Get public key (in PEM format) to validate JWT token")
     public ResponseEntity<?> getJWTPublicKey(
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -200,7 +199,7 @@ public class AuthenticationController {
      * Login with username/password or JWT token
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "Login with username/password or JWT token")
+    @Operation(summary= "Login with username/password or JWT token")
     @ApiImplicitParams({
     @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                       required = false, dataTypeClass = String.class, paramType = "header") })
@@ -289,7 +288,7 @@ public class AuthenticationController {
      * Impersonate a user
      */
     @RequestMapping(value = "/impersonate", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value= "Impersonate a user")
+    @Operation(summary = "Impersonate a user")
     public ResponseEntity<?> impersonate(
             @ApiParam(name = "username", value = "Username of impersonated user",required = true)
             @RequestParam(value = "username", required = true) String username,
@@ -323,7 +322,7 @@ public class AuthenticationController {
      * Get username of signed in user
      */
     @RequestMapping(value = "/username", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get username of signed in user")
+    @Operation(summary = "Get username of signed in user")
     public ResponseEntity<?> getUsername(HttpServletResponse response) {
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
         if (signedInUser != null) {
@@ -338,7 +337,7 @@ public class AuthenticationController {
      * Get email of user (either user is signed in or from persistent cookie)
      */
     @RequestMapping(value = "/email", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get email of user")
+    @Operation(summary = "Get email of user")
     public ResponseEntity<?> getEmail(HttpServletRequest request, HttpServletResponse response) {
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
         if (signedInUser != null) {
@@ -357,7 +356,7 @@ public class AuthenticationController {
      * Get user information (username, role, email, etc.) of signed in user
      */
     @RequestMapping(value = "/user", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get user information of signed in user")
+    @Operation(summary = "Get user information of signed in user")
     public ResponseEntity<?> getUser(HttpServletResponse response) {
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
         if (signedInUser != null) {
@@ -378,7 +377,7 @@ public class AuthenticationController {
      * Logout
      */
     @RequestMapping(value = "/logout", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Logout")
+    @Operation(summary = "Logout")
     public ResponseEntity<?> doLogout(HttpServletRequest request, HttpServletResponse response) {
         try {
             boolean isSignedIn = authService.userIsSignedInBySession(request);
