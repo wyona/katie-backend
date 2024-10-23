@@ -592,8 +592,10 @@ public class AskController {
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> chatCompletions(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
+            @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
         try {
@@ -609,8 +611,10 @@ public class AskController {
 
             GenerateProvider generateProvider = ollamaGenerate;
             List<PromptMessage> promptMessages = new ArrayList<>();
-            // TODO: Replace hard coded prompt
-            promptMessages.add(new PromptMessage(PromptMessageRole.USER, "Please translate the sentence 'Good morning' to portuguese."));
+            for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
+                promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
+            }
+
             String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, 0.7, null);
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
