@@ -66,6 +66,7 @@ public class OllamaGenerate implements GenerateProvider {
             chatRequest = builder.withMessages(chatRequest.getMessages()).withMessage(getOllamaChatMessageRole(msg.getRole()), msg.getContent()).build();
         }
 
+        // TODO: Set options, see https://github.com/ollama4j/ollama4j/issues/70
         OllamaResult result = ollamaAPI.chat(chatRequest);
         // https://ollama4j.github.io/ollama4j/apis-generate/generate
         //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
