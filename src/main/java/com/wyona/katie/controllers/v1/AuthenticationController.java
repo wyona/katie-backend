@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -137,11 +138,11 @@ public class AuthenticationController {
      * Create a JWT token for my own Katie user which exists inside the IAM of Katie
      */
     @RequestMapping(value = "/token/myself", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Create a JWT token for my own Katie user which exists inside the IAM of Katie")
+    @Operation(summary="Create a JWT token for my own Katie user which exists inside the IAM of Katie")
     public ResponseEntity<?> generateJWTForMyself(
             @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
             @RequestParam(value = "seconds", required = true) long seconds,
-            @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64",required = true)
+            @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, defaultValue = "false")
             @RequestParam(value = "addProfile", required = true) boolean addProfile,
             HttpServletRequest request,
             HttpServletResponse response) {
