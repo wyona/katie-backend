@@ -1,8 +1,14 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.PromptMessage;
+import com.wyona.katie.models.PromptMessageRole;
 import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.models.chat.OllamaChatMessage;
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
+import io.github.ollama4j.models.chat.OllamaChatRequest;
+import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.response.OllamaResult;
+import io.github.ollama4j.types.OllamaModelType;
 import io.github.ollama4j.utils.Options;
 import io.github.ollama4j.utils.OptionsBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,7 +44,7 @@ public class OllamaGenerate implements GenerateProvider {
 
         String completedText = null;
 
-        // INFO: https://github.com/amithkoujalgi/ollama4j
+        // INFO: https://github.com/ollama4j/ollama4j and https://ollama4j.github.io/ollama4j/intro and https://ollama4j.github.io/ollama4j/apidocs/io/github/ollama4j/OllamaAPI.html
         OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
         //ollamaAPI.setVerbose(false); // INFO: Default is true
         // TODO: When not set inside application.properties, then do not set here
@@ -48,10 +55,38 @@ public class OllamaGenerate implements GenerateProvider {
             optionsBuilder = optionsBuilder.setTemperature(temperature.floatValue());
         }
         Options options = optionsBuilder.build();
-        // TODO: Use all messages and not just last message, see for example OpenAIGenerate
-        OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
+
+        // https://ollama4j.github.io/ollama4j/apis-generate/chat
+        OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(model);
+        //OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(OllamaModelType.MISTRAL);
+        PromptMessage firstMessage = promptMessages.get(0);
+        OllamaChatRequest chatRequest = builder.withMessage(getOllamaChatMessageRole(firstMessage.getRole()), firstMessage.getContent()).build();
+        for (int i = 1; i < promptMessages.size(); i++) {
+            PromptMessage msg = promptMessages.get(i);
+            chatRequest = builder.withMessages(chatRequest.getMessages()).withMessage(getOllamaChatMessageRole(msg.getRole()), msg.getContent()).build();
+        }
+
+        OllamaResult result = ollamaAPI.chat(chatRequest);
+        // https://ollama4j.github.io/ollama4j/apis-generate/generate
+        //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
         completedText = result.getResponse();
 
         return completedText;
+    }
+
+    /**
+     *
+     */
+    private OllamaChatMessageRole getOllamaChatMessageRole(PromptMessageRole role) {
+        if (role == PromptMessageRole.USER) {
+            return OllamaChatMessageRole.USER;
+        } else if (role == PromptMessageRole.SYSTEM) {
+            return OllamaChatMessageRole.SYSTEM;
+        } else if (role == PromptMessageRole.ASSISTANT) {
+            return OllamaChatMessageRole.ASSISTANT;
+        }
+
+        log.warn("Ollama4J does not support role '" + role + "'!");
+        return OllamaChatMessageRole.USER;
     }
 }
