@@ -48,7 +48,8 @@ public class OllamaGenerate implements GenerateProvider {
             optionsBuilder = optionsBuilder.setTemperature(temperature.floatValue());
         }
         Options options = optionsBuilder.build();
-        OllamaResult result = ollamaAPI.ask(model, promptMessages.get(0).getContent(), options);
+        // TODO: Use all messages and not just last message, see for example OpenAIGenerate
+        OllamaResult result = ollamaAPI.ask(model, promptMessages.get(promptMessages.size() - 1).getContent(), options);
         completedText = result.getResponse();
 
         return completedText;
