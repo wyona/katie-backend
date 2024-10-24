@@ -58,9 +58,11 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/token/generic", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Create generic JWT token (only Administrators)")
-    public ResponseEntity<?> generateGenericJWT(@RequestBody JWTPayload payload,
+    public ResponseEntity<?> generateGenericJWT(
         @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
+        @ApiParam(name = "request-body", value = "Token payload, to set generic and custom claims, like for example custom claims 'endpoint' and 'scope'", required = true)
+        @RequestBody JWTPayload payload,
         HttpServletRequest request,
         HttpServletResponse response) {
 
