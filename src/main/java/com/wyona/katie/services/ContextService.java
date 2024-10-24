@@ -597,16 +597,19 @@ public class ContextService {
 
         String yes = messageSource.getMessage("feedback.yes", null, new Locale(language));
         String no = messageSource.getMessage("feedback.no", null, new Locale(language));
-        String jwtToken = generateJWTAccessToken("/" + domain.getId() + "/classification/labels", JwtService.SCOPE_READ_LABELS, 259200);
+        int tokenValidityInSeconds = 259200; // INFO: 3 days valid, in case of a weekend
+        String jwtToken = generateJWTAccessToken("/" + domain.getId() + "/classification/labels", JwtService.SCOPE_READ_LABELS, tokenValidityInSeconds);
         sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "</a></p>");
 
         return Utils.convertHtmlToTOPdeskHtml(sb.toString());
     }
 
     /**
-     * Generate access token
+     * Generate access token for a particular endpoint and scope
      * @param endpoint Rest interface endpoint, e.g. "/similarity-sentences"
      * @param scope Scope of access tokem, e.g. "get-sentence-similarity"
+     * @param seconds Token validity in seconds, e.g. 3600 (60 minutes)
+     * @return JWT token
      */
     private String generateJWTAccessToken(String endpoint, String scope, long seconds) {
         JWTPayload jwtPayload = new JWTPayload();
@@ -831,6 +834,7 @@ public class ContextService {
     /**
      * Add Supabase as knowledge source
      * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
+     * @param chunkSize Chunk size
      */
     public void addKnowledgeSourceSupabase(String domainId, String name, String answerFieldNames, String classificationsFieldNames, String questionFieldNames, String url, Integer chunkSize) throws Exception {
         if (!isMemberOrAdmin(domainId)) {
@@ -1578,7 +1582,7 @@ public class ContextService {
                     log.error(e.getMessage(), e);
                 }
             }
-            
+
             int batchSize = 100; // TOOD: Make configurable
             backgroundProcessService.updateProcessStatus(processId, "Start indexing of " + qnas.size() + " QnAs ...");
             log.info("Re-train all " + qnas.size() + " QnAs which were trained before ...");
@@ -3453,7 +3457,7 @@ public class ContextService {
     }
 
     /**
-     *
+     * Delete entry (file) containing rating of predicted label
      */
     public boolean deleteLabelRating(String domainId, String ratingId) throws Exception {
         if (!isMemberOrAdmin(domainId)) {
