@@ -609,20 +609,34 @@ public class AskController {
         try {
             Context domain = contextService.getDomain(domainId);
 
+            // TODO: Get completion configuration from domain config
+            //domain.getCompletionImpl();
             GenerateProvider generateProvider = ollamaGenerate;
+
             List<PromptMessage> promptMessages = new ArrayList<>();
             for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
                 promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
             }
 
-            String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, 0.7, null);
+            Double temperature = 0.7;
+            if (chatCompletionsRequest.getTemperature() != null) {
+                temperature = chatCompletionsRequest.getTemperature();
+            }
+
+            ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
+            if (chosenSuggestion != null) {
+                log.info("Chosen suggestion: " + chosenSuggestion.getIndex());
+            }
+
+            // TODO: Get LLM from domain config
+            String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, temperature, null);
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
             ArrayNode choices = mapper.createArrayNode();
             body.put("choices", choices);
             ObjectNode choice = mapper.createObjectNode();
             ObjectNode message = mapper.createObjectNode();
-            message.put("role", "assistant");
+            message.put("role", PromptMessageRoleLowerCase.assistant.toString());
             message.put("content", completedText);
             choice.put("id", 0);
             choice.put("message", message);
