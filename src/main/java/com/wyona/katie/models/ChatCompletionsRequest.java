@@ -8,9 +8,24 @@ import java.util.List;
  */
 public class ChatCompletionsRequest {
 
+    private Double temperature;
     private List<PromptMessageWithRoleLowerCase> messages = new ArrayList<>();
     private List<String> suggestions = new ArrayList<>();
     private ChosenSuggestion chosenSuggestion = null;
+
+    /**
+     *
+     */
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    /**
+     *
+     */
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
+    }
 
     /**
      *
@@ -47,14 +62,14 @@ public class ChatCompletionsRequest {
     /**
      * Set chosen conversation starter
      */
-    public void setChosenSuggestion(ChosenSuggestion chosenSuggestion) {
+    public void setchosen_suggestion(ChosenSuggestion chosenSuggestion) {
         this.chosenSuggestion = chosenSuggestion;
     }
 
     /**
      *
      */
-    public ChosenSuggestion getChosenSuggestion() {
+    public ChosenSuggestion getchosen_suggestion() {
         return chosenSuggestion;
     }
 }
