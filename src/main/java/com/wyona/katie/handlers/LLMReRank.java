@@ -50,6 +50,7 @@ public class LLMReRank implements ReRankProvider {
             String model = generativeAIService.getCompletionModel(completionImpl);
             String apiToken = generativeAIService.getApiToken(completionImpl);
             if (generateProvider != null) {
+                // TODO: Use tool call
                 completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
