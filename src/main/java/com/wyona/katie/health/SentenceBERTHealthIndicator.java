@@ -23,12 +23,13 @@ public class SentenceBERTHealthIndicator extends AbstractHealthIndicator {
         // If you throw an exception, the status will be DOWN with the exception message.
 
         String endpoint = "/api/v1/health";
+        String host = sbertImpl.getHttpHost().toString();
         if (sbertImpl.isAlive(endpoint)) {
             builder.up()
-                    .withDetail("endpoint", endpoint);
+                    .withDetail("endpoint", endpoint).withDetail("host", host);
         } else {
             builder.down()
-                    .withDetail("endpoint", endpoint);
+                    .withDetail("endpoint", endpoint).withDetail("host", host);
         }
     }
 }
