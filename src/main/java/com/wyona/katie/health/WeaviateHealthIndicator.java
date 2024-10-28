@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@ConditionalOnEnabledHealthIndicator("management.health.weaviate.enabled")
+@ConditionalOnEnabledHealthIndicator("weaviate")
 public class WeaviateHealthIndicator extends AbstractHealthIndicator {
 
     @Autowired

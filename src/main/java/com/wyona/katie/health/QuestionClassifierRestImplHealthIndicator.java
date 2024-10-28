@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@ConditionalOnEnabledHealthIndicator("management.health.question-classifier-rest-impl.enabled")
+@ConditionalOnEnabledHealthIndicator("question-classifier-rest-impl")
 public class QuestionClassifierRestImplHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${qc.implementation}")
