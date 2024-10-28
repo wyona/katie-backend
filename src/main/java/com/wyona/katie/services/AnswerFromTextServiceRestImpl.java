@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * REST implementation to return answer from text
+ * REST implementation to return answer from text service
  */
 @Slf4j
 @Component
