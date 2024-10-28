@@ -4,6 +4,7 @@ import com.wyona.katie.handlers.WeaviateQuestionAnswerImpl;
 import com.wyona.katie.handlers.WeaviateQuestionAnswerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@ConditionalOnEnabledHealthIndicator("management.health.weaviate.enabled")
 public class WeaviateHealthIndicator extends AbstractHealthIndicator {
 
     @Autowired
