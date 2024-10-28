@@ -30,18 +30,19 @@ public class QuestionClassifierRestImplHealthIndicator extends AbstractHealthInd
         // If you throw an exception, the status will be DOWN with the exception message.
 
         String endpoint = "/api/v1/health";
+        String host = questionClassifyImpl.getHost().toString();
         log.info("Configured question classification implementation: " + qcImpl);
         if (qcImpl.equals(QuestionClassificationImpl.REST)) {
             if (questionClassifyImpl.isAlive(endpoint)) {
                 builder.up()
-                        .withDetail("endpoint", endpoint);
+                        .withDetail("endpoint", endpoint).withDetail("host", host);
             } else {
                 builder.down()
-                        .withDetail("endpoint", endpoint);
+                        .withDetail("endpoint", endpoint).withDetail("host", host);
             }
         } else {
             log.info("QuestionClassifierRestImpl is not enabled, therefore do not check whether it is alive.");
-            builder.unknown();
+            builder.unknown().withDetail("endpoint", endpoint).withDetail("host", host);
         }
     }
 }

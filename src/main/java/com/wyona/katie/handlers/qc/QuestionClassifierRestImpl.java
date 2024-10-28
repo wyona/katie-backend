@@ -114,7 +114,7 @@ public class QuestionClassifierRestImpl implements QuestionClassifier, Classific
     /**
      * Get questionclassifier host, e.g. 'https://questionclassifier.ukatie.com' or 'http://localhost:5001'
      */
-    private HttpHost getHost() {
+    public HttpHost getHost() {
         return new HttpHost(questionClassifierHostname, Integer.parseInt(questionClassifierPort), questionClassifierScheme);
     }
 
