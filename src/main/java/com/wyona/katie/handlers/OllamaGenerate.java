@@ -77,6 +77,16 @@ public class OllamaGenerate implements GenerateProvider {
     }
 
     /**
+     * @return true when Ollama server is alive and false otherwise
+     */
+    public boolean isAlive() {
+        log.info("Check whether Ollama is alive: " + ollamaHost);
+        OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
+        ollamaAPI.setBasicAuth(ollamaBasicAuthUsername, ollamaBasicAuthPassword);
+        return ollamaAPI.ping();
+    }
+
+    /**
      *
      */
     private OllamaChatMessageRole getOllamaChatMessageRole(PromptMessageRole role) {
