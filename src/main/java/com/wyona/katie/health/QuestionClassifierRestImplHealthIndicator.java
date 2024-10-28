@@ -7,15 +7,17 @@ import com.wyona.katie.models.QuestionClassificationImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
 
 /**
- * Also see configuration parameter 'management.endpoint.health.show-details' inside application.properties
+ * Also see configuration parameter 'management.health.question-classifier-rest-impl.enabled' inside application.properties
  */
 @Slf4j
 @Component
+@ConditionalOnEnabledHealthIndicator("management.health.question-classifier-rest-impl.enabled")
 public class QuestionClassifierRestImplHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${qc.implementation}")
@@ -42,6 +44,7 @@ public class QuestionClassifierRestImplHealthIndicator extends AbstractHealthInd
             }
         } else {
             log.info("QuestionClassifierRestImpl is not enabled, therefore do not check whether it is alive.");
+            // TODO: Introduce status "DISABLED", see https://docs.spring.io/spring-boot/docs/2.1.7.RELEASE/reference/html/production-ready-endpoints.html#_writing_custom_healthindicators
             builder.unknown().withDetail("endpoint", endpoint).withDetail("host", host);
         }
     }
