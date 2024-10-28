@@ -39,7 +39,7 @@ import org.apache.commons.codec.binary.Base64;
 public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Value("${weaviate.host}")
-    private String weaviateHost;
+    private String weaviateHostDefault;
 
     @Value("${weaviate.results.limit}")
     private int limit;
@@ -74,7 +74,7 @@ public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
         HttpEntity<String> request = new HttpEntity<String>(headers);
 
         try {
-            String requestUrl = weaviateHost + endpoint;
+            String requestUrl = getHost(null) + endpoint;
             log.info("Check whether Weaviate is alive: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
@@ -87,8 +87,8 @@ public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
             log.error(e.getMessage(), e);
         }
 
-        log.warn("Weaviate '" + weaviateHost + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The Weaviate Server at '" + weaviateHost + "' seems to be DOWN", null, null, false);
+        log.warn("Weaviate '" + getHost(null) + "' seems to be down!");
+        mailerService.notifyAdministrator("WARNING: The Weaviate Server at '" + getHost(null) + "' seems to be DOWN", null, null, false);
         return false;
     }
 
@@ -101,7 +101,7 @@ public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
         HttpEntity<String> request = new HttpEntity<String>(headers);
 
         try {
-            String requestUrl = weaviateHost + "/v1/meta";
+            String requestUrl = getHost(domain) + "/v1/meta";
             log.info("Get Weaviate version: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
@@ -282,7 +282,7 @@ https://www.semi.technology/developers/weaviate/current/tutorials/how-to-create-
         headers.set("Content-Type", "application/json; charset=UTF-8");
         HttpEntity<String> request = new HttpEntity<String>(clazzNode.toString(), headers);
 
-        domain.setWeaviateQueryUrl(weaviateHost);
+        domain.setWeaviateQueryUrl(getHost(null));
         String requestUrl = getHttpHost(domain) + "/v1/objects";
         log.info("Try to add Tenant to Weaviate: " + requestUrl);
         try {
@@ -793,6 +793,19 @@ https://www.semi.technology/developers/weaviate/current/tutorials/how-to-create-
         }
 
         return headers;
+    }
+
+    /**
+     * @param domain Optional domain
+     * @return host, e.g. "http://0.0.0.0:8080"
+     */
+    public String getHost(Context domain) {
+        if (domain == null) {
+            log.info("No Katie domain provided, therefore return default Weaviate host configuration.");
+            return weaviateHostDefault;
+        } else {
+            return getHttpHost(domain).toHostString();
+        }
     }
 
     /**
