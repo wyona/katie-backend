@@ -9,7 +9,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
 
 /**
- * Also see configuration parameter 'management.endpoint.health.show-details' inside application.properties
+ * Also see configuration parameter 'management.health.sentence-bert.enabled' inside application.properties
  */
 @Slf4j
 @Component
