@@ -23,13 +23,14 @@ public class WeaviateHealthIndicator extends AbstractHealthIndicator {
         // Use the builder to build the health status details that should be reported.
         // If you throw an exception, the status will be DOWN with the exception message.
 
+        String host = weaviateImpl.getHost(null);
         String endpoint = "/v1";
         if (weaviateImpl.isAlive(endpoint)) {
             builder.up()
-                    .withDetail("endpoint", endpoint);
+                    .withDetail("endpoint", endpoint).withDetail("version", weaviateImpl.getVersion(null)).withDetail("host", host);
         } else {
             builder.down()
-                    .withDetail("endpoint", endpoint);
+                    .withDetail("endpoint", endpoint).withDetail("host", host);
         }
     }
 }
