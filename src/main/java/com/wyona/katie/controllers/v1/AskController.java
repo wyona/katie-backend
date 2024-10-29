@@ -53,10 +53,6 @@ public class AskController {
 
     @Autowired
     GenerativeAIService generativeAIService;
-    @Autowired
-    private OllamaGenerate ollamaGenerate;
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
 
     @Autowired
     public AskController(QuestionAnsweringService qaService, IAMService iamService, RememberMeService rememberMeService, AuthenticationService authService, DataRepositoryService dataRepoService, ContextService contextService) {
@@ -610,8 +606,10 @@ public class AskController {
             Context domain = contextService.getDomain(domainId);
 
             // TODO: Get completion configuration from domain config
-            //domain.getCompletionImpl();
-            GenerateProvider generateProvider = ollamaGenerate;
+            CompletionImpl completionImpl = domain.getCompletionImpl();
+            completionImpl = CompletionImpl.MISTRAL_OLLAMA;
+            GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+            String model = generativeAIService.getCompletionModel(completionImpl);
 
             List<PromptMessage> promptMessages = new ArrayList<>();
             for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
@@ -628,8 +626,8 @@ public class AskController {
                 log.info("Chosen suggestion: " + chosenSuggestion.getIndex());
             }
 
-            // TODO: Get LLM from domain config
-            String completedText = generateProvider.getCompletion(promptMessages, ollamaModel, temperature, null);
+            String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
+            
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
             ArrayNode choices = mapper.createArrayNode();
