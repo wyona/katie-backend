@@ -49,7 +49,7 @@ public class GenerativeAIService {
             return openAIGenerate;
         } else if (impl.equals(CompletionImpl.MISTRAL_AI)) {
             return mistralAIGenerate;
-        } else if (impl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
+        } else if (impl.equals(CompletionImpl.OLLAMA)) {
             return ollamaGenerate;
         } else {
             log.error("No such completion implemention supported yet: " + impl);
@@ -68,7 +68,7 @@ public class GenerativeAIService {
             model = openAIModel;
         } else if (generateImpl.equals(CompletionImpl.MISTRAL_AI)) {
             model = mistralAIModel;
-        } else if (generateImpl.equals(CompletionImpl.MISTRAL_OLLAMA)) {
+        } else if (generateImpl.equals(CompletionImpl.OLLAMA)) {
             model = ollamaModel;
         } else {
             log.error("No such completion implemention supported yet: " + generateImpl);

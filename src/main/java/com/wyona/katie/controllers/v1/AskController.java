@@ -607,7 +607,7 @@ public class AskController {
 
             // TODO: Get completion configuration from domain config
             CompletionImpl completionImpl = domain.getCompletionImpl();
-            completionImpl = CompletionImpl.MISTRAL_OLLAMA;
+            completionImpl = CompletionImpl.OLLAMA;
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
             String model = generativeAIService.getCompletionModel(completionImpl);
 
@@ -627,7 +627,7 @@ public class AskController {
             }
 
             String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
-            
+
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
             ArrayNode choices = mapper.createArrayNode();

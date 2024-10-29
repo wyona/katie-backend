@@ -8,5 +8,5 @@ public enum CompletionImpl {
     OPENAI,
     ALEPH_ALPHA,
     MISTRAL_AI,
-    MISTRAL_OLLAMA
+    OLLAMA
 }
