@@ -605,9 +605,15 @@ public class AskController {
         try {
             Context domain = contextService.getDomain(domainId);
 
-            // TODO: Get completion configuration from domain config
             CompletionImpl completionImpl = domain.getCompletionImpl();
-            completionImpl = CompletionImpl.OLLAMA;
+            //completionImpl = CompletionImpl.OLLAMA;
+            if (completionImpl == CompletionImpl.UNSET) {
+                log.warn("Domain '" + domainId + "' has no completion implementation configured!");
+                //return new ResponseEntity<>("TODO", HttpStatus.OK);
+                //return new ResponseEntity<>(new Error("TODO", "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                log.info("Domain '" + domainId + "' has '" + completionImpl + "' configured as completion implementation.");
+            }
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
             String model = generativeAIService.getCompletionModel(completionImpl);
 
