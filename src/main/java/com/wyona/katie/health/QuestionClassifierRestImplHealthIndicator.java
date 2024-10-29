@@ -45,7 +45,7 @@ public class QuestionClassifierRestImplHealthIndicator extends AbstractHealthInd
         } else {
             log.info("QuestionClassifierRestImpl is not enabled, therefore do not check whether it is alive.");
             // TODO: Introduce status "DISABLED", see https://docs.spring.io/spring-boot/docs/2.1.7.RELEASE/reference/html/production-ready-endpoints.html#_writing_custom_healthindicators
-            builder.unknown().withDetail("endpoint", endpoint).withDetail("host", host);
+            builder.unknown().withDetail("endpoint", endpoint).withDetail("host", host).withDetail("status", "DISABLED");
         }
     }
 }
