@@ -629,13 +629,8 @@ public class AskController {
 
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
             if (chosenSuggestion != null) {
-                log.info("Chosen suggestion: " + chosenSuggestion.getIndex());
-                // TODO: Get suggestion from domain configuration
-                if (chosenSuggestion.getIndex() == 0) {
-                    promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way."));
-                } else {
-                    promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Tell the user, that no suggestion with Id '" + chosenSuggestion.getIndex() + "' exists."));
-                }
+                log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
+                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, getSystemPrompt(domain, chosenSuggestion)));
             }
 
             String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
@@ -659,6 +654,19 @@ public class AskController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Get system prompt for the chosen suggestion
+     * @param chosenSuggestion Chosen suggestion
+     */
+    private String getSystemPrompt(Context domain, ChosenSuggestion chosenSuggestion) {
+        if (chosenSuggestion.getIndex() != 0) {
+            return "Tell the user, that no prompt for suggestion '" + chosenSuggestion.getIndex() + "' exists.";
+        }
+
+        // TODO: Get suggestion from domain configuration
+        return "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way.";
     }
 
     /**
