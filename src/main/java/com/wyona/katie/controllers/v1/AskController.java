@@ -631,7 +631,11 @@ public class AskController {
             if (chosenSuggestion != null) {
                 log.info("Chosen suggestion: " + chosenSuggestion.getIndex());
                 // TODO: Get suggestion from domain configuration
-                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way."));
+                if (chosenSuggestion.getIndex() == 0) {
+                    promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way."));
+                } else {
+                    promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Tell the user, that no suggestion with Id '" + chosenSuggestion.getIndex() + "' exists."));
+                }
             }
 
             String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
