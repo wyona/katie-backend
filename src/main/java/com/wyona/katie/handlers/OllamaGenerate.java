@@ -96,6 +96,8 @@ public class OllamaGenerate implements GenerateProvider {
             return OllamaChatMessageRole.SYSTEM;
         } else if (role == PromptMessageRole.ASSISTANT) {
             return OllamaChatMessageRole.ASSISTANT;
+        } else if (role == PromptMessageRole.TOOL) {
+            return OllamaChatMessageRole.TOOL;
         }
 
         log.warn("Ollama4J does not support role '" + role + "'!");
