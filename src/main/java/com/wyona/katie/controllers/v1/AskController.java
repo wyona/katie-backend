@@ -630,6 +630,8 @@ public class AskController {
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
             if (chosenSuggestion != null) {
                 log.info("Chosen suggestion: " + chosenSuggestion.getIndex());
+                // TODO: Get suggestion from domain configuration
+                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way."));
             }
 
             String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
