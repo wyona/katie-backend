@@ -1,6 +1,6 @@
 package com.wyona.katie.models;
 
-public class Classification {
+public class Classification implements Comparable<Classification> {
 
     private String label;
     private String id;
@@ -78,5 +78,14 @@ public class Classification {
      */
     public Integer getFrequency() {
         return frequency;
+    }
+
+    /**
+     * Compare two classifications by label term (alphabetically)
+     */
+    @Override
+    public int compareTo(Classification classification) {
+        //return classification.getTerm().compareToIgnoreCase(this.getTerm());
+        return this.getTerm().compareToIgnoreCase(classification.getTerm());
     }
 }
