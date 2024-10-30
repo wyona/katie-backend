@@ -96,7 +96,7 @@ public class ClassificationRepositoryService {
 ;    }
 
     /**
-     * Remove classification / label from training dataset
+     * Remove classification / label from training dataset (including samples)
      */
     public void removeClassification(Context domain, Classification classification) throws Exception {
         File samplesDir = getSamplesDir(domain, classification.getKatieId());
