@@ -42,6 +42,8 @@ public class LLMReRank implements ReRankProvider {
 
         int item_number_none_of_the_answers = answers.length + 1;
         List<PromptMessage> promptMessages = new ArrayList<>();
+        // TODO: Use tool call, see https://platform.openai.com/docs/guides/function-calling
+        //PromptMessageRole.TOOL
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
         try {
