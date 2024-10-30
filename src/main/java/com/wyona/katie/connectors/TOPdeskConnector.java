@@ -204,7 +204,7 @@ public class TOPdeskConnector implements Connector {
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
 
-            // INFO: Get all categories and subcategories from TOPdesk
+            // INFO: Get all categories and subcategories from TOPdesk, see https://developers.topdesk.com/explorer/?page=incident#/general/get_incidents_subcategories
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/subcategories";
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
             if (bodyNode.isArray()) {
@@ -277,7 +277,7 @@ public class TOPdeskConnector implements Connector {
                                 }
                             }
                         } else {
-                            backgroundProcessService.updateProcessStatus(processId, "No text samples could be retrieved for category / subcategory '" + topDeskLabel.getTerm() + "' (" + topDeskLabel.getId() + ")!", BackgroundProcessStatusType.ERROR);
+                            backgroundProcessService.updateProcessStatus(processId, "No text samples could be retrieved for category / subcategory '" + topDeskLabel.getTerm() + "' (" + topDeskLabel.getId() + ")!", BackgroundProcessStatusType.WARN);
                         }
                     }
                 }
