@@ -236,11 +236,13 @@ public class TOPdeskConnector implements Connector {
                         }
                     }
                     if (!labelExistsInTopDesk) {
-                        labelsDeleted = true;
                         if (!testRun) {
+                            labelsDeleted = true;
                             classificationService.removeClassification(domain, label);
+                            backgroundProcessService.updateProcessStatus(processId, "Label '" + label.getTerm() + "' removed, because label does not exist anymore in TOPdesk.");
+                        } else {
+                            backgroundProcessService.updateProcessStatus(processId, "Test run, therefore do not remove label '" + label.getTerm() + "' (" + label.getId() + ").");
                         }
-                        backgroundProcessService.updateProcessStatus(processId, "Label '" + label.getTerm() + "' removed from Classifier.");
                     }
                 }
 
@@ -266,10 +268,12 @@ public class TOPdeskConnector implements Connector {
                         backgroundProcessService.updateProcessStatus(processId, "Get maximum " + maxNumberOfSamplesPerCategory + " samples from TOPdesk for category / subcategory '" + topDeskLabel.getTerm() + "' ...");
                         List<TextSample> samples = getIncidentsAsClassificationSamplePerSubcategory(subcategoryId, maxNumberOfSamplesPerCategory, ksMeta, processId);
                         if (samples.size() > 0) {
-                            labelsAdded = true;
                             for (TextSample sample : samples) {
                                 if (!testRun) {
+                                    labelsAdded = true;
                                     classificationService.importSample(domain, sample);
+                                } else {
+                                    backgroundProcessService.updateProcessStatus(processId, "Test run, therefore do not import sample for new label '" + topDeskLabel.getTerm() + "'.");
                                 }
                             }
                         } else {
@@ -284,13 +288,15 @@ public class TOPdeskConnector implements Connector {
 
                 // TODO: Implement batch removal / ingestion and move retraining into classification service
                 if (labelsDeleted || labelsAdded) {
-                    backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
-                    MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
                     if (!testRun) {
+                        backgroundProcessService.updateProcessStatus(processId, "Retrain classifier ...");
+                        MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
                         classifier.retrain(domain, processId);
+                    } else {
+                        backgroundProcessService.updateProcessStatus(processId, "Test run, therefore do not retrain classifier.");
                     }
                 } else {
-                    backgroundProcessService.updateProcessStatus(processId, "Classifier not retrained.");
+                    backgroundProcessService.updateProcessStatus(processId, "Classifier not retrained, because neither labels removed nor added.");
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
