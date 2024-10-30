@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -1269,7 +1270,16 @@ public class DomainController {
             int offset = 0;
             int limit = 10000;
             ClassificationDataset dataset = classificationService.getDataset(domain, true, offset, limit);
-            return new ResponseEntity<>(dataset.getLabels(), HttpStatus.OK);
+
+            // INFO: Sort labels alphabetically
+            Classification[] classifications = dataset.getLabels();
+            List<Classification> labels = new ArrayList<>();
+            for (Classification classification : classifications) {
+                labels.add(classification);
+            }
+            Collections.sort(labels);
+
+            return new ResponseEntity<>(labels, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
