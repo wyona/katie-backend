@@ -42,6 +42,7 @@ public class OpenAIGenerate implements GenerateProvider {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode requestBodyNode = mapper.createObjectNode();
             requestBodyNode.put("model", openAIModel);
+            //requestBodyNode.put("model", "gpt-4o-2024-08-06");
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
 
@@ -50,6 +51,28 @@ public class OpenAIGenerate implements GenerateProvider {
                 messageNode.put("role", msg.getRole().toString());
                 messageNode.put("content", msg.getContent());
                 messages.add(messageNode);
+            }
+
+            String responseFormat = null;
+            if (responseFormat != null && responseFormat.equals("json")) {
+                // See https://platform.openai.com/docs/guides/structured-outputs
+                ObjectNode responseFormatNode = mapper.createObjectNode();
+                requestBodyNode.put("response_format", responseFormatNode);
+
+                responseFormatNode.put("type", "json_schema");
+                ObjectNode jsonSchemaNode = mapper.createObjectNode();
+                responseFormatNode.put("json_schema", jsonSchemaNode);
+                jsonSchemaNode.put("name", "TODO");
+
+                ObjectNode schemaNode = mapper.createObjectNode();
+                jsonSchemaNode.put("schema", schemaNode);
+                schemaNode.put("type", "object");
+                ObjectNode propertiesNode = mapper.createObjectNode();
+                schemaNode.put("properties", propertiesNode);
+
+                ObjectNode propertyNode = mapper.createObjectNode();
+                propertiesNode.put("selected-answer", propertyNode);
+                propertyNode.put("type", "string");
             }
 
             RestTemplate restTemplate = new RestTemplate();
