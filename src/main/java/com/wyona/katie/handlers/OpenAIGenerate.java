@@ -33,7 +33,7 @@ public class OpenAIGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
     public String getCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        log.info("Complete prompt using OpenAI chat completion ...");
+        log.info("Complete prompt using OpenAI chat completion (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         String completedText = null;
 
