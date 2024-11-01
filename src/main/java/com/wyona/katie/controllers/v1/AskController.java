@@ -633,7 +633,9 @@ public class AskController {
                 promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, getSystemPrompt(domain, chosenSuggestion)));
             }
 
-            String completedText = generateProvider.getCompletion(promptMessages, model, temperature, null);
+            String apiToken = generativeAIService.getApiToken(completionImpl);
+
+            String completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
 
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
