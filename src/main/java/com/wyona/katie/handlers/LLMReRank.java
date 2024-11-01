@@ -42,8 +42,6 @@ public class LLMReRank implements ReRankProvider {
 
         int item_number_none_of_the_answers = answers.length + 1;
         List<PromptMessage> promptMessages = new ArrayList<>();
-        // TODO: Use tool call, see https://platform.openai.com/docs/guides/function-calling
-        //PromptMessageRole.TOOL
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getMultipleChoicePrompt(question, answers, item_number_none_of_the_answers)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
         try {
@@ -52,7 +50,7 @@ public class LLMReRank implements ReRankProvider {
             String model = generativeAIService.getCompletionModel(completionImpl);
             String apiToken = generativeAIService.getApiToken(completionImpl);
             if (generateProvider != null) {
-                // TODO: Use tool call
+                // TODO: Use response_format json, see for example https://platform.openai.com/docs/guides/structured-outputs
                 completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
@@ -90,6 +88,8 @@ public class LLMReRank implements ReRankProvider {
             prompt.append("\n(" + (i + 1) + ") " + Utils.removeTabsAndDoubleSpaces(Utils.replaceNewLines(answers[i], " ")));
         }
         prompt.append("\n(" + item_number_none_of_the_answers + ") None of the answers above");
+
+        // TODO: Instruct the LLM how to return the chosen number of the best matching question and answer pair
 
         return prompt.toString();
     }
