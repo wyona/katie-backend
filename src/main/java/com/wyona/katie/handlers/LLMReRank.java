@@ -36,7 +36,7 @@ public class LLMReRank implements ReRankProvider {
      * @see ReRankProvider#getReRankedAnswers(String, String[], int)
      */
     public Integer[] getReRankedAnswers(String question, String[] answers, int limit) {
-        log.info("Re-rank answers using a LLM ...");
+        log.info("Re-rank answers using a LLM (" + generativeAIService.getCompletionModel(completionImpl) + ")...");
 
         List<Integer> reRankedIndex = new ArrayList<Integer>();
 
@@ -84,12 +84,13 @@ public class LLMReRank implements ReRankProvider {
     private String getMultipleChoicePrompt(String question, String[] answers, int item_number_none_of_the_answers)  {
 
         StringBuilder prompt = new StringBuilder("Please analyze the following question '" + question + "' and choose the best answer from the following list of question and answer pairs: ");
+
         for (int i = 0; i < answers.length; i++) {
             prompt.append("\n(" + (i + 1) + ") " + Utils.removeTabsAndDoubleSpaces(Utils.replaceNewLines(answers[i], " ")));
         }
-        prompt.append("\n(" + item_number_none_of_the_answers + ") None of the answers above");
-
-        // TODO: Instruct the LLM how to return the chosen number of the best matching question and answer pair
+        prompt.append("\n(" + item_number_none_of_the_answers + ") None of the question and answer pairs above");
+        
+        prompt.append("\nand return the selected list number within parentheses.");
 
         return prompt.toString();
     }
@@ -103,7 +104,7 @@ public class LLMReRank implements ReRankProvider {
     private int findSelectedAnswer(String text, int item_number_none_of_the_answers) {
         int posOpen = text.indexOf("(");
         if (posOpen < 0) {
-            log.warn("Text does not contain an open bracket!");
+            log.warn("Text does not contain an open parenthesis!");
             return -1;
         }
 
