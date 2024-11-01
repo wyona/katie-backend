@@ -88,8 +88,9 @@ public class LLMReRank implements ReRankProvider {
         for (int i = 0; i < answers.length; i++) {
             prompt.append("\n(" + (i + 1) + ") " + Utils.removeTabsAndDoubleSpaces(Utils.replaceNewLines(answers[i], " ")));
         }
+        // TODO: Consider changing the prompt, such that the list only contains the question and answer pairs and instruct the LLM re the response format
         prompt.append("\n(" + item_number_none_of_the_answers + ") None of the question and answer pairs above");
-        
+
         prompt.append("\nand return the selected list number within parentheses.");
 
         return prompt.toString();
