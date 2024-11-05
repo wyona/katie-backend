@@ -295,13 +295,13 @@ public class BenchmarkController {
             @RequestParam(value = "search-implementations", required = true) String searchImplementations,
             @ApiParam(name = "email", value = "E-Mail to get notification when benchmark is completed",required = false)
             @RequestParam(value = "email", required = false) String email,
-            @ApiParam(name = "index-alternative-questions", value = "Also index alternative questions when set to true",required = true)
+            @ApiParam(name = "index-alternative-questions", value = "Also index alternative questions when set to true", required = true, defaultValue = "false")
             @RequestParam(value = "index-alternative-questions", required = true) Boolean indexAlternativeQuestions,
-            @ApiParam(name = "re-rank-answers", value = "Re-rank answers when set to true (false by default)",required = false)
+            @ApiParam(name = "re-rank-answers", value = "Re-rank answers when set to true", required = false, defaultValue = "false")
             @RequestParam(value = "re-rank-answers", required = false) Boolean reRankAnswers,
             @ApiParam(name = "throttle-time", value = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
-            @ApiParam(name = "delete-domain", value = "When set to true, then delete domain which was created to run benchmark (true by default)", required = false)
+            @ApiParam(name = "delete-domain", value = "When set to true, then delete domain which was created to run benchmark", required = false , defaultValue = "true")
             @RequestParam(value = "delete-domain", required = false) Boolean deleteDomain,
             HttpServletRequest request) {
 
