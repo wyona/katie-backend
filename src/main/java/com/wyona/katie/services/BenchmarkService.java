@@ -580,7 +580,12 @@ public class BenchmarkService {
             dataset_bar.addValue(result.getPrecision(), result.getSystemName(), "Precision");
             dataset_bar.addValue(result.getRecall(), result.getSystemName(), "Recall");
 
-            series = new XYSeries(result.getSystemName());
+            String seriesKey = result.getSystemName().toString();
+            if (dataset_scatter.indexOf(seriesKey) >= 0) {
+                log.warn("Series with key '" + seriesKey + "' already exists, therefore append timestamp to have unique series key.");
+                seriesKey = seriesKey + "_" + new Date().getTime();
+            }
+            series = new XYSeries(seriesKey);
             series.add(result.getInferenceTimeInSeconds(), result.getAccuracy());
             dataset_scatter.addSeries(series);
         }
