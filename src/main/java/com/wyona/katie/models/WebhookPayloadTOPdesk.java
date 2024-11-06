@@ -8,6 +8,7 @@ public class WebhookPayloadTOPdesk extends WebhookPayload {
 
     private Integer requestType;
     private String incidentId;
+    private Boolean isTestRun;
 
     /**
      *
@@ -49,6 +50,20 @@ public class WebhookPayloadTOPdesk extends WebhookPayload {
      */
     public String getIncidentId() {
         return incidentId;
+    }
+
+    /**
+     * @param isTestRun True if a test run is performed that does not make any changes
+     */
+    public void setIsTestRun(Boolean isTestRun) {
+        this.isTestRun = isTestRun;
+    }
+
+    /**
+     * @return true if a test run is performed that does not make any changes
+     */
+    public Boolean getIsTestRun() {
+        return isTestRun;
     }
 
     /**
