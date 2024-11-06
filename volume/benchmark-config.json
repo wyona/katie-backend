@@ -1,0 +1,12 @@
+{
+  "retrievalConfigs": [
+    {
+      "retrievalImpl": "LUCENE_VECTOR_SEARCH",
+      "embeddingImpl": "OPENAI_COMPATIBLE",
+      "embeddingEndpoint": "http://localhost:3000/v1/embeddings",
+      "embeddingAPIToken": "YOUR_API_KEY",
+      "embeddingModel": null,
+      "embeddingValueType": "float32"
+    }
+  ]
+}
