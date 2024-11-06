@@ -270,7 +270,7 @@ public class KnowledgeSourceXMLFileService {
     }
 
     /**
-     *
+     * Add date (and additional information) when Knowledge Base was synced successfully
      */
     public void updateSyncInfo(String domainId, String ksId, int numberOfChunksAdded) throws Exception {
         Document doc = getKnowledgeSourcesDocument(domainId);
