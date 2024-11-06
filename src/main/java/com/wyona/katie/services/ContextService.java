@@ -3022,6 +3022,7 @@ public class ContextService {
      * @param predictedClassification Predicted label with highest score
      */
     private void saveRatingOfPredictedLabels(Context domain, RatingPredictedLabels rating, String text, String clientMessageId, Classification predictedClassification) {
+        // TODO: Move implementation to ClassificationService
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
         rootNode.put(HumanPreferenceLabel.TEXT_FIELD, text);
@@ -3463,9 +3464,9 @@ public class ContextService {
         if (!isMemberOrAdmin(domainId)) {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
+
         Context domain = getContext(domainId);
-        File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(ratingId, domain);
-        return ratingFile.delete();
+        return classificationService.removeRatingOfPredictedLabels(domain, ratingId);
     }
 
     /**
@@ -3475,6 +3476,8 @@ public class ContextService {
         if (!isMemberOrAdmin(domainId)) {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
+
+        // TODO: Move to ClassificationService
         Context domain = getContext(domainId);
         File ratingFile = dataRepositoryService.getRatingOfPredictedClassificationsFile(ratingId, domain);
         ObjectMapper mapper = new ObjectMapper();
