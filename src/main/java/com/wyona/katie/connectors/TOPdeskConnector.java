@@ -200,6 +200,12 @@ public class TOPdeskConnector implements Connector {
             }
         } else if (pl.getRequestType() == 3) {
             boolean testRun = false; // INFO: When true, then do not delete obsolete or add new categories and also do not retrain classifier
+            if (pl.getIsTestRun() != null) {
+                testRun = pl.getIsTestRun();
+                if (testRun) {
+                    backgroundProcessService.updateProcessStatus(processId, "Test run is performed that does not make any changes");
+                }
+            }
             List<Classification> topDeskLabels = new ArrayList<>();
 
             backgroundProcessService.updateProcessStatus(processId, "Sync categories / subcategories ...");
@@ -277,6 +283,7 @@ public class TOPdeskConnector implements Connector {
                                 }
                             }
                         } else {
+                            // INFO: Category will not be added, because no samples available!
                             backgroundProcessService.updateProcessStatus(processId, "No text samples could be retrieved for category / subcategory '" + topDeskLabel.getTerm() + "' (" + topDeskLabel.getId() + ")!", BackgroundProcessStatusType.WARN);
                         }
                     }
