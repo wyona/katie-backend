@@ -72,8 +72,11 @@ public class ClassificationService {
     public void retrain(Context domain, List<HumanPreferenceLabel> preferences, int trainPercentage, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
 
-        if (preferences != null) {
-            backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset.");
+        MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
+
+        if (preferences != null && preferences.size() > 0) {
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset ...");
+            // TODO: Get all approved ratings and do batch training
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
                     if (preference.getMeta().getApproved()) {
@@ -93,13 +96,18 @@ public class ClassificationService {
                                 log.info("Add sample '" + sample.getClassification().getKatieId() + "' / '" + sample.getId() + "' ...");
                                 importSample(domain, sample);
 
-                                log.info("Remove from rating '" + ratingId + "' from preference dataset ...");
-                                File ratingFile = dataRepoService.getRatingOfPredictedClassificationsFile(ratingId, domain);
-                                boolean deleted = ratingFile.delete();
+                                // INFO: Retrain classifier with approved sample
+                                TextSample[] samples = new TextSample[1];
+                                samples[0] = sample;
+                                classifier.train(domain, samples);
+
+                                // TODO: Only delete when "local" preference dataset is being used
+                                log.info("Remove rating '" + ratingId + "' from local preference dataset ...");
+                                boolean deleted = removeRatingOfPredictedLabels(domain, ratingId);
                                 if (deleted) {
-                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' deleted from human preference dataset.");
+                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' deleted from local human preference dataset.");
                                 } else {
-                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' not deleted from human preference dataset!", BackgroundProcessStatusType.WARN);
+                                    backgroundProcessService.updateProcessStatus(bgProcessId, "Rating '" + ratingId + "' not deleted from local human preference dataset!", BackgroundProcessStatusType.WARN);
                                 }
                             } else {
                                 String warnMsg = "Trying to add human preference rating '" + ratingId + "' as sample, but either Katie Id '" + sample.getClassification().getKatieId() + "' or sample Id (client message Id) '" + sample.getId() + "' is null!";
@@ -118,16 +126,23 @@ public class ClassificationService {
                 }
             }
         } else {
-            backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples only.");
+            backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided.");
+            //backgroundProcessService.updateProcessStatus(bgProcessId, "No preference dataset provided, therefore use existing samples only for retraining classifier.");
         }
 
-        MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
+        /* INFO: We already train the individual samples above
         try {
-            classifier.retrain(domain, bgProcessId);
+            if (false) {
+                backgroundProcessService.updateProcessStatus(bgProcessId, "Retrain classifier ...");
+                classifier.retrain(domain, bgProcessId);
+            } else {
+                backgroundProcessService.updateProcessStatus(bgProcessId, "Retraining classifier disabled", BackgroundProcessStatusType.WARN);
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
+         */
         backgroundProcessService.stopProcess(bgProcessId, domain.getId());
     }
 
@@ -146,6 +161,7 @@ public class ClassificationService {
 
         // TODO: Retrain classifier, whereas only retrain for batch removal
         //MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
+        //classifier.retrain(domain, null);
     }
 
     /**
@@ -170,6 +186,15 @@ public class ClassificationService {
      */
     public ClassificationDataset getDataset(Context domain, boolean labelsOnly, int offset, int limit) throws Exception {
         return classificationRepoService.getDataset(domain, labelsOnly, offset, limit);
+    }
+
+    /**
+     * Remove rating of predicted labels
+     * @return true when rating was deleted successfully
+     */
+    public boolean removeRatingOfPredictedLabels(Context domain, String ratingId) {
+        File ratingFile = dataRepoService.getRatingOfPredictedClassificationsFile(ratingId, domain);
+        return ratingFile.delete();
     }
 
     /**
