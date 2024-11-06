@@ -292,10 +292,6 @@ public class BenchmarkController {
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> performBenchmark(
-            // TODO: Add description for file, e.g. "Test Dataset" and if not provided, then a default test dataset is being used
-            @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
-            @ApiParam(name = "search-implementations", value = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
-            @RequestParam(value = "search-implementations", required = true) String searchImplementations,
             @ApiParam(name = "email", value = "E-Mail to get notification when benchmark is completed",required = false)
             @RequestParam(value = "email", required = false) String email,
             @ApiParam(name = "index-alternative-questions", value = "Also index alternative questions when set to true", required = true, defaultValue = "false")
@@ -306,6 +302,13 @@ public class BenchmarkController {
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
             @ApiParam(name = "delete-domain", value = "When set to true, then delete domain which was created to run benchmark", required = false , defaultValue = "true")
             @RequestParam(value = "delete-domain", required = false) Boolean deleteDomain,
+            // TODO: Add description for file, e.g. "Test Dataset" and if not provided, then a default test dataset is being used
+            @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
+            @ApiParam(name = "search-implementations", value = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
+            @RequestParam(value = "search-implementations", required = true) String searchImplementations,
+            //@ApiParam(name = "benchmark_config", value = "Benchmark configuration", required = true)
+            //@RequestPart(name = "benchmark_config", required = true) BenchmarkConfiguration benchmarkConfiguration,
+            @RequestPart(name = "benchmark_config", required = false) MultipartFile benchmark_config,
             HttpServletRequest request) {
 
         try {
@@ -344,6 +347,7 @@ public class BenchmarkController {
 
             // INFO: List of search implementations to be benchmarked
             List<RetrievalConfiguration> systemsToBenchmark = new ArrayList<>();
+
             String[] searchImpls = searchImplementations.split(",");
             for (String searchImpl : searchImpls) {
                 RetrievalConfiguration retrievalConfig = new RetrievalConfiguration();
@@ -354,11 +358,6 @@ public class BenchmarkController {
                     retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
                     retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
                     retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
-
-                    //retrievalConfig.setEmbeddingImpl(EmbeddingsImpl.OPENAI_COMPATIBLE);
-                    //retrievalConfig.setEmbeddingEndpoint("http://localhost:3000/v1/embeddings");
-                    //retrievalConfig.setEmbeddingAPIToken("YOUR_API_TOKEN");
-                    //retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
                 } else {
                     retrievalConfig.setEmbeddingImpl(null);
                     retrievalConfig.setEmbeddingEndpoint(null);
@@ -367,6 +366,28 @@ public class BenchmarkController {
                 }
 
                 systemsToBenchmark.add(retrievalConfig);
+            }
+
+            /*
+            RetrievalConfiguration rConfig = new RetrievalConfiguration();
+            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+            rConfig.setEmbeddingImpl(EmbeddingsImpl.OPENAI_COMPATIBLE);
+            rConfig.setEmbeddingEndpoint("http://localhost:3000/v1/embeddings");
+            rConfig.setEmbeddingAPIToken("YOUR_API_TOKEN");
+            rConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+            systemsToBenchmark.add(rConfig);
+             */
+
+            if (benchmark_config != null) {
+                log.info("Read optional benchmark configuration ...");
+                InputStream inputBenchmarkConfig = new BufferedInputStream(benchmark_config.getInputStream());
+                BenchmarkConfiguration benchmarkConfig = objectMapper.readValue(inputBenchmarkConfig, BenchmarkConfiguration.class);
+                inputBenchmarkConfig.close();
+
+                for (RetrievalConfiguration retrievalConfig : benchmarkConfig.getRetrievalConfigs()) {
+                    log.info("Additional retrieval system to benchmark: " + retrievalConfig.getRetrievalImpl());
+                    systemsToBenchmark.add(retrievalConfig);
+                }
             }
 
             bmService.runBenchmark(bmDataset, systemsToBenchmark, indexAlternativeQuestions, reRankAnswers, throttleTimeInMillis, deleteDomain, email, user, processId);
