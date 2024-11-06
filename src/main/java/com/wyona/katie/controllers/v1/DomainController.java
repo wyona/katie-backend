@@ -1293,7 +1293,7 @@ public class DomainController {
      * Retrain classifier
      */
     @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary="Retrain classifier (using existing samples and with new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
+    @Operation(summary="Retrain classifier (using existing samples and with optional new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
     public ResponseEntity<?> retrainClassifier(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1313,6 +1313,11 @@ public class DomainController {
             // INFO: The method retrain(...) is using @Async, therefore we have to read the preference dataset before
             List<HumanPreferenceLabel> preferences = getHumanPreferences(preferenceDataset);
 
+            HumanPreferenceLabel[] localPreferences = domainService.getRatingsOfPredictedLabels(domain.getId(), true, true);
+            for (HumanPreferenceLabel localPreference : localPreferences) {
+                preferences.add(localPreference);
+            }
+
             classificationService.retrain(domain, preferences, 80, bgProcessId, userId);
 
             String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
@@ -1327,14 +1332,16 @@ public class DomainController {
     }
 
     /**
-     * Get human preferences from file
+     * Get human preferences from uploaded file
+     * @param preferenceDataset Uploaded file containing human preference dataset
+     * @return list of preferences
      */
     private List<HumanPreferenceLabel> getHumanPreferences(MultipartFile preferenceDataset) {
+        List<HumanPreferenceLabel> preferences = new ArrayList<>();
         if (preferenceDataset != null) {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 JsonNode rootNode = mapper.readTree(new BufferedInputStream(preferenceDataset.getInputStream()));
-                List<HumanPreferenceLabel> preferences = new ArrayList<>();
 
                 if (rootNode.isArray()) {
                     for (int i = 0; i < rootNode.size(); i++) {
@@ -1370,12 +1377,13 @@ public class DomainController {
                         preferences.add(preference);
                     }
                 }
-                return preferences;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
+        } else {
+            log.info("No preference dataset uploaded.");
         }
-        return null;
+        return preferences;
     }
 
     /**
