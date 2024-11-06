@@ -237,10 +237,14 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
 
         doc.add(new TextField(CONTENTS_FIELD, content.toString(), Field.Store.NO));
 
-        List<String> features = getFeatures(question);
-        for (String feature : features) {
-            // TODO: Replace hard-coded weight
-            doc.add(new FeatureField(FEATURE_FIELD, feature, 0.4F));
+        if (question != null) {
+            List<String> features = getFeatures(question);
+            for (String feature : features) {
+                // TODO: Replace hard-coded weight
+                doc.add(new FeatureField(FEATURE_FIELD, feature, 0.4F));
+            }
+        } else {
+            log.warn("No question available, therefore no features can be extracted.");
         }
 
         if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
