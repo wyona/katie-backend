@@ -94,9 +94,9 @@ public class ConnectorService {
                 }
                 Context domain = domainService.getContext(domainId);
                 List<Answer> qnas = connector.update(domain, ksMeta, payload, processId);
+                int counterSuccessful = 0;
                 if (qnas != null && qnas.size() > 0) {
                     backgroundProcessService.updateProcessStatus(processId, "Import and index " + qnas.size() + " QnAs ...");
-                    int counterSuccessful = 0;
                     for (Answer qna : qnas) {
                         try {
                             String uuid = domainService.addQuestionAnswer(qna, domain).getUuid();
@@ -125,12 +125,12 @@ public class ConnectorService {
                     }
                     backgroundProcessService.updateProcessStatus(processId, counterSuccessful + " QnAs successfully imported and indexed.");
 
-                    updateSyncInfo(counterSuccessful, domainId, ksId);
                     backgroundProcessService.updateProcessStatus(processId, "Sync info updated.");
                 } else {
                     log.warn("No QnAs imported!");
                     backgroundProcessService.updateProcessStatus(processId, ConnectorService.class.getSimpleName() + ": No QnAs imported! Maybe Connector itself already imported / updated QnAs.", BackgroundProcessStatusType.WARN);
                 }
+                updateSyncInfo(counterSuccessful, domainId, ksId);
             } else {
                 backgroundProcessService.updateProcessStatus(processId, "No such knowledge source '" + ksId + " / " + ksc + "'!", BackgroundProcessStatusType.ERROR);
             }
@@ -181,7 +181,8 @@ public class ConnectorService {
     }
 
     /**
-     * Add date when Knowledge Base was synced successfully
+     * Add date (and additional information) when Knowledge Base was synced successfully
+     * @param numberOfChunks Number of text chunks indexed successfully
      */
     private void updateSyncInfo(int numberOfChunks, String domainId, String ksId) throws Exception {
         knowledgeSourceXMLFileService.updateSyncInfo(domainId, ksId, numberOfChunks);
