@@ -548,7 +548,9 @@ public class BenchmarkService {
             meta.append(", Embeddings Impl: " + domain.getEmbeddingsImpl());
             meta.append(", Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
-                meta.append(", Query URL: " + sbertImpl.getHttpHost());
+                meta.append(", Embedding URL: " + sbertImpl.getHttpHost());
+            } else {
+                meta.append(", Embedding URL: " + domain.getEmbeddingsEndpoint());
             }
             meta.append(", Similarity metric: " + domain.getVectorSimilarityMetric());
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
