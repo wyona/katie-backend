@@ -71,6 +71,9 @@ public class BenchmarkController {
     @Value("${benchmarks.data_path}")
     private String benchmarksDataPath;
 
+    @Value("${lucene.vector.search.embedding.impl}")
+    private EmbeddingsImpl embeddingsDefaultImpl;
+
     /**
      * REST interface to ask questions which have an answer inside domain / knowledge base
      */
@@ -338,7 +341,35 @@ public class BenchmarkController {
 
             String processId = UUID.randomUUID().toString();
             User user = authService.getUser(false, false);
-            bmService.runBenchmark(bmDataset, searchImplementations, indexAlternativeQuestions, reRankAnswers, throttleTimeInMillis, deleteDomain, email, user, processId);
+
+            // INFO: List of search implementations to be benchmarked
+            List<RetrievalConfiguration> systemsToBenchmark = new ArrayList<>();
+            String[] searchImpls = searchImplementations.split(",");
+            for (String searchImpl : searchImpls) {
+                RetrievalConfiguration retrievalConfig = new RetrievalConfiguration();
+                retrievalConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.valueOf(searchImpl.trim()));
+
+                if (retrievalConfig.getRetrievalImpl() == DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) {
+                    retrievalConfig.setEmbeddingImpl(embeddingsDefaultImpl);
+                    retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
+                    retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
+                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+
+                    //retrievalConfig.setEmbeddingImpl(EmbeddingsImpl.OPENAI_COMPATIBLE);
+                    //retrievalConfig.setEmbeddingEndpoint("http://localhost:3000/v1/embeddings");
+                    //retrievalConfig.setEmbeddingAPIToken("YOUR_API_TOKEN");
+                    //retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                } else {
+                    retrievalConfig.setEmbeddingImpl(null);
+                    retrievalConfig.setEmbeddingEndpoint(null);
+                    retrievalConfig.setEmbeddingAPIToken(null);
+                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                }
+
+                systemsToBenchmark.add(retrievalConfig);
+            }
+
+            bmService.runBenchmark(bmDataset, systemsToBenchmark, indexAlternativeQuestions, reRankAnswers, throttleTimeInMillis, deleteDomain, email, user, processId);
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(Exception e) {

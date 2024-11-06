@@ -2,7 +2,6 @@ package com.wyona.katie.services;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,19 +78,16 @@ public class BenchmarkService {
     @Value("${benchmarks.data_path}")
     private String benchmarksDataPath;
 
-    @Value("${lucene.vector.search.embedding.impl}")
-    private EmbeddingsImpl embeddingsDefaultImpl;
-
     @Value("${mail.subject.tag}")
     private String mailSubjectTag;
 
     /**
-     * @param searchImplementations Comma separated list of search / retrieval implementations
+     * @param searchImplementations List of search / retrieval implementations
      * @param indexAlternativeQuestions When true, then index alternative questions, when false, then do not index alternative questions
      * @param reRankAnswers When true, then re-rank results
      */
     @Async
-    public void runBenchmark(CustomBenchmarkDataset bmDataset, String searchImplementations, Boolean indexAlternativeQuestions, Boolean reRankAnswers, int throttleTimeInMillis, Boolean deleteDomain, String email, User user, String processId) {
+    public void runBenchmark(CustomBenchmarkDataset bmDataset, List<RetrievalConfiguration> searchImplementations, Boolean indexAlternativeQuestions, Boolean reRankAnswers, int throttleTimeInMillis, Boolean deleteDomain, String email, User user, String processId) {
         backgroundProcessService.startProcess(processId, "Run benchmark ...", user.getId());
         try {
             String datasetName = bmDataset.getDatasetName();
@@ -183,37 +179,9 @@ public class BenchmarkService {
             ObjectMapper objectMapper = getObjectMapper();
             objectMapper.writeValue(infoFile, benchmarkInfo);
 
-
-            // INFO: List of search implementations to be benchmarked
-            LinkedList<RetrievalConfiguration> systemsToBenchmark = new LinkedList<>();
-            String[] searchImpls = searchImplementations.split(",");
-            for (String searchImpl : searchImpls) {
-                RetrievalConfiguration retrievalConfig = new RetrievalConfiguration();
-                retrievalConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.valueOf(searchImpl.trim()));
-
-                if (retrievalConfig.getRetrievalImpl() == DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) {
-                    retrievalConfig.setEmbeddingImpl(embeddingsDefaultImpl);
-                    retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
-                    retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
-                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
-
-                    //retrievalConfig.setEmbeddingImpl(EmbeddingsImpl.OPENAI_COMPATIBLE);
-                    //retrievalConfig.setEmbeddingEndpoint("http://localhost:3000/v1/embeddings");
-                    //retrievalConfig.setEmbeddingAPIToken("YOUR_API_TOKEN");
-                    //retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
-                } else {
-                    retrievalConfig.setEmbeddingImpl(null);
-                    retrievalConfig.setEmbeddingEndpoint(null);
-                    retrievalConfig.setEmbeddingAPIToken(null);
-                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
-                }
-
-                systemsToBenchmark.add(retrievalConfig);
-            }
-
             // INFO: Re-index the created domain and perform benchmarks for each system. save results in list
             List<BenchmarkResult> implementationResults = new LinkedList<>();
-            for (RetrievalConfiguration searchImplementation : systemsToBenchmark) {
+            for (RetrievalConfiguration searchImplementation : searchImplementations) {
                 implementationResults.add(reindexAndBenchmark(searchImplementation, domain.getId(), indexAlternativeQuestions, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId));
             }
 
