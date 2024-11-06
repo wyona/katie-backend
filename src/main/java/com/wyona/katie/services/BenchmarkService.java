@@ -86,6 +86,7 @@ public class BenchmarkService {
     private String mailSubjectTag;
 
     /**
+     * @param searchImplementations Comma separated list of search / retrieval implementations
      * @param indexAlternativeQuestions When true, then index alternative questions, when false, then do not index alternative questions
      * @param reRankAnswers When true, then re-rank results
      */
@@ -184,16 +185,36 @@ public class BenchmarkService {
 
 
             // INFO: List of search implementations to be benchmarked
-            LinkedList<DetectDuplicatedQuestionImpl> systemsToBenchmark = new LinkedList<>();
+            LinkedList<RetrievalConfiguration> systemsToBenchmark = new LinkedList<>();
             String[] searchImpls = searchImplementations.split(",");
             for (String searchImpl : searchImpls) {
-                systemsToBenchmark.add(DetectDuplicatedQuestionImpl.valueOf(searchImpl.trim()));
+                RetrievalConfiguration retrievalConfig = new RetrievalConfiguration();
+                retrievalConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.valueOf(searchImpl.trim()));
+
+                if (retrievalConfig.getRetrievalImpl() == DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) {
+                    retrievalConfig.setEmbeddingImpl(embeddingsDefaultImpl);
+                    retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
+                    retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
+                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+
+                    //retrievalConfig.setEmbeddingImpl(EmbeddingsImpl.OPENAI_COMPATIBLE);
+                    //retrievalConfig.setEmbeddingEndpoint("http://localhost:3000/v1/embeddings");
+                    //retrievalConfig.setEmbeddingAPIToken("YOUR_API_TOKEN");
+                    //retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                } else {
+                    retrievalConfig.setEmbeddingImpl(null);
+                    retrievalConfig.setEmbeddingEndpoint(null);
+                    retrievalConfig.setEmbeddingAPIToken(null);
+                    retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                }
+
+                systemsToBenchmark.add(retrievalConfig);
             }
 
             // INFO: Re-index the created domain and perform benchmarks for each system. save results in list
             List<BenchmarkResult> implementationResults = new LinkedList<>();
-            for (DetectDuplicatedQuestionImpl systemImplementation : systemsToBenchmark) {
-                implementationResults.add(reindexAndBenchmark(systemImplementation, domain.getId(), indexAlternativeQuestions, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId));
+            for (RetrievalConfiguration searchImplementation : systemsToBenchmark) {
+                implementationResults.add(reindexAndBenchmark(searchImplementation, domain.getId(), indexAlternativeQuestions, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId));
             }
 
             // INFO: Save list of json file with accuracy, precision, recall, time, date
@@ -467,11 +488,12 @@ public class BenchmarkService {
 
     /**
      * Re-index domain with a particular search implementation and run benchmark
+     * @param rConfig Retrieval / Search configuration
      * @param indexAlternativeQuestions When true, then alternative questions will be indexed as well
-     * @return benchmark results for a particular system
+     * @return benchmark results for a particular search implementation
      */
-    public BenchmarkResult reindexAndBenchmark(DetectDuplicatedQuestionImpl searchImplementation, String domainId, boolean indexAlternativeQuestions, BenchmarkQuestion[] benchmarkQuestions, int throttleTimeInMillis, String processId) {
-        String msg = "Re-index and run benchmark for search implementation '" + searchImplementation + "' ...";
+    public BenchmarkResult reindexAndBenchmark(RetrievalConfiguration rConfig, String domainId, boolean indexAlternativeQuestions, BenchmarkQuestion[] benchmarkQuestions, int throttleTimeInMillis, String processId) {
+        String msg = "Re-index and run benchmark using search implementation '" + rConfig.getRetrievalImpl() + "' ...";
         log.info(msg);
         backgroundProcessService.updateProcessStatus(processId, msg);
 
@@ -490,22 +512,13 @@ public class BenchmarkService {
 
         try {
             timeToIndex = new Date().getTime();
-            EmbeddingsImpl embeddingImpl = null;
-            String apiToken = null;
-            if (searchImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
-                embeddingImpl = embeddingsDefaultImpl;
-                apiToken = contextService.getApiToken(embeddingImpl);
-            }
-            String embeddingModel = null; // TODO: Make configurable
-            EmbeddingValueType embeddingValueType = EmbeddingValueType.float32; // TODO: Make configurable
-            String embeddingEndpoint = null; // TODO: Make configurable
-            contextService.reindex(domainId, searchImplementation, null, null, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, true, processId, throttleTimeInMillis);
+            contextService.reindex(domainId, rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), indexAlternativeQuestions, true, processId, throttleTimeInMillis);
             timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
 
-        msg = "Run benchmark for '" + searchImplementation + "' ...";
+        msg = "Run benchmark for '" + rConfig.getRetrievalImpl() + "' ...";
         log.info(msg);
         backgroundProcessService.updateProcessStatus(processId, msg);
 
@@ -540,7 +553,7 @@ public class BenchmarkService {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
-        return new BenchmarkResult(searchImplementation, getSearchImplementationVersion(searchImplementation, domain), getSearchImplementationMeta(domain), accuracy, totalNumQuestions, failedQuestions, precision, recall, timeToIndex, timeToRunBenchnarkInSeconds, benchmarkStartTime);
+        return new BenchmarkResult(rConfig.getRetrievalImpl(), getSearchImplementationVersion(rConfig.getRetrievalImpl(), domain), getSearchImplementationMeta(domain), accuracy, totalNumQuestions, failedQuestions, precision, recall, timeToIndex, timeToRunBenchnarkInSeconds, benchmarkStartTime);
     }
 
     /**
