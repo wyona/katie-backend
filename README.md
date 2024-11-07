@@ -29,9 +29,9 @@ To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/w
 
 ## Requirements
 
-The <strong>Katie</strong> backend webapp is based on Spring Boot and to build and run locally you need
+The <strong>Katie</strong> backend webapp is based on Spring Boot and to build and run locally in a terminal you need
 
-* JDK: 11
+* JDK: 11 or higher
     * https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html
 * Maven version: 3.9.6 or higher (IMPORTANT: Please double check Maven .m2/settings.xml)
     * https://maven.apache.org/download.cgi
