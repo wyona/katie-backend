@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.File;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
 
@@ -660,15 +661,27 @@ public class AskController {
 
     /**
      * Get system prompt for the chosen suggestion
-     * @param chosenSuggestion Chosen suggestion
+     * @param chosenSuggestion Chosen suggestion, e.g. conversation starter "Let's learn together how to read an analog clock"
+     * @return prompt, e.g."Explain the basic components of an analog clock in a clear and simple way."
      */
     private String getSystemPrompt(Context domain, ChosenSuggestion chosenSuggestion) {
-        if (chosenSuggestion.getIndex() != 0) {
+        //domain.getPromptMessages();
+        domain.getContextDirectory();
+        File promptFile = new File(domain.getContextDirectory(), "llm/conversation-starter-prompts/" + chosenSuggestion.getIndex() + ".json");
+        if (promptFile.exists()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                ChatCompletionsRequest chatCompletionsRequest = objectMapper.readValue(promptFile, ChatCompletionsRequest.class);
+                PromptMessageWithRoleLowerCase[] messages = chatCompletionsRequest.getMessages();
+                return messages[0].getContent();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return "Tell the user, that an error occured when trying to read the system prompt.";
+            }
+        } else {
+            log.warn("No such prompt file '" + promptFile.getAbsolutePath() + "'!");
             return "Tell the user, that no prompt for suggestion '" + chosenSuggestion.getIndex() + "' exists.";
         }
-
-        // TODO: Get suggestion from domain configuration
-        return "Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way.";
     }
 
     /**
