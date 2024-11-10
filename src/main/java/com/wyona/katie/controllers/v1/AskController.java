@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.wyona.katie.handlers.GenerateProvider;
 import com.wyona.katie.handlers.OllamaGenerate;
@@ -17,18 +18,22 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
 
 //import org.hibernate.validator.constraints.NotEmpty;
 //import javax.validation.constraints.NotEmpty;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.nio.file.AccessDeniedException;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -659,12 +664,48 @@ public class AskController {
         }
     }
 
+    @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
+    //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> streamFlux() {
+        return Flux.interval(Duration.ofSeconds(1))
+                .map(sequence -> ServerSentEvent.<String> builder()
+                        //.id(String.valueOf(sequence))
+                        //.event("periodic-event")
+                        .data(getPart())
+                        .build());
+    }
+
+    private String getPart() {
+        String currentTime = LocalTime.now().toString();
+        log.info("Current time: " + currentTime);
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("id", "chatcmpl-ASARhlYzG6L58RACHldRzeKKvrMil");
+        rootNode.put("object", "chat.completion.chunk");
+        rootNode.put("created", 1731276701);
+        rootNode.put("model", "gpt-4o-2024-08-06");
+        rootNode.put("system_fingerprint", "fp_159d8341cc");
+        ArrayNode choicesNode = mapper.createArrayNode();
+        rootNode.put("choices", choicesNode);
+        ObjectNode choiceNode = mapper.createObjectNode();
+        choicesNode.add(choiceNode);
+        choiceNode.put("index", 0);
+        // TODO: Put "logprobs" and "finish_reason"
+        ObjectNode deltaNode = mapper.createObjectNode();
+        choiceNode.put("delta", deltaNode);
+        deltaNode.put("content", " " + currentTime);
+
+        return rootNode.toString();
+    }
+
     /**
      * REST interface to chat with a LLM and response as SSE (Server Sent Events)
      */
     // MediaType.TEXT_EVENT_STREAM_VALUE
-    //@RequestMapping(value = "/chat/completions", method = RequestMethod.POST, produces = {MediaType.TEXT_EVENT_STREAM})
-    @RequestMapping(value = "/chat/completions", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
+    // text/event-stream; charset=utf-8
+    @RequestMapping(value = "/chat/completions2", method = RequestMethod.POST, produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    //@RequestMapping(value = "/chat/completions2", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary="Chat with a LLM and get response as SSE (Server Sent Events)")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
