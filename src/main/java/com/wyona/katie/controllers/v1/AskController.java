@@ -668,6 +668,7 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> streamFlux() {
         return Flux.interval(Duration.ofSeconds(1))
+                .take(5) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
