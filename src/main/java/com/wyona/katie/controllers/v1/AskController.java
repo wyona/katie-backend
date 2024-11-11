@@ -674,8 +674,20 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
     public Flux<ServerSentEvent<String>> chatCompletionsAsSSE() {
-        counter = 0;
+        try {
+            Context domain = contextService.getDomain("ROOT");
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage(), e);
+            //return Flux.error(e);
+            //return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return Flux.error(e);
+            //return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         String mockResponse = "Hi, this is a SSE mock response from Katie :-)";
+        counter = 0;
         String delimiter = " ";
         int limit = mockResponse.split(delimiter).length;
         return Flux.interval(Duration.ofMillis(200))
