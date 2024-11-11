@@ -44,6 +44,8 @@ import java.util.*;
 @RequestMapping(value = "/api/v1") 
 public class AskController {
 
+    Integer counter = 0; // TODO: Do not use global variable
+
     @Autowired
     private ResourceBundleMessageSource messageSource;
 
@@ -667,7 +669,7 @@ public class AskController {
     @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> streamFlux() {
-        Integer counter = 0;
+        counter = 0;
         String mockResponse = "Hi, this is a SSE mock response from Katie :-)";
         String delimiter = " ";
         int limit = mockResponse.split(delimiter).length;
@@ -676,11 +678,11 @@ public class AskController {
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
-                        .data(getPart(counter, mockResponse, delimiter))
+                        .data(getPart(mockResponse, delimiter))
                         .build());
     }
 
-    private String getPart(Integer counter, String mockResponse, String delimiter) {
+    private String getPart(String mockResponse, String delimiter) {
         String[] words = mockResponse.split(delimiter);
 
         String nextWord = words[counter];
