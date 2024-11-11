@@ -667,18 +667,26 @@ public class AskController {
     @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> streamFlux() {
-        return Flux.interval(Duration.ofSeconds(1))
-                .take(5) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
+        Integer counter = 0;
+        String mockResponse = "Hi, this is a SSE mock response from Katie :-)";
+        String delimiter = " ";
+        int limit = mockResponse.split(delimiter).length;
+        return Flux.interval(Duration.ofMillis(200))
+                .take(limit) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
-                        .data(getPart())
+                        .data(getPart(counter, mockResponse, delimiter))
                         .build());
     }
 
-    private String getPart() {
-        String currentTime = LocalTime.now().toString();
-        log.info("Current time: " + currentTime);
+    private String getPart(Integer counter, String mockResponse, String delimiter) {
+        String[] words = mockResponse.split(delimiter);
+
+        String nextWord = words[counter];
+        counter++;
+        //String nextWord = LocalTime.now().toString();
+        log.info("Next word: " + nextWord);
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode rootNode = mapper.createObjectNode();
@@ -695,7 +703,7 @@ public class AskController {
         // TODO: Put "logprobs" and "finish_reason"
         ObjectNode deltaNode = mapper.createObjectNode();
         choiceNode.put("delta", deltaNode);
-        deltaNode.put("content", " " + currentTime);
+        deltaNode.put("content", " " + nextWord);
 
         return rootNode.toString();
     }
