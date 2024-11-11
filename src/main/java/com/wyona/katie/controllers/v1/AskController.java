@@ -666,9 +666,14 @@ public class AskController {
         }
     }
 
+    /**
+     * REST interface to chat with a LLM using SSE
+     * @return
+     */
     @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<String>> streamFlux() {
+    @Operation(summary="Chat with a LLM using Server Sent Events")
+    public Flux<ServerSentEvent<String>> chatCompletionsAsSSE() {
         counter = 0;
         String mockResponse = "Hi, this is a SSE mock response from Katie :-)";
         String delimiter = " ";
@@ -678,11 +683,17 @@ public class AskController {
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
-                        .data(getPart(mockResponse, delimiter))
+                        .data(getEvent(mockResponse, delimiter))
                         .build());
     }
 
-    private String getPart(String mockResponse, String delimiter) {
+    /**
+     * Get event as JSON
+     * @param mockResponse
+     * @param delimiter
+     * @return
+     */
+    private String getEvent(String mockResponse, String delimiter) {
         String[] words = mockResponse.split(delimiter);
 
         String nextWord = words[counter];
@@ -708,88 +719,6 @@ public class AskController {
         deltaNode.put("content", " " + nextWord);
 
         return rootNode.toString();
-    }
-
-    /**
-     * REST interface to chat with a LLM and response as SSE (Server Sent Events)
-     */
-    // MediaType.TEXT_EVENT_STREAM_VALUE
-    // text/event-stream; charset=utf-8
-    @RequestMapping(value = "/chat/completions2", method = RequestMethod.POST, produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
-    //@RequestMapping(value = "/chat/completions2", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary="Chat with a LLM and get response as SSE (Server Sent Events)")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
-    public ResponseEntity<?> chatCompletionsAsStream(
-            @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
-            @RequestBody ChatCompletionsRequest chatCompletionsRequest,
-            HttpServletRequest request, HttpServletResponse response) {
-
-        try {
-            authService.tryJWTLogin(request);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        rememberMeService.tryAutoLogin(request, response);
-
-        String domainId = "ROOT";
-
-        try {
-            Context domain = contextService.getDomain(domainId);
-
-            CompletionImpl completionImpl = domain.getCompletionImpl();
-            //completionImpl = CompletionImpl.OLLAMA;
-            if (completionImpl == CompletionImpl.UNSET) {
-                log.warn("Domain '" + domainId + "' has no completion implementation configured!");
-                //return new ResponseEntity<>("TODO", HttpStatus.OK);
-                //return new ResponseEntity<>(new Error("TODO", "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
-            } else {
-                log.info("Domain '" + domainId + "' has '" + completionImpl + "' configured as completion implementation.");
-            }
-            GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            String model = generativeAIService.getCompletionModel(completionImpl);
-
-            List<PromptMessage> promptMessages = new ArrayList<>();
-            for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
-                promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
-            }
-
-            Double temperature = 0.7;
-            if (chatCompletionsRequest.getTemperature() != null) {
-                temperature = chatCompletionsRequest.getTemperature();
-            }
-
-            ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
-            if (chosenSuggestion != null) {
-                log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, getSystemPrompt(domain, chosenSuggestion)));
-            }
-
-            String apiToken = generativeAIService.getApiToken(completionImpl);
-
-            String completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
-
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode body = mapper.createObjectNode();
-            ArrayNode choices = mapper.createArrayNode();
-            body.put("choices", choices);
-            ObjectNode choice = mapper.createObjectNode();
-            ObjectNode message = mapper.createObjectNode();
-            message.put("role", PromptMessageRoleLowerCase.assistant.toString());
-            message.put("content", completedText);
-            choice.put("id", 0);
-            choice.put("message", message);
-            choices.add(choice);
-
-            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
-        } catch(AccessDeniedException e) {
-            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     /**
