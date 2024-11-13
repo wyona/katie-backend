@@ -264,8 +264,6 @@ public class BenchmarkService {
             String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ")";
             backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
 
-            // TODO: List the failed ones, such that these can be improved
-
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
 
