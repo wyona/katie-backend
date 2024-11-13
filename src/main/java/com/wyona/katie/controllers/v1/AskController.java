@@ -674,10 +674,15 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
     public Flux<ServerSentEvent<String>> chatCompletionsAsSSE() {
+        // INFO: Use an array instead a string only, in order to workaround "Variable used in lambda expression should be final or effectively final"
+        String[] mockResponse = new String[1];
+        mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
+
         try {
             Context domain = contextService.getDomain("ROOT");
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage(), e);
+            //mockResponse[0] = "Please login ...";
             //return Flux.error(e);
             //return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
@@ -686,24 +691,23 @@ public class AskController {
             //return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        String mockResponse = "Hi, this is a SSE mock response from Katie :-)";
         counter = 0;
         String delimiter = " ";
-        int limit = mockResponse.split(delimiter).length;
-        return Flux.interval(Duration.ofMillis(200))
+        int limit = mockResponse[0].split(delimiter).length;
+        return Flux.interval(Duration.ofMillis(50))
                 .take(limit) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
-                        .data(getEvent(mockResponse, delimiter))
+                        .data(getEvent(mockResponse[0], delimiter))
                         .build());
     }
 
     /**
      * Get event as JSON
-     * @param mockResponse
-     * @param delimiter
-     * @return
+     * @param mockResponse Mock response to test SSE, e.g. "Hi, this is a SSE mock response from Katie :-)"
+     * @param delimiter Delimiter between chunks, e.g. an empty space
+     * @return event containing a chunk of the mock response
      */
     private String getEvent(String mockResponse, String delimiter) {
         String[] words = mockResponse.split(delimiter);
