@@ -226,9 +226,15 @@ public class BenchmarkService {
             String benchmarkId = getBenchmarkId(currentDateTime);
 
             HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId, true, true);
+            int total = preferences.length;
+
+            if (total == 0) {
+                backgroundProcessService.updateProcessStatus(processId, "No human preference dataset entries available!", BackgroundProcessStatusType.WARN);
+            }
+
             int successful = 0;
             List<HumanPreferenceLabel> failedPredictions = new ArrayList<>();
-            int total = preferences.length;
+
             for (HumanPreferenceLabel preference : preferences) {
                 if (throttleTimeInMillis > 0) {
                     try {
@@ -258,12 +264,14 @@ public class BenchmarkService {
             String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ")";
             backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
 
-            // TODO: List the failed ones, such that these can be improved
-
             if (email != null) {
                 String subject = mailSubjectTag + " Classification benchmark completed (" + benchmarkId + ")";
 
-                mailerService.send(email, domain.getMailSenderEmail(), subject, getCompletedClassificationBenchmarkEmailBody(domain, benchmarkResult, failedPredictions), true);
+                if (total > 0) {
+                    mailerService.send(email, domain.getMailSenderEmail(), subject, getCompletedClassificationBenchmarkEmailBody(domain, benchmarkResult, failedPredictions), true);
+                } else {
+                    mailerService.send(email, domain.getMailSenderEmail(), subject, "<div>WARNING: No human preference dataset entries for domain '" + domainId + "' available!</div>", true);
+                }
 
                 backgroundProcessService.updateProcessStatus(processId, "E-Mail notification sent to " + email);
             }
