@@ -47,6 +47,9 @@ public class AskController {
     Integer counter = 0; // TODO: Do not use global variable
 
     @Autowired
+    private LearningCoachService learningCoachService;
+
+    @Autowired
     private ResourceBundleMessageSource messageSource;
 
     private QuestionAnsweringService qaService;
@@ -638,7 +641,7 @@ public class AskController {
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
             if (chosenSuggestion != null) {
                 log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, getSystemPrompt(domain, chosenSuggestion)));
+                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(domain, chosenSuggestion)));
             }
 
             String apiToken = generativeAIService.getApiToken(completionImpl);
@@ -735,31 +738,6 @@ public class AskController {
         deltaNode.put("content", " " + nextWord);
 
         return rootNode.toString();
-    }
-
-    /**
-     * Get system prompt for the chosen suggestion
-     * @param chosenSuggestion Chosen suggestion, e.g. conversation starter "Let's learn together how to read an analog clock"
-     * @return prompt, e.g."Explain the basic components of an analog clock in a clear and simple way."
-     */
-    private String getSystemPrompt(Context domain, ChosenSuggestion chosenSuggestion) {
-        //domain.getPromptMessages();
-        domain.getContextDirectory();
-        File promptFile = new File(domain.getContextDirectory(), "llm/conversation-starter-prompts/" + chosenSuggestion.getIndex() + ".json");
-        if (promptFile.exists()) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                ChatCompletionsRequest chatCompletionsRequest = objectMapper.readValue(promptFile, ChatCompletionsRequest.class);
-                PromptMessageWithRoleLowerCase[] messages = chatCompletionsRequest.getMessages();
-                return messages[0].getContent();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                return "Tell the user, that an error occured when trying to read the system prompt.";
-            }
-        } else {
-            log.warn("No such prompt file '" + promptFile.getAbsolutePath() + "'!");
-            return "Tell the user, that no prompt for suggestion '" + chosenSuggestion.getIndex() + "' exists.";
-        }
     }
 
     /**
