@@ -641,7 +641,7 @@ public class AskController {
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
             if (chosenSuggestion != null) {
                 log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(domain, chosenSuggestion)));
+                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
             }
 
             String apiToken = generativeAIService.getApiToken(completionImpl);
