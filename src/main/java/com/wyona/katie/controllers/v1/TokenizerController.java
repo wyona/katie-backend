@@ -11,6 +11,7 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class TokenizerController {
      * REST interface to get bert-base-cased tokenization
      */
     @RequestMapping(value = "/bert-base-cased", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get bert-base-cased tokenization of text")
+    @Operation(summary="Get bert-base-cased tokenization of text")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
