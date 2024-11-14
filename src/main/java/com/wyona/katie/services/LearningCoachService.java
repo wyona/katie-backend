@@ -25,11 +25,26 @@ public class LearningCoachService {
     /**
      *
      */
+    private File getConversationStartersDir() {
+        return new File(volumeBasePath, "learning-coach/conversation-starter-prompts");
+    }
+
+    /**
+     *
+     */
     public String[] getConversationStarters(Context domain) {
         List<String> starters = new ArrayList<>();
-        // TODO: Get from data repository
-        starters.add("Erkläre mir wie man eine analoge Uhr liest!");
-        starters.add("Lass uns spielerisch zusammen lernen, wie man eine analoge Uhr liest!");
+
+        File[] starterFiles = getConversationStartersDir().listFiles();
+        ObjectMapper objectMapper = new ObjectMapper();
+        for (File starterFile : starterFiles) {
+            try {
+                ConversationStarter conversationStarter = objectMapper.readValue(starterFile, ConversationStarter.class);
+                starters.add(conversationStarter.getSuggestion().getContent());
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
         return starters.toArray(new String[0]);
     }
 
@@ -38,9 +53,9 @@ public class LearningCoachService {
      * @param chosenSuggestion Chosen suggestion, e.g. conversation starter "Let's learn together how to read an analog clock"
      * @return prompt, e.g."Explain the basic components of an analog clock in a clear and simple way."
      */
-    public String getSystemPrompt(Context domain, ChosenSuggestion chosenSuggestion) {
+    public String getSystemPrompt(ChosenSuggestion chosenSuggestion) {
         //domain.getPromptMessages();
-        File promptFile = new File(volumeBasePath, "learning-coach/conversation-starter-prompts/" + chosenSuggestion.getIndex() + ".json");
+        File promptFile = new File(getConversationStartersDir(), chosenSuggestion.getIndex() + ".json");
         if (promptFile.exists()) {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
