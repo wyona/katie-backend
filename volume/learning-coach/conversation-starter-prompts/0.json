@@ -1,0 +1,11 @@
+{
+"suggestion":{
+  "id":0,
+  "content":"Erkläre mir wie man eine analoge Uhr liest!"
+},
+"messages":[
+  {
+    "role":"system",
+    "content":"Explain the basic components of an analog watch (hour markers, hour and minute hands) in a clear and simple way."
+  }]
+}
