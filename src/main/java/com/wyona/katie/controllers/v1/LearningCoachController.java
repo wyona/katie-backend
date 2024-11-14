@@ -1,10 +1,12 @@
 package com.wyona.katie.controllers.v1;
 
+import com.wyona.katie.models.Context;
 import com.wyona.katie.models.Error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.services.ContextService;
+import com.wyona.katie.services.LearningCoachService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,9 @@ public class LearningCoachController {
     @Autowired
     private ContextService domainService;
 
+    @Autowired
+    private LearningCoachService learningCoachService;
+
     /**
      * REST interface to get conversation starters
      */
@@ -46,20 +51,21 @@ public class LearningCoachController {
         }
 
         try {
+            Context domain = domainService.getDomain(domainId);
+
+            String[] starterTexts = learningCoachService.getConversationStarters(domain);
+
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
             ArrayNode starters = mapper.createArrayNode();
             body.put("conversation-starters", starters);
 
-            ObjectNode starter0 = mapper.createObjectNode();
-            starters.add(starter0);
-            starter0.put("id", 0);
-            starter0.put("suggestion", "Erkläre mir wie man eine analoge Uhr liest!");
-
-            ObjectNode starter1 = mapper.createObjectNode();
-            starters.add(starter1);
-            starter1.put("id", 1);
-            starter1.put("suggestion", "Lass uns spielerisch zusammen lernen, wie man eine analoge Uhr liest!");
+            for (int i = 0; i < starterTexts.length; i++) {
+                ObjectNode starter0 = mapper.createObjectNode();
+                starters.add(starter0);
+                starter0.put("id", i);
+                starter0.put("suggestion", starterTexts[i]);
+            }
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         } catch(Exception e) {
