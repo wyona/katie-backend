@@ -694,7 +694,7 @@ public class AskController {
         counter = 0;
         String delimiter = " ";
         int limit = mockResponse[0].split(delimiter).length;
-        return Flux.interval(Duration.ofMillis(50))
+        return Flux.interval(Duration.ofMillis(100))
                 .take(limit) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
