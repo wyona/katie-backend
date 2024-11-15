@@ -5,6 +5,7 @@ import com.wyona.katie.models.Error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.learningcoach.ConversationStarter;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.LearningCoachService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,18 +54,18 @@ public class LearningCoachController {
         try {
             Context domain = domainService.getDomain(domainId);
 
-            String[] starterTexts = learningCoachService.getConversationStarters(domain);
+            ConversationStarter[] conversationStarters = learningCoachService.getConversationStarters(domain);
 
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode body = mapper.createObjectNode();
             ArrayNode starters = mapper.createArrayNode();
             body.put("conversation-starters", starters);
 
-            for (int i = 0; i < starterTexts.length; i++) {
+            for (ConversationStarter cs : conversationStarters) {
                 ObjectNode starter0 = mapper.createObjectNode();
                 starters.add(starter0);
-                starter0.put("id", i);
-                starter0.put("suggestion", starterTexts[i]);
+                starter0.put("id", cs.getSuggestion().getId());
+                starter0.put("suggestion", cs.getSuggestion().getContent());
             }
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);

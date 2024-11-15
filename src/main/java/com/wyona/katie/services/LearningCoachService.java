@@ -32,20 +32,21 @@ public class LearningCoachService {
     /**
      *
      */
-    public String[] getConversationStarters(Context domain) {
-        List<String> starters = new ArrayList<>();
+    public ConversationStarter[] getConversationStarters(Context domain) {
+        // TODO: Get starters for a particular user being team member of a specific domain
+        List<ConversationStarter> starters = new ArrayList<>();
 
         File[] starterFiles = getConversationStartersDir().listFiles();
         ObjectMapper objectMapper = new ObjectMapper();
         for (File starterFile : starterFiles) {
             try {
                 ConversationStarter conversationStarter = objectMapper.readValue(starterFile, ConversationStarter.class);
-                starters.add(conversationStarter.getSuggestion().getContent());
+                starters.add(conversationStarter);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
-        return starters.toArray(new String[0]);
+        return starters.toArray(new ConversationStarter[0]);
     }
 
     /**
