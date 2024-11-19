@@ -5,20 +5,20 @@ package com.wyona.katie.models;
  */
 public class ChosenSuggestion {
 
-    private int index;
+    private String index;
     private String type;
 
     /**
      * @param index Index / Id of chosen suggestion, e.g. 0
      */
-    public void setIndex(int index) {
+    public void setIndex(String index) {
         this.index = index;
     }
 
     /**
      *
      */
-    public int getIndex() {
+    public String getIndex() {
         return index;
     }
 
