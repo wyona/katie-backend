@@ -32,8 +32,8 @@ public class LearningCoachService {
     /**
      *
      */
-    public ConversationStarter[] getConversationStarters(Context domain) {
-        // TODO: Get starters for a particular user being team member of a specific domain
+    public ConversationStarter[] getConversationStarters() {
+        // TODO: Get starters for a particular user
         List<ConversationStarter> starters = new ArrayList<>();
 
         File[] starterFiles = getConversationStartersDir().listFiles();

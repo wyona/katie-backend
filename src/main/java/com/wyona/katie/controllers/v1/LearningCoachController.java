@@ -43,23 +43,15 @@ public class LearningCoachController {
     @RequestMapping(value = "/conversation-starters", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary="Get conversation starters")
     public ResponseEntity<?> getConversationStarters(
-        @ApiParam(name = "domainId", value = "Katie domain Id",required = true)
-        @RequestParam(value = "domainId", required = true) String domainId,
         HttpServletRequest request) {
 
-        if (!domainService.isMemberOrAdmin(domainId)) {
-            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
-        }
-
         try {
-            Context domain = domainService.getDomain(domainId);
-
-            ConversationStarter[] conversationStarters = learningCoachService.getConversationStarters(domain);
+            ConversationStarter[] conversationStarters = learningCoachService.getConversationStarters();
 
             ObjectMapper mapper = new ObjectMapper();
-            ObjectNode body = mapper.createObjectNode();
+            //ObjectNode body = mapper.createObjectNode();
             ArrayNode starters = mapper.createArrayNode();
-            body.put("conversation-starters", starters);
+            //body.put("conversation-starters", starters);
 
             for (ConversationStarter cs : conversationStarters) {
                 ObjectNode starter0 = mapper.createObjectNode();
@@ -68,7 +60,8 @@ public class LearningCoachController {
                 starter0.put("suggestion", cs.getSuggestion().getContent());
             }
 
-            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+            //return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+            return new ResponseEntity<>(starters.toString(), HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
