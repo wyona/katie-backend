@@ -5,6 +5,7 @@ import com.wyona.katie.models.ChosenSuggestion;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.PromptMessageWithRoleLowerCase;
 import com.wyona.katie.models.learningcoach.ConversationStarter;
+import com.wyona.katie.models.learningcoach.Suggestion;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -30,23 +31,29 @@ public class LearningCoachService {
     }
 
     /**
-     *
+     * @param userId Id of signed in user, e.g. "c0646e06-16f3-4c41-a7a0-2d1dbc10a67d"
+     * @return array of conversation starter suggestions
      */
-    public ConversationStarter[] getConversationStarters() {
-        // TODO: Get starters for a particular user
-        List<ConversationStarter> starters = new ArrayList<>();
+    public Suggestion[] getConversationStarters(String userId) {
+        List<Suggestion> starters = new ArrayList<>();
+
+        if (userId != null) {
+            log.info("TODO: Get conversation starters configured for signed in user '" + userId + "' ...");
+        } else {
+            log.info("Get conversation starters for anonymous user ...");
+        }
 
         File[] starterFiles = getConversationStartersDir().listFiles();
         ObjectMapper objectMapper = new ObjectMapper();
         for (File starterFile : starterFiles) {
             try {
                 ConversationStarter conversationStarter = objectMapper.readValue(starterFile, ConversationStarter.class);
-                starters.add(conversationStarter);
+                starters.add(conversationStarter.getSuggestion());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
-        return starters.toArray(new ConversationStarter[0]);
+        return starters.toArray(new Suggestion[0]);
     }
 
     /**

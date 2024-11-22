@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.learningcoach.ConversationStarter;
+import com.wyona.katie.models.learningcoach.Suggestion;
+import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.LearningCoachService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +37,9 @@ public class LearningCoachController {
     private ContextService domainService;
 
     @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
     private LearningCoachService learningCoachService;
 
     /**
@@ -46,18 +51,19 @@ public class LearningCoachController {
         HttpServletRequest request) {
 
         try {
-            ConversationStarter[] conversationStarters = learningCoachService.getConversationStarters();
+            String userId = authenticationService.getUserId();
+            Suggestion[] conversationStarterSuggestions = learningCoachService.getConversationStarters(userId);
 
             ObjectMapper mapper = new ObjectMapper();
             //ObjectNode body = mapper.createObjectNode();
             ArrayNode starters = mapper.createArrayNode();
             //body.put("conversation-starters", starters);
 
-            for (ConversationStarter cs : conversationStarters) {
+            for (Suggestion suggestion : conversationStarterSuggestions) {
                 ObjectNode starter0 = mapper.createObjectNode();
                 starters.add(starter0);
-                starter0.put("id", cs.getSuggestion().getId());
-                starter0.put("suggestion", cs.getSuggestion().getContent());
+                starter0.put("id", suggestion.getId());
+                starter0.put("suggestion", suggestion.getContent());
             }
 
             //return new ResponseEntity<>(body.toString(), HttpStatus.OK);
