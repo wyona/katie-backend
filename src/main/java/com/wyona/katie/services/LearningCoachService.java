@@ -8,6 +8,7 @@ import com.wyona.katie.models.learningcoach.ConversationStarter;
 import com.wyona.katie.models.learningcoach.Suggestion;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,9 @@ public class LearningCoachService {
 
     @Value("${volume.base.path}")
     private String volumeBasePath;
+
+    @Autowired
+    private XMLService xmlService;
 
     /**
      * Get directory containing conversation starter suggestions including corresponding prompts
@@ -39,8 +43,10 @@ public class LearningCoachService {
 
         File conversationStartersOfUser = new File(volumeBasePath, "learning-coach/users/" + userId + "/conversation-starters.xml");
         if (conversationStartersOfUser.isFile()) {
-            // TODO: Get Ids from file
-            ids.add("191aae92-a23a-4e98-b618-58818a8751f2");
+            String[] _ids = xmlService.getIds(conversationStartersOfUser);
+            for (String id : _ids) {
+                ids.add(id);
+            }
         }
 
         return ids;
