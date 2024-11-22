@@ -1329,11 +1329,18 @@ public class XMLService {
     /**
      * @param domainsFile XML file containing list of domain Ids where user is member of
      */
-    public String[] getDomainIDsUserIsMemberOf(File domainsFile) {
+    protected String[] getDomainIDsUserIsMemberOf(File domainsFile) {
+        return getIds(domainsFile);
+    }
+
+    /**
+     * @param file XML file containing IDs
+     */
+    protected String[] getIds(File file) {
         List<String> ids = new ArrayList<String>();
 
         try {
-            Document doc = read(domainsFile);
+            Document doc = read(file);
             NodeList idNL = doc.getElementsByTagName("id");
             for (int i = 0; i < idNL.getLength(); i++) {
                 ids.add(idNL.item(i).getTextContent());
