@@ -24,10 +24,26 @@ public class LearningCoachService {
     private String volumeBasePath;
 
     /**
-     *
+     * Get directory containing conversation starter suggestions including corresponding prompts
      */
     private File getConversationStartersDir() {
         return new File(volumeBasePath, "learning-coach/conversation-starter-prompts");
+    }
+
+    /**
+     * Get Ids of conversation starter suggestions configured for a particular user
+     * @param userId User Id
+     */
+    private List<String> getConversationStarterIds(String userId) {
+        List<String> ids = new ArrayList<>();
+
+        File conversationStartersOfUser = new File(volumeBasePath, "learning-coach/users/" + userId + "/conversation-starters.xml");
+        if (conversationStartersOfUser.isFile()) {
+            // TODO: Get Ids from file
+            ids.add("191aae92-a23a-4e98-b618-58818a8751f2");
+        }
+
+        return ids;
     }
 
     /**
@@ -37,22 +53,37 @@ public class LearningCoachService {
     public Suggestion[] getConversationStarters(String userId) {
         List<Suggestion> starters = new ArrayList<>();
 
+        List<String> ids = new ArrayList<>();
+
         if (userId != null) {
-            log.info("TODO: Get conversation starters configured for signed in user '" + userId + "' ...");
+            log.info("Get conversation starter suggestions configured for signed in user '" + userId + "' ...");
+            ids = getConversationStarterIds(userId);
         } else {
-            log.info("Get conversation starters for anonymous user ...");
+            log.info("Get conversation starter suggestions for anonymous user ...");
         }
 
-        File[] starterFiles = getConversationStartersDir().listFiles();
+        if (ids.size() == 0) {
+            log.info("Get default conversation starter suggestions ...");
+            // TODO: Make configurable
+            ids.add("1");
+            ids.add("191aae92-a23a-4e98-b618-58818a8751f2");
+        }
+
         ObjectMapper objectMapper = new ObjectMapper();
-        for (File starterFile : starterFiles) {
-            try {
-                ConversationStarter conversationStarter = objectMapper.readValue(starterFile, ConversationStarter.class);
-                starters.add(conversationStarter.getSuggestion());
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
+        for (String id : ids) {
+            File starterFile = new File(getConversationStartersDir(), "/" + id + ".json");
+            if (starterFile.isFile()) {
+                try {
+                    ConversationStarter conversationStarter = objectMapper.readValue(starterFile, ConversationStarter.class);
+                    starters.add(conversationStarter.getSuggestion());
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else {
+                log.error("No such file '" + starterFile.getAbsolutePath() + "'!");
             }
         }
+
         return starters.toArray(new Suggestion[0]);
     }
 
