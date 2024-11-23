@@ -70,9 +70,7 @@ public class LearningCoachService {
 
         if (ids.size() == 0) {
             log.info("Get default conversation starter suggestions ...");
-            // TODO: Make configurable
-            ids.add("1");
-            ids.add("191aae92-a23a-4e98-b618-58818a8751f2");
+            ids = getConversationStarterIds("anonymous");
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
