@@ -642,6 +642,9 @@ public class AskController {
             if (chosenSuggestion != null) {
                 log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
                 promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
+                // TODO: Remember that conversation was started with suggestion
+            } else {
+                // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
             }
 
             String apiToken = generativeAIService.getApiToken(completionImpl);
@@ -652,6 +655,18 @@ public class AskController {
             ObjectNode body = mapper.createObjectNode();
             ArrayNode choices = mapper.createArrayNode();
             body.put("choices", choices);
+
+            // TODO: Do not send suggestion prompt (secret sauce) to client, currently only for debugging purposes
+            if (chosenSuggestion != null) {
+                ObjectNode choiceS = mapper.createObjectNode();
+                ObjectNode message = mapper.createObjectNode();
+                message.put("role", PromptMessageRoleLowerCase.system.toString());
+                message.put("content", learningCoachService.getSystemPrompt(chosenSuggestion));
+                choiceS.put("id", 1);
+                choiceS.put("message", message);
+                choices.add(choiceS);
+            }
+
             ObjectNode choice = mapper.createObjectNode();
             ObjectNode message = mapper.createObjectNode();
             message.put("role", PromptMessageRoleLowerCase.assistant.toString());
