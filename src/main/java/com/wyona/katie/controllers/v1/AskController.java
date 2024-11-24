@@ -613,9 +613,31 @@ public class AskController {
 
         rememberMeService.tryAutoLogin(request, response);
 
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        ArrayNode choices = mapper.createArrayNode();
+        body.put("choices", choices);
+
+        if (!authService.userIsSignedInBySession(request)) {
+            log.info("User is not signed in!");
+            String content = "Please make sure to be <a href=\"/#/login\">signed in</a> or <a href=\"/#/register\">sign up</a> for free :-)";
+            choices = addChoice(mapper, choices, "error", content, 0);
+            //choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), content, 0);
+            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+        }
+
+        // TODO: Check whether Katie domain exists
+
+        User user = authService.getUser(false, false);
+        if (!contextService.isUserMemberOfDomain(user.getId(), domainId)) {
+            log.info("User '" + user.getUsername() + "' is not member of domain '" + domainId + "'!");
+            String content = "Please make sure that your user '" + user.getUsername() + "' is a member of the Katie domain '" + domainId + "'!";
+            choices = addChoice(mapper, choices, "error", content, 0);
+            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+        }
+
         try {
             Context domain = contextService.getDomain(domainId);
-
             CompletionImpl completionImpl = domain.getCompletionImpl();
             //completionImpl = CompletionImpl.OLLAMA;
             if (completionImpl == CompletionImpl.UNSET) {
@@ -651,29 +673,12 @@ public class AskController {
 
             String completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
 
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode body = mapper.createObjectNode();
-            ArrayNode choices = mapper.createArrayNode();
-            body.put("choices", choices);
-
             // TODO: Do not send suggestion prompt (secret sauce) to client, currently only for debugging purposes
             if (chosenSuggestion != null) {
-                ObjectNode choiceS = mapper.createObjectNode();
-                ObjectNode message = mapper.createObjectNode();
-                message.put("role", PromptMessageRoleLowerCase.system.toString());
-                message.put("content", learningCoachService.getSystemPrompt(chosenSuggestion));
-                choiceS.put("id", 1);
-                choiceS.put("message", message);
-                choices.add(choiceS);
+                choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion), 1);
             }
 
-            ObjectNode choice = mapper.createObjectNode();
-            ObjectNode message = mapper.createObjectNode();
-            message.put("role", PromptMessageRoleLowerCase.assistant.toString());
-            message.put("content", completedText);
-            choice.put("id", 0);
-            choice.put("message", message);
-            choices.add(choice);
+            choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -682,6 +687,21 @@ public class AskController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     *
+     */
+    private ArrayNode addChoice(ObjectMapper mapper, ArrayNode choices, String role, String content, int id) {
+        ObjectNode choice = mapper.createObjectNode();
+        ObjectNode message = mapper.createObjectNode();
+        message.put("role", role);
+        message.put("content", content);
+        choice.put("id", id);
+        choice.put("message", message);
+        choices.add(choice);
+
+        return choices;
     }
 
     /**
