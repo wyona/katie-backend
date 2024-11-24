@@ -59,13 +59,15 @@ public class IAMController {
             HttpServletRequest request) {
 
         if (!isHCaptchaTokenValid(hCaptchaResponseToken)) {
-            log.warn("Self-registration failed, because hCaptcha response token is not valid!");
-            return new ResponseEntity<>(new Error("Self-registration failed!", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            String errorMsg = "Self-registration failed, because hCaptcha response token is not valid!";
+            log.warn(errorMsg);
+            return new ResponseEntity<>(new Error(errorMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
 
         if (iamService.usernameExists(new com.wyona.katie.models.Username(infos.getEmail()))) {
-            log.warn("Self-registration failed, because user '" + infos.getEmail() + "' already exists.");
-            return new ResponseEntity<>(new Error("Self-registration failed!", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+            String errorMsg = "Self-registration failed, because user '" + infos.getEmail() + "' is already registered.";
+            log.warn(errorMsg);
+            return new ResponseEntity<>(new Error(errorMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
 
         log.info("Self-register user '" + infos.getEmail() + "' ...");
