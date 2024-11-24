@@ -626,18 +626,25 @@ public class AskController {
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
-        // TODO: Check whether Katie domain exists
+        Context domain = null;
+        try {
+            domain = contextService.getContext(domainId);
+        } catch (Exception e) {
+            String content = "No such domain '" + domainId + "'!";
+            log.error(content);
+            choices = addChoice(mapper, choices, "error", content, 0);
+            return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+        }
 
         User user = authService.getUser(false, false);
         if (!contextService.isUserMemberOfDomain(user.getId(), domainId)) {
             log.info("User '" + user.getUsername() + "' is not member of domain '" + domainId + "'!");
-            String content = "Please make sure that your user '" + user.getUsername() + "' is a member of the Katie domain '" + domainId + "'!";
+            String content = "Please make sure that your user '" + user.getUsername() + "' is a member of the Katie domain '" + domain.getName() + "'!";
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
         try {
-            Context domain = contextService.getDomain(domainId);
             CompletionImpl completionImpl = domain.getCompletionImpl();
             //completionImpl = CompletionImpl.OLLAMA;
             if (completionImpl == CompletionImpl.UNSET) {
