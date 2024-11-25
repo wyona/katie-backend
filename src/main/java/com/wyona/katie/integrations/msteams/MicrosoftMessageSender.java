@@ -592,7 +592,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         // TODO: Use mailerService.getTemplate()
         StringBuilder body = new StringBuilder();
         body.append("<html><body>");
-        body.append("<p>The MS Teams user <strong>" + userName + "</strong> with the user Id <strong>" + userId + "</strong> requests to be registered at <a href=\"" + defaultHostnameMailBody + "\">Katie</a> and would like to be invited to the domain <a href=\"" + defaultHostnameMailBody + "/#/domain/" + domainId + "\">" + domainId + "</a></p>");
+        body.append("<p>The MS Teams user <strong>" + userName + "</strong> with the user Id <strong>" + userId + "</strong> requests to be registered at <a href=\"" + defaultHostnameMailBody + "\">Katie</a> and would like to be invited to the domain <a href=\"" + defaultHostnameMailBody + "/#/domain/" + domainId + "/members\">" + domainId + "</a></p>");
         body.append("</body></html>");
         return body.toString();
     }
