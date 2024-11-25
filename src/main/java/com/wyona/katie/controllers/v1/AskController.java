@@ -46,6 +46,9 @@ public class AskController {
 
     Integer counter = 0; // TODO: Do not use global variable
 
+    @Value("${new.context.mail.body.host}")
+    private String defaultHostnameMailBody;
+
     @Autowired
     private LearningCoachService learningCoachService;
 
@@ -639,7 +642,10 @@ public class AskController {
         User user = authService.getUser(false, false);
         if (!contextService.isUserMemberOfDomain(user.getId(), domainId)) {
             log.info("User '" + user.getUsername() + "' is not member of domain '" + domainId + "'!");
-            String content = "Please make sure that your user '" + user.getUsername() + "' is a member of the Katie domain '" + domain.getName() + "'!";
+            String subject = "User requests invitation to Katie domain '" + domain.getName() + "'";
+            String message = "<html><body>The user '" + user.getUsername() + "' would like to be invited to the domain <a href=\"" + defaultHostnameMailBody + "/#/domain/" + domain.getId() + "/members\">" + domain.getName() + "</a>.</body></html>";
+            contextService.notifyDomainOwnersAndAdmins(subject, message, domain.getId());
+            String content = "Your user '" + user.getUsername() + "' must be a member of the Katie domain '" + domain.getName() + "', whereas a request has just been sent to the domain owners, thank you for your patience!";
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
