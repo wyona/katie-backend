@@ -232,21 +232,6 @@ public class ContextService {
     }
 
     /**
-     *
-     */
-    public void notifyDomainOwnersAndAdmins(String subject, String message, String domainId) {
-        try {
-            User[] owners = getMembers(domainId, false, RoleDomain.OWNER);
-            mailerService.notifyUsers(owners, subject, message);
-
-            User[] admins = getMembers(domainId, false, RoleDomain.ADMIN);
-            mailerService.notifyUsers(admins, subject, message);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
-    /**
      * Notify experts to answer resubmitted question
      * @param question Resubmitted question
      * @param email Email of user which submitted question
@@ -1317,6 +1302,37 @@ public class ContextService {
                 log.warn("No email provided to invite user which does not have a Katie account yet.");
             }
             return null;
+        }
+    }
+
+    /**
+     * Notify owners and admins of a particular domain
+     * @param subject Email subject
+     * @param message Email body message
+     * @param domainId Katie domain Id
+     * @return number of notifications sent
+     */
+    public int notifyDomainOwnersAndAdmins(String subject, String message, String domainId) {
+        try {
+            /* TODO: Consider providing roles (OWNER, ADMIN) and whether user is expert as method arguments
+            User[] members = getMembers(domainId, false, null);
+            for (User user: members) {
+                if (user.getEmail() != null && user.getIsExpert()) {
+                    // TODO: Send notification to experts
+                }
+            }
+             */
+
+            User[] owners = getMembers(domainId, false, RoleDomain.OWNER);
+            mailerService.notifyUsers(owners, subject, message);
+
+            User[] admins = getMembers(domainId, false, RoleDomain.ADMIN);
+            mailerService.notifyUsers(admins, subject, message);
+
+            return owners.length + admins.length;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
         }
     }
 
