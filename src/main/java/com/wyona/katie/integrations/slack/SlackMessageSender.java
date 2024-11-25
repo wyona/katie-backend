@@ -984,14 +984,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             if (domain == null) {
                 return new SlackAnswer("No domain connected with Slack team / channel '" + teamId + " / " + channelId + "'!", FORMAT_MARKDOWN);
             }
-            User[] members = contextService.getMembers(domain.getId(), false, null);
-            int numberOfNotificationsSent = 0;
-            for (User user: members) {
-                if (user.getEmail() != null && user.getIsExpert()) {
-                    mailerService.send(user.getEmail(), domain.getMailSenderEmail(), "[" + domain.getMailSubjectTag() + "] " + "Invite Slack user to your Katie domain", getMailBodyForInvitingSlackUser(userId, teamId, channelId, domain, "TODO"), true);
-                    numberOfNotificationsSent++;
-                }
-            }
+            int numberOfNotificationsSent = contextService.notifyDomainOwnersAndAdmins("[" + domain.getMailSubjectTag() + "] " + "Invite Slack user to your Katie domain", getMailBodyForInvitingSlackUser(userId, teamId, channelId, domain, "TODO"), domain.getId());
             return new SlackAnswer("Invitation request has been sent to " + numberOfNotificationsSent + " domain members.", FORMAT_MARKDOWN);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
