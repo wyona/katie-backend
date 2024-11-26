@@ -201,13 +201,13 @@ public class AuthenticationController {
      * Login with username/password or JWT token
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary= "Login with username/password or JWT token")
+    @Operation(summary = "Login with username/password or JWT token")
     @ApiImplicitParams({
     @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                       required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
-        @ApiParam(name = "rememberMe", value = "True when user wants to stay logged in and false otherwise",required = false)
-        @RequestParam(value = "rememberMe", required = false) boolean rememberMe,
+        @ApiParam(name = "rememberMe", value = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, defaultValue = "false")
+        @RequestParam(value = "rememberMe", required = false) Boolean rememberMe,
         HttpServletRequest request,
         HttpServletResponse response) {
 
@@ -273,16 +273,22 @@ public class AuthenticationController {
             UserDetails userDetails = authService.getUserDetails(userPrincipal);
             log.info("User '" + userDetails.getUsername() + "' authenticated successfully.");
 
-            if (rememberMe) {
+            boolean _rememberMe = false;
+            if (rememberMe != null && rememberMe) {
+                _rememberMe = true;
+            }
+            if (_rememberMe) {
                 // INFO: See https://github.com/wyona/yanel/blob/master/src/webapp/src/java/org/wyona/yanel/servlet/security/impl/AutoLogin.java
-                log.info("Keep user '" + userDetails.getUsername() + "' logged in by setting persistent cookie.");
+                log.info("Keep user '" + userDetails.getUsername() + "' logged in beyond session expiry by setting persistent cookie.");
                 rememberMeService.enableAutoLogin(userDetails.getUsername(), request, response);
+            } else {
+                log.info("Do not set persistent cookie to keep user logged in.");
             }
 
             return new ResponseEntity<>(userDetails, HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "AUTHENTICATION_FAILED"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
     }
 
