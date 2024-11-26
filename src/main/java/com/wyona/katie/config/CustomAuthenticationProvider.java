@@ -4,6 +4,7 @@ import com.wyona.katie.models.Username;
 import com.wyona.katie.services.UsersXMLFileService;
 import com.wyona.katie.models.User;
 import com.wyona.katie.models.Username;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,7 +39,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     *
+     * @see org.springframework.security.authentication.AuthenticationProvider#authenticate(Authentication)
      */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -65,7 +66,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         if (user.isLocked()) {
             log.warn("User '" + authentication.getName() + "' is locked!");
-            throw new BadCredentialsException("User is locked!");
+            throw new AccountStatusException("User '" + authentication.getName() + "' is locked!") {
+                @Override
+                public String getMessage() {
+                    return super.getMessage();
+                }
+            };
         }
 
         Object password = authentication.getCredentials();
