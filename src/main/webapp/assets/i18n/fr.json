@@ -2,7 +2,8 @@
     "katie": {
         "answer_by_llm": "Réponse générée par LLM",
         "your_linkedin_url": "Ton URL LinkedIn",
-        "set_password": "Choisissez un mot de passe pour votre compte",
+        "set_password": "Choisissez un mot de passe",
+        "thanks_confirming_email_set_password": "Merci d'avoir confirmé ton adresse e-mail.<br/><br/>Choisissez un mot de passe pour votre compte",
         "create_your_account": "Créez votre compte",
         "complete_sign_up": "Terminer l'enregistrement",
         "sign_up": "Enregistrer",
