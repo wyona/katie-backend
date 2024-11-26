@@ -36,6 +36,7 @@ public class User {
     /**
      * @param id User id, which cannot be changed once the id is created
      * @param password Password, whereas can be plaintext or encrypted  according to password encoding
+     * @param locked True when account should is locked and false when account is activated
      */
     public User(String id, String username, String password, String passwordEncoding, Role systemRole, JWT jwtToken, String email, String firstName, String lastName, boolean isExpert, boolean isModerator, RoleDomain domainRole, String language, boolean locked) {
         this.id = id;
