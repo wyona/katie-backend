@@ -599,7 +599,7 @@ public class AskController {
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> chatCompletions(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
-            @PathVariable(value = "domain-id", required = true) String domainId,
+            @PathVariable(value = "domain-id", required = true) String _domainId,
             @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
             @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
@@ -625,36 +625,42 @@ public class AskController {
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
+        // TODO: Make configurable
+        String yulupDomainId = "26cf31c2-8cb6-4e7e-9552-1c1f9f1ed035";
+        //String yulupDomainId = _domainId;
         Context domain = null;
         try {
-            domain = contextService.getContext(domainId);
+            domain = contextService.getContext(yulupDomainId);
         } catch (Exception e) {
-            String content = "No such domain '" + domainId + "'!";
+            String content = "No such domain '" + yulupDomainId + "'!";
             log.error(content);
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
         User user = authService.getUser(false, false);
-        if (!contextService.isUserMemberOfDomain(user.getId(), domainId)) {
-            log.info("User '" + user.getUsername() + "' is not member of domain '" + domainId + "'!");
+        if (!contextService.isUserMemberOfDomain(user.getId(), domain.getId())) {
+            log.info("User '" + user.getUsername() + "' is not member of domain '" + domain.getId() + "'!");
+            // WARN: Do not add users to this domain, because otherwise they can see all other members!
+            /*
             String subject = "User requests invitation to Katie domain '" + domain.getName() + "'";
             String message = "<html><body>The user '" + user.getUsername() + "' would like to be invited to the domain <a href=\"" + defaultHostnameMailBody + "/#/domain/" + domain.getId() + "/members\">" + domain.getName() + "</a>.</body></html>";
             contextService.notifyDomainOwnersAndAdmins(subject, message, domain.getId());
             String content = "Your user '" + user.getUsername() + "' must be a member of the Katie domain '" + domain.getName() + "', whereas a request has just been sent to the domain owners, thank you for your patience!";
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+             */
         }
 
         try {
             CompletionImpl completionImpl = domain.getCompletionImpl();
             //completionImpl = CompletionImpl.OLLAMA;
             if (completionImpl == CompletionImpl.UNSET) {
-                log.warn("Domain '" + domainId + "' has no completion implementation configured!");
+                log.warn("Domain '" + domain.getId() + "' has no completion implementation configured!");
                 //return new ResponseEntity<>("TODO", HttpStatus.OK);
                 //return new ResponseEntity<>(new Error("TODO", "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
             } else {
-                log.info("Domain '" + domainId + "' has '" + completionImpl + "' configured as completion implementation.");
+                log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
             }
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
             String model = generativeAIService.getCompletionModel(completionImpl);
