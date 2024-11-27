@@ -20,6 +20,7 @@ public class User {
     private String language;
     private String myKatieId;
     private boolean locked = false;
+    private boolean approved = false;
 
     // INFO: Values depend on domain
     private boolean isExpert;
@@ -37,8 +38,9 @@ public class User {
      * @param id User id, which cannot be changed once the id is created
      * @param password Password, whereas can be plaintext or encrypted  according to password encoding
      * @param locked True when account should is locked and false when account is activated
+     * @param approved True when account got approved by administrator and false otherwise
      */
-    public User(String id, String username, String password, String passwordEncoding, Role systemRole, JWT jwtToken, String email, String firstName, String lastName, boolean isExpert, boolean isModerator, RoleDomain domainRole, String language, boolean locked) {
+    public User(String id, String username, String password, String passwordEncoding, Role systemRole, JWT jwtToken, String email, String firstName, String lastName, boolean isExpert, boolean isModerator, RoleDomain domainRole, String language, boolean locked, boolean approved) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -52,6 +54,7 @@ public class User {
         this.language = language;
         this.myKatieId = null;
         this.locked = locked;
+        this.approved = approved;
 
         this.isExpert = isExpert;
         this.isModerator = isModerator;
@@ -252,5 +255,19 @@ public class User {
      */
     public void unlock() {
         this.locked = false;
+    }
+
+    /**
+     * @return true when account was approved by administrator
+     */
+    public boolean isApproved() {
+        return approved;
+    }
+
+    /**
+     * Approve user account
+     */
+    public void approve() {
+        this.approved = true;
     }
 }
