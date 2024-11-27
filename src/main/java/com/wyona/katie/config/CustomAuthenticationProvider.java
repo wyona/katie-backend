@@ -22,6 +22,8 @@ import com.wyona.katie.models.User;
 import com.wyona.katie.services.IAMService;
 import com.wyona.katie.services.XMLService;
 
+import java.util.Date;
+
 /**
  *
  */
@@ -74,15 +76,24 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             };
         }
 
-        // TODO: Check whether user is approved resp. when user account was created more than 48 hours ago and account is not approved, then throw Exception
         if (!user.isApproved()) {
-            log.warn("User '" + authentication.getName() + "' is not approved!");
-            throw new AccountStatusException("User '" + authentication.getName() + "' is not approved!") {
-                @Override
-                public String getMessage() {
-                    return super.getMessage();
-                }
-            };
+            Date created = user.getCreated();
+            Date current = new Date();
+            // Check whether user account was created more than 24 hours ago and if so, then throw Exception
+            long LIMIT = 24*3600*1000;
+            //long LIMIT = 60*1000; // Test with limit of 60 seconds
+            long timeSinceAccountCreation = current.getTime() - created.getTime();
+            if (timeSinceAccountCreation > LIMIT) {
+                log.warn("User '" + authentication.getName() + "' is not approved!");
+                throw new AccountStatusException("User '" + authentication.getName() + "' is not approved yet! Please request administrator to approve user account.") {
+                    @Override
+                    public String getMessage() {
+                        return super.getMessage();
+                    }
+                };
+            } else {
+                log.warn("User '" + authentication.getName() + "' not approved yet, but milliseconds since account creation '" + timeSinceAccountCreation + "' is less than configured limit of '" + LIMIT + "' milliseconds.");
+            }
         }
 
         Object password = authentication.getCredentials();
