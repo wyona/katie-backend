@@ -1,9 +1,7 @@
 package com.wyona.katie.config;
 
 import com.wyona.katie.models.Username;
-import com.wyona.katie.services.UsersXMLFileService;
 import com.wyona.katie.models.User;
-import com.wyona.katie.models.Username;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -13,14 +11,11 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.wyona.katie.models.User;
 import com.wyona.katie.services.IAMService;
-import com.wyona.katie.services.XMLService;
 
 import java.util.Date;
 
@@ -80,11 +75,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             Date created = user.getCreated();
             Date current = new Date();
             // Check whether user account was created more than 24 hours ago and if so, then throw Exception
-            long LIMIT = 24*3600*1000;
-            //long LIMIT = 60*1000; // Test with limit of 60 seconds
             long timeSinceAccountCreation = current.getTime() - created.getTime();
-            if (timeSinceAccountCreation > LIMIT) {
-                log.warn("User '" + authentication.getName() + "' is not approved!");
+            if (timeSinceAccountCreation > iamService.getMaxTimeSinceAccountCreation()) {
+                log.warn("User '" + authentication.getName() + "' is not approved yet by administrator and '" + timeSinceAccountCreation + "' milliseconds since account creation is more than configured limit of '" + iamService.getMaxTimeSinceAccountCreation() + "' milliseconds.");
                 throw new AccountStatusException("User '" + authentication.getName() + "' is not approved yet! Please request administrator to approve user account.") {
                     @Override
                     public String getMessage() {
@@ -92,7 +85,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                     }
                 };
             } else {
-                log.warn("User '" + authentication.getName() + "' not approved yet, but milliseconds since account creation '" + timeSinceAccountCreation + "' is less than configured limit of '" + LIMIT + "' milliseconds.");
+                log.warn("User '" + authentication.getName() + "' not approved yet by administrator, but '" + timeSinceAccountCreation + "' milliseconds since account creation is less than configured limit of '" + iamService.getMaxTimeSinceAccountCreation() + "' milliseconds.");
             }
         }
 
