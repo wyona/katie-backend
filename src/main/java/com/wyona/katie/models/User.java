@@ -2,6 +2,8 @@ package com.wyona.katie.models;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Date;
+
 /**
  *
  */
@@ -21,6 +23,7 @@ public class User {
     private String myKatieId;
     private boolean locked = false;
     private boolean approved = false;
+    private Date created;
 
     // INFO: Values depend on domain
     private boolean isExpert;
@@ -39,8 +42,9 @@ public class User {
      * @param password Password, whereas can be plaintext or encrypted  according to password encoding
      * @param locked True when account should is locked and false when account is activated
      * @param approved True when account got approved by administrator and false otherwise
+     * @param created Creation date of user account
      */
-    public User(String id, String username, String password, String passwordEncoding, Role systemRole, JWT jwtToken, String email, String firstName, String lastName, boolean isExpert, boolean isModerator, RoleDomain domainRole, String language, boolean locked, boolean approved) {
+    public User(String id, String username, String password, String passwordEncoding, Role systemRole, JWT jwtToken, String email, String firstName, String lastName, boolean isExpert, boolean isModerator, RoleDomain domainRole, String language, boolean locked, boolean approved, Date created) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -55,6 +59,7 @@ public class User {
         this.myKatieId = null;
         this.locked = locked;
         this.approved = approved;
+        this.created = created;
 
         this.isExpert = isExpert;
         this.isModerator = isModerator;
@@ -269,5 +274,12 @@ public class User {
      */
     public void approve() {
         this.approved = true;
+    }
+
+    /**
+     * Get date when user account was created
+     */
+    public Date getCreated() {
+        return created;
     }
 }

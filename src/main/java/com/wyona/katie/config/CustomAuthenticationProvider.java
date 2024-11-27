@@ -74,6 +74,17 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             };
         }
 
+        // TODO: Check whether user is approved resp. when user account was created more than 48 hours ago and account is not approved, then throw Exception
+        if (!user.isApproved()) {
+            log.warn("User '" + authentication.getName() + "' is not approved!");
+            throw new AccountStatusException("User '" + authentication.getName() + "' is not approved!") {
+                @Override
+                public String getMessage() {
+                    return super.getMessage();
+                }
+            };
+        }
+
         Object password = authentication.getCredentials();
         if (password != null) {
             if (!iamService.matches(password.toString(), user)) {

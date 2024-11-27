@@ -1227,7 +1227,9 @@ public class XMLService {
             // TODO: Resolve member/user values
             String language = "en";
 
-            users.add(new User(id, null, null, null, null, null, null, null, null, memberIsExpert, memberIsModerator, domainRole, language, locked, approved));
+            Date created = null;
+            // TODO: Get date when user account of member was created
+            users.add(new User(id, null, null, null, null, null, null, null, null, memberIsExpert, memberIsModerator, domainRole, language, locked, approved, created));
         }
 
         return users.toArray(new User[0]);

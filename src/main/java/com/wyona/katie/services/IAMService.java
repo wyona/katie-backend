@@ -261,7 +261,8 @@ public class IAMService {
                 throw new Exception("Provided Language '" + language + "' is not valid!");
             }
 
-            User user = new User(userId, username.getUsername(), encryptedPassword, passwordEncoding, role, null, email, firstName, lastName, false, false, null, language, locked, approved);
+            Date created = new Date();
+            User user = new User(userId, username.getUsername(), encryptedPassword, passwordEncoding, role, null, email, firstName, lastName, false, false, null, language, locked, approved, created);
             usersXMLFileService.addUser(user);
 
             if (sendAccountInfoToUser) {
@@ -678,6 +679,7 @@ public class IAMService {
             float spamScore = getSpamScore(infos.getLinkedInUrl());
 
             boolean userAccountLocked = false;
+
             boolean userAccountApproved = true;
             if (selfRegistrationApprovalRequired) {
                 userAccountApproved = false;

@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
 
 import java.io.*;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -32,6 +33,7 @@ public class UsersXMLFileService {
     private static final String IAM_USER_UUID_ATTR = "uuid";
     private static final String IAM_USER_LOCKED_ATTR = "locked";
     private static final String IAM_USER_APPROVED_ATTR = "approved";
+    private static final String IAM_USER_CREATED_ATTR = "created";
     private static final String IAM_USERNAME_TAG = "username";
     private static final String IAM_PASSWORD_TAG = "password";
     private static final String IAM_PASSWORD_ENCODING_ATTR = "encoding";
@@ -130,6 +132,10 @@ public class UsersXMLFileService {
             userEl.setAttribute(IAM_USER_APPROVED_ATTR, "false");
         }
 
+        if (user.getCreated() != null) {
+            userEl.setAttribute(IAM_USER_CREATED_ATTR, "" + user.getCreated().getTime());
+        }
+
         Element usernameEl = xmlService.appendElement(userEl, IAM_USERNAME_TAG, user.getUsername());
         if (usernameEl == null) {
             throw new Exception("No username provided!");
@@ -169,6 +175,10 @@ public class UsersXMLFileService {
         userEl.setAttribute(IAM_USER_LOCKED_ATTR, "" + user.isLocked());
 
         userEl.setAttribute(IAM_USER_APPROVED_ATTR, "" + user.isApproved());
+
+        if (user.getCreated() != null) {
+            userEl.setAttribute(IAM_USER_CREATED_ATTR, "" + user.getCreated().getTime());
+        }
 
         if (user.getPassword() != null && user.getPassword().length() > 0) {
             Element pwdEl = getChildByTagName(userEl, IAM_PASSWORD_TAG, true);
@@ -441,7 +451,13 @@ public class UsersXMLFileService {
             approved = Boolean.parseBoolean(userEl.getAttribute(IAM_USER_APPROVED_ATTR));
         }
 
-        User user = new User(id, username, password, passwordEncoding, role, jwt, email, firstName, lastName, false, false, null, language, locked, approved);
+        Date created = null;
+        if (userEl.hasAttribute(IAM_USER_CREATED_ATTR)) {
+            long creationTime = Long.parseLong(userEl.getAttribute(IAM_USER_CREATED_ATTR));
+            created = new Date(creationTime);
+        }
+
+        User user = new User(id, username, password, passwordEncoding, role, jwt, email, firstName, lastName, false, false, null, language, locked, approved, created);
         return user;
     }
 
