@@ -107,7 +107,7 @@ public class IAMService {
                 String language = "en"; // TODO: Make configurable
                 String firstName = "Super"; // TODO: Make configurable
                 String lastName = "Admin"; // TODO: Make configurable
-                sysadmin = createUser(new Username(username), email, Role.ADMIN, password, true, firstName, lastName, language, false);
+                sysadmin = createUser(new Username(username), email, Role.ADMIN, password, true, firstName, lastName, language, false, true);
             } catch(Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -232,8 +232,9 @@ public class IAMService {
      * @param lastName  Last name of user, e.g. "Wechner"
      * @param language Language of user, e.g. "de" or "en"
      * @param locked True when account should be locked / disabled and requires approval to be unlocked / enabled
+     * @param approved True when account was approved by administrator and false otherwise
      */
-    public User createUser(Username username, String email, Role role, String password, boolean sendAccountInfoToUser, String firstName, String lastName, String language, boolean locked) throws Exception {
+    public User createUser(Username username, String email, Role role, String password, boolean sendAccountInfoToUser, String firstName, String lastName, String language, boolean locked, boolean approved) throws Exception {
 
         log.info("Try to add user '" + username + "' persistently ...");
         if (usernameExists(username)) {
@@ -260,7 +261,7 @@ public class IAMService {
                 throw new Exception("Provided Language '" + language + "' is not valid!");
             }
 
-            User user = new User(userId, username.getUsername(), encryptedPassword, passwordEncoding, role, null, email, firstName, lastName, false, false, null, language, locked);
+            User user = new User(userId, username.getUsername(), encryptedPassword, passwordEncoding, role, null, email, firstName, lastName, false, false, null, language, locked, approved);
             usersXMLFileService.addUser(user);
 
             if (sendAccountInfoToUser) {
@@ -595,7 +596,7 @@ public class IAMService {
 
             if (existsSelfRegistrationInfo(token)) {
                 SelfRegistrationInformation infos = getSelfRegistrationInfo(token);
-                User user = unlockUser(userId);
+                User user = approveUser(userId);
                 deleteSelfRegistrationInformation(token);
 
                 String mailSubject = mailSubjectTag + " Your registration got approved, welcome to Katie!"; // TODO: language
@@ -615,6 +616,16 @@ public class IAMService {
     private User unlockUser(String userId) throws Exception {
         User user = getUserById(userId, false);
         user.unlock();
+        usersXMLFileService.updateUser(user);
+        return user;
+    }
+
+    /**
+     * Approve user account
+     */
+    private User approveUser(String userId) throws Exception {
+        User user = getUserById(userId, false);
+        user.approve();
         usersXMLFileService.updateUser(user);
         return user;
     }
@@ -652,8 +663,10 @@ public class IAMService {
     }
 
     /**
+     * User confirmed email address and chose a password, therefore we create an actual user account
      * @param token Token associated with self-registration of user
      * @param password Password chosen by user
+     * @return user object associated with newly created user account
      */
     public User selfRegisterEmailConfirmation(String token, String password) throws Exception {
         // INFO: Similar to resetPassword();
@@ -664,13 +677,14 @@ public class IAMService {
 
             float spamScore = getSpamScore(infos.getLinkedInUrl());
 
-            boolean locked = false;
+            boolean userAccountLocked = false;
+            boolean userAccountApproved = true;
             if (selfRegistrationApprovalRequired) {
-                locked = true;
+                userAccountApproved = false;
             }
 
             log.info("Create account for username '" + infos.getEmail() + "' ...");
-            User user = createUser(new Username(infos.getEmail()), infos.getEmail(), Role.USER, password, false, infos.getFirstName(), infos.getLastName(), infos.getLanguage(), locked);
+            User user = createUser(new Username(infos.getEmail()), infos.getEmail(), Role.USER, password, false, infos.getFirstName(), infos.getLastName(), infos.getLanguage(), userAccountLocked, userAccountApproved);
 
             if (selfRegistrationApprovalRequired) {
                 notifyAdministratorReNewUser(infos, spamScore, token, user);

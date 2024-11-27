@@ -1658,7 +1658,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         } else {
             log.info("Create Katie user with username '" + inviterUserId + "' and email '" + email + "' and add as member to new Katie domain '" + newDomain.getId() + "'.");
             // TODO: WARNING: Check whether user account creation requires approval!!!
-            user = iamService.createUser(new Username(inviterUserId), email, Role.USER, authService.generatePassword(8), true,"TODO", "TODO", "en", false);
+            user = iamService.createUser(new Username(inviterUserId), email, Role.USER, authService.generatePassword(8), true,"TODO", "TODO", "en", false, true);
         }
         contextService.addMember(user.getId(), true, false, RoleDomain.OWNER, newDomain.getId());
         // TODO: Send confirmation instead invitation

@@ -271,7 +271,7 @@ public class IAMController {
             if (!contextService.isAdmin()) {
                 throw new AccessDeniedException("User is either not signed in or has not role ADMIN!");
             }
-            User newUser = iamService.createUser(new Username(user.getUsername()), user.getEmail(), user.getRole(), user.getPassword(), true, user.getFirstname(), user.getLastname(), user.getLanguage(), false);
+            User newUser = iamService.createUser(new Username(user.getUsername()), user.getEmail(), user.getRole(), user.getPassword(), true, user.getFirstname(), user.getLastname(), user.getLanguage(), false, true);
             log.info("Every new user gets a personal domain for free (MyKatie), for example to remember credentials, bookmarks, etc.");
 
             StringBuilder name = new StringBuilder("My Katie");

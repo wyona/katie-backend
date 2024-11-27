@@ -31,6 +31,7 @@ public class UsersXMLFileService {
     private static final String IAM_USER_TAG = "user";
     private static final String IAM_USER_UUID_ATTR = "uuid";
     private static final String IAM_USER_LOCKED_ATTR = "locked";
+    private static final String IAM_USER_APPROVED_ATTR = "approved";
     private static final String IAM_USERNAME_TAG = "username";
     private static final String IAM_PASSWORD_TAG = "password";
     private static final String IAM_PASSWORD_ENCODING_ATTR = "encoding";
@@ -121,7 +122,12 @@ public class UsersXMLFileService {
         }
 
         if (user.isLocked()) {
+            // INFO: Lock user account
             userEl.setAttribute(IAM_USER_LOCKED_ATTR, "true");
+        }
+
+        if (!user.isApproved()) {
+            userEl.setAttribute(IAM_USER_APPROVED_ATTR, "false");
         }
 
         Element usernameEl = xmlService.appendElement(userEl, IAM_USERNAME_TAG, user.getUsername());
@@ -161,6 +167,8 @@ public class UsersXMLFileService {
 
         log.info("Set locked attribute of user '" + user.getId() + "' to '" + user.isLocked() + "'.");
         userEl.setAttribute(IAM_USER_LOCKED_ATTR, "" + user.isLocked());
+
+        userEl.setAttribute(IAM_USER_APPROVED_ATTR, "" + user.isApproved());
 
         if (user.getPassword() != null && user.getPassword().length() > 0) {
             Element pwdEl = getChildByTagName(userEl, IAM_PASSWORD_TAG, true);
@@ -428,7 +436,12 @@ public class UsersXMLFileService {
             locked = Boolean.parseBoolean(userEl.getAttribute(IAM_USER_LOCKED_ATTR));
         }
 
-        User user = new User(id, username, password, passwordEncoding, role, jwt, email, firstName, lastName, false, false, null, language, locked);
+        boolean approved = true;
+        if (userEl.hasAttribute(IAM_USER_APPROVED_ATTR)) {
+            approved = Boolean.parseBoolean(userEl.getAttribute(IAM_USER_APPROVED_ATTR));
+        }
+
+        User user = new User(id, username, password, passwordEncoding, role, jwt, email, firstName, lastName, false, false, null, language, locked, approved);
         return user;
     }
 

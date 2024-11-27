@@ -1208,6 +1208,9 @@ public class XMLService {
             boolean locked = false;
             // TODO: Check whether member is locked
 
+            boolean approved = true;
+            // TODO: Check whether user account was approved
+
             if (onlyExperts && !memberIsExpert) {
                 log.debug("Member '" + id + "' is not an expert.");
                 continue;
@@ -1224,7 +1227,7 @@ public class XMLService {
             // TODO: Resolve member/user values
             String language = "en";
 
-            users.add(new User(id, null, null, null, null, null, null, null, null, memberIsExpert, memberIsModerator, domainRole, language, locked));
+            users.add(new User(id, null, null, null, null, null, null, null, null, memberIsExpert, memberIsModerator, domainRole, language, locked, approved));
         }
 
         return users.toArray(new User[0]);
