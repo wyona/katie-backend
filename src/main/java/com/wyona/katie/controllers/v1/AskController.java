@@ -1,9 +1,7 @@
 package com.wyona.katie.controllers.v1;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.wyona.katie.handlers.GenerateProvider;
-import com.wyona.katie.handlers.OllamaGenerate;
 import com.wyona.katie.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,10 +28,8 @@ import reactor.core.publisher.Flux;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.File;
 import java.nio.file.AccessDeniedException;
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.*;
 
 /**
