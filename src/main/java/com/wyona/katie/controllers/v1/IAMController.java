@@ -110,7 +110,7 @@ public class IAMController {
         try {
             User newUser = iamService.selfRegisterEmailConfirmation(passwordToken.getResetToken(), passwordToken.getPassword());
 
-            return new ResponseEntity<>("{\"user-account-approved\":\"" + newUser.isApproved() + "\"}", HttpStatus.CREATED);
+            return new ResponseEntity<>("{\"user-account-approved\":" + newUser.isApproved() + "}", HttpStatus.CREATED);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error("E-mail confirmation failed: " + e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
