@@ -56,6 +56,9 @@ public class IAMService {
     @Value("${self.registration.approval.required}")
     private Boolean selfRegistrationApprovalRequired;
 
+    @Value("${self.registration.approval.max.time.since.creation}")
+    private Long maxTimeSinceAccountCreation;
+
     @Value("${self_registration_requests.data_path}")
     private String selfRegistrationRequestsDataPath;
 
@@ -80,6 +83,13 @@ public class IAMService {
         this.usersXMLFileService = usersXMLFileService;
         this.mailerService = mailerService;
         this.jwtService = jwtService;
+    }
+
+    /**
+     *
+     */
+    public long getMaxTimeSinceAccountCreation() {
+        return maxTimeSinceAccountCreation;
     }
 
     /**
