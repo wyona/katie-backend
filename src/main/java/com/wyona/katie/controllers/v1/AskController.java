@@ -42,6 +42,9 @@ public class AskController {
 
     Integer counter = 0; // TODO: Do not use global variable
 
+    // TODO: Make configurable
+    private String yulupDomainId = "26cf31c2-8cb6-4e7e-9552-1c1f9f1ed035";
+
     @Value("${new.context.mail.body.host}")
     private String defaultHostnameMailBody;
 
@@ -619,20 +622,17 @@ public class AskController {
 
         if (!authService.userIsSignedInBySession(request)) {
             log.info("User is not signed in!");
-            String content = "Please make sure to be <a href=\"/#/login\">signed in</a> or <a href=\"/#/register\">sign up</a> for free :-)";
+            String content = getLoginSignUpMessage();
             choices = addChoice(mapper, choices, "error", content, 0);
             //choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
-        // TODO: Make configurable
-        String yulupDomainId = "26cf31c2-8cb6-4e7e-9552-1c1f9f1ed035";
-        //String yulupDomainId = _domainId;
         Context domain = null;
         try {
             domain = contextService.getContext(yulupDomainId);
         } catch (Exception e) {
-            String content = "No such domain '" + yulupDomainId + "'!";
+            String content = getNoSuchDomainMessage(yulupDomainId);
             log.error(content);
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
@@ -726,33 +726,54 @@ public class AskController {
     @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
-    public Flux<ServerSentEvent<String>> chatCompletionsAsSSE() {
+    public Flux<ServerSentEvent<String>> chatCompletionsAsSSE(
+            HttpServletRequest request, HttpServletResponse response) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        rememberMeService.tryAutoLogin(request, response);
+
         // INFO: Use an array instead a string only, in order to workaround "Variable used in lambda expression should be final or effectively final"
         String[] mockResponse = new String[1];
         mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
 
-        try {
-            Context domain = contextService.getDomain("ROOT");
-        } catch(AccessDeniedException e) {
-            log.warn(e.getMessage(), e);
-            //mockResponse[0] = "Please login ...";
-            //return Flux.error(e);
-            //return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return Flux.error(e);
-            //return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        if (!authService.userIsSignedInBySession(request)) {
+            log.info("User is not signed in!");
+            mockResponse[0] = getLoginSignUpMessage();
+            return sendSSE(mockResponse[0]);
         }
 
+        Context domain = null;
+        try {
+            domain = contextService.getContext(yulupDomainId);
+        } catch (Exception e) {
+            String content = getNoSuchDomainMessage(yulupDomainId);
+            log.error(content);
+            mockResponse[0] = content;
+            return sendSSE(mockResponse[0]);
+            //return Flux.error(e);
+        }
+
+        return sendSSE(mockResponse[0]);
+    }
+
+    /**
+     *
+     */
+    private Flux<ServerSentEvent<String>> sendSSE(String message) {
         counter = 0;
         String delimiter = " ";
-        int limit = mockResponse[0].split(delimiter).length;
+        int limit = message.split(delimiter).length;
         return Flux.interval(Duration.ofMillis(100))
                 .take(limit) // https://www.baeldung.com/spring-webflux-cancel-flux#3-cancel-using-takelong-n-operator
                 .map(sequence -> ServerSentEvent.<String> builder()
                         //.id(String.valueOf(sequence))
                         //.event("periodic-event")
-                        .data(getEvent(mockResponse[0], delimiter))
+                        .data(getEvent(message, delimiter))
                         .build());
     }
 
@@ -788,6 +809,20 @@ public class AskController {
         deltaNode.put("content", " " + nextWord);
 
         return rootNode.toString();
+    }
+
+    /**
+     *
+     */
+    private String getLoginSignUpMessage() {
+        return "Please make sure to be <a href=\"/#/login\">signed in</a> or <a href=\"/#/register\">sign up</a> for free :-)";
+    }
+
+    /**
+     *
+     */
+    private String getNoSuchDomainMessage(String domainId) {
+        return "No such domain '" + domainId + "'!";
     }
 
     /**
