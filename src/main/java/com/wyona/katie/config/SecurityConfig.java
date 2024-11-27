@@ -32,7 +32,7 @@ import com.wyona.katie.services.IAMService;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String ADMIN_ROLE = "ADMIN";
-    private static final String USER_ROLE = "USER";
+    //private static final String USER_ROLE = "USER";
 
     @Autowired
     private IAMService iamService;
