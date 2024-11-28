@@ -139,7 +139,9 @@ public class UtilsService {
         // INFO: Replace question mark by space
         //question = question.replace("?", " "); // TODO: Why do we replace the question mark by a space?!
 
-        question = question.trim();
+        if (question != null) {
+            question = question.trim();
+        }
 
         return question;
     }
