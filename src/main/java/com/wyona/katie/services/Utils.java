@@ -163,7 +163,12 @@ public class Utils {
      * @return text where new lines have been replaced by spaces
      */
     public static String replaceNewLines(String text, String replacement) {
-        return text.trim().replaceAll("\\r\\n|\\r|\\n", replacement);
+        if (text != null) {
+            return text.trim().replaceAll("\\r\\n|\\r|\\n", replacement);
+        } else {
+            log.warn("Provided text is null");
+            return text;
+        }
     }
 
     /**
