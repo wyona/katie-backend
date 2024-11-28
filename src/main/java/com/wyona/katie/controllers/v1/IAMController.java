@@ -111,6 +111,10 @@ public class IAMController {
         try {
             User newUser = iamService.selfRegisterEmailConfirmation(passwordToken.getResetToken(), passwordToken.getPassword());
 
+            log.info("Create MyKatie for new user '" + newUser.getUsername() + "'.");
+            Context domain = contextService.createDomain(true, getMyKatieDomainName(newUser), "My Katie", false, newUser);
+            contextService.setPersonalDomainId(newUser.getId(), domain.getId());
+
             return new ResponseEntity<>("{\"user-account-approved\":" + newUser.isApproved() + "}", HttpStatus.CREATED);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -275,20 +279,9 @@ public class IAMController {
             User newUser = iamService.createUser(new Username(user.getUsername()), user.getEmail(), user.getRole(), user.getPassword(), true, user.getFirstname(), user.getLastname(), user.getLanguage(), false, true);
             log.info("Every new user gets a personal domain for free (MyKatie), for example to remember credentials, bookmarks, etc.");
 
-            StringBuilder name = new StringBuilder("My Katie");
-            if (newUser.getFirstname() != null || newUser.getLastname() != null) {
-                name.append(" of");
-                if (newUser.getFirstname() != null) {
-                    name.append(" " + newUser.getFirstname());
-                }
-                if (newUser.getLastname() != null) {
-                    name.append(" " + newUser.getLastname());
-                }
-            }
-
             if (createPersonalDomain) {
                 log.info("Create MyKatie for new user '" + newUser.getUsername() + "'.");
-                Context domain = contextService.createDomain(true, name.toString(), "My Katie", false, newUser);
+                Context domain = contextService.createDomain(true, getMyKatieDomainName(newUser), "My Katie", false, newUser);
                 contextService.setPersonalDomainId(newUser.getId(), domain.getId());
             } else {
                 log.info("Do not create MyKatie for new user '" + newUser.getUsername() + "'.");
@@ -301,6 +294,23 @@ public class IAMController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /**
+     *
+     */
+    private String getMyKatieDomainName(User newUser) {
+        StringBuilder name = new StringBuilder("My Katie");
+        if (newUser.getFirstname() != null || newUser.getLastname() != null) {
+            name.append(" of");
+            if (newUser.getFirstname() != null) {
+                name.append(" " + newUser.getFirstname());
+            }
+            if (newUser.getLastname() != null) {
+                name.append(" " + newUser.getLastname());
+            }
+        }
+        return name.toString();
     }
 
     /**
