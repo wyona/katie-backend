@@ -8,6 +8,7 @@ import com.wyona.katie.services.ContextService;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 
@@ -263,8 +264,8 @@ public class IAMController {
     @RequestMapping(value = "/user", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Add user, whereas username, email, role (ADMIN, USER) and password are required. Username and email can be the same.")
     public ResponseEntity<?> addUser(
-            @Parameter(name = "mykatie", description = "When not set or set to true, then a personal MyKatie domain will be created", required = false)
-            @RequestParam(value = "mykatie", required = false) Boolean createMyKatie,
+            @ApiParam(name = "mykatie", value = "When set to true, then a personal MyKatie domain will be created", required = false, defaultValue = "true")
+            @RequestParam(value = "mykatie", required = false) Boolean createPersonalDomain,
             @RequestBody User user,
             HttpServletRequest request) {
         try {
@@ -285,10 +286,6 @@ public class IAMController {
                 }
             }
 
-            boolean createPersonalDomain = true;
-            if (createMyKatie != null && !createMyKatie.booleanValue()) {
-                createPersonalDomain = false;
-            }
             if (createPersonalDomain) {
                 log.info("Create MyKatie for new user '" + newUser.getUsername() + "'.");
                 Context domain = contextService.createDomain(true, name.toString(), "My Katie", false, newUser);
