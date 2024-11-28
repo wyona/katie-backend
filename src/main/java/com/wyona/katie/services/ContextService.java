@@ -1797,6 +1797,7 @@ public class ContextService {
 
     /**
      * Create a context/domain from scratch
+     * @param answersGenerallyProtected When true, then answers will be protected
      * @param name Name of Katie domain, e.g. "Wyona"
      * @param mailSubjectTag, e.g. "AskKatie/Wyona"
      * @param answersMustBeApproved True when answers must be approved by a moderator
