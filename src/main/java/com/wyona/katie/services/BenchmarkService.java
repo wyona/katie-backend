@@ -533,7 +533,8 @@ public class BenchmarkService {
     }
 
     /**
-     *
+     * Get version number of search implementation
+     * @return version number, e.g. "9.12.0"
      */
     private String getSearchImplementationVersion(DetectDuplicatedQuestionImpl impl, Context domain) {
         String version = null;
@@ -543,6 +544,8 @@ public class BenchmarkService {
             version = sbertImpl.getVersionAndModel().get(sbertImpl.VERSION);
         } else if (impl.equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
             version = weaviateImpl.getVersion(domain);
+        } else {
+            log.warn("No version number available for search implementation '" + impl + "'.");
         }
         return version;
     }
