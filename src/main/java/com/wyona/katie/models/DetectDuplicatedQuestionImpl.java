@@ -13,5 +13,6 @@ public enum DetectDuplicatedQuestionImpl {
     WEAVIATE,
     QUERY_SERVICE,
     KATIE,
-    AZURE_AI_SEARCH
+    AZURE_AI_SEARCH,
+    LLM
 }
