@@ -1,0 +1,112 @@
+package com.wyona.katie.handlers;
+
+import com.wyona.katie.models.*;
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ *
+ */
+@Slf4j
+@Component
+public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
+
+    /**
+     * @see QuestionAnswerHandler#deleteTenant(Context)
+     */
+    public void deleteTenant(Context domain) {
+        log.info("LLM search implementation of deleting tenant ...");
+        // TODO
+    }
+
+    /**
+     * @see QuestionAnswerHandler#createTenant(Context)
+     */
+    public String createTenant(Context domain) {
+        log.info("LLM search implementation of creating tenant ...");
+        // TODO
+        return null;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#delete(String, Context)
+     */
+    public boolean delete(String uuid, Context domain) {
+        log.info("Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from LLM search implementation ...");
+        // TODO
+        return false;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#retrain(QnA, Context, boolean)
+     */
+    public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
+        log.warn("TODO: Delete/train is just a workaround, implement retrain by itself");
+        if (delete(qna.getUuid(), domain)) {
+            train(qna, domain, indexAlternativeQuestions);
+        } else {
+            log.warn("QnA with UUID '" + qna.getUuid() + "' was not deleted and therefore was not retrained!");
+        }
+    }
+
+    /**
+     * @see QuestionAnswerHandler#train(QnA, Context, boolean)
+     */
+    public void train(QnA qna, Context context, boolean indexAlternativeQuestions) {
+        log.info("Train LLM search implementation ...");
+        // TODO
+    }
+
+    /**
+     * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
+     */
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
+        log.warn("TODO: Finish implementation!");
+        for (QnA qna: qnas) {
+            train(qna, domain, indexAlternativeQuestions);
+        }
+
+        // TODO: Only return QnAs which got trained successfully
+        return qnas;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#getAnswers(Sentence, Context, int)
+     */
+    public Hit[] getAnswers(Sentence question, Context context, int limit) {
+        log.info("TODO: Consider using entities!");
+        return getAnswers(question.getSentence(), question.getClassifications(), context, limit);
+    }
+
+    /**
+     * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
+     */
+    public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
+        List<Hit> hits = new ArrayList<Hit>();
+
+        log.info("Get answer from LLM search implementation ...");
+
+        // TODO
+
+        String _answer = "TODO_answer";
+        String uuid = "TODO_uuid";
+        //String _answer = Answer.AK_UUID_COLON + id;
+        //String uuid = id;
+
+        ContentType answerContentType = null;
+        String orgQuestion = null;
+        Date dateAnswered = null;
+        Date dateAnswerModified = null;
+        Date dateOriginalQuestionSubmitted = null;
+        Answer answer = new Answer(question, _answer, answerContentType,null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, orgQuestion, dateOriginalQuestionSubmitted, true, null, true, null);
+        double score = 0;
+        hits.add(new Hit(answer, score));
+
+        return hits.toArray(new Hit[0]);
+    }
+}
