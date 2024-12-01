@@ -128,6 +128,7 @@ public class XMLService {
     private static final String CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR = "admin-key";
     private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
+    private static final String CONTEXT_LLM_SEARCH_TAG = "llm-search";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
@@ -1452,6 +1453,13 @@ public class XMLService {
 
         DetectDuplicatedQuestionImpl ddqi = context.getDetectDuplicatedQuestionImpl();
 
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.LLM)) {
+            log.info("Add element " + CONTEXT_LLM_SEARCH_TAG);
+            Element llmSearchElement = doc.createElement(CONTEXT_LLM_SEARCH_TAG);
+            // TODO
+            doc.getDocumentElement().appendChild(llmSearchElement);
+        }
+
         // INFO: Katie AI search implementation
         if (ddqi.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             log.info("Add element " + CONTEXT_KATIE_SEARCH_TAG);
@@ -1645,6 +1653,7 @@ public class XMLService {
 
         String nerImpl = getAttributeStringValue(doc, CONTEXT_NER_TAG, CONTEXT_NER_IMPL_ATTR, null);
 
+        Element llmSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_LLM_SEARCH_TAG);
         Element katieSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_SEARCH_TAG);
         Element azureAISearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_AZURE_AI_SEARCH_TAG);
 
@@ -1887,6 +1896,9 @@ public class XMLService {
 
         // INFO: Set answer question implementation
         domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT); // INFO: Set LUCENE_DEFAULT implementation by default
+        if (llmSearchEl != null) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
+        }
         if (katieSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
         }

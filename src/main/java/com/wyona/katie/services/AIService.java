@@ -45,6 +45,8 @@ public class AIService {
     private KatieQuestionAnswerImpl katieImpl;
     @Autowired
     private AzureAISearchImpl azureAISearchImpl;
+    @Autowired
+    private LLMQuestionAnswerImpl llmQuestionAnswerImpl;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -597,6 +599,7 @@ public class AIService {
 
     /**
      * Get implementation to find similar QnA
+     * @param impl Search implementation
      */
     private QuestionAnswerHandler getAnswerQuestionImpl(DetectDuplicatedQuestionImpl impl) {
         log.info("Load question answer implementation '" + impl + "' ...");
@@ -616,7 +619,12 @@ public class AIService {
             return katieImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             return azureAISearchImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.LLM)) {
+            return llmQuestionAnswerImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
+            return luceneImpl;
         } else {
+            log.warn("No such search implementation '" + impl + "', therefore use '" + luceneImpl.getClass().getName() + "' ...");
             return luceneImpl;
         }
     }

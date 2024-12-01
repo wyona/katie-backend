@@ -1916,6 +1916,8 @@ public class ContextService {
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
             domain.setSentenceBERTCorpusId(aiServiceBaseUrl);
             domain.setSentenceBERTDistanceThreshold(distanceThreshold);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LLM)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
             domain.setEmbeddingsImpl(embeddingImpl);
