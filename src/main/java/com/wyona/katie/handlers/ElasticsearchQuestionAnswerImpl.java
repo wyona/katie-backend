@@ -146,7 +146,7 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#delete(String, Context)
      */
     public boolean delete(String uuid, Context domain) {
-        log.info("Delete question with UUID '' from Elasticsearch ...");
+        log.info("Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from Elasticsearch ...");
 
         try {
             String akUuid = Answer.AK_UUID_COLON + uuid;
