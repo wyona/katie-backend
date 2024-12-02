@@ -653,40 +653,8 @@ public class AskController {
         }
 
         try {
-            CompletionImpl completionImpl = domain.getCompletionImpl();
-            //completionImpl = CompletionImpl.OLLAMA;
-            if (completionImpl == CompletionImpl.UNSET) {
-                log.warn("Domain '" + domain.getId() + "' has no completion implementation configured!");
-                //return new ResponseEntity<>("TODO", HttpStatus.OK);
-                //return new ResponseEntity<>(new Error("TODO", "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
-            } else {
-                log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
-            }
-            GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            String model = generativeAIService.getCompletionModel(completionImpl);
-
-            List<PromptMessage> promptMessages = new ArrayList<>();
-            for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
-                promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
-            }
-
-            Double temperature = 0.7;
-            if (chatCompletionsRequest.getTemperature() != null) {
-                temperature = chatCompletionsRequest.getTemperature();
-            }
-
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
-            if (chosenSuggestion != null) {
-                log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-                promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
-                // TODO: Remember that conversation was started with suggestion
-            } else {
-                // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
-            }
-
-            String apiToken = generativeAIService.getApiToken(completionImpl);
-
-            String completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            String completedText = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
 
             // TODO: Do not send suggestion prompt (secret sauce) to client, currently only for debugging purposes
             if (chosenSuggestion != null) {
@@ -702,6 +670,45 @@ public class AskController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     *
+     */
+    private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
+        CompletionImpl completionImpl = domain.getCompletionImpl();
+        //completionImpl = CompletionImpl.OLLAMA;
+        if (completionImpl == CompletionImpl.UNSET) {
+            String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
+            log.warn(warnMsg);
+            return warnMsg;
+        } else {
+            log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
+        }
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+        String model = generativeAIService.getCompletionModel(completionImpl);
+
+        List<PromptMessage> promptMessages = new ArrayList<>();
+        for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
+            promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
+        }
+
+        Double temperature = 0.7;
+        if (chatCompletionsRequest.getTemperature() != null) {
+            temperature = chatCompletionsRequest.getTemperature();
+        }
+
+        if (chosenSuggestion != null) {
+            log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
+            promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
+            // TODO: Remember that conversation was started with suggestion
+        } else {
+            // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
+        }
+
+        String apiToken = generativeAIService.getApiToken(completionImpl);
+
+        return generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
     }
 
     /**
@@ -727,6 +734,8 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
     public Flux<ServerSentEvent<String>> chatCompletionsAsSSE(
+            @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
         try {
@@ -741,12 +750,6 @@ public class AskController {
         String[] mockResponse = new String[1];
         mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
 
-        if (!authService.userIsSignedInBySession(request)) {
-            log.info("User is not signed in!");
-            mockResponse[0] = getLoginSignUpMessage();
-            return sendSSE(mockResponse[0]);
-        }
-
         Context domain = null;
         try {
             domain = contextService.getContext(yulupDomainId);
@@ -756,6 +759,20 @@ public class AskController {
             mockResponse[0] = content;
             return sendSSE(mockResponse[0]);
             //return Flux.error(e);
+        }
+
+        if (!authService.userIsSignedInBySession(request)) {
+            log.info("User is not signed in!");
+            mockResponse[0] = getLoginSignUpMessage();
+            return sendSSE(mockResponse[0]);
+        }
+
+        ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
+        try {
+            mockResponse[0] = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
+        } catch (Exception e) {
+            mockResponse[0] = e.getMessage();
+            log.error(e.getMessage(), e);
         }
 
         return sendSSE(mockResponse[0]);
