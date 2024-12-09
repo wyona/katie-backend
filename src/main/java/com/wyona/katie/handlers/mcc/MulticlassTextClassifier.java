@@ -10,7 +10,7 @@ public interface MulticlassTextClassifier {
     /**
      * Predict labels for a text and a particular domain
      * @param domain Domain object
-     * @param text Text
+     * @param text Text to be classified / labeled
      * @param limit Limit of returned labels
      * @return array of suggested labels
      */
