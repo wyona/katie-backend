@@ -108,18 +108,27 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
     /**
      * https://huggingface.co/docs/transformers/main/tasks/prompting#text-classification
+     * @param text Text to be classified / labeled
+     * @param labels Possible classifications / labels
      */
     private String getPrompt(String text, Classification[] labels) {
-        // TODO: Make prompt configurable per domain
+        // TODO: Make prompt configurable resp. even configurable per domain
+
+        boolean withDescriptionsOnly = false;
 
         StringBuilder prompt = new StringBuilder();
         prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n");
         // TODO: Scalability!
         for (Classification label : labels) {
-            prompt.append(label.getTerm() + "\n");
+            prompt.append(" - " + label.getTerm());
+            if (label.getDescription() != null) {
+                prompt.append(" (" + label.getDescription() + ")");
+            }
+            prompt.append("\n");
         }
         prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
         prompt.append("\n\nText: " + text);
+
         return prompt.toString();
     }
 
