@@ -509,7 +509,7 @@ public class AskController {
     public ResponseEntity<?> predictTaxonomyEntries(
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "limit", value = "Maximum number of labels returned", required = false)
+            @ApiParam(name = "limit", value = "Maximum number of labels returned", required = false, defaultValue = "3")
             @RequestParam(value = "limit", required = false) Integer limit,
             @ApiParam(name = "text", value = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
             @RequestBody Message text,
