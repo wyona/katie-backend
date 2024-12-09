@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Use LLM respectively a corresponding LLM prompt to classify text
@@ -35,6 +37,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
 
+    // TODO: Consider a dedicated property for classification
     @Value("${re_rank.llm.impl}")
     private CompletionImpl completionImpl;
 
@@ -61,9 +64,10 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         String completedText = null;
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-        String model = generativeAIService.getCompletionModel(completionImpl);
-        String apiToken = generativeAIService.getApiToken(completionImpl);
         if (generateProvider != null) {
+            // TODO: Use tool call!
+            String model = generativeAIService.getCompletionModel(completionImpl);
+            String apiToken = generativeAIService.getApiToken(completionImpl);
             completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
         } else {
             log.error("Completion provider '" + completionImpl + "' not implemented yet!");
@@ -71,26 +75,41 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         log.info("Completed text: " + completedText);
 
-        if (!completedText.contains(NOT_APPLICABLE)) {
-            // INFO: Split answer into classifications and verify labels, such that LLM does not invent categories, like for example "Passwort-Reset (SK)"
-            String[] possibleCategories = completedText.split(",");
+        if (completedText != null && !completedText.contains(NOT_APPLICABLE)) {
 
-            for (String possibleCategory : possibleCategories) {
-                Classification classification = searchClassification(possibleCategory, dataset.getLabels());
-                if (classification != null) {
-                    if (!isDuplicate(classification, hitLabels)) {
-                        HitLabel hitLabel = new HitLabel(classification, -1);
-                        hitLabels.add(hitLabel);
+            String uuid = extractUUID(completedText);
+            if (uuid != null) {
+                for (Classification classification : dataset.getLabels()) {
+                    if (classification.getKatieId().equals(uuid)) {
+                        if (!isDuplicate(classification, hitLabels)) {
+                            HitLabel hitLabel = new HitLabel(classification, -1);
+                            hitLabels.add(hitLabel);
+                        }
                     }
-                } else {
-                    log.info("No such classification '" + possibleCategory + "'!");
                 }
+            } else {
+                log.warn("No UUID could be extracted from completed text!");
             }
         } else {
             log.info("No category matched.");
         }
 
         return hitLabels.toArray(new HitLabel[0]);
+    }
+
+    /**
+     * Extract UUID from completed text
+     * @param completedText Completed text containing category UUID, e.g. "The text 'Ich kann mich mit meinem MacBook Pro nicht mehr mit dem Wireless verbinden, können Sie mir helfen?' best matches the category 'Netzwerk (SK), Connectivity Wireless (SK)' with Category Id: 0e708532-69fd-4e69-8f96-11ef5f31d567."
+     * @return UUID, for example ""0e708532-69fd-4e69-8f96-11ef5f31d567""
+     */
+    private String extractUUID(String completedText) {
+        String uuid = null;
+        Matcher matcher = Pattern.compile("\\p{XDigit}{8}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{12}"). matcher(completedText.toLowerCase());
+        while (matcher.find()) {
+            uuid = matcher.group();
+            log.info("Group: " + uuid);
+        }
+        return uuid;
     }
 
     /**
@@ -122,6 +141,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
                 if (label.getDescription() != null) {
                     listOfLabels.append(" - " + label.getTerm());
                     listOfLabels.append(" (" + label.getDescription() + ")");
+                    listOfLabels.append(" (Category Id: " + label.getKatieId() + ")");
                     listOfLabels.append("\n");
                 }
             } else {
@@ -129,6 +149,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
                 if (label.getDescription() != null) {
                     listOfLabels.append(" (" + label.getDescription() + ")");
                 }
+                listOfLabels.append(" (Category Id: " + label.getKatieId() + ")");
                 listOfLabels.append("\n");
             }
         }
@@ -147,21 +168,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         // TODO: Make prompt configurable resp. even configurable per domain
         StringBuilder prompt = new StringBuilder();
         prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{" + PLACEHOLDER_LABELS+ "}}");
-        prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
+        prompt.append("\nReturn the category and its Id that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
         prompt.append("\n\nText: {{" + PLACEHOLDER_TEXT + "}}");
         return prompt.toString();
-    }
-
-    /**
-     * @param query Query, e.g. "Identität" or "Zugang (SK)" or "Passwort-Reset (SK)"
-     */
-    private Classification searchClassification(String query, Classification[] classifications) {
-        for (Classification classification : classifications) {
-            if (classification.getTerm().contains(query)) {
-                return classification;
-            }
-        }
-        return null;
     }
 
     /**
