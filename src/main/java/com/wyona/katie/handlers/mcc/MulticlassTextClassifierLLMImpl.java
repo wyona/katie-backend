@@ -54,7 +54,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         }
 
         List<PromptMessage> promptMessages = new ArrayList<>();
-        promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels())));
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels(), domain)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
         String completedText = null;
@@ -111,24 +111,46 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      * @param text Text to be classified / labeled
      * @param labels Possible classifications / labels
      */
-    private String getPrompt(String text, Classification[] labels) {
-        // TODO: Make prompt configurable resp. even configurable per domain
+    private String getPrompt(String text, Classification[] labels, Context domain) {
+        boolean withDescriptionsOnly = false; // TODO: Make configurable
+        // TODO: Scalability!
+        StringBuilder listOfLabels = new StringBuilder();
+        for (Classification label : labels) {
+            if (withDescriptionsOnly) {
+                if (label.getDescription() != null) {
+                    listOfLabels.append(" - " + label.getTerm());
+                    listOfLabels.append(" (" + label.getDescription() + ")");
+                    listOfLabels.append("\n");
+                }
+            } else {
+                listOfLabels.append(" - " + label.getTerm());
+                if (label.getDescription() != null) {
+                    listOfLabels.append(" (" + label.getDescription() + ")");
+                }
+                listOfLabels.append("\n");
+            }
+        }
 
-        boolean withDescriptionsOnly = false;
+        String configuredPrompt = getPromptFromConfig(domain);
 
         StringBuilder prompt = new StringBuilder();
         prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n");
-        // TODO: Scalability!
-        for (Classification label : labels) {
-            prompt.append(" - " + label.getTerm());
-            if (label.getDescription() != null) {
-                prompt.append(" (" + label.getDescription() + ")");
-            }
-            prompt.append("\n");
-        }
+        prompt.append(listOfLabels);
         prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
         prompt.append("\n\nText: " + text);
 
+        return prompt.toString();
+    }
+
+    /**
+     * Get prompt from system or domain configuration
+     */
+    private String getPromptFromConfig(Context domain) {
+        // TODO: Make prompt configurable resp. even configurable per domain
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{LABELS}}");
+        prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
+        prompt.append("\n\nText: {{TEXT}}");
         return prompt.toString();
     }
 
