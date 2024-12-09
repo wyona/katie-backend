@@ -39,6 +39,8 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     private CompletionImpl completionImpl;
 
     private final static String NOT_APPLICABLE = "N/A";
+    private final static String PLACEHOLDER_LABELS = "LABELS";
+    private final static String PLACEHOLDER_TEXT = "TEXT";
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
@@ -131,15 +133,11 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             }
         }
 
-        String configuredPrompt = getPromptFromConfig(domain);
+        String prompt = getPromptFromConfig(domain);
+        prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_LABELS + "\\}\\}", listOfLabels.toString());
+        prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_TEXT + "\\}\\}", text);
 
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n");
-        prompt.append(listOfLabels);
-        prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
-        prompt.append("\n\nText: " + text);
-
-        return prompt.toString();
+        return prompt;
     }
 
     /**
@@ -148,9 +146,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     private String getPromptFromConfig(Context domain) {
         // TODO: Make prompt configurable resp. even configurable per domain
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{LABELS}}");
+        prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{" + PLACEHOLDER_LABELS+ "}}");
         prompt.append("\nReturn the category that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
-        prompt.append("\n\nText: {{TEXT}}");
+        prompt.append("\n\nText: {{" + PLACEHOLDER_TEXT + "}}");
         return prompt.toString();
     }
 
