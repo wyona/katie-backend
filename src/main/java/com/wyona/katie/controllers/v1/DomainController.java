@@ -1252,6 +1252,8 @@ public class DomainController {
     public ResponseEntity<?> getClassificationLabels(
             @ApiParam(name = "id", value = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "with-descriptions-only", value = "When set to true, then only labels are returned which contain a description", required = false, defaultValue = "false")
+            @RequestParam(value = "with-descriptions-only", required = false) Boolean withDescriptionsOnly,
             HttpServletRequest request) {
 
         if (!domainService.isAuthorized(id, request, "/" + id + "/classification/labels", JwtService.SCOPE_READ_LABELS)) {
@@ -1275,7 +1277,13 @@ public class DomainController {
             Classification[] classifications = dataset.getLabels();
             List<Classification> labels = new ArrayList<>();
             for (Classification classification : classifications) {
-                labels.add(classification);
+                if (withDescriptionsOnly) {
+                    if (classification.getDescription() != null) {
+                        labels.add(classification);
+                    }
+                } else {
+                    labels.add(classification);
+                }
             }
             Collections.sort(labels);
 
