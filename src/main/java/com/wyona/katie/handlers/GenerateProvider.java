@@ -5,7 +5,7 @@ import com.wyona.katie.models.PromptMessage;
 import java.util.List;
 
 /**
- * Generate / complete text provider, e.g. OpenAI, Aleph Alpha, HuggingChat, Open Assistant, ...
+ * Generate / complete text provider, e.g. OpenAI, Ollama, Mistral, Aleph Alpha, HuggingChat, Open Assistant, ...
  */
 public interface GenerateProvider {
 
