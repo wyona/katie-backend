@@ -8,6 +8,7 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.ClassificationRepositoryService;
 import com.wyona.katie.services.GenerativeAIService;
+import com.wyona.katie.services.XMLService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,10 +38,6 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
 
-    // TODO: Consider a dedicated property for classification
-    @Value("${re_rank.llm.impl}")
-    private CompletionImpl completionImpl;
-
     private final static String NOT_APPLICABLE = "N/A";
     private final static String PLACEHOLDER_LABELS = "LABELS";
     private final static String PLACEHOLDER_TEXT = "TEXT";
@@ -63,6 +60,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
         String completedText = null;
+        CompletionImpl completionImpl = domain.getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider != null) {
             // TODO: Use tool call!
@@ -70,7 +68,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             String apiToken = generativeAIService.getApiToken(completionImpl);
             completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
         } else {
-            log.error("Completion provider '" + completionImpl + "' not implemented yet!");
+            String errorMsg = "Completion provider '" + completionImpl + "' not implemented yet! Make sure that the domain configuration attribute '" + XMLService.CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR + "' is set correctly.";
+            log.error(errorMsg);
+            throw new Exception(errorMsg);
         }
 
         log.info("Completed text: " + completedText);
