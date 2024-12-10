@@ -41,6 +41,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     private final static String NOT_APPLICABLE = "N/A";
     private final static String PLACEHOLDER_LABELS = "LABELS";
     private final static String PLACEHOLDER_TEXT = "TEXT";
+    private final static String PLACEHOLDER_LIMIT = "LIMIT";
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
@@ -56,7 +57,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         }
 
         List<PromptMessage> promptMessages = new ArrayList<>();
-        promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels(), domain)));
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels(), limit, domain)));
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
         String completedText = null;
@@ -77,13 +78,15 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         if (completedText != null && !completedText.contains(NOT_APPLICABLE)) {
 
-            String uuid = extractUUID(completedText);
-            if (uuid != null) {
-                for (Classification classification : dataset.getLabels()) {
-                    if (classification.getKatieId().equals(uuid)) {
-                        if (!isDuplicate(classification, hitLabels)) {
-                            HitLabel hitLabel = new HitLabel(classification, -1);
-                            hitLabels.add(hitLabel);
+            List<String> uuids = extractUUIDs(completedText);
+            if (uuids.size() > 0) {
+                for (String uuid : uuids) {
+                    for (Classification classification : dataset.getLabels()) {
+                        if (classification.getKatieId().equals(uuid)) {
+                            if (!isDuplicate(classification, hitLabels)) {
+                                HitLabel hitLabel = new HitLabel(classification, -1);
+                                hitLabels.add(hitLabel);
+                            }
                         }
                     }
                 }
@@ -98,18 +101,19 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     }
 
     /**
-     * Extract UUID from completed text
+     * Extract UUIDs from completed text
      * @param completedText Completed text containing category UUID, e.g. "The text 'Ich kann mich mit meinem MacBook Pro nicht mehr mit dem Wireless verbinden, können Sie mir helfen?' best matches the category 'Netzwerk (SK), Connectivity Wireless (SK)' with Category Id: 0e708532-69fd-4e69-8f96-11ef5f31d567."
-     * @return UUID, for example ""0e708532-69fd-4e69-8f96-11ef5f31d567""
+     * @return list of UUIDs (UUID example "0e708532-69fd-4e69-8f96-11ef5f31d567")
      */
-    private String extractUUID(String completedText) {
-        String uuid = null;
+    private List<String> extractUUIDs(String completedText) {
+        List<String> uuids = new ArrayList<>();
         Matcher matcher = Pattern.compile("\\p{XDigit}{8}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{12}"). matcher(completedText.toLowerCase());
         while (matcher.find()) {
-            uuid = matcher.group();
+            String uuid = matcher.group();
             log.info("Group: " + uuid);
+            uuids.add(uuid);
         }
-        return uuid;
+        return uuids;
     }
 
     /**
@@ -131,8 +135,10 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      * https://huggingface.co/docs/transformers/main/tasks/prompting#text-classification
      * @param text Text to be classified / labeled
      * @param labels Possible classifications / labels
+     * @param limit Limit of returned labels
+     * @param domain Domain associated with classification
      */
-    private String getPrompt(String text, Classification[] labels, Context domain) {
+    private String getPrompt(String text, Classification[] labels, int limit, Context domain) {
         boolean withDescriptionsOnly = false; // TODO: Make configurable
         // TODO: Scalability!
         StringBuilder listOfLabels = new StringBuilder();
@@ -157,6 +163,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         String prompt = getPromptFromConfig(domain);
         prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_LABELS + "\\}\\}", listOfLabels.toString());
         prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_TEXT + "\\}\\}", text);
+        prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_LIMIT + "\\}\\}", "" + limit);
 
         return prompt;
     }
@@ -168,7 +175,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         // TODO: Make prompt configurable resp. even configurable per domain
         StringBuilder prompt = new StringBuilder();
         prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{" + PLACEHOLDER_LABELS+ "}}");
-        prompt.append("\nReturn the category and its Id that matches best. If none of these categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
+        prompt.append("\nReturn {{" + PLACEHOLDER_LIMIT + "}} categories and its IDs that match best. If none of the listed categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
         prompt.append("\n\nText: {{" + PLACEHOLDER_TEXT + "}}");
         return prompt.toString();
     }
