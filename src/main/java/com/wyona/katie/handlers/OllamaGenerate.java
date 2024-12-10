@@ -30,6 +30,9 @@ public class OllamaGenerate implements GenerateProvider {
     @Value("${ollama.host}")
     private String ollamaHost;
 
+    @Value("${ollama.timeout.in.seconds}")
+    private Integer ollamaTimeout;
+
     @Value("${ollama.basic.auth.username}")
     private String ollamaBasicAuthUsername;
 
@@ -47,9 +50,11 @@ public class OllamaGenerate implements GenerateProvider {
         // INFO: https://github.com/ollama4j/ollama4j and https://ollama4j.github.io/ollama4j/intro and https://ollama4j.github.io/ollama4j/apidocs/io/github/ollama4j/OllamaAPI.html
         OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
         //ollamaAPI.setVerbose(false); // INFO: Default is true
-        // TODO: When not set inside application.properties, then do not set here
+
+        // TODO: When not set inside secret-keys.properties, then do not set here
         ollamaAPI.setBasicAuth(ollamaBasicAuthUsername, ollamaBasicAuthPassword);
-        ollamaAPI.setRequestTimeoutSeconds(30);
+
+        ollamaAPI.setRequestTimeoutSeconds(ollamaTimeout);
         OptionsBuilder optionsBuilder = new OptionsBuilder();
         if (temperature != null) {
             optionsBuilder = optionsBuilder.setTemperature(temperature.floatValue());
