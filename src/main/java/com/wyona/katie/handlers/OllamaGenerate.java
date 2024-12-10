@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.http.HttpTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,12 +74,17 @@ public class OllamaGenerate implements GenerateProvider {
         chatRequest = builder.withMessages(chatRequest.getMessages()).withOptions(options).build();
 
         // TODO: Set options, see https://github.com/ollama4j/ollama4j/issues/70
-        OllamaResult result = ollamaAPI.chat(chatRequest);
-        // https://ollama4j.github.io/ollama4j/apis-generate/generate
-        //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
-        completedText = result.getResponse();
+        try {
+            OllamaResult result = ollamaAPI.chat(chatRequest);
+            // https://ollama4j.github.io/ollama4j/apis-generate/generate
+            //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
+            completedText = result.getResponse();
 
-        return completedText;
+            return completedText;
+        } catch (HttpTimeoutException e) {
+            log.warn(e.getMessage(), e);
+            throw new HttpTimeoutException("Timeout is set to " + ollamaTimeout + " seconds. The timeout should be increased if necessary, see parameter 'ollama.timeout.in.seconds'. Original exception message: " + e.getMessage());
+        }
     }
 
     /**
