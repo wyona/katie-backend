@@ -163,7 +163,7 @@ public class XMLService {
     private static final String CONTEXT_RE_RANK_ANSWERS_ATTR = "re-rank-answers";
     private static final String CONTEXT_RE_RANK_IMPLEMENTATION_ATTR = "re-rank-impl";
     private static final String CONTEXT_USE_GENERATIVE_AI_ATTR = "generate-complete-answers";
-    private static final String CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR = "completion-impl";
+    public static final String CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR = "completion-impl";
     private static final String CONTEXT_KATIE_SEARCH_ENABLED_ATTR = "search-enabled";
     private static final String CONTEXT_SCORE_THRESHOLD_ATTR = "score-threshold";
     private static final String CONTEXT_ANALYZE_MESSAGES_ASK_REST_API = "analyze-messages-ask-rest-api";
