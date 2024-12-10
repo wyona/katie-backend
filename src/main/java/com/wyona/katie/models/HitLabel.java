@@ -20,7 +20,7 @@ public class HitLabel {
 
     /**
      * @param label Label / classification
-     * @param score Confidence score, that label is right
+     * @param score Confidence score, that predicted label is accurate, e.g. 0.73694
      */
     public HitLabel(Classification label, double score) {
         this.label = label;
