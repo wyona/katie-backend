@@ -84,6 +84,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
                     for (Classification classification : dataset.getLabels()) {
                         if (classification.getKatieId().equals(uuid)) {
                             if (!isDuplicate(classification, hitLabels)) {
+                                // TODO: Set a score
                                 HitLabel hitLabel = new HitLabel(classification, -1);
                                 hitLabels.add(hitLabel);
                             }
@@ -120,15 +121,16 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#train(Context, TextSample[])
      */
     public void train(Context domain, TextSample[] samples) throws Exception {
-        log.warn("TODO: Implement train method.");
+        log.warn("TODO: Implement train() method of " + getClass().getName());
     }
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#retrain(Context, String)
      */
     public void retrain(Context domain, String bgProcessId) throws Exception {
-        log.info("TODO: Implement retrain method");
-        backgroundProcessService.updateProcessStatus(bgProcessId, "TODO: Implement etrain method");
+        String logMsg = "TODO: Implement retrain() method of " + getClass().getName();
+        log.info(logMsg);
+        backgroundProcessService.updateProcessStatus(bgProcessId, logMsg);
     }
 
     /**
