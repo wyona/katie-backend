@@ -100,6 +100,7 @@ public class ClassificationService {
                                 TextSample[] samples = new TextSample[1];
                                 samples[0] = sample;
                                 classifier.train(domain, samples);
+                                backgroundProcessService.updateProcessStatus(bgProcessId, "Classifier " + classifier.getClass().getName() + " retrained with new sample(s).");
 
                                 // TODO: Only delete when "local" preference dataset is being used
                                 log.info("Remove rating '" + ratingId + "' from local preference dataset ...");
