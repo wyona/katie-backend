@@ -271,7 +271,11 @@ public class TOPdeskConnector implements Connector {
 
                         String subcategoryId = topDeskLabel.getId().split(CATEGORY_SUBCATEGORY_SEPARATOR)[1];
                         int maxNumberOfSamplesPerCategory = 3; // TODO: Make configurable
-                        backgroundProcessService.updateProcessStatus(processId, "Get maximum " + maxNumberOfSamplesPerCategory + " samples from TOPdesk for category / subcategory '" + topDeskLabel.getTerm() + "' ...");
+                        if (testRun) {
+                            backgroundProcessService.updateProcessStatus(processId, "Test run, but anyway, get maximum " + maxNumberOfSamplesPerCategory + " samples from TOPdesk for category / subcategory '" + topDeskLabel.getTerm() + "' ...");
+                        } else {
+                            backgroundProcessService.updateProcessStatus(processId, "Get maximum " + maxNumberOfSamplesPerCategory + " samples from TOPdesk for category / subcategory '" + topDeskLabel.getTerm() + "' ...");
+                        }
                         List<TextSample> samples = getIncidentsAsClassificationSamplePerSubcategory(subcategoryId, maxNumberOfSamplesPerCategory, ksMeta, processId);
                         if (samples.size() > 0) {
                             for (TextSample sample : samples) {
