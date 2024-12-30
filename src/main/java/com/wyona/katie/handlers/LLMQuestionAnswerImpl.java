@@ -20,7 +20,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
     public void deleteTenant(Context domain) {
-        log.info("LLM search implementation of deleting tenant ...");
+        log.info("TODO: LLM search implementation of deleting tenant ...");
         // TODO
     }
 
@@ -28,7 +28,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) {
-        log.info("LLM search implementation of creating tenant ...");
+        log.info("TODO: LLM search implementation of creating tenant ...");
         // TODO
         return null;
     }
@@ -37,7 +37,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#delete(String, Context)
      */
     public boolean delete(String uuid, Context domain) {
-        log.info("Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from LLM search implementation ...");
+        log.info("TODO: Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from LLM search implementation ...");
         // TODO
         return false;
     }
@@ -58,7 +58,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context context, boolean indexAlternativeQuestions) {
-        log.info("Train LLM search implementation ...");
+        log.info("TODO: Index QnA '" + qna.getUuid() + "' with LLM search implementation ...");
         // TODO
     }
 
@@ -66,7 +66,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
     public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
-        log.warn("TODO: Finish implementation!");
+        log.info("TODO: Implement batch training.");
         for (QnA qna: qnas) {
             train(qna, domain, indexAlternativeQuestions);
         }
@@ -89,7 +89,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         List<Hit> hits = new ArrayList<Hit>();
 
-        log.info("Get answer from LLM search implementation ...");
+        log.info("TODO: Get answer from LLM search implementation ...");
 
         // TODO
 
