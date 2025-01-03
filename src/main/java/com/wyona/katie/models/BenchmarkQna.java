@@ -19,6 +19,8 @@ public class BenchmarkQna {
     //@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> classifications;
 
+    private List<String> sources;
+
     private String url;
 
     /**
@@ -28,6 +30,7 @@ public class BenchmarkQna {
         this.alternativeQuestions = new ArrayList<String>();
         this.testQuestions = new ArrayList<BenchmarkQuestion>();
         this.classifications = new ArrayList<String>();
+        this.sources = new ArrayList<String>();
     }
 
     /**
@@ -107,6 +110,22 @@ public class BenchmarkQna {
 
     public void setClassifications(List<String> classifications) {
         this.classifications = classifications;
+    }
+
+    /**
+     * Get relevant sources
+     * @return list of relevant sources, e.g. list of PDF documents
+     */
+    public List<String> getSources() {
+        return sources;
+    }
+
+    /**
+     * Set relevant sources
+     * @param sources List of relevant sources, e.g. list of relevant PDF documents
+     */
+    public void setSources(List<String> sources) {
+        this.sources = sources;
     }
 
     /**
