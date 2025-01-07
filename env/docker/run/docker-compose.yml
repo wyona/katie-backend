@@ -1,4 +1,3 @@
-version: "3.3"
 services:
   katie:
     image: wyona/katie:1.370.0
