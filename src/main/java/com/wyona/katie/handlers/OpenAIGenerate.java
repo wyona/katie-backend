@@ -228,10 +228,10 @@ public class OpenAIGenerate implements GenerateProvider {
 
             HttpEntity<String> request2 = new HttpEntity<String>(requestBodyNode2.toString(), headers);
 
-            String createMessageUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
-            log.info("Create message " + createMessageUrl + " (Body: " + requestBodyNode2 + ")");
+            String runThreadUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
+            log.info("Run thread " + runThreadUrl + " (Body: " + requestBodyNode2 + ")");
             RestTemplate restTemplate2 = new RestTemplate();
-            ResponseEntity<JsonNode> response2 = restTemplate2.exchange(createMessageUrl, HttpMethod.POST, request2, JsonNode.class);
+            ResponseEntity<JsonNode> response2 = restTemplate2.exchange(runThreadUrl, HttpMethod.POST, request2, JsonNode.class);
             JsonNode responseBodyNode2 = response2.getBody();
             log.info("JSON Response: " + responseBodyNode2);
 
@@ -250,6 +250,14 @@ public class OpenAIGenerate implements GenerateProvider {
             JsonNode responseBodyNode2 = response2.getBody();
             log.info("JSON Response: " + responseBodyNode2);
              */
+
+            HttpEntity<String> request3 = new HttpEntity<String>(headers);
+            String getMessagesUrl = openAIHost + "/v1/threads/" +threadId + "/messages";
+            log.info("Get messages " + getMessagesUrl);
+            RestTemplate restTemplate3 = new RestTemplate();
+            ResponseEntity<JsonNode> response3 = restTemplate3.exchange(getMessagesUrl, HttpMethod.GET, request3, JsonNode.class);
+            JsonNode responseBodyNode3 = response3.getBody();
+            log.info("JSON Response: " + responseBodyNode3);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             throw e;
