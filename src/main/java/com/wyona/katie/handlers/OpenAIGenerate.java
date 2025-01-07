@@ -116,14 +116,73 @@ public class OpenAIGenerate implements GenerateProvider {
     private String assistantThread(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
+        String assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
+
+        String completedText = createThread(assistantId, promptMessages, openAIKey);
+
+        return completedText;
+    }
+
+    /**
+     * @param name Name of assistant, e.g. "Legal Insurance Assistant"
+     * @param instructions Instructions, e.g. "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+     */
+    private String createAssistant(String name, String instructions, String openAIModel, Double temperature, String openAIKey) throws Exception {
+        log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
+
+        try {
+            // INFO: See https://platform.openai.com/docs/api-reference/threads
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode requestBodyNode = mapper.createObjectNode();
+            requestBodyNode.put("model", openAIModel);
+            //requestBodyNode.put("model", "gpt-4o-2024-08-06");
+            requestBodyNode.put("instructions", instructions);
+            requestBodyNode.put("name", name);
+
+            if (false) {
+                ArrayNode toolsNode = mapper.createArrayNode();
+                requestBodyNode.put("tools", toolsNode);
+                ObjectNode fileSearchTool = mapper.createObjectNode();
+                fileSearchTool.put("type", "file_search");
+                toolsNode.add(fileSearchTool);
+            }
+
+            HttpHeaders headers = getHttpHeaders(openAIKey);
+            headers.set("OpenAI-Beta", "assistants=v2");
+            HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
+
+            String requestUrl = openAIHost + "/v1/assistants";
+            log.info("Create assistant: " + requestUrl + " (Body: " + requestBodyNode + ")");
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+            JsonNode responseBodyNode = response.getBody();
+            log.info("JSON Response: " + responseBodyNode);
+
+            String assistantId = responseBodyNode.get("id").asText();
+            if (assistantId != null) {
+                return assistantId;
+            } else {
+                log.error("No assistant Id!");
+                return null;
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     *
+     */
+    private String createThread(String assistantId, List<PromptMessage> promptMessages, String openAIKey) throws Exception {
+        log.info("Create thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
+
         String completedText = null;
 
         try {
             // INFO: See https://platform.openai.com/docs/api-reference/threads
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode requestBodyNode = mapper.createObjectNode();
-            //requestBodyNode.put("model", openAIModel);
-            //requestBodyNode.put("model", "gpt-4o-2024-08-06");
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
 
@@ -148,10 +207,10 @@ public class OpenAIGenerate implements GenerateProvider {
             headers.set("OpenAI-Beta", "assistants=v2");
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String requestUrl = openAIHost + "/v1/threads";
-            log.info("Get chat completion: " + requestUrl + " (Body: " + requestBodyNode + ")");
+            String createThreadUrl = openAIHost + "/v1/threads";
+            log.info("Create thread: " + createThreadUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+            ResponseEntity<JsonNode> response = restTemplate.exchange(createThreadUrl, HttpMethod.POST, request, JsonNode.class);
             JsonNode responseBodyNode = response.getBody();
             log.info("JSON Response: " + responseBodyNode);
 
@@ -160,7 +219,37 @@ public class OpenAIGenerate implements GenerateProvider {
                 completedText = "Thread ID: " + threadId;
             } else {
                 log.warn("No thread Id!");
+                return null;
             }
+
+
+            ObjectNode requestBodyNode2 = mapper.createObjectNode();
+            requestBodyNode2.put("assistant_id", assistantId);
+
+            HttpEntity<String> request2 = new HttpEntity<String>(requestBodyNode2.toString(), headers);
+
+            String createMessageUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
+            log.info("Create message " + createMessageUrl + " (Body: " + requestBodyNode2 + ")");
+            RestTemplate restTemplate2 = new RestTemplate();
+            ResponseEntity<JsonNode> response2 = restTemplate2.exchange(createMessageUrl, HttpMethod.POST, request2, JsonNode.class);
+            JsonNode responseBodyNode2 = response2.getBody();
+            log.info("JSON Response: " + responseBodyNode2);
+
+
+            /*
+            ObjectNode requestBodyNode2 = mapper.createObjectNode();
+            requestBodyNode2.put("role", "user");
+            requestBodyNode2.put("content", "How can I upload a file");
+
+            HttpEntity<String> request2 = new HttpEntity<String>(requestBodyNode2.toString(), headers);
+
+            String createMessageUrl = openAIHost + "/v1/threads/" +threadId + "/messages";
+            log.info("Create message " + createMessageUrl + " (Body: " + requestBodyNode2 + ")");
+            RestTemplate restTemplate2 = new RestTemplate();
+            ResponseEntity<JsonNode> response2 = restTemplate2.exchange(createMessageUrl, HttpMethod.POST, request2, JsonNode.class);
+            JsonNode responseBodyNode2 = response2.getBody();
+            log.info("JSON Response: " + responseBodyNode2);
+             */
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             throw e;
