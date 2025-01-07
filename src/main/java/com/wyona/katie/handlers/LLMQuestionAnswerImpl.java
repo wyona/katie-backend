@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -99,6 +100,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         // TODO
 
         String _answer = getRelevantDocuments(question, classifications, domain);
+        File[] relevantDocs = new File[1];
+        relevantDocs[0] = new File("TODO");
+        _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
         String uuid = "TODO_uuid";
         //String _answer = Answer.AK_UUID_COLON + id;
         //String uuid = id;
@@ -116,12 +120,37 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     }
 
     /**
-     *
+     * Retrieval: Get relevant documents
      */
     private String getRelevantDocuments(String question, List<String> classifications, Context domain) {
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
+        List<PromptMessage> promptMessages = new ArrayList<>();
+        promptMessages.add(promptMessage);
+
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
+        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+        Double temperature = null;
+
+        try {
+            String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            return answer;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * RAG: Generate answer based on relevant documents
+     * @param relevantDocuments Paths of relevant documents
+     */
+    private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, Context domain) {
+        PromptMessage promptMessage = new PromptMessage();
+        promptMessage.setRole(PromptMessageRole.USER);
+        promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
