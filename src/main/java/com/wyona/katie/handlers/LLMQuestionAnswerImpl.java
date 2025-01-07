@@ -102,7 +102,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         relevantDocs[0] = new File("TODO");
 
         // TODO: Do not concatenate
-        _answer = _answer + " \n" + getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
+        //_answer = _answer + " \n" + getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
         String uuid = "TODO_uuid";
         //String _answer = Answer.AK_UUID_COLON + id;
         //String uuid = id;
@@ -123,9 +123,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * Retrieval: Get relevant documents
      */
     private String getRelevantDocuments(String question, List<String> classifications, Context domain) {
+        // TODO: Upload document index as attachment
+
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
+        //promptMessage.setAttachments(null);
+
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
@@ -148,9 +152,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @param relevantDocuments Paths of relevant documents
      */
     private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, Context domain) {
+        // TODO: Upload relevant documents as attachment(s)
+
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
+        //promptMessage.setAttachments(null);
+
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
