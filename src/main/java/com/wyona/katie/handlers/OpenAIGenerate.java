@@ -128,6 +128,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @param name Name of assistant, e.g. "Legal Insurance Assistant"
      * @param instructions Instructions, e.g. "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+     * @return assistant Id
      */
     private String createAssistant(String name, String instructions, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
@@ -178,8 +179,6 @@ public class OpenAIGenerate implements GenerateProvider {
     private String createThread(List<PromptMessage> promptMessages, String openAIKey) throws Exception {
         log.info("Create thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String completedText = null;
-
         try {
             // INFO: See https://platform.openai.com/docs/api-reference/threads
             ObjectMapper mapper = new ObjectMapper();
@@ -215,10 +214,8 @@ public class OpenAIGenerate implements GenerateProvider {
             log.info("JSON Response: " + responseBodyNode);
 
             String threadId = responseBodyNode.get("id").asText();
-            if (threadId != null) {
-                completedText = "Thread ID: " + threadId;
-            } else {
-                log.warn("No thread Id!");
+            if (threadId == null) {
+                log.error("No thread Id!");
                 return null;
             }
 
@@ -245,32 +242,29 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     *
+     * @return response message
      */
     private String runThread(String assistantId, String threadId, String openAIKey) throws Exception {
         log.info("Run thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String completedText = null;
-
         try {
-            // INFO: See https://platform.openai.com/docs/api-reference/threads
             ObjectMapper mapper = new ObjectMapper();
 
             ObjectNode requestBodyNode2 = mapper.createObjectNode();
             requestBodyNode2.put("assistant_id", assistantId);
 
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
-            HttpEntity<String> request2 = new HttpEntity<String>(requestBodyNode2.toString(), headers);
+            HttpEntity<String> request = new HttpEntity<String>(requestBodyNode2.toString(), headers);
 
             String runThreadUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
             log.info("Run thread " + runThreadUrl + " (Body: " + requestBodyNode2 + ")");
-            RestTemplate restTemplate2 = new RestTemplate();
-            ResponseEntity<JsonNode> response2 = restTemplate2.exchange(runThreadUrl, HttpMethod.POST, request2, JsonNode.class);
-            JsonNode responseBodyNode2 = response2.getBody();
-            log.info("JSON Response: " + responseBodyNode2);
-            String runId = responseBodyNode2.get("id").asText();
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<JsonNode> response = restTemplate.exchange(runThreadUrl, HttpMethod.POST, request, JsonNode.class);
+            JsonNode responseBodyNode = response.getBody();
+            log.info("JSON Response: " + responseBodyNode);
+            String runId = responseBodyNode.get("id").asText();
 
-            String status = responseBodyNode2.get("status").asText();
+            String status = responseBodyNode.get("status").asText();
             int timeoutCounter = 0;
             while (!status.equals("completed")) {
                 timeoutCounter++;
@@ -287,27 +281,43 @@ public class OpenAIGenerate implements GenerateProvider {
                 log.info("Thread status: " + status);
             }
 
-            HttpEntity<String> request3 = new HttpEntity<String>(headers);
-            String getMessagesUrl = openAIHost + "/v1/threads/" +threadId + "/messages";
-            log.info("Get messages " + getMessagesUrl);
-            RestTemplate restTemplate3 = new RestTemplate();
-            ResponseEntity<JsonNode> response3 = restTemplate3.exchange(getMessagesUrl, HttpMethod.GET, request3, JsonNode.class);
-            JsonNode responseBodyNode3 = response3.getBody();
-            log.info("JSON Response: " + responseBodyNode3);
+            log.info("Response generation completed.");
 
-            JsonNode dataNode = responseBodyNode3.get("data");
-            if (dataNode.isArray()) {
-                completedText = dataNode.get(0).get("content").get(0).get("text").get("value").asText();
-            } else {
-                log.warn("No data!");
-            }
-
+            return getResponseMessage(threadId, openAIKey);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             throw e;
         }
+    }
 
-        return completedText;
+    /**
+     *
+     */
+    private String getResponseMessage(String threadId, String openAIKey) throws Exception {
+        log.info("Get response message (API key: " + openAIKey.substring(0, 7) + "******) ...");
+
+        try {
+            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+            HttpEntity<String> request = new HttpEntity<String>(headers);
+            String getMessagesUrl = openAIHost + "/v1/threads/" +threadId + "/messages";
+            log.info("Get messages " + getMessagesUrl);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<JsonNode> response = restTemplate.exchange(getMessagesUrl, HttpMethod.GET, request, JsonNode.class);
+            JsonNode responseBodyNode = response.getBody();
+            log.info("JSON Response: " + responseBodyNode);
+
+            JsonNode dataNode = responseBodyNode.get("data");
+            if (dataNode.isArray()) {
+                String completedText = dataNode.get(0).get("content").get(0).get("text").get("value").asText();
+                return completedText;
+            } else {
+                log.error("No data!");
+                return "No response available!";
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
