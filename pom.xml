@@ -26,7 +26,7 @@
       <!-- INFO: Contains Lucene 9.0.0-SNAPSHOT and katie-ai-1.0.0-SNAPSHOT -->
       <repository>
         <id>wyona</id>
-        <url>https://maven2.wyona.org/</url>
+        <url>https://maven2.wyona.com/</url>
       </repository>
       <!-- INFO: Contains discord4j 3.3.0-SNAPSHOT -->
       <repository>
