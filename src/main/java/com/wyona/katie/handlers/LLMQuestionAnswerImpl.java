@@ -1,6 +1,8 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.GenerativeAIService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,9 @@ import java.util.List;
 @Slf4j
 @Component
 public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
+
+    @Autowired
+    private GenerativeAIService generativeAIService;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -93,7 +98,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         // TODO
 
-        String _answer = "TODO_answer";
+        String _answer = getRelevantDocuments(question, classifications, domain);
         String uuid = "TODO_uuid";
         //String _answer = Answer.AK_UUID_COLON + id;
         //String uuid = id;
@@ -108,5 +113,29 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         hits.add(new Hit(answer, score));
 
         return hits.toArray(new Hit[0]);
+    }
+
+    /**
+     *
+     */
+    private String getRelevantDocuments(String question, List<String> classifications, Context domain) {
+        PromptMessage promptMessage = new PromptMessage();
+        promptMessage.setRole(PromptMessageRole.USER);
+        promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
+        List<PromptMessage> promptMessages = new ArrayList<>();
+        promptMessages.add(promptMessage);
+
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
+        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+        Double temperature = null;
+
+        try {
+            String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            return answer;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return e.getMessage();
+        }
     }
 }
