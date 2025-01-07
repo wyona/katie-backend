@@ -33,7 +33,7 @@ public class OpenAIGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
     public String getCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        if (true) {
+        if (false) {
             return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
         } else {
             return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
@@ -119,7 +119,8 @@ public class OpenAIGenerate implements GenerateProvider {
         //String assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
 
         String assistantId = "asst_SVESqIZjrikjrE99hPXTJWgJ";
-        String completedText = createThread(assistantId, promptMessages, openAIKey);
+        String threadId = createThread(promptMessages, openAIKey);
+        String completedText = runThread(assistantId, threadId, openAIKey);
 
         return completedText;
     }
@@ -172,9 +173,9 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     *
+     * @return thread Id
      */
-    private String createThread(String assistantId, List<PromptMessage> promptMessages, String openAIKey) throws Exception {
+    private String createThread(List<PromptMessage> promptMessages, String openAIKey) throws Exception {
         log.info("Create thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         String completedText = null;
@@ -236,9 +237,29 @@ public class OpenAIGenerate implements GenerateProvider {
             log.info("JSON Response: " + responseBodyNode2);
              */
 
+            return threadId;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     *
+     */
+    private String runThread(String assistantId, String threadId, String openAIKey) throws Exception {
+        log.info("Run thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
+
+        String completedText = null;
+
+        try {
+            // INFO: See https://platform.openai.com/docs/api-reference/threads
+            ObjectMapper mapper = new ObjectMapper();
+
             ObjectNode requestBodyNode2 = mapper.createObjectNode();
             requestBodyNode2.put("assistant_id", assistantId);
 
+            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
             HttpEntity<String> request2 = new HttpEntity<String>(requestBodyNode2.toString(), headers);
 
             String runThreadUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
