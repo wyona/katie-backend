@@ -95,14 +95,14 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         List<Hit> hits = new ArrayList<Hit>();
 
-        log.info("TODO: Get answer from LLM search implementation ...");
-
-        // TODO
+        log.info("Get answer from LLM search implementation ...");
 
         String _answer = getRelevantDocuments(question, classifications, domain);
         File[] relevantDocs = new File[1];
         relevantDocs[0] = new File("TODO");
-        _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
+
+        // TODO: Do not concatenate
+        _answer = _answer + " \n" + getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
         String uuid = "TODO_uuid";
         //String _answer = Answer.AK_UUID_COLON + id;
         //String uuid = id;
