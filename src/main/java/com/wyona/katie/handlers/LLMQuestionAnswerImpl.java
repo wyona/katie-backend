@@ -99,15 +99,17 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         String _answer = null;
 
-        if (false) {
+        if (true) {
             _answer = getRelevantDocuments(question, classifications, domain);
             log.info("Answer from getRelevantDocuments(): " + _answer);
         }
         File[] relevantDocs = new File[1];
         relevantDocs[0] = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf"); // TODO: Replace hard coded file
 
-        _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
-        log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
+        if (false) {
+            _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
+            log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
+        }
 
         String uuid = null;
 
@@ -137,8 +139,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
         File[] attachments = new File[1];
-        // TODO: Get document index documents.json from domain
-        attachments[0] = new File("/Users/michaelwechner/src/wyona/public/katie-backend/volume/contexts/8955febe-4bb1-4430-924a-cafcfa0fde64/documents.json");
+        attachments[0] = new File(domain.getContextDirectory(), "documents.json");
         promptMessage.setAttachments(attachments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
