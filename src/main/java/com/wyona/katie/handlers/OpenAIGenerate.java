@@ -498,6 +498,8 @@ public class OpenAIGenerate implements GenerateProvider {
                     if (annotationsNode.isArray() && annotationsNode.size() > 0) {
                         for (int i = 0; i < annotationsNode.size(); i++) {
                             JsonNode annotationNode = annotationsNode.get(i);
+
+                            // File citations are created by the file_search tool and define references to a specific file that was uploaded and used by the Assistant to generate the response
                             if (annotationNode.get("type").asText().equals("file_citation")) {
                                 String fileId = annotationNode.get("file_citation").get("file_id").asText();
                                 log.info("File citation: " + fileId);
