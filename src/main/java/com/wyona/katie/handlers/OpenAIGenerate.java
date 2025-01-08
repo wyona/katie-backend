@@ -456,7 +456,7 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     *
+     * @return LLM response message
      */
     private String getResponseMessage(String threadId, String openAIKey) throws Exception {
         log.info("Get response message (API key: " + openAIKey.substring(0, 7) + "******) ...");
@@ -473,7 +473,29 @@ public class OpenAIGenerate implements GenerateProvider {
 
             JsonNode dataNode = responseBodyNode.get("data");
             if (dataNode.isArray()) {
-                String completedText = dataNode.get(0).get("content").get(0).get("text").get("value").asText();
+                JsonNode textNode = dataNode.get(0).get("content").get(0).get("text");
+
+                String completedText = textNode.get("value").asText();
+
+                // INFO: Previously uploaded files might get cited
+                if (textNode.has("annotations")) {
+                    JsonNode annotationsNode = textNode.get("annotations");
+                    if (annotationsNode.isArray() && annotationsNode.size() > 0) {
+                        for (int i = 0; i < annotationsNode.size(); i++) {
+                            JsonNode annotationNode = annotationsNode.get(i);
+                            if (annotationNode.get("type").asText().equals("file_citation")) {
+                                String fileId = annotationNode.get("file_citation").get("file_id").asText();
+                                log.info("File citation: " + fileId);
+                                // TODO: Get and return filename
+                            } else {
+                                log.info("Annotation type: " + annotationNode.get("type").asText());
+                            }
+                        }
+                    }
+                } else {
+                    log.info("No annotations available.");
+                }
+
                 return completedText;
             } else {
                 log.error("No data!");
