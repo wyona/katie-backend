@@ -407,6 +407,21 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Get file
+     * @param fileId OpenAI file Id
+     */
+    private File getFile(String fileId, String openAIKey) throws Exception {
+        FileResponse[] fileResponses = getFiles(openAIKey);
+        for (FileResponse fileResponse: fileResponses) {
+            if (fileResponse.getId().equals(fileId)) {
+                return new File(fileResponse.getFilename());
+            }
+        }
+        log.warn("No uploaded file with file Id '" + fileId + "'!");
+        return null;
+    }
+
+    /**
      * @return response message
      */
     private String runThread(String assistantId, String threadId, String openAIKey) throws Exception {
@@ -486,7 +501,8 @@ public class OpenAIGenerate implements GenerateProvider {
                             if (annotationNode.get("type").asText().equals("file_citation")) {
                                 String fileId = annotationNode.get("file_citation").get("file_id").asText();
                                 log.info("File citation: " + fileId);
-                                // TODO: Get and return filename
+                                File file = getFile(fileId, openAIKey);
+                                log.info("File: " + file.getAbsolutePath());
                             } else {
                                 log.info("Annotation type: " + annotationNode.get("type").asText());
                             }
@@ -496,6 +512,7 @@ public class OpenAIGenerate implements GenerateProvider {
                     log.info("No annotations available.");
                 }
 
+                // TODO: Return file citations together with completed text, such that frontend can link text with citations
                 return completedText;
             } else {
                 log.error("No data!");
