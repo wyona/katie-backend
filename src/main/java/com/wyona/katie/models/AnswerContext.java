@@ -11,7 +11,8 @@ public class AnswerContext {
     private URI uri;
 
     /**
-     *
+     * @param context Relevant context, e.g. a text article/section relevant to the question and answer
+     * @param uri Source URI of relevant context
      */
     public AnswerContext(String context, URI uri) {
         this.context = context;
@@ -19,14 +20,14 @@ public class AnswerContext {
     }
 
     /**
-     *
+     * @return relevant context, e.g. a text article/section relevant to the question and answer
      */
     public String getContext() {
         return context;
     }
 
     /**
-     *
+     * @return source URI of relevant context
      */
     public URI getUri() {
         return uri;
