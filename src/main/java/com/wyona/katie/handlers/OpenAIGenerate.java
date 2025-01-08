@@ -57,7 +57,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 }
                 return answer;
             } else {
-                return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
+                return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
             }
         }
     }
@@ -220,13 +220,13 @@ public class OpenAIGenerate implements GenerateProvider {
     /***
      * Generate answer using OpenAI Assistant Thread API https://platform.openai.com/docs/api-reference/threads
      */
-    private String assistantThread(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private String assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         String assistantId = "asst_dSEeoq64TF5uIgSxHIrdz55F";
         // TODO: Check whether assistant already exists
         if (false) {
-            assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
+            assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
         }
         String threadId = createThread(promptMessages, openAIKey);
         String completedText = runThread(assistantId, threadId, openAIKey);
@@ -239,7 +239,7 @@ public class OpenAIGenerate implements GenerateProvider {
      * @param instructions Instructions, e.g. "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
      * @return assistant Id
      */
-    private String createAssistant(String name, String instructions, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private String createAssistant(String name, String instructions, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         try {
