@@ -161,7 +161,8 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         List<File> relevantDocs = new ArrayList<>();
         try {
-            String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            List<CompletionTool> tools = new ArrayList<>();
+            String answer = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
             log.info("Answer getRelevantDocuments():" + answer);
             // TODO: Use tool call to get list of relevant documents
             //relevantDocs.add(new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf")); // TODO: Replace hard coded file
@@ -191,7 +192,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            String answer = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken);
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

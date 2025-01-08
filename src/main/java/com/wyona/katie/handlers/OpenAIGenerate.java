@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.file.FileRequest;
@@ -37,9 +38,9 @@ public class OpenAIGenerate implements GenerateProvider {
     private String openAIHost;
 
     /**
-     * @see GenerateProvider#getCompletion(List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
-    public String getCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         if (false) {
             return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
         } else {

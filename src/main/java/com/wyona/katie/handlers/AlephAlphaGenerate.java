@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -29,9 +30,9 @@ public class AlephAlphaGenerate implements GenerateProvider {
     private String alephAlphaHost;
 
     /**
-     * @see GenerateProvider#getCompletion(List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
-    public String getCompletion(List<PromptMessage> promptMessages, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
+    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
         log.info("Complete prompt using Aleph Alpha completion ...");
 
         String completedText = null;

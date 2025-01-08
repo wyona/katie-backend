@@ -67,7 +67,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             // TODO: Use tool call!
             String model = generativeAIService.getCompletionModel(completionImpl);
             String apiToken = generativeAIService.getApiToken(completionImpl);
-            completedText = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
+            completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken);
         } else {
             String errorMsg = "Completion provider '" + completionImpl + "' not implemented yet! Make sure that the domain configuration attribute '" + XMLService.CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR + "' is set correctly.";
             log.error(errorMsg);
