@@ -225,7 +225,7 @@ public class OpenAIGenerate implements GenerateProvider {
     private String assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String assistantId = "asst_D3KbrxwdU12oqFGpwcH89MVs";
+        String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB";
         // TODO: Check whether assistant already exists
         if (false) {
             assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
@@ -267,14 +267,21 @@ public class OpenAIGenerate implements GenerateProvider {
                     ObjectNode customTool = mapper.createObjectNode();
                     customTool.put("type", "function");
                     ObjectNode functionNode = mapper.createObjectNode();
-                    functionNode.put("name", "get_relevant_document_path");
+                    functionNode.put("name", "get_file_path_of_relevant_document");
+                    functionNode.put("description", "Get file path of the relevant document");
+                    functionNode.put("strict", true);
                     ObjectNode parametersNode = mapper.createObjectNode();
                     parametersNode.put("type", "object");
                     ObjectNode propertiesNode = mapper.createObjectNode();
                     ObjectNode filePathNode = mapper.createObjectNode();
                     filePathNode.put("type", "string");
-                    propertiesNode.put("document_path", filePathNode);
+                    filePathNode.put("description", "The file path of the relevant document");
+                    propertiesNode.put("file_path", filePathNode);
                     parametersNode.put("properties", propertiesNode);
+                    ArrayNode arrayOfPropertiesNode = mapper.createArrayNode();
+                    arrayOfPropertiesNode.add("file_path");
+                    parametersNode.put("required", arrayOfPropertiesNode);
+                    parametersNode.put("additionalProperties", false);
                     functionNode.put("parameters", parametersNode);
                     customTool.put("function", functionNode);
 
