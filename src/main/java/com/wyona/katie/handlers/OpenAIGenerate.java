@@ -40,22 +40,24 @@ public class OpenAIGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
     public String getCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        if (true) {
+        if (false) {
             return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
         } else {
             if (false) {
-                File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
-                String fileId = uploadFile(file, openAIKey);
-                log.info("File Id of uploaded document: " + fileId);
+                if (false) {
+                    File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+                    String fileId = uploadFile(file, openAIKey);
+                    log.info("File Id of uploaded document: " + fileId);
+                }
+                String[] files = getFiles(openAIKey);
+                String answer = "Files:";
+                for (String filename : files) {
+                    answer = answer + " " + filename;
+                }
+                return answer;
+            } else {
+                return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
             }
-            String[] files = getFiles(openAIKey);
-            String answer = "Files:";
-            for (String filename : files) {
-                answer = answer + " " + filename;
-            }
-            return answer;
-
-            //return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
         }
     }
 
@@ -268,6 +270,7 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Create new thread
      * @return thread Id
      */
     private String createThread(List<PromptMessage> promptMessages, String openAIKey) throws Exception {
@@ -285,13 +288,22 @@ public class OpenAIGenerate implements GenerateProvider {
                 messageNode.put("role", msg.getRole().toString());
                 messageNode.put("content", msg.getContent());
 
+                // Add attachment(s), see for example https://platform.openai.com/docs/assistants/tools/file-search
                 String[] attachments = msg.getAttachments();
                 if (attachments != null && attachments.length > 0) {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
-                    for (String attachment : attachments) {
-                        // file-SLGUENEL9ZAPaCSZscBTcm
-                        // TODO: Add attachment, see for example https://platform.openai.com/docs/assistants/tools/file-search
+                    for (String attachmentId : attachments) {
+                        ObjectNode attachmentNode = mapper.createObjectNode();
+                        attachmentNode.put("file_id", attachmentId);
+
+                        ArrayNode toolsNode = mapper.createArrayNode();
+                        ObjectNode typeNode = mapper.createObjectNode();
+                        typeNode.put("type", "file_search");
+                        toolsNode.add(typeNode);
+                        attachmentNode.put("tools", toolsNode);
+
+                        attachmentsNode.add(attachmentNode);
                     }
                 }
 
