@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.PromptMessage;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.file.FileRequest;
+import io.github.sashirestela.openai.domain.file.FileResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,20 +40,27 @@ public class OpenAIGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, String, Double, String)
      */
     public String getCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        if (false) {
+        if (true) {
             return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
         } else {
-            File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
-            //uploadFile(file, openAIKey);
+            if (false) {
+                File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+                String fileId = uploadFile(file, openAIKey);
+                log.info("File Id of uploaded document: " + fileId);
+            }
             String[] files = getFiles(openAIKey);
-            return "TODO";
+            String answer = "Files:";
+            for (String filename : files) {
+                answer = answer + " " + filename;
+            }
+            return answer;
 
             //return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
         }
     }
 
     /**
-     *
+     * @return list of files, which got previously uploaded to OpenAI
      */
     private String[] getFiles(String openAIKey) throws Exception {
         HttpHeaders headers = getHttpHeaders(openAIKey);
@@ -64,10 +73,22 @@ public class OpenAIGenerate implements GenerateProvider {
         JsonNode responseBodyNode = response.getBody();
         log.info("JSON Response: " + responseBodyNode);
 
-        return new String[0];
+        List<String> files = new ArrayList<>();
+        JsonNode dataNode = responseBodyNode.get("data");
+        if (dataNode.isArray()) {
+            for (int i = 0; i < dataNode.size(); i++) {
+                files.add(dataNode.get(i).get("filename").asText());
+            }
+        } else {
+            log.warn("No files yet!");
+        }
+
+        return files.toArray(new String[0]);
     }
 
     /**
+     * Upload file to OpenAI
+     * @param file File, e.g. "/Users/michaelwechner/Desktop/Auftragsrecht.pdf"
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm"
      */
     private String uploadFile(File file, String openAIKey) throws Exception {
@@ -77,9 +98,9 @@ public class OpenAIGenerate implements GenerateProvider {
                 .file(Paths.get(file.getAbsolutePath()))
                 .purpose(FileRequest.PurposeType.ASSISTANTS)
                 .build();
-        openAI.files().create(fileRequest).join();
+        FileResponse fileResponse = openAI.files().create(fileRequest).join();
 
-        return "TODO";
+        return fileResponse.getId();
 
         /*
         HttpHeaders headers = getHttpHeaders(openAIKey);
@@ -269,6 +290,7 @@ public class OpenAIGenerate implements GenerateProvider {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
                     for (String attachment : attachments) {
+                        // file-SLGUENEL9ZAPaCSZscBTcm
                         // TODO: Add attachment, see for example https://platform.openai.com/docs/assistants/tools/file-search
                     }
                 }
