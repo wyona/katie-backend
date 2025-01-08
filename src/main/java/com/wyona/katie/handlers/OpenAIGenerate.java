@@ -37,6 +37,8 @@ public class OpenAIGenerate implements GenerateProvider {
     @Value("${openai.host}")
     private String openAIHost;
 
+    private static final String ASSISTANT_TOOL_FILE_SEARCH = "file_search";
+
     /**
      * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
@@ -256,7 +258,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 requestBodyNode.put("tools", toolsNode);
 
                 ObjectNode fileSearchTool = mapper.createObjectNode();
-                fileSearchTool.put("type", "file_search");
+                fileSearchTool.put("type", ASSISTANT_TOOL_FILE_SEARCH);
                 toolsNode.add(fileSearchTool);
 
                 if (tools != null && tools.size() > 0) {
@@ -336,7 +338,7 @@ public class OpenAIGenerate implements GenerateProvider {
 
                             ArrayNode toolsNode = mapper.createArrayNode();
                             ObjectNode typeNode = mapper.createObjectNode();
-                            typeNode.put("type", "file_search");
+                            typeNode.put("type", ASSISTANT_TOOL_FILE_SEARCH);
                             toolsNode.add(typeNode);
                             attachmentNode.put("tools", toolsNode);
 
