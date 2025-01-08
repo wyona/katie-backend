@@ -162,6 +162,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<File> relevantDocs = new ArrayList<>();
         try {
             List<CompletionTool> tools = new ArrayList<>();
+            tools.add(new CompletionTool("function"));
+            // TODO: Configure tool / function
+
             String answer = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
             log.info("Answer getRelevantDocuments():" + answer);
             // TODO: Use tool call to get list of relevant documents

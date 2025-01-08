@@ -223,7 +223,7 @@ public class OpenAIGenerate implements GenerateProvider {
     private String assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String assistantId = "asst_dSEeoq64TF5uIgSxHIrdz55F";
+        String assistantId = "asst_D3KbrxwdU12oqFGpwcH89MVs";
         // TODO: Check whether assistant already exists
         if (false) {
             assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
@@ -254,9 +254,30 @@ public class OpenAIGenerate implements GenerateProvider {
             if (true) {
                 ArrayNode toolsNode = mapper.createArrayNode();
                 requestBodyNode.put("tools", toolsNode);
+
                 ObjectNode fileSearchTool = mapper.createObjectNode();
                 fileSearchTool.put("type", "file_search");
                 toolsNode.add(fileSearchTool);
+
+                if (tools != null && tools.size() > 0) {
+                    // TODO: Add tools dynamically
+
+                    ObjectNode customTool = mapper.createObjectNode();
+                    customTool.put("type", "function");
+                    ObjectNode functionNode = mapper.createObjectNode();
+                    functionNode.put("name", "get_relevant_document_path");
+                    ObjectNode parametersNode = mapper.createObjectNode();
+                    parametersNode.put("type", "object");
+                    ObjectNode propertiesNode = mapper.createObjectNode();
+                    ObjectNode filePathNode = mapper.createObjectNode();
+                    filePathNode.put("type", "string");
+                    propertiesNode.put("document_path", filePathNode);
+                    parametersNode.put("properties", propertiesNode);
+                    functionNode.put("parameters", parametersNode);
+                    customTool.put("function", functionNode);
+
+                    toolsNode.add(customTool);
+                }
             }
 
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
