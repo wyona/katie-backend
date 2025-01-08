@@ -1,5 +1,6 @@
 {
     "katie": {
+        "relevant_contexts": "Relevante Kontexte",
         "answer_by_llm": "Antwort generiert von LLM",
         "your_linkedin_url": "Deine LinkedIn URL",
         "set_password": "Wähle ein Password",
@@ -117,7 +118,7 @@
         "more_information": "Mehr Informationen",
         "select_search_implementation": "Bitte wählen Sie eine Suchimplementierung, um alle QnAs dieser Domain neu zu indizieren",
         "reindex": "Neu indexieren",
-        "iam_actions": "Aktionen",
+        "iam_actions": "Optionen",
         "domain_role": "Rolle",
         "iam_role": "Rolle",
         "iam_username": "Benutzername",

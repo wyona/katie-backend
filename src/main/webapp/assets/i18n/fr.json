@@ -1,5 +1,6 @@
 {
     "katie": {
+        "relevant_contexts": "Contextes pertinents",
         "answer_by_llm": "Réponse générée par LLM",
         "your_linkedin_url": "Ton URL LinkedIn",
         "set_password": "Choisissez un mot de passe",
