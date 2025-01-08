@@ -290,21 +290,27 @@ public class OpenAIGenerate implements GenerateProvider {
                 messageNode.put("content", msg.getContent());
 
                 // Add attachment(s), see for example https://platform.openai.com/docs/assistants/tools/file-search
-                String[] attachments = msg.getAttachments();
+                File[] attachments = msg.getAttachments();
                 if (attachments != null && attachments.length > 0) {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
-                    for (String attachmentId : attachments) {
-                        ObjectNode attachmentNode = mapper.createObjectNode();
-                        attachmentNode.put("file_id", attachmentId);
+                    String[] alreadyUploadedFiles = getFiles(openAIKey);
+                    for (File attachment : attachments) {
+                        String fileId = getFileId(attachment, alreadyUploadedFiles, openAIKey);
+                        if (fileId != null) {
+                            ObjectNode attachmentNode = mapper.createObjectNode();
+                            attachmentNode.put("file_id", fileId);
 
-                        ArrayNode toolsNode = mapper.createArrayNode();
-                        ObjectNode typeNode = mapper.createObjectNode();
-                        typeNode.put("type", "file_search");
-                        toolsNode.add(typeNode);
-                        attachmentNode.put("tools", toolsNode);
+                            ArrayNode toolsNode = mapper.createArrayNode();
+                            ObjectNode typeNode = mapper.createObjectNode();
+                            typeNode.put("type", "file_search");
+                            toolsNode.add(typeNode);
+                            attachmentNode.put("tools", toolsNode);
 
-                        attachmentsNode.add(attachmentNode);
+                            attachmentsNode.add(attachmentNode);
+                        } else {
+                            log.error("No file Id available for attachment '" + attachment.getAbsolutePath() + "'!");
+                        }
                     }
                 }
 
@@ -347,6 +353,23 @@ public class OpenAIGenerate implements GenerateProvider {
             log.error(e.getMessage(), e);
             throw e;
         }
+    }
+
+    /**
+     * Get file Id
+     * @return file Id
+     */
+    private String getFileId(File file, String[] alreadyUploadedFiles, String openAIKey) throws Exception {
+        for (String alreadyUploadedFile: alreadyUploadedFiles) {
+            if (file.getAbsolutePath().equals(alreadyUploadedFile)) {
+                log.info("File already uploaded: " + file.getAbsolutePath());
+                return "file-SLGUENEL9ZAPaCSZscBTcm"; // PDF
+                //return "file-D72TcUvBpxs4aKa5BUssCA"; // documents.json
+            }
+        }
+
+        log.info("File '" + file.getAbsolutePath() + "' will be uploaded ...");
+        return uploadFile(file, openAIKey);
     }
 
     /**

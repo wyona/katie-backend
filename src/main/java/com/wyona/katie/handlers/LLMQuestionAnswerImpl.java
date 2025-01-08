@@ -133,14 +133,12 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @return list of relevant documents
      */
     private String getRelevantDocuments(String question, List<String> classifications, Context domain) {
-        // TODO: Get document index documents.json from domain
-        // TODO: Upload document index as attachment
-
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
-        String[] attachments = new String[1];
-        attachments[0] = "file-D72TcUvBpxs4aKa5BUssCA"; // TODO: Replace hard coded file id
+        File[] attachments = new File[1];
+        // TODO: Get document index documents.json from domain
+        attachments[0] = new File("/Users/michaelwechner/src/wyona/public/katie-backend/volume/contexts/8955febe-4bb1-4430-924a-cafcfa0fde64/documents.json");
         promptMessage.setAttachments(attachments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
@@ -165,18 +163,10 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * @param relevantDocuments Paths of relevant documents
      */
     private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, Context domain) {
-        // TODO: Upload relevant documents as attachment(s)
-        // TODO: Check whether relevant documents already got uploaded previously
-        for (File file: relevantDocuments) {
-            log.info("TODO: Check whether '" + file.getAbsolutePath() + "' got already previously uploaded ...");
-        }
-
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
-        String[] attachments = new String[1];
-        attachments[0] = "file-SLGUENEL9ZAPaCSZscBTcm"; // TODO: Replace hard coded file id
-        promptMessage.setAttachments(attachments);
+        promptMessage.setAttachments(relevantDocuments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);

@@ -2,6 +2,8 @@ package com.wyona.katie.models;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+
 /**
  * https://cookbook.openai.com/examples/azure/chat_with_your_own_data
  * https://platform.openai.com/docs/guides/text-generation/chat-completions-api
@@ -11,7 +13,7 @@ public class PromptMessage {
 
     private PromptMessageRole role;
     private String content;
-    private String[] attachments;
+    private File[] attachments;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -59,14 +61,14 @@ public class PromptMessage {
     /**
      *
      */
-    public void setAttachments(String[] attachments) {
+    public void setAttachments(File[] attachments) {
         this.attachments = attachments;
     }
 
     /**
      *
      */
-    public String[] getAttachments() {
+    public File[] getAttachments() {
         return attachments;
     }
 }
