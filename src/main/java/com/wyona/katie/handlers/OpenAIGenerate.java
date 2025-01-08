@@ -211,10 +211,11 @@ public class OpenAIGenerate implements GenerateProvider {
     private String assistantThread(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
+        String assistantId = "asst_dSEeoq64TF5uIgSxHIrdz55F";
         // TODO: Check whether assistant already exists
-        //String assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
-
-        String assistantId = "asst_SVESqIZjrikjrE99hPXTJWgJ";
+        if (false) {
+            assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
+        }
         String threadId = createThread(promptMessages, openAIKey);
         String completedText = runThread(assistantId, threadId, openAIKey);
 
@@ -238,7 +239,7 @@ public class OpenAIGenerate implements GenerateProvider {
             requestBodyNode.put("instructions", instructions);
             requestBodyNode.put("name", name);
 
-            if (false) {
+            if (true) {
                 ArrayNode toolsNode = mapper.createArrayNode();
                 requestBodyNode.put("tools", toolsNode);
                 ObjectNode fileSearchTool = mapper.createObjectNode();
