@@ -4,19 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.PromptMessage;
+import io.github.sashirestela.openai.SimpleOpenAI;
+import io.github.sashirestela.openai.domain.file.FileRequest;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -36,8 +41,75 @@ public class OpenAIGenerate implements GenerateProvider {
         if (false) {
             return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
         } else {
-            return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
+            File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+            //uploadFile(file, openAIKey);
+            String[] files = getFiles(openAIKey);
+            return "TODO";
+
+            //return assistantThread(promptMessages, openAIModel, temperature, openAIKey);
         }
+    }
+
+    /**
+     *
+     */
+    private String[] getFiles(String openAIKey) throws Exception {
+        HttpHeaders headers = getHttpHeaders(openAIKey);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        String getFilesUrl = openAIHost + "/v1/files";
+        log.info("Get files " + getFilesUrl);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> response = restTemplate.exchange(getFilesUrl, HttpMethod.GET, request, JsonNode.class);
+        JsonNode responseBodyNode = response.getBody();
+        log.info("JSON Response: " + responseBodyNode);
+
+        return new String[0];
+    }
+
+    /**
+     * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm"
+     */
+    private String uploadFile(File file, String openAIKey) throws Exception {
+
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+        FileRequest fileRequest = FileRequest.builder()
+                .file(Paths.get(file.getAbsolutePath()))
+                .purpose(FileRequest.PurposeType.ASSISTANTS)
+                .build();
+        openAI.files().create(fileRequest).join();
+
+        return "TODO";
+
+        /*
+        HttpHeaders headers = getHttpHeaders(openAIKey);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        byte[] fileAsByteArray = IOUtils.toByteArray(new FileInputStream(file));
+
+        MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+        ContentDisposition contentDisposition = ContentDisposition
+                .builder("form-data").build();
+        fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+        //HttpEntity<byte[]> fileEntity = new HttpEntity<>(fileAsByteArray, fileMap);
+        HttpEntity<byte[]> fileEntity = new HttpEntity<>(fileAsByteArray);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("purpose", "assistants");
+        //body.add("file", fileEntity);
+        body.add("file", fileAsByteArray);
+
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+        String uploadFileUrl = openAIHost + "/v1/files";
+        log.info("Upload file " + uploadFileUrl);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> response = restTemplate.exchange(uploadFileUrl, HttpMethod.POST, request, JsonNode.class);
+        JsonNode responseBodyNode = response.getBody();
+        log.info("JSON Response: " + responseBodyNode);
+        String fileId = responseBodyNode.get("id").asText();
+        return fileId;
+         */
     }
 
     /**
@@ -116,6 +188,7 @@ public class OpenAIGenerate implements GenerateProvider {
     private String assistantThread(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
+        // TODO: Check whether assistant already exists
         //String assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", openAIModel, temperature, openAIKey);
 
         String assistantId = "asst_SVESqIZjrikjrE99hPXTJWgJ";
