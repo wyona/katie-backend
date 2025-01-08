@@ -49,10 +49,10 @@ public class OpenAIGenerate implements GenerateProvider {
                     String fileId = uploadFile(file, openAIKey);
                     log.info("File Id of uploaded document: " + fileId);
                 }
-                String[] files = getFiles(openAIKey);
+                FileResponse[] files = getFiles(openAIKey);
                 String answer = "Files:";
-                for (String filename : files) {
-                    answer = answer + " " + filename;
+                for (FileResponse fileResponse : files) {
+                    answer = answer + " " + fileResponse.getFilename();
                 }
                 return answer;
             } else {
@@ -64,7 +64,14 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @return list of files, which got previously uploaded to OpenAI
      */
-    private String[] getFiles(String openAIKey) throws Exception {
+    private FileResponse[] getFiles(String openAIKey) throws Exception {
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+        //openAI.files().getList(FileRequest.PurposeType.ASSISTANTS).join();
+        //var fileResponses = openAI.files().getList(null).join();
+        List<FileResponse> fileResponses = openAI.files().getList(null).join();
+        return fileResponses.toArray(new FileResponse[0]);
+
+        /*
         HttpHeaders headers = getHttpHeaders(openAIKey);
         HttpEntity<String> request = new HttpEntity<String>(headers);
 
@@ -79,13 +86,18 @@ public class OpenAIGenerate implements GenerateProvider {
         JsonNode dataNode = responseBodyNode.get("data");
         if (dataNode.isArray()) {
             for (int i = 0; i < dataNode.size(); i++) {
-                files.add(dataNode.get(i).get("filename").asText());
+                String fileName = dataNode.get(i).get("filename").asText();
+                String fileId = dataNode.get(i).get("id").asText();
+
+                // TOOD: Add fileId
+                files.add(fileName);
             }
         } else {
             log.warn("No files yet!");
         }
 
         return files.toArray(new String[0]);
+         */
     }
 
     /**
@@ -94,7 +106,6 @@ public class OpenAIGenerate implements GenerateProvider {
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm"
      */
     private String uploadFile(File file, String openAIKey) throws Exception {
-
         SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
         FileRequest fileRequest = FileRequest.builder()
                 .file(Paths.get(file.getAbsolutePath()))
@@ -294,7 +305,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 if (attachments != null && attachments.length > 0) {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
-                    String[] alreadyUploadedFiles = getFiles(openAIKey);
+                    FileResponse[] alreadyUploadedFiles = getFiles(openAIKey);
                     for (File attachment : attachments) {
                         String fileId = getFileId(attachment, alreadyUploadedFiles, openAIKey);
                         if (fileId != null) {
@@ -357,14 +368,13 @@ public class OpenAIGenerate implements GenerateProvider {
 
     /**
      * Get file Id
-     * @return file Id
+     * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm" or "file-D72TcUvBpxs4aKa5BUssCA"
      */
-    private String getFileId(File file, String[] alreadyUploadedFiles, String openAIKey) throws Exception {
-        for (String alreadyUploadedFile: alreadyUploadedFiles) {
-            if (file.getAbsolutePath().equals(alreadyUploadedFile)) {
+    private String getFileId(File file, FileResponse[] alreadyUploadedFiles, String openAIKey) throws Exception {
+        for (FileResponse alreadyUploadedFile: alreadyUploadedFiles) {
+            if (file.getAbsolutePath().equals(alreadyUploadedFile.getFilename())) {
                 log.info("File already uploaded: " + file.getAbsolutePath());
-                return "file-SLGUENEL9ZAPaCSZscBTcm"; // PDF
-                //return "file-D72TcUvBpxs4aKa5BUssCA"; // documents.json
+                return alreadyUploadedFile.getId();
             }
         }
 
