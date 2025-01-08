@@ -108,9 +108,14 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             log.warn("Use mock document: " + relevantDocs[0].getAbsolutePath());
         }
 
-        if (false) {
-            _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
-            log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
+        if (true) {
+            if (relevantDocs != null && relevantDocs.length > 0) {
+                _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
+                log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
+            } else {
+                _answer = "No relevant documents found!";
+                log.warn(_answer);
+            }
         }
 
         String uuid = null;
@@ -121,9 +126,11 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Date dateAnswerModified = null;
         Date dateOriginalQuestionSubmitted = null;
         Answer answer = new Answer(question, _answer, answerContentType,null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, orgQuestion, dateOriginalQuestionSubmitted, true, null, true, null);
-        for (File relevantDoc: relevantDocs) {
-            String relevantTextContext = relevantDoc.getName(); // TODO: Replace by relevant text from within document
-            answer.addRelevantContext(new AnswerContext(relevantTextContext, relevantDoc.toURI()));
+        if (relevantDocs != null && relevantDocs.length > 0) {
+            for (File relevantDoc : relevantDocs) {
+                String relevantTextContext = relevantDoc.getName(); // TODO: Replace by relevant text from within document
+                answer.addRelevantContext(new AnswerContext(relevantTextContext, relevantDoc.toURI()));
+            }
         }
 
         double score = -1; // TODO: Get score
@@ -157,7 +164,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
             log.info("Answer getRelevantDocuments():" + answer);
             // TODO: Use tool call to get list of relevant documents
-            relevantDocs.add(new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf")); // TODO: Replace hard coded file
+            //relevantDocs.add(new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf")); // TODO: Replace hard coded file
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
