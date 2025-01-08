@@ -99,12 +99,14 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         String _answer = null;
 
+        File[] relevantDocs = null;
         if (true) {
-            _answer = getRelevantDocuments(question, classifications, domain);
-            log.info("Answer from getRelevantDocuments(): " + _answer);
+            relevantDocs = getRelevantDocuments(question, classifications, domain);
+        } else {
+            relevantDocs = new File[1];
+            relevantDocs[0] = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+            log.warn("Use mock document: " + relevantDocs[0].getAbsolutePath());
         }
-        File[] relevantDocs = new File[1];
-        relevantDocs[0] = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf"); // TODO: Replace hard coded file
 
         if (false) {
             _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
@@ -134,7 +136,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * Retrieval: Get relevant documents
      * @return list of relevant documents
      */
-    private String getRelevantDocuments(String question, List<String> classifications, Context domain) {
+    private File[] getRelevantDocuments(String question, List<String> classifications, Context domain) {
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list is relevant in connection with the following question \"" + question + "\"");
@@ -150,13 +152,17 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
         Double temperature = null;
 
+        List<File> relevantDocs = new ArrayList<>();
         try {
             String answer = generateProvider.getCompletion(promptMessages, model, temperature, apiToken);
-            return answer;
+            log.info("Answer getRelevantDocuments():" + answer);
+            // TODO: Use tool call to get list of relevant documents
+            relevantDocs.add(new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf")); // TODO: Replace hard coded file
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return e.getMessage();
         }
+
+        return relevantDocs.toArray(new File[0]);
     }
 
     /**
