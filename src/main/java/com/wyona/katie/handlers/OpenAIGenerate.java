@@ -453,7 +453,7 @@ public class OpenAIGenerate implements GenerateProvider {
 
             String status = responseBodyNode.get("status").asText();
             int timeoutCounter = 0;
-            while (!status.equals("completed")) {
+            while (!(status.equals("completed") || status.equals("requires_action"))) {
                 timeoutCounter++;
                 if (timeoutCounter > 10) {
                     return "Timeout!";
@@ -464,13 +464,22 @@ public class OpenAIGenerate implements GenerateProvider {
                 } catch(Exception e) {
                     log.error(e.getMessage(), e);
                 }
-                status = getRunStatus(threadId, runId, openAIKey);
+                responseBodyNode = getRunResponseBodyNode(threadId, runId, openAIKey);
+                status = responseBodyNode.get("status").asText();
                 log.info("Thread status: " + status);
             }
 
             log.info("Response generation completed.");
 
-            return getResponseMessage(threadId, openAIKey);
+            if (status.equals("completed")) {
+                return getResponseMessage(threadId, openAIKey);
+            } else if (status.equals("requires_action")) {
+                // TODO: Get tool output
+                return responseBodyNode.get("required_action").get("type").asText();
+            } else {
+                log.warn("No such status '" + status + "' implemented!");
+                return getResponseMessage(threadId, openAIKey);
+            }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             throw e;
@@ -536,7 +545,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      *
      */
-    private String getRunStatus(String threadId, String runId, String openAIKey) throws Exception {
+    private JsonNode getRunResponseBodyNode(String threadId, String runId, String openAIKey) throws Exception {
         HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
         HttpEntity<String> request = new HttpEntity<String>(headers);
         String getRunUrl = openAIHost + "/v1/threads/" + threadId + "/runs/" + runId;
@@ -545,8 +554,7 @@ public class OpenAIGenerate implements GenerateProvider {
         ResponseEntity<JsonNode> response = restTemplate.exchange(getRunUrl, HttpMethod.GET, request, JsonNode.class);
         JsonNode responseBodyNode = response.getBody();
         log.info("JSON Response: " + responseBodyNode);
-
-        return responseBodyNode.get("status").asText();
+        return responseBodyNode;
     }
 
     /**
