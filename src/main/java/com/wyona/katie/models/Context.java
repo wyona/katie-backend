@@ -132,6 +132,14 @@ public class Context {
     }
 
     /**
+     *
+     */
+    @Override
+    public String toString() {
+        return getName() + " (" + getId() + ")";
+    }
+
+    /**
      * @param analyzeMessagesAskRestApi When true, then the Ask REST Interfaces should use the question / message classifier to analyze submitted questions / messages
      */
     public void setAnalyzeMessagesAskRestApi(boolean analyzeMessagesAskRestApi) {
