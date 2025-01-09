@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -109,6 +110,9 @@ public class OpenAIGenerate implements GenerateProvider {
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm"
      */
     private String uploadFile(File file, String openAIKey) throws Exception {
+        if (!file.isFile()) {
+            throw new FileNotFoundException("No such file '" + file.getAbsolutePath() + "'!");
+        }
         SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
         FileRequest fileRequest = FileRequest.builder()
                 .file(Paths.get(file.getAbsolutePath()))
