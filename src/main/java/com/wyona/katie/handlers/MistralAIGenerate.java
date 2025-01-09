@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +34,7 @@ public class MistralAIGenerate implements GenerateProvider {
     /**
      * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
-    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String mistralAIKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String mistralAIKey) throws Exception {
         log.info("Complete prompt using Mistral AI chat completion ...");
 
         String completedText = null;
@@ -77,7 +78,7 @@ public class MistralAIGenerate implements GenerateProvider {
             throw e;
         }
 
-        return completedText;
+        return new CompletionResponse(completedText);
     }
 
     /**

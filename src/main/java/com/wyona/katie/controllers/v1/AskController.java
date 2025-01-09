@@ -673,7 +673,8 @@ public class AskController {
     }
 
     /**
-     *
+     * Get completion message
+     * @return completion message
      */
     private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
         CompletionImpl completionImpl = domain.getCompletionImpl();
@@ -708,7 +709,7 @@ public class AskController {
 
         String apiToken = generativeAIService.getApiToken(completionImpl);
 
-        return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken);
+        return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
     }
 
     /**

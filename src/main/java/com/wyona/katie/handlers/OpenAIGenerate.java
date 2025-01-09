@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import io.github.sashirestela.openai.SimpleOpenAI;
@@ -42,9 +43,9 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
-    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         if (false) {
-            return chatCompletion(promptMessages, openAIModel, temperature, openAIKey);
+            return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
         } else {
             if (false) {
                 if (false) {
@@ -57,9 +58,9 @@ public class OpenAIGenerate implements GenerateProvider {
                 for (FileResponse fileResponse : files) {
                     answer = answer + " " + fileResponse.getFilename();
                 }
-                return answer;
+                return new CompletionResponse(answer);
             } else {
-                return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
+                return new CompletionResponse(assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey));
             }
         }
     }

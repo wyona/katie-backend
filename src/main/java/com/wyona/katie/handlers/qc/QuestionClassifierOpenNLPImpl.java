@@ -129,9 +129,9 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
             Double temperature = null;
             String completedText = null;
             if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-                completedText = generateMistralCloud.getCompletion(promptMessages, null, mistralAIModel, temperature, mistralAIKey);
+                completedText = generateMistralCloud.getCompletion(promptMessages, null, mistralAIModel, temperature, mistralAIKey).getText();
             } else {
-                completedText = generateOllama.getCompletion(promptMessages, null, ollamaModel, temperature, null);
+                completedText = generateOllama.getCompletion(promptMessages, null, ollamaModel, temperature, null).getText();
             }
 
             log.info("Completed text: " + completedText);

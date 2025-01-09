@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import com.wyona.katie.models.PromptMessageRole;
@@ -44,7 +45,7 @@ public class OllamaGenerate implements GenerateProvider {
     /**
      * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
-    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {
         log.info("Complete prompt using Ollama completion API (" + ollamaHost + ") ...");
 
         String completedText = null;
@@ -81,7 +82,7 @@ public class OllamaGenerate implements GenerateProvider {
             //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
             completedText = result.getResponse();
 
-            return completedText;
+            return new CompletionResponse(completedText);
         } catch (HttpTimeoutException e) {
             log.warn(e.getMessage(), e);
             throw new HttpTimeoutException("Timeout is set to " + ollamaTimeout + " seconds. The timeout should be increased if necessary, see parameter 'ollama.timeout.in.seconds'. Original exception message: " + e.getMessage());

@@ -1,5 +1,6 @@
 package com.wyona.katie.handlers;
 
+import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 
@@ -17,7 +18,7 @@ public interface GenerateProvider {
      * @param model Model name, e.g. OpenAI's "gpt-3.5-turbo"
      * @param temperature What sampling temperature to use, between 0.0 and 1.0. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
      * @param apiToken API token
-     * @return generated / completed text
+     * @return generated / completed text, including citations, tool / function arguments, etc.
      */
-    public String getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String apiToken) throws Exception;
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String apiToken) throws Exception;
 }
