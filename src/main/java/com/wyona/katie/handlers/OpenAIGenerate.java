@@ -60,7 +60,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 }
                 return new CompletionResponse(answer);
             } else {
-                return new CompletionResponse(assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey));
+                return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
             }
         }
     }
@@ -223,7 +223,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /***
      * Generate answer using OpenAI Assistant Thread API https://platform.openai.com/docs/api-reference/threads
      */
-    private String assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB";
@@ -232,9 +232,7 @@ public class OpenAIGenerate implements GenerateProvider {
             assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
         }
         String threadId = createThread(promptMessages, openAIKey);
-        String completedText = runThread(assistantId, threadId, openAIKey);
-
-        return completedText;
+        return runThread(assistantId, threadId, openAIKey);
     }
 
     /**
@@ -263,30 +261,31 @@ public class OpenAIGenerate implements GenerateProvider {
                 toolsNode.add(fileSearchTool);
 
                 if (tools != null && tools.size() > 0) {
-                    // TODO: Add tools dynamically
+                    for (CompletionTool tool: tools) {
+                        // TODO: Add tool dynamically
+                        ObjectNode customTool = mapper.createObjectNode();
+                        customTool.put("type", "function");
+                        ObjectNode functionNode = mapper.createObjectNode();
+                        functionNode.put("name", "get_file_path_of_relevant_document");
+                        functionNode.put("description", "Get file path of the relevant document");
+                        functionNode.put("strict", true);
+                        ObjectNode parametersNode = mapper.createObjectNode();
+                        parametersNode.put("type", "object");
+                        ObjectNode propertiesNode = mapper.createObjectNode();
+                        ObjectNode filePathNode = mapper.createObjectNode();
+                        filePathNode.put("type", "string");
+                        filePathNode.put("description", "The file path of the relevant document");
+                        propertiesNode.put(tool.getFunctionArgument(), filePathNode);
+                        parametersNode.put("properties", propertiesNode);
+                        ArrayNode arrayOfPropertiesNode = mapper.createArrayNode();
+                        arrayOfPropertiesNode.add(tool.getFunctionArgument());
+                        parametersNode.put("required", arrayOfPropertiesNode);
+                        parametersNode.put("additionalProperties", false);
+                        functionNode.put("parameters", parametersNode);
+                        customTool.put("function", functionNode);
 
-                    ObjectNode customTool = mapper.createObjectNode();
-                    customTool.put("type", "function");
-                    ObjectNode functionNode = mapper.createObjectNode();
-                    functionNode.put("name", "get_file_path_of_relevant_document");
-                    functionNode.put("description", "Get file path of the relevant document");
-                    functionNode.put("strict", true);
-                    ObjectNode parametersNode = mapper.createObjectNode();
-                    parametersNode.put("type", "object");
-                    ObjectNode propertiesNode = mapper.createObjectNode();
-                    ObjectNode filePathNode = mapper.createObjectNode();
-                    filePathNode.put("type", "string");
-                    filePathNode.put("description", "The file path of the relevant document");
-                    propertiesNode.put("file_path", filePathNode);
-                    parametersNode.put("properties", propertiesNode);
-                    ArrayNode arrayOfPropertiesNode = mapper.createArrayNode();
-                    arrayOfPropertiesNode.add("file_path");
-                    parametersNode.put("required", arrayOfPropertiesNode);
-                    parametersNode.put("additionalProperties", false);
-                    functionNode.put("parameters", parametersNode);
-                    customTool.put("function", functionNode);
-
-                    toolsNode.add(customTool);
+                        toolsNode.add(customTool);
+                    }
                 }
             }
 
@@ -432,7 +431,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @return response message
      */
-    private String runThread(String assistantId, String threadId, String openAIKey) throws Exception {
+    private CompletionResponse runThread(String assistantId, String threadId, String openAIKey) throws Exception {
         log.info("Run thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         try {
@@ -457,7 +456,7 @@ public class OpenAIGenerate implements GenerateProvider {
             while (!(status.equals("completed") || status.equals("requires_action"))) {
                 timeoutCounter++;
                 if (timeoutCounter > 10) {
-                    return "Timeout!";
+                    return new CompletionResponse("Timeout!");
                 }
                 try {
                     log.info("Sleep for 1 second ...");
@@ -473,13 +472,16 @@ public class OpenAIGenerate implements GenerateProvider {
             log.info("Response generation completed.");
 
             if (status.equals("completed")) {
-                return getResponseMessage(threadId, openAIKey);
+                return new CompletionResponse(getResponseMessage(threadId, openAIKey));
             } else if (status.equals("requires_action")) {
-                // TODO: Get tool output
-                return responseBodyNode.get("required_action").get("type").asText();
+                String responseMessage = responseBodyNode.get("required_action").get("type").asText();
+                CompletionResponse completionResponse = new CompletionResponse(responseMessage);
+                // TODO: Replace hard coded values by tool output
+                completionResponse.addFunctionArgument("file_path", "/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+                return completionResponse;
             } else {
                 log.warn("No such status '" + status + "' implemented!");
-                return getResponseMessage(threadId, openAIKey);
+                return new CompletionResponse(getResponseMessage(threadId, openAIKey));
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);

@@ -11,6 +11,7 @@ import java.io.File;
 public class CompletionTool {
 
     private String type;
+    private String functionArgument;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -38,5 +39,19 @@ public class CompletionTool {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * Tmp
+     */
+    public void setFunctionArgument(String functionArgument) {
+        this.functionArgument = functionArgument;
+    }
+
+    /**
+     *
+     */
+    public String getFunctionArgument() {
+        return functionArgument;
     }
 }

@@ -162,13 +162,20 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<File> relevantDocs = new ArrayList<>();
         try {
             List<CompletionTool> tools = new ArrayList<>();
-            tools.add(new CompletionTool("function"));
-            // TODO: Configure tool / function
+            CompletionTool getFilePathTool = new CompletionTool("function");
+            getFilePathTool.setFunctionArgument("file_path");
+            // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
+
+            tools.add(getFilePathTool);
 
             CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
             log.info("Answer getRelevantDocuments():" + completionResponse.getText());
-            // TODO: Use tool call to get list of relevant documents
-            //relevantDocs.add(new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf")); // TODO: Replace hard coded file
+            String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
+            if (filePath != null) {
+                relevantDocs.add(new File(filePath));
+            } else {
+                log.warn("No relevant document found!");
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
