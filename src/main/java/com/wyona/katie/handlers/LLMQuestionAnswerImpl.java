@@ -102,6 +102,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         File[] relevantDocs = null;
         if (true) {
             relevantDocs = getRelevantDocuments(question, classifications, domain);
+            for (File relevantDoc: relevantDocs) {
+                log.info("Relevant document: " + relevantDoc.getAbsolutePath());
+            }
         } else {
             relevantDocs = new File[1];
             relevantDocs[0] = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
@@ -169,12 +172,12 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             tools.add(getFilePathTool);
 
             CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
-            log.info("Answer getRelevantDocuments():" + completionResponse.getText());
+            log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
             String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
             if (filePath != null) {
                 relevantDocs.add(new File(filePath));
             } else {
-                log.warn("No relevant document found!");
+                log.warn("No relevant document(s) found!");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
