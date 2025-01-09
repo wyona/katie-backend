@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.GenerativeAIService;
+import com.wyona.katie.services.KnowledgeSourceXMLFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Autowired
     private GenerativeAIService generativeAIService;
+
+    @Autowired
+    private KnowledgeSourceXMLFileService knowledgeSourceXMLFileService;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -122,7 +126,6 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         }
 
         String uuid = null;
-
         ContentType answerContentType = ContentType.TEXT_PLAIN;
         String orgQuestion = null;
         Date dateAnswered = null;
@@ -175,7 +178,15 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
             String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
             if (filePath != null) {
-                relevantDocs.add(new File(filePath));
+                File baseDiretory = new File(domain.getContextDirectory(), "documents");
+                KnowledgeSourceMeta[] knowledgeSourceMetas = knowledgeSourceXMLFileService.getKnowledgeSources(domain.getId());
+                if (knowledgeSourceMetas.length > 0) {
+                    // TODO: Get base directory from knowledge source
+                    baseDiretory = new File(domain.getContextDirectory(), "documents");
+                } else {
+                    log.warn("Domain '" + domain + "' has no filesystem volumes configured! Use '" + baseDiretory.getAbsolutePath() + "' as base directory ...");
+                }
+                relevantDocs.add(new File(baseDiretory, filePath));
             } else {
                 log.warn("No relevant document(s) found!");
             }
@@ -193,7 +204,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, Context domain) {
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
-        promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
+        // TODO: Make language configurable
+        promptMessage.setContent("Wie lautet auf der Grundlage des beigefügten Dokuments die Antwort auf die folgende Frage \"" + question + "\"");
+        //promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
         promptMessage.setAttachments(relevantDocuments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
