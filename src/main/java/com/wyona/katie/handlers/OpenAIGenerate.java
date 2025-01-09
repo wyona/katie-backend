@@ -25,8 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -475,10 +474,10 @@ public class OpenAIGenerate implements GenerateProvider {
                 return new CompletionResponse(getResponseMessage(threadId, openAIKey));
             } else if (status.equals("requires_action")) {
                 CompletionResponse completionResponse = new CompletionResponse("Tool call completed");
-                String arguments = getArguments(responseBodyNode);
-                log.info("Arguments: " + arguments);
-                // TODO: Replace hard coded values by tool output
-                completionResponse.addFunctionArgument("file_path", "/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
+                Map<String, String> arguments = getArguments(responseBodyNode);
+                for (Map.Entry<String, String> entry : arguments.entrySet()) {
+                    completionResponse.addFunctionArgument(entry.getKey(), entry.getValue());
+                }
                 return completionResponse;
             } else {
                 log.warn("No such status '" + status + "' implemented!");
@@ -491,10 +490,27 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     *
+     * Get arguments from tool call response
+     * @param node Json node containing tool call response
+     * @return hash map of argument key / value pairs, e.g. {"file_path":"/Users/michaelwechner/Desktop/Auftragsrecht.pdf"}
      */
-    private String getArguments(JsonNode node) {
-        return node.get("required_action").get("submit_tool_outputs").get("tool_calls").get(0).get("function").get("arguments").asText();
+    private HashMap<String, String> getArguments(JsonNode node) {
+        String arguments = node.get("required_action").get("submit_tool_outputs").get("tool_calls").get(0).get("function").get("arguments").asText();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode argumentsNode = mapper.readTree(arguments);
+            log.info("Arguments: " + argumentsNode);
+            Iterator<String> iterator = argumentsNode.fieldNames();
+            HashMap<String, String> map = new HashMap<>();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
+                map.put(key, argumentsNode.get(key).asText());
+            }
+            return map;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
     /**
