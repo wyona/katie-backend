@@ -455,7 +455,7 @@ public class OpenAIGenerate implements GenerateProvider {
             int timeoutCounter = 0;
             while (!(status.equals("completed") || status.equals("requires_action"))) {
                 timeoutCounter++;
-                if (timeoutCounter > 10) {
+                if (timeoutCounter > 30) { // TODO: Make timeout max configurable
                     return new CompletionResponse("Timeout!");
                 }
                 try {
@@ -474,8 +474,9 @@ public class OpenAIGenerate implements GenerateProvider {
             if (status.equals("completed")) {
                 return new CompletionResponse(getResponseMessage(threadId, openAIKey));
             } else if (status.equals("requires_action")) {
-                String responseMessage = responseBodyNode.get("required_action").get("type").asText();
-                CompletionResponse completionResponse = new CompletionResponse(responseMessage);
+                CompletionResponse completionResponse = new CompletionResponse("Tool call completed");
+                String arguments = getArguments(responseBodyNode);
+                log.info("Arguments: " + arguments);
                 // TODO: Replace hard coded values by tool output
                 completionResponse.addFunctionArgument("file_path", "/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
                 return completionResponse;
@@ -487,6 +488,13 @@ public class OpenAIGenerate implements GenerateProvider {
             log.error(e.getMessage(), e);
             throw e;
         }
+    }
+
+    /**
+     *
+     */
+    private String getArguments(JsonNode node) {
+        return node.get("required_action").get("submit_tool_outputs").get("tool_calls").get(0).get("function").get("arguments").asText();
     }
 
     /**
