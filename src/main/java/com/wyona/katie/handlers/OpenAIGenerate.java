@@ -232,6 +232,7 @@ public class OpenAIGenerate implements GenerateProvider {
         String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB";
         // TODO: Check whether assistant already exists
         if (false) {
+            // TODO: Make Name and Instructions configurable per domain
             assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
         }
         String threadId = createThread(promptMessages, openAIKey);
