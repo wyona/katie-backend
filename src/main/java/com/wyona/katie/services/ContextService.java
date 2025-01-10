@@ -773,6 +773,24 @@ public class ContextService {
     }
 
     /**
+     * Add Filesystem knowledge source
+     */
+    public void addKnowledgeSourceFilesystem(String domainId, String name) throws Exception {
+        if (!isMemberOrAdmin(domainId)) {
+            log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        // WARNING: For security reasons one can not set base path, because this would allow to access data from outside of the domain
+        try {
+            File baseDirectory = new File(getContext(domainId).getContextDirectory(), "documents");
+            String ksUUID = knowledgeSourceXMLFileService.addFilesystem(domainId, name, baseDirectory.getAbsolutePath());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Add SharePoint as knowledge source
      * Also see https://developers.glean.com/docs/indexing_api_getting_started/#set-up-a-datasource and https://developers.glean.com/docs/indexing_api_datasource_category/
      * @param baseUrl SharePoint base URL, e.g. "https://wyona.sharepoint.com"

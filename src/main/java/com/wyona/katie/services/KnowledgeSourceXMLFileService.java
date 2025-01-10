@@ -27,6 +27,7 @@ public class KnowledgeSourceXMLFileService {
 
     private static final String KATIE_NAMESPACE_1_0_0 = "http://www.wyona.com/askkatie/1.0.0";
 
+    private static final String KNOWLEDGE_SOURCES_TAG = "knowledge-sources";
     private static final String KNOWLEDGE_SOURCE_TAG = "ks";
     private static final String KNOWLEDGE_SOURCE_ID_ATTR = "id";
     private static final String KNOWLEDGE_SOURCE_CONNECTOR_ATTR = "connector";
@@ -65,8 +66,13 @@ public class KnowledgeSourceXMLFileService {
     private static final String SUPABASE_URL_ATTR = "url";
     private static final String SUPBASE_CHUNK_SIZE_ATTR = "chunk-size";
 
+    private static final String TOPDESK_TAG = "topdesk";
+
+    private static final String FILESYSTEM_TAG = "filesystem";
+    private static final String FILESYTSME_BASE_PATH_ATTR = "base-path";
+
     /**
-     * Get knowledge sources
+     * Get knowledge sources of a particular domain
      */
     public KnowledgeSourceMeta[] getKnowledgeSources(String domainId) throws Exception {
         Document doc = getKnowledgeSourcesDocument(domainId);
@@ -209,8 +215,13 @@ public class KnowledgeSourceXMLFileService {
                     }
                 }
 
+                if (connector.equals(KnowledgeSourceConnector.FILESYSTEM)) {
+                    Element filesystemEl = xmlService.getDirectChildByTagName(ksEl,  FILESYSTEM_TAG);
+                    ksMeta.setFilesystemBasePath(new File(filesystemEl.getAttribute(FILESYTSME_BASE_PATH_ATTR)));
+                }
+
                 if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
-                    Element topDeskEl = xmlService.getDirectChildByTagName(ksEl, "topdesk");
+                    Element topDeskEl = xmlService.getDirectChildByTagName(ksEl, TOPDESK_TAG);
                     ksMeta.setTopDeskBaseUrl(topDeskEl.getAttribute("base-url"));
                     ksMeta.setTopDeskUsername(topDeskEl.getAttribute("username"));
                     ksMeta.setTopDeskAPIPassword(topDeskEl.getAttribute("password"));
@@ -369,7 +380,7 @@ public class KnowledgeSourceXMLFileService {
         log.info("Add OneNote as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
-            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0,  KNOWLEDGE_SOURCES_TAG);
         }
 
         Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
@@ -379,7 +390,7 @@ public class KnowledgeSourceXMLFileService {
         ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
         ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.ONENOTE.toString());
 
-        Element nameEl = doc.createElement("name");
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
         ksEl.appendChild(nameEl);
         nameEl.setTextContent(name);
 
@@ -420,7 +431,7 @@ public class KnowledgeSourceXMLFileService {
         log.info("Add SharePoint as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
-            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, KNOWLEDGE_SOURCES_TAG);
         }
 
         Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
@@ -430,7 +441,7 @@ public class KnowledgeSourceXMLFileService {
         ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
         ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.SHAREPOINT.toString());
 
-        Element nameEl = doc.createElement("name");
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
         ksEl.appendChild(nameEl);
         nameEl.setTextContent(name);
 
@@ -472,7 +483,7 @@ public class KnowledgeSourceXMLFileService {
         log.info("Add Website as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
-            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, KNOWLEDGE_SOURCES_TAG);
         }
 
         Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
@@ -482,7 +493,7 @@ public class KnowledgeSourceXMLFileService {
         ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
         ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.WEBSITE.toString());
 
-        Element nameEl = doc.createElement("name");
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
         ksEl.appendChild(nameEl);
         nameEl.setTextContent(name);
 
@@ -531,7 +542,7 @@ public class KnowledgeSourceXMLFileService {
         log.info("Add third-party RAG as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
-            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, KNOWLEDGE_SOURCES_TAG);
         }
 
         Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
@@ -541,7 +552,7 @@ public class KnowledgeSourceXMLFileService {
         ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
         ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.THIRD_PARTY_RAG.toString());
 
-        Element nameEl = doc.createElement("name");
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
         ksEl.appendChild(nameEl);
         nameEl.setTextContent(name);
 
@@ -568,6 +579,39 @@ public class KnowledgeSourceXMLFileService {
     }
 
     /**
+     * Add filesystem knowledge source
+     * @param basePath Directory base path
+     * @return knowledge source Id
+     */
+    public String addFilesystem(String domainId, String name, String basePath) throws Exception {
+        log.info("Add filesystem directory as knowledge source to domain '" + domainId + "' ...");
+        Document doc = getKnowledgeSourcesDocument(domainId);
+        if (doc == null) {
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, KNOWLEDGE_SOURCES_TAG);
+        }
+
+        Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
+        doc.getDocumentElement().appendChild(ksEl);
+        String uuid = UUID.randomUUID().toString();
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ID_ATTR, uuid);
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.FILESYSTEM.toString());
+
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
+        ksEl.appendChild(nameEl);
+        nameEl.setTextContent(name);
+
+        Element filesystemEl = doc.createElement(FILESYSTEM_TAG);
+        ksEl.appendChild(filesystemEl);
+        filesystemEl.setAttribute(FILESYTSME_BASE_PATH_ATTR, basePath);
+
+        File config = getKnowledgeSourcesConfig(domainId);
+        xmlService.save(doc, config);
+
+        return uuid;
+    }
+
+    /**
      * Add Supabase knowledge source
      * @param answerFieldNames Comma separated list of field names, e.g. 'abstract, text'
      * @param chunkSize Chunk size
@@ -577,7 +621,7 @@ public class KnowledgeSourceXMLFileService {
         log.info("Add Supabase as knowledge source to domain '" + domainId + "' ...");
         Document doc = getKnowledgeSourcesDocument(domainId);
         if (doc == null) {
-            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, "knowledge-sources");
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0, KNOWLEDGE_SOURCES_TAG);
         }
 
         Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
@@ -587,7 +631,7 @@ public class KnowledgeSourceXMLFileService {
         ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
         ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.SUPABASE.toString());
 
-        Element nameEl = doc.createElement("name");
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
         ksEl.appendChild(nameEl);
         nameEl.setTextContent(name);
 

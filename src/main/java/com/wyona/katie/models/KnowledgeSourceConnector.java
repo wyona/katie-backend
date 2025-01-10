@@ -12,6 +12,7 @@ public enum KnowledgeSourceConnector {
     WEAVIATE_SITE_SEARCH,
     WEAVIATE_WIKIPEDIA_SEARCH,
     THIRD_PARTY_RAG,
+    FILESYSTEM,
     DIRECTUS,
     SUPABASE,
     TOP_DESK,

@@ -2,6 +2,7 @@ package com.wyona.katie.models;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,6 +74,8 @@ public class KnowledgeSourceMeta {
     private String topDeskUsername;
     private String topDeskAPIPassword;
     private Integer topDeskIncidentsRetrievalLimit;
+
+    private File filesystemBasePath;
 
     private String configurationErrorMessage;
 
@@ -735,6 +738,20 @@ public class KnowledgeSourceMeta {
      */
     public String getThirdPartyRAGReferenceJsonPath() {
         return thirdPartyRAGReferenceJsonPath;
+    }
+
+    /**
+     *
+     */
+    public void setFilesystemBasePath(File filesystemBasePath) {
+        this.filesystemBasePath = filesystemBasePath;
+    }
+
+    /**
+     *
+     */
+    public String getFilesystemBasePath() {
+        return filesystemBasePath.getAbsolutePath();
     }
 
     /**
