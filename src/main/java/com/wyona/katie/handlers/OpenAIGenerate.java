@@ -47,21 +47,7 @@ public class OpenAIGenerate implements GenerateProvider {
         if (false) {
             return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
         } else {
-            if (false) {
-                if (false) {
-                    File file = new File("/Users/michaelwechner/Desktop/Auftragsrecht.pdf");
-                    String fileId = uploadFile(file, openAIKey);
-                    log.info("File Id of uploaded document: " + fileId);
-                }
-                FileResponse[] files = getFiles(openAIKey);
-                String answer = "Files:";
-                for (FileResponse fileResponse : files) {
-                    answer = answer + " " + fileResponse.getFilename();
-                }
-                return new CompletionResponse(answer);
-            } else {
-                return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
-            }
+            return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
         }
     }
 
