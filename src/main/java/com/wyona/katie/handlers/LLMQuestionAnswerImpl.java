@@ -168,6 +168,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         promptMessages.add(promptMessage);
 
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        if (generateProvider == null) {
+            throw new Exception("Domain '" + domain + "' has no LLM configured!");
+        }
         String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
         String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
         Double temperature = null;
