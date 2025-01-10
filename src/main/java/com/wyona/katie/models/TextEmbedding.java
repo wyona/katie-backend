@@ -1,4 +1,4 @@
-package com.wyona.katie.ai.models;
+package com.wyona.katie.models;
 
 /**
  *

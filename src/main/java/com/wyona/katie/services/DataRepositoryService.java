@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.ai.models.TextEmbedding;
+import com.wyona.katie.models.TextEmbedding;
 import com.wyona.katie.models.*;
 import com.wyona.katie.models.discord.DiscordDomainMapping;
 import com.wyona.katie.models.discord.DiscordEvent;
