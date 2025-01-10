@@ -105,9 +105,14 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         File[] relevantDocs = null;
         if (true) {
-            relevantDocs = getRelevantDocuments(question, classifications, domain);
-            for (File relevantDoc: relevantDocs) {
-                log.info("Relevant document: " + relevantDoc.getAbsolutePath());
+            try {
+                relevantDocs = getRelevantDocuments(question, classifications, domain);
+                for (File relevantDoc: relevantDocs) {
+                    log.info("Relevant document: " + relevantDoc.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                _answer = "ERROR: " + e.getMessage();
             }
         } else {
             relevantDocs = new File[1];
@@ -115,7 +120,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             log.warn("Use mock document: " + relevantDocs[0].getAbsolutePath());
         }
 
-        if (true) {
+        if (true && _answer == null) {
             if (relevantDocs != null && relevantDocs.length > 0) {
                 _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
                 log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
@@ -149,7 +154,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * Retrieval: Get relevant documents
      * @return list of relevant documents
      */
-    private File[] getRelevantDocuments(String question, List<String> classifications, Context domain) {
+    private File[] getRelevantDocuments(String question, List<String> classifications, Context domain) throws Exception {
+        File baseDiretory = getBaseDirectory(domain);
+
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list of documents is relevant in connection with the following question \"" + question + "\"\n\nIf the attached list of documents does not contain any relevant document, then answer with N/A, otherwise make sure to return the file path of the relevant document.");
@@ -178,23 +185,42 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
             String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
             if (filePath != null) {
-                File baseDiretory = new File(domain.getContextDirectory(), "documents");
-                KnowledgeSourceMeta[] knowledgeSourceMetas = knowledgeSourceXMLFileService.getKnowledgeSources(domain.getId());
-                if (knowledgeSourceMetas.length > 0) {
-                    // TODO: Get base directory from knowledge source
-                    baseDiretory = new File(domain.getContextDirectory(), "documents");
-                } else {
-                    log.warn("Domain '" + domain + "' has no filesystem volumes configured! Use '" + baseDiretory.getAbsolutePath() + "' as base directory ...");
-                }
                 relevantDocs.add(new File(baseDiretory, filePath));
             } else {
                 log.warn("No relevant document(s) found!");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw e;
         }
 
         return relevantDocs.toArray(new File[0]);
+    }
+
+    /**
+     * Get base directory containing documents
+     */
+    private File getBaseDirectory(Context domain) throws Exception {
+        KnowledgeSourceMeta[] knowledgeSourceMetas = knowledgeSourceXMLFileService.getKnowledgeSources(domain.getId());
+        if (knowledgeSourceMetas.length > 0) {
+            for (KnowledgeSourceMeta ksMeta : knowledgeSourceMetas) {
+                if (ksMeta.getConnector() == KnowledgeSourceConnector.FILESYSTEM) {
+                    if (!ksMeta.getIsEnabled()) {
+                        log.warn("Knowledge source is disabled!");
+                        String errMsg = "Knowledge source '" + ksMeta.getId() + "' of domain '" + domain + "' is disabled!";
+                        log.warn(errMsg);
+                        throw new Exception(errMsg);
+                    }
+                    // TODO: Get base directory from knowledge source
+                    //baseDiretory = new File(ksMeta.getFilesystemBasePath());
+                }
+            }
+            return new File(domain.getContextDirectory(), "documents");
+        } else {
+            String errMsg = "Domain '" + domain + "' has no " + KnowledgeSourceConnector.FILESYSTEM + " knowledge source configured!";
+            log.warn(errMsg);
+            throw new Exception(errMsg);
+        }
     }
 
     /**
