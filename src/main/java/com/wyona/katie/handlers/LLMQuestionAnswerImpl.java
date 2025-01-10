@@ -173,25 +173,21 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         List<File> relevantDocs = new ArrayList<>();
-        try {
-            List<CompletionTool> tools = new ArrayList<>();
-            CompletionTool getFilePathTool = new CompletionTool("function");
-            getFilePathTool.setFunctionArgument("file_path");
-            // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
 
-            tools.add(getFilePathTool);
+        List<CompletionTool> tools = new ArrayList<>();
+        CompletionTool getFilePathTool = new CompletionTool("function");
+        getFilePathTool.setFunctionArgument("file_path");
+        // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
 
-            CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
-            log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
-            String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
-            if (filePath != null) {
-                relevantDocs.add(new File(baseDiretory, filePath));
-            } else {
-                log.warn("No relevant document(s) found!");
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw e;
+        tools.add(getFilePathTool);
+
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
+        log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
+        String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
+        if (filePath != null) {
+            relevantDocs.add(new File(baseDiretory, filePath));
+        } else {
+            log.warn("No relevant document(s) found!");
         }
 
         return relevantDocs.toArray(new File[0]);
