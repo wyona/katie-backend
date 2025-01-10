@@ -160,8 +160,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         promptMessage.setContent("Which document from the attached list of documents is relevant in connection with the following question \"" + question + "\"\n\nIf the attached list of documents does not contain any relevant document, then answer with N/A, otherwise make sure to return the file path of the relevant document.");
+
+        File documentsIndex = new File(domain.getContextDirectory(), "documents.json");
+        if (!documentsIndex.isFile()) {
+            throw new Exception("Domain '" + domain + "' has no documents index yet!");
+        }
         File[] attachments = new File[1];
-        attachments[0] = new File(domain.getContextDirectory(), "documents.json");
+        attachments[0] = documentsIndex;
         promptMessage.setAttachments(attachments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
