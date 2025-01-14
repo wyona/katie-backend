@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.CompletionAssistant;
 import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
@@ -41,14 +42,13 @@ public class OpenAIGenerate implements GenerateProvider {
     private static final String ASSISTANT_TOOL_FILE_SEARCH = "file_search";
 
     /**
-     * @see GenerateProvider#getCompletion(List, List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        // TODO
-        if (false) {
-            return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+        if (assistant != null) {
+            return assistantThread(promptMessages, assistant, tools, openAIModel, temperature, openAIKey);
         } else {
-            return assistantThread(promptMessages, tools, openAIModel, temperature, openAIKey);
+            return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
         }
     }
 
@@ -213,7 +213,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /***
      * Generate answer using OpenAI Assistant Thread API https://platform.openai.com/docs/api-reference/threads
      */
-    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB"; // TODO: Get assistant Id from domain configuration
@@ -222,7 +222,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 log.warn("No assistant exists with Id '" + assistantId + "'!");
             }
             // TODO: Make Name and Instructions configurable per domain
-            assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
+            assistantId = createAssistant(assistant, tools, openAIModel, temperature, openAIKey);
             // TODO: Save assistant Id persistently
         }
 
@@ -261,11 +261,10 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     * @param name Name of assistant, e.g. "Legal Insurance Assistant"
-     * @param instructions Instructions, e.g. "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+     * @param assistant Assistant name and instructions
      * @return assistant Id
      */
-    private String createAssistant(String name, String instructions, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private String createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         try {
@@ -274,8 +273,8 @@ public class OpenAIGenerate implements GenerateProvider {
             ObjectNode requestBodyNode = mapper.createObjectNode();
             requestBodyNode.put("model", openAIModel);
             //requestBodyNode.put("model", "gpt-4o-2024-08-06");
-            requestBodyNode.put("instructions", instructions);
-            requestBodyNode.put("name", name);
+            requestBodyNode.put("instructions", assistant.getInstructions());
+            requestBodyNode.put("name", assistant.getName());
 
             if (true) {
                 ArrayNode toolsNode = mapper.createArrayNode();

@@ -189,7 +189,8 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         tools.add(getFilePathTool);
 
-        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, tools, model, temperature, apiToken);
+        CompletionAssistant assistant = new CompletionAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, tools, model, temperature, apiToken);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
         if (filePath != null) {
@@ -248,7 +249,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+            String answer = generateProvider.getCompletion(promptMessages, null, null, model, temperature, apiToken).getText();
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

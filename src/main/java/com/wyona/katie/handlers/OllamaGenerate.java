@@ -1,9 +1,6 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.models.CompletionResponse;
-import com.wyona.katie.models.CompletionTool;
-import com.wyona.katie.models.PromptMessage;
-import com.wyona.katie.models.PromptMessageRole;
+import com.wyona.katie.models.*;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
@@ -43,9 +40,9 @@ public class OllamaGenerate implements GenerateProvider {
     private String ollamaBasicAuthPassword;
 
     /**
-     * @see GenerateProvider#getCompletion(List, List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {
         log.info("Complete prompt using Ollama completion API (" + ollamaHost + ") ...");
 
         String completedText = null;

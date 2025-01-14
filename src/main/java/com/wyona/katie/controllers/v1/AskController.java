@@ -709,7 +709,7 @@ public class AskController {
 
         String apiToken = generativeAIService.getApiToken(completionImpl);
 
-        return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+        return generateProvider.getCompletion(promptMessages, null, null, model, temperature, apiToken).getText();
     }
 
     /**
