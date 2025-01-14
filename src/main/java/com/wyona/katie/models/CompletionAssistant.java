@@ -10,6 +10,7 @@ import java.io.File;
 @Slf4j
 public class CompletionAssistant {
 
+    private String id;
     private String name;
     private String instructions;
 
@@ -21,12 +22,21 @@ public class CompletionAssistant {
     }
 
     /**
+     * @param id Assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
      * @param name Assistant name, e.g. "Legal Insurance Assistant"
-     * @param instructions Instructions, e.g. "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics."
+     * @param instructions Assistant instructions, e.g. "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics."
      */
-    public CompletionAssistant(String name, String instructions) {
+    public CompletionAssistant(String id, String name, String instructions) {
+        this.id = id;
         this.name = name;
         this.instructions = instructions;
+    }
+
+    /**
+     *
+     */
+    public String getId() {
+        return id;
     }
 
     /**

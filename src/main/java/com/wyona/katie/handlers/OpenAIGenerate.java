@@ -216,18 +216,16 @@ public class OpenAIGenerate implements GenerateProvider {
     private CompletionResponse assistantThread(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB"; // TODO: Get assistant Id from domain configuration
-        if (assistantId != null && !assistantExists(assistantId, openAIKey)) {
-            if (assistantId != null) {
-                log.warn("No assistant exists with Id '" + assistantId + "'!");
+        if (assistant.getId() != null && !assistantExists(assistant.getId(), openAIKey)) {
+            if (assistant.getId() != null) {
+                log.warn("No assistant exists with Id '" + assistant.getId() + "'!");
             }
-            // TODO: Make Name and Instructions configurable per domain
-            assistantId = createAssistant(assistant, tools, openAIModel, temperature, openAIKey);
+            String assistantId = createAssistant(assistant, tools, openAIModel, temperature, openAIKey);
             // TODO: Save assistant Id persistently
         }
 
         String threadId = createThread(promptMessages, openAIKey);
-        return runThread(assistantId, threadId, openAIKey);
+        return runThread(assistant.getId(), threadId, openAIKey);
         //return new CompletionResponse();
     }
 
