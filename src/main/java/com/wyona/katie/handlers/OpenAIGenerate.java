@@ -8,6 +8,7 @@ import com.wyona.katie.models.CompletionResponse;
 import com.wyona.katie.models.CompletionTool;
 import com.wyona.katie.models.PromptMessage;
 import io.github.sashirestela.openai.SimpleOpenAI;
+import io.github.sashirestela.openai.domain.assistant.Assistant;
 import io.github.sashirestela.openai.domain.file.FileRequest;
 import io.github.sashirestela.openai.domain.file.FileResponse;
 import org.apache.commons.io.IOUtils;
@@ -235,6 +236,17 @@ public class OpenAIGenerate implements GenerateProvider {
      * @return true when assistant already exists and false otherwise
      */
     private boolean assistantExists(String id, String openAIKey) {
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+        List<Assistant> assistants = openAI.assistants().getList().join();
+        for (Assistant assistant : assistants) {
+            if (assistant.getId().equals(id)) {
+                log.info("Assistant with Id '" + id + "' exists.");
+                return true;
+            }
+        }
+        return false;
+
+        /*
         HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
         HttpEntity<String> request = new HttpEntity<String>(headers);
         String getRunUrl = openAIHost + "/v1/assistants?order=desc&limit=20";
@@ -256,6 +268,7 @@ public class OpenAIGenerate implements GenerateProvider {
         }
 
         return false;
+         */
     }
 
     /**
