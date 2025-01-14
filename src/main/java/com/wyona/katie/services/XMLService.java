@@ -129,6 +129,7 @@ public class XMLService {
     private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_LLM_SEARCH_TAG = "llm-search";
+    private static final String CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR = "assistant-id";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
@@ -1456,7 +1457,9 @@ public class XMLService {
         if (ddqi.equals(DetectDuplicatedQuestionImpl.LLM)) {
             log.info("Add element " + CONTEXT_LLM_SEARCH_TAG);
             Element llmSearchElement = doc.createElement(CONTEXT_LLM_SEARCH_TAG);
-            // TODO
+            if (context.getLlmSearchAssistantId() != null) {
+                llmSearchElement.setAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR, context.getLlmSearchAssistantId());
+            }
             doc.getDocumentElement().appendChild(llmSearchElement);
         }
 
@@ -1898,6 +1901,9 @@ public class XMLService {
         domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT); // INFO: Set LUCENE_DEFAULT implementation by default
         if (llmSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
+            if (llmSearchEl.hasAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR)) {
+                domain.setLlmSearchAssistantId(llmSearchEl.getAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR));
+            }
         }
         if (katieSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);

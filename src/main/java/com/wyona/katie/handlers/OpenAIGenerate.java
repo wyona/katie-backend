@@ -222,7 +222,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 log.warn("No assistant exists with Id '" + assistant.getId() + "'!");
             }
             String assistantId = createAssistant(assistant, tools, openAIModel, temperature, openAIKey);
-            // TODO: Save assistant Id persistently
+            log.warn("TODO: Save assistant Id '" + assistantId + "' persistently!");
         }
 
         String threadId = createThread(promptMessages, openAIKey);
@@ -273,7 +273,7 @@ public class OpenAIGenerate implements GenerateProvider {
 
     /**
      * @param assistant Assistant name and instructions
-     * @return assistant Id
+     * @return assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
      */
     private String createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");

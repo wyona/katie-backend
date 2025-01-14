@@ -50,6 +50,8 @@ public class Context {
     private String weaviateQueryUrl;
     private float weaviateCertaintyThreshold;
 
+    private String llmSearchAssistantId;
+
     private String azureAISearchIndexName;
     private String azureAISearchEndpoint;
     private String azureAISearchAdminKey;
@@ -590,6 +592,20 @@ public class Context {
         } else {
             return null;
         }
+    }
+
+    /**
+     * @param assistantId Assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
+     */
+    public void setLlmSearchAssistantId(String assistantId) {
+        this.llmSearchAssistantId = assistantId;
+    }
+
+    /**
+     * @return assistatnt Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
+     */
+    public String getLlmSearchAssistantId() {
+        return llmSearchAssistantId;
     }
 
     /**

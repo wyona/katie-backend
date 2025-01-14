@@ -189,7 +189,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         tools.add(getFilePathTool);
 
-        String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB"; // TODO: Get assistant Id from domain configuration
+        String assistantId = domain.getLlmSearchAssistantId();
         CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
         CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, tools, model, temperature, apiToken);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
