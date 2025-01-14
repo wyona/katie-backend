@@ -217,7 +217,7 @@ public class OpenAIGenerate implements GenerateProvider {
     private CompletionResponse assistantThread(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        if (assistant.getId() != null && !assistantExists(assistant.getId(), openAIKey)) {
+        if (assistant.getId() == null || (assistant.getId() != null && !assistantExists(assistant.getId(), openAIKey))) {
             if (assistant.getId() != null) {
                 log.warn("No assistant exists with Id '" + assistant.getId() + "'!");
             }
@@ -227,7 +227,6 @@ public class OpenAIGenerate implements GenerateProvider {
 
         String threadId = createThread(promptMessages, openAIKey);
         return runThread(assistant.getId(), threadId, openAIKey);
-        //return new CompletionResponse();
     }
 
     /**
