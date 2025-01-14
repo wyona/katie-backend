@@ -44,6 +44,7 @@ public class OpenAIGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, List, String, Double, String)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+        // TODO
         if (false) {
             return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
         } else {
@@ -215,14 +216,48 @@ public class OpenAIGenerate implements GenerateProvider {
     private CompletionResponse assistantThread(List<PromptMessage> promptMessages, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB";
-        // TODO: Check whether assistant already exists
-        if (false) {
+        String assistantId = "asst_79S9rWytfx7oNqyIr2rrJGBB"; // TODO: Get assistant Id from domain configuration
+        if (assistantId != null && !assistantExists(assistantId, openAIKey)) {
+            if (assistantId != null) {
+                log.warn("No assistant exists with Id '" + assistantId + "'!");
+            }
             // TODO: Make Name and Instructions configurable per domain
             assistantId = createAssistant("Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.", tools, openAIModel, temperature, openAIKey);
+            // TODO: Save assistant Id persistently
         }
+
         String threadId = createThread(promptMessages, openAIKey);
         return runThread(assistantId, threadId, openAIKey);
+        //return new CompletionResponse();
+    }
+
+    /**
+     * Check whether assistant already exists
+     * @param id Assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
+     * @return true when assistant already exists and false otherwise
+     */
+    private boolean assistantExists(String id, String openAIKey) {
+        HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        String getRunUrl = openAIHost + "/v1/assistants?order=desc&limit=20";
+        log.info("Get list of assistants " + getRunUrl);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> response = restTemplate.exchange(getRunUrl, HttpMethod.GET, request, JsonNode.class);
+        JsonNode responseBodyNode = response.getBody();
+        log.info("JSON Response: " + responseBodyNode);
+        JsonNode dataNode = responseBodyNode.get("data");
+        if (dataNode.isArray()) {
+            for (int i = 0; i < dataNode.size(); i++) {
+                JsonNode assistantNode = dataNode.get(i);
+                String assistantId = assistantNode.get("id").asText();
+                if (assistantId.equals(id)) {
+                    log.info("Assistant with Id '" + id + "' exists.");
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
