@@ -103,10 +103,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         String _answer = null;
 
+        String assistantId = domain.getLlmSearchAssistantId();
+        CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
+
         File[] relevantDocs = null;
         if (true) {
             try {
-                relevantDocs = getRelevantDocuments(question, classifications, domain);
+                relevantDocs = getRelevantDocuments(question, classifications, assistant, domain);
                 for (File relevantDoc: relevantDocs) {
                     log.info("Relevant document: " + relevantDoc.getAbsolutePath());
                 }
@@ -122,7 +125,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         if (true && _answer == null) {
             if (relevantDocs != null && relevantDocs.length > 0) {
-                _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, domain);
+                _answer = getAnswerFromRelevantDocuments(relevantDocs, question, classifications, assistant, domain);
                 log.info("Answer from getAnswerFromRelevantDocuments(): " + _answer);
             } else {
                 _answer = "No relevant documents found!";
@@ -154,7 +157,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * Retrieval: Get relevant documents
      * @return list of relevant documents
      */
-    private File[] getRelevantDocuments(String question, List<String> classifications, Context domain) throws Exception {
+    private File[] getRelevantDocuments(String question, List<String> classifications, CompletionAssistant assistant, Context domain) throws Exception {
         File baseDiretory = getBaseDirectory(domain);
 
         PromptMessage promptMessage = new PromptMessage();
@@ -189,8 +192,6 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         tools.add(getFilePathTool);
 
-        String assistantId = domain.getLlmSearchAssistantId();
-        CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
         CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, tools, model, temperature, apiToken);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
@@ -233,7 +234,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      * RAG: Generate answer based on relevant documents
      * @param relevantDocuments Paths of relevant documents
      */
-    private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, Context domain) {
+    private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, CompletionAssistant assistant, Context domain) {
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
         // TODO: Make language configurable
@@ -250,7 +251,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, null, null, model, temperature, apiToken).getText();
+            String answer = generateProvider.getCompletion(promptMessages, assistant, null, model, temperature, apiToken).getText();
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
