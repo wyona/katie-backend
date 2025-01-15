@@ -751,7 +751,11 @@ public class KnowledgeSourceMeta {
      *
      */
     public String getFilesystemBasePath() {
-        return filesystemBasePath.getAbsolutePath();
+        if (filesystemBasePath != null) {
+            return filesystemBasePath.getAbsolutePath();
+        } else {
+            return null;
+        }
     }
 
     /**
