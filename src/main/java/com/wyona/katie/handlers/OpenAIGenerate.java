@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.*;
 
 /**
@@ -436,8 +437,14 @@ public class OpenAIGenerate implements GenerateProvider {
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm" or "file-D72TcUvBpxs4aKa5BUssCA"
      */
     private String getFileId(File file, FileResponse[] alreadyUploadedFiles, String openAIKey) throws Exception {
+        String filePathNormalized = Normalizer.normalize(file.getAbsolutePath(), Normalizer.Form.NFKD);
         for (FileResponse alreadyUploadedFile: alreadyUploadedFiles) {
-            if (file.getAbsolutePath().equals(alreadyUploadedFile.getFilename())) {
+            log.debug("Already uploaded file: " + alreadyUploadedFile.getFilename());
+            // Files like for example "Auftragsrecht inkl. gemischte Verträge (Beendigung OR 404) in a nutshell.pdf" with special characters like for example "ä" can use different characters / sequences to represent special characters
+            // Therefore use Normalizer to use the same form and being able to compare
+            // See for example https://stackoverflow.com/questions/64574044/comparing-strings-with-equivalent-but-different-unicode-code-points-in-java-kotl
+            String alreadyUploadedFilePathNormalized = Normalizer.normalize(alreadyUploadedFile.getFilename(), Normalizer.Form.NFKD);
+            if (filePathNormalized.equals(alreadyUploadedFilePathNormalized)) {
                 log.info("File already uploaded: " + file.getAbsolutePath());
                 return alreadyUploadedFile.getId();
             }
