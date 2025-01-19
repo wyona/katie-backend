@@ -44,11 +44,26 @@ public class OpenAIGenerate implements GenerateProvider {
     private static final String ASSISTANT_TOOL_FILE_SEARCH = "file_search";
 
     /**
+     * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
+     */
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) throws Exception {
+        if (id == null || (id != null && !assistantExists(id, apiToken))) {
+            if (id != null) {
+                log.warn("No assistant exists with Id '" + id + "'!");
+            }
+            return createAssistant(new CompletionAssistant(id, name, instructions), tools, model, apiToken);
+        }
+
+        log.info("Assistant " + id + "'' already exists.");
+        return new CompletionAssistant(id, name, instructions);
+    }
+
+    /**
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
         if (assistant != null) {
-            return assistantThread(promptMessages, assistant, tools, openAIModel, temperature, openAIKey);
+            return assistantThread(promptMessages, assistant.getId(), temperature, openAIKey);
         } else {
             return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
         }
@@ -215,19 +230,11 @@ public class OpenAIGenerate implements GenerateProvider {
     /***
      * Generate answer using OpenAI Assistant Thread API https://platform.openai.com/docs/api-reference/threads
      */
-    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, String assistantId, Double temperature, String openAIKey) throws Exception {
         log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
-        if (assistant.getId() == null || (assistant.getId() != null && !assistantExists(assistant.getId(), openAIKey))) {
-            if (assistant.getId() != null) {
-                log.warn("No assistant exists with Id '" + assistant.getId() + "'!");
-            }
-            String assistantId = createAssistant(assistant, tools, openAIModel, temperature, openAIKey);
-            log.warn("TODO: Save assistant Id '" + assistantId + "' persistently!");
-        }
-
         String threadId = createThread(promptMessages, openAIKey);
-        return runThread(assistant.getId(), threadId, openAIKey);
+        return runThread(assistantId, threadId, openAIKey);
     }
 
     /**
@@ -272,10 +279,11 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Create new assistant
      * @param assistant Assistant name and instructions
-     * @return assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
+     * @return assistant including its Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
      */
-    private String createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    private CompletionAssistant createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, String openAIKey) throws Exception {
         log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
 
         try {
@@ -336,7 +344,8 @@ public class OpenAIGenerate implements GenerateProvider {
 
             String assistantId = responseBodyNode.get("id").asText();
             if (assistantId != null) {
-                return assistantId;
+                assistant.setId(assistantId);
+                return assistant;
             } else {
                 log.error("No assistant Id!");
                 return null;

@@ -103,13 +103,25 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         String _answer = null;
 
-        String assistantId = domain.getLlmSearchAssistantId();
-        CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
+        List<CompletionTool> tools = new ArrayList<>();
+        CompletionTool getFilePathTool = new CompletionTool("function");
+        getFilePathTool.setFunctionArgument("file_path");
+        // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
+
+        tools.add(getFilePathTool);
+
+        CompletionAssistant assistant = null;
+        try {
+            assistant = getAssistant(domain, tools);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return hits.toArray(new Hit[0]);
+        }
 
         File[] relevantDocs = null;
         if (true) {
             try {
-                relevantDocs = getRelevantDocuments(question, classifications, assistant, domain);
+                relevantDocs = getRelevantDocuments(question, classifications, assistant, getFilePathTool, domain);
                 for (File relevantDoc: relevantDocs) {
                     log.info("Relevant document: " + relevantDoc.getAbsolutePath());
                 }
@@ -154,10 +166,39 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     }
 
     /**
+     *
+     */
+    private CompletionAssistant getAssistant(Context domain, List<CompletionTool> tools) throws Exception {
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        if (generateProvider == null) {
+            throw new Exception("Domain '" + domain + "' has no LLM configured!");
+        }
+
+        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
+        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+
+        String name = "Legal Insurance Assistant";
+        String instructions = "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.";
+        CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, model, apiToken);
+
+        // TODO: Get assistant name and instructions from Katie domain configuration
+        //CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
+
+        if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
+            domain.setLlmSearchAssistantId(assistant.getId());
+            // TODO: Make sure to be thread safe
+            log.warn("TODO: Save new assistant Id '" + assistant.getId() + "'!");
+            // TODO Save domain configuration
+        }
+
+        return assistant;
+    }
+
+    /**
      * Retrieval: Get relevant documents
      * @return list of relevant documents
      */
-    private File[] getRelevantDocuments(String question, List<String> classifications, CompletionAssistant assistant, Context domain) throws Exception {
+    private File[] getRelevantDocuments(String question, List<String> classifications, CompletionAssistant assistant, CompletionTool getFilePathTool, Context domain) throws Exception {
         File baseDiretory = getBaseDirectory(domain);
 
         PromptMessage promptMessage = new PromptMessage();
@@ -185,14 +226,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         List<File> relevantDocs = new ArrayList<>();
 
-        List<CompletionTool> tools = new ArrayList<>();
-        CompletionTool getFilePathTool = new CompletionTool("function");
-        getFilePathTool.setFunctionArgument("file_path");
-        // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
-
-        tools.add(getFilePathTool);
-
-        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, tools, model, temperature, apiToken);
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, null, model, temperature, apiToken);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
         if (filePath != null) {

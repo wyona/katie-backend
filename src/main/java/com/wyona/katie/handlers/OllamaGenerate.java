@@ -40,6 +40,14 @@ public class OllamaGenerate implements GenerateProvider {
     private String ollamaBasicAuthPassword;
 
     /**
+     * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
+     */
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) {
+        log.error("Not implemented yet!");
+        return null;
+    }
+
+    /**
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {

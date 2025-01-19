@@ -40,6 +40,13 @@ public class CompletionAssistant {
     }
 
     /**
+     * Set assistant Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /**
      *
      */
     public String getName() {

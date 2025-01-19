@@ -23,4 +23,10 @@ public interface GenerateProvider {
      * @return generated / completed text, including citations, tool / function arguments, etc.
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String model, Double temperature, String apiToken) throws Exception;
+
+    /**
+     * Get assistant to help generate / complete text
+     * @param id TODO
+     */
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) throws Exception;
 }
