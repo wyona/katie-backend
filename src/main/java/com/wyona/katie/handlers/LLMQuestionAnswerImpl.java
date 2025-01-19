@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.GenerativeAIService;
 import com.wyona.katie.services.KnowledgeSourceXMLFileService;
+import com.wyona.katie.services.XMLService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Autowired
     private KnowledgeSourceXMLFileService knowledgeSourceXMLFileService;
+
+    @Autowired
+    private XMLService xmlService;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -177,18 +181,15 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
         String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
 
+        // TODO: Get assistant name and instructions from Katie domain configuration
         String name = "Legal Insurance Assistant";
         String instructions = "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.";
         CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, model, apiToken);
-
-        // TODO: Get assistant name and instructions from Katie domain configuration
-        //CompletionAssistant assistant = new CompletionAssistant(assistantId,"Legal Insurance Assistant", "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.");
-
+        
         if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
             domain.setLlmSearchAssistantId(assistant.getId());
-            // TODO: Make sure to be thread safe
-            log.warn("TODO: Save new assistant Id '" + assistant.getId() + "'!");
-            // TODO Save domain configuration
+            log.warn("Save new assistant Id '" + assistant.getId() + "'!");
+            xmlService.saveContextConfig(domain); // TODO: Make sure to be thread safe
         }
 
         return assistant;
