@@ -41,7 +41,7 @@ public class MistralAIGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, com.wyona.katie.models.CompletionAssistant, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String model, Double temperature, String mistralAIKey) throws Exception {
         log.info("Complete prompt using Mistral AI chat completion ...");
