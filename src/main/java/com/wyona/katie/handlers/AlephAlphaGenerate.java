@@ -40,9 +40,9 @@ public class AlephAlphaGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
         log.info("Complete prompt using Aleph Alpha completion ...");
 
         String completedText = null;

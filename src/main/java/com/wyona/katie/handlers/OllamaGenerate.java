@@ -48,9 +48,9 @@ public class OllamaGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String model, Double temperature, String apiKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String model, Double temperature, String apiKey) throws Exception {
         log.info("Complete prompt using Ollama completion API (" + ollamaHost + ") ...");
 
         String completedText = null;

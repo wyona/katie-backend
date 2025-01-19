@@ -51,7 +51,7 @@ public class LLMReRank implements ReRankProvider {
             String apiToken = generativeAIService.getApiToken(completionImpl);
             if (generateProvider != null) {
                 // TODO: Use response_format json, see for example https://platform.openai.com/docs/guides/structured-outputs
-                completedText = generateProvider.getCompletion(promptMessages,null,null, model, temperature, apiToken).getText();
+                completedText = generateProvider.getCompletion(promptMessages,null, model, temperature, apiToken).getText();
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
                 return reRankedIndex.toArray(new Integer[0]);

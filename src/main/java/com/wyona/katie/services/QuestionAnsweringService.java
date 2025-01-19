@@ -560,7 +560,7 @@ public class QuestionAnsweringService {
                 log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + model + " ...");
                 Double temperature = null;
                 // INFO: Get answer from LLM
-                String completedText = generateProvider.getCompletion(promptMessages, null, null, model, temperature, apiToken).getText();
+                String completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
 
                 log.info("Completed text: " + completedText);
 

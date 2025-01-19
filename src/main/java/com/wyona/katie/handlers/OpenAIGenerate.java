@@ -59,9 +59,9 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, List, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String openAIModel, Double temperature, String openAIKey) throws Exception {
         if (assistant != null) {
             return assistantThread(promptMessages, assistant.getId(), temperature, openAIKey);
         } else {

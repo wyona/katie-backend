@@ -226,7 +226,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         List<File> relevantDocs = new ArrayList<>();
 
-        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, null, model, temperature, apiToken);
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
         if (filePath != null) {
@@ -285,7 +285,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, assistant, null, model, temperature, apiToken).getText();
+            String answer = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken).getText();
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
