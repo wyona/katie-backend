@@ -64,10 +64,20 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         CompletionImpl completionImpl = domain.getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider != null) {
-            // TODO: Use tool call!
             String model = generativeAIService.getCompletionModel(completionImpl);
             String apiToken = generativeAIService.getApiToken(completionImpl);
-            completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+
+            // TODO: Use tool call!
+            List<CompletionTool> tools = new ArrayList<>();
+            CompletionTool getFilePathTool = new CompletionTool("function");
+            getFilePathTool.setFunctionArgument("file_path");
+            // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
+            tools.add(getFilePathTool);
+            CompletionAssistant assistant = getAssistant(generateProvider, domain, tools, model, apiToken);
+
+            CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken);
+            //completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
+            completedText = completionResponse.getText();
         } else {
             String errorMsg = "Completion provider '" + completionImpl + "' not implemented yet! Make sure that the domain configuration attribute '" + XMLService.CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR + "' is set correctly.";
             log.error(errorMsg);
@@ -99,6 +109,18 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         }
 
         return hitLabels.toArray(new HitLabel[0]);
+    }
+
+    /**
+     *
+     */
+    private CompletionAssistant getAssistant(GenerateProvider generateProvider, Context domain, List<CompletionTool> tools, String model, String apiToken) throws Exception {
+        String assistantName = "TODO";
+        String assistantInstructions = "TODO";
+        //CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), assistantName, assistantInstructions, tools, model, apiToken);
+        CompletionAssistant assistant = null;
+
+        return assistant;
     }
 
     /**
