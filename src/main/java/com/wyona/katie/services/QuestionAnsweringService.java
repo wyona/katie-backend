@@ -164,7 +164,9 @@ public class QuestionAnsweringService {
 
         log.info("Try to answer question '" + question + "' ...");
 
+        User user = authService.getUser(false, false);
         String usernameKatie = authService.getUsername();
+        //String usernameKatie = user.getUsername();
 
         // TODO: Log question and update further down log entry using log entry UUID
         //String logEntryUUID = dataRepoService.logQuestion(question, remoteAddress, dateSubmitted, domain.getId(), username, null, null);
@@ -177,7 +179,7 @@ public class QuestionAnsweringService {
             try {
                 int limitPredictedLabels = 3; // TODO: Make configurable
                 String questionLanguage = "en"; // TODO
-                predictedLabels = contextService.classifyText(domain.getId(), question, messageId, limitPredictedLabels, questionLanguage).getPredictedLabels();
+                predictedLabels = contextService.classifyText(domain.getId(), question, messageId, limitPredictedLabels, questionLanguage, user).getPredictedLabels();
             } catch (Exception e) {
                 // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
                 log.error(e.getMessage(), e);

@@ -497,7 +497,7 @@ public class AskController {
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
-    @ApiOperation(value="Classify a text")
+    @Operation(summary="Classify a text")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = PredictedLabelsResponse.class),
             @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
@@ -507,6 +507,8 @@ public class AskController {
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataTypeClass = String.class, paramType = "header") })
     public ResponseEntity<?> predictTaxonomyEntries(
+            @ApiParam(name = "asynchronous", value = "When set to true, then prediction will be done asynchronous", required = false, defaultValue = "false")
+            @RequestParam(value = "asynchronous", required = false) Boolean asynchronous,
             @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
             @ApiParam(name = "limit", value = "Maximum number of labels returned", required = false, defaultValue = "3")
@@ -528,7 +530,15 @@ public class AskController {
                 _limit = limit.intValue();
             }
             String requestedLanguage = "de"; // TODO: Make language configurable
-            return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage), HttpStatus.OK);
+            User user = authService.getUser(false, false);
+
+            if (asynchronous != null && asynchronous) {
+                String processId = UUID.randomUUID().toString();
+                contextService.classifyTextAsynchronously(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user, processId);
+                return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
+            }
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {

@@ -532,6 +532,23 @@ public class ContextService {
     }
 
     /**
+     * Classify a text asynchronously
+     */
+    @Async
+    public void classifyTextAsynchronously(String domainId, String text, String clientMessageId, int limit, String language, User user, String processId) {
+        backgroundProcessService.startProcess(processId, "Classify text ...", user.getId());
+        try {
+            PredictedLabelsResponse labels = classifyText(domainId, text, clientMessageId, limit, language, user);
+            log.info("PredictedLabels: " + labels.getPredictedLabelsAsTopDeskHtml());
+            backgroundProcessService.updateProcessStatus(processId, "Text classified");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
+        backgroundProcessService.stopProcess(processId, domainId);
+    }
+
+    /**
      * Classify a text
      * @param domainId Domain Id
      * @param text Text, e.g. "When was Michael born?"
@@ -540,16 +557,20 @@ public class ContextService {
      * @param language User / Moderator language
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
      */
-    public PredictedLabelsResponse classifyText(String domainId, String text, String clientMessageId, int limit, String language) throws Exception {
+    public PredictedLabelsResponse classifyText(String domainId, String text, String clientMessageId, int limit, String language, User user) throws Exception {
+
+        if (user == null) {
+            throw new java.nio.file.AccessDeniedException("User is not signed in!");
+        }
 
         Context domain = getContext(domainId);
 
-        if (!isMemberOrAdmin(domainId)) {
+        if (!isMemberOrAdmin(domainId, user)) {
             if (domain.getAnswersGenerallyProtected()) {
-                log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
-                throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+                log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+                throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
             } else {
-                log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "', but answers of domain '" + domainId + "' are generally public.");
+                log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "', but answers of domain '" + domainId + "' are generally public.");
             }
         }
 
