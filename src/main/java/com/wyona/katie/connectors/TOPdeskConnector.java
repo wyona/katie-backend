@@ -325,7 +325,7 @@ public class TOPdeskConnector implements Connector {
     public void addComment(String incidentId, String processId, KnowledgeSourceMeta ksMeta, String text) {
         // TODO: Add text as incident comment
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
-        JsonNode bodyNode = getData(requestUrl, ksMeta, "TODO");
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
     }
 
     /**
