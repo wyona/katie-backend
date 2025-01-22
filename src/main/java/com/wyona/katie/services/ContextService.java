@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.connectors.TOPdeskConnector;
 import com.wyona.katie.exceptions.UserAlreadyMemberException;
 import com.wyona.katie.models.faq.TopicVisibility;
 import com.wyona.katie.models.faq.FAQ;
@@ -148,6 +149,9 @@ public class ContextService {
 
     @Autowired
     SegmentationService segmentationService;
+
+    @Autowired
+    TOPdeskConnector topDeskConnector;
 
     /**
      *
@@ -533,6 +537,7 @@ public class ContextService {
 
     /**
      * Classify a text asynchronously
+     * @param clientMessageId Foreign message id, e.g. "TODO"
      */
     @Async
     public void classifyTextAsynchronously(String domainId, String text, String clientMessageId, int limit, String language, User user, String processId) {
@@ -541,6 +546,9 @@ public class ContextService {
             PredictedLabelsResponse labels = classifyText(domainId, text, clientMessageId, limit, language, user);
             log.info("PredictedLabels: " + labels.getPredictedLabelsAsTopDeskHtml());
             backgroundProcessService.updateProcessStatus(processId, "Text classified");
+
+            // TODO: Make "Webhook" configurable
+            addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -549,10 +557,19 @@ public class ContextService {
     }
 
     /**
+     * Add classifications as TOPdesk incident comment
+     */
+    private void addClassificationResultAsIncidentCommentToTOPdesk(String domainId, String incidentId, PredictedLabelsResponse labels, String processId) throws Exception {
+        KnowledgeSourceMeta ksMeta = getKnowledgeSource(domainId, "432d418c-6672-4422-b8b9-abb5fe3ceb94");
+
+        topDeskConnector.addComment(incidentId, processId, ksMeta, labels.getPredictedLabelsAsTopDeskHtml());
+    }
+
+    /**
      * Classify a text
      * @param domainId Domain Id
      * @param text Text, e.g. "When was Michael born?"
-     * @param clientMessageId Foreign message id
+     * @param clientMessageId Foreign message id, e.g. "TODO"
      * @param limit Maximum number of labels returned
      * @param language User / Moderator language
      * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications

@@ -766,7 +766,7 @@ public class KnowledgeSourceMeta {
     }
 
     /**
-     *
+     * @return TOPdesk base URL, e.g. "https://topdesk.wyona.com"
      */
     public String getTopDeskBaseUrl() {
         return topDeskBaseUrl;
