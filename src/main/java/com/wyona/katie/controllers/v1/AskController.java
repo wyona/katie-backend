@@ -530,7 +530,20 @@ public class AskController {
                 _limit = limit.intValue();
             }
             String requestedLanguage = "de"; // TODO: Make language configurable
+
             User user = authService.getUser(false, false);
+            if (user == null) {
+                throw new java.nio.file.AccessDeniedException("User is not signed in!");
+            }
+            if (!contextService.isMemberOrAdmin(domainId, user)) {
+                Context domain = contextService.getContext(domainId);
+                if (domain.getAnswersGenerallyProtected()) {
+                    log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+                    throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+                } else {
+                    log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "', but answers of domain '" + domainId + "' are generally public.");
+                }
+            }
 
             if (asynchronous != null && asynchronous) {
                 String processId = UUID.randomUUID().toString();
@@ -540,7 +553,7 @@ public class AskController {
                 return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
             }
         } catch(AccessDeniedException e) {
-            return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
