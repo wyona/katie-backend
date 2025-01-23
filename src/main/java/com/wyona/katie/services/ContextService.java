@@ -537,18 +537,25 @@ public class ContextService {
 
     /**
      * Classify a text asynchronously
-     * @param clientMessageId Foreign message id, e.g. "TODO"
+     * @param clientMessageId Foreign message id, e.g. "I-250123-0735"
      */
     @Async
     public void classifyTextAsynchronously(String domainId, String text, String clientMessageId, int limit, String language, User user, String processId) {
-        backgroundProcessService.startProcess(processId, "Classify text ...", user.getId());
+        backgroundProcessService.startProcess(processId, "Classify text (client message Id: " + clientMessageId + ") ...", user.getId());
         try {
             PredictedLabelsResponse labels = classifyText(domainId, text, clientMessageId, limit, language, user);
-            log.info("PredictedLabels: " + labels.getPredictedLabelsAsTopDeskHtml());
             backgroundProcessService.updateProcessStatus(processId, "Text classified");
 
-            // TODO: Make "Webhook" configurable
-            addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
+            if (labels.getPredictedLabels().length > 0) {
+                log.info("Predicted labels as TOPdesk HTML: " + labels.getPredictedLabelsAsTopDeskHtml());
+
+                // TODO: Make "Webhook" configurable
+                addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
+                backgroundProcessService.updateProcessStatus(processId, "Predicted labels to incident '" + clientMessageId + "' as invisible comment added.");
+            } else {
+                log.info("No labels predicted.");
+                backgroundProcessService.updateProcessStatus(processId, "No labels predicted.");
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
