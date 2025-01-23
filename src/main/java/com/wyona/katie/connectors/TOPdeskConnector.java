@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.handlers.mcc.MulticlassTextClassifier;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
@@ -320,12 +322,52 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * @param incidentId TOPdesk incident Id, e.g. "I-240606-0510"
      */
     public void addComment(String incidentId, String processId, KnowledgeSourceMeta ksMeta, String text) {
-        // TODO: Add text as incident comment
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
-        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        String url = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
+        log.info("Request URL: " + url);
+        backgroundProcessService.updateProcessStatus(processId, "Request " + url);
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("action", text);
+        body.put("actionInvisibleForCaller", true);
+        log.info("Request body: " + body.toString());
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = getHttpHeaders(ksMeta);
+        headers.set("Content-Type", "application/json");
+        HttpEntity<String> request = new HttpEntity<String>(body.toString(), headers);
+
+        try {
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.PUT, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.info("JSON response: " + bodyNode);
+        } catch(HttpClientErrorException e) {
+            if (e.getRawStatusCode() == 404) {
+                String logMsg = "No such resource '" + url + "'!";
+                log.error(logMsg);
+                backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.ERROR);
+            }
+            if (e.getRawStatusCode() == 401) {
+                backgroundProcessService.updateProcessStatus(processId, "Authentication failed", BackgroundProcessStatusType.ERROR);
+            }
+            if (e.getRawStatusCode() == 403) {
+            }
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            // INFO: Do not return null
+        } catch(HttpServerErrorException e) {
+            log.error(e.getMessage(), e);
+            if (e.getRawStatusCode() == 500) {
+            }
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            // INFO: Do not return null
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+        }
     }
 
     /**
