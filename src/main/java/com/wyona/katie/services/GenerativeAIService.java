@@ -90,6 +90,7 @@ public class GenerativeAIService {
         } else if (generateImpl.equals(CompletionImpl.MISTRAL_AI)) {
             return mistralAIKey;
         } else {
+            // INFO: For example Ollama
             return null;
         }
     }
