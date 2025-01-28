@@ -4,6 +4,7 @@ import com.wyona.katie.handlers.GenerateProvider;
 import com.wyona.katie.handlers.MistralAIGenerate;
 import com.wyona.katie.handlers.OllamaGenerate;
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.GenerativeAIService;
 import com.wyona.katie.services.NamedEntityRecognitionService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,20 +30,8 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
     @Autowired
     private NamedEntityRecognitionService nerService;
 
-    @Value("${mistral.api.key}")
-    private String mistralAIKey;
-
-    @Value("${mistral.ai.completion.model}")
-    private String mistralAIModel;
-
     @Autowired
-    private MistralAIGenerate mistralAIGenerate;
-
-    @Autowired
-    private OllamaGenerate ollamaGenerate;
-
-    @Value("${ollama.completion.model}")
-    private String ollamaModel;
+    private GenerativeAIService generativeAIService;
 
     @Value("${re_rank.llm.impl}")
     private CompletionImpl completionImpl;
@@ -119,20 +108,14 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
      *
      */
     private String getEmailBody(String message) {
-        GenerateProvider generateMistralCloud = mistralAIGenerate;
-        GenerateProvider generateOllama = ollamaGenerate;
-
         List<PromptMessage> promptMessages = new ArrayList<>();
         String prompt = "Please split the following email into Salutation, Body and Signature and provide the response as JSON: \"" + message + "\"";
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, prompt));
         try {
             Double temperature = null;
             String completedText = null;
-            if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
-                completedText = generateMistralCloud.getCompletion(promptMessages, null, mistralAIModel, temperature, mistralAIKey).getText();
-            } else {
-                completedText = generateOllama.getCompletion(promptMessages, null, ollamaModel, temperature, null).getText();
-            }
+            GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+            completedText = generateProvider.getCompletion(promptMessages, null, generativeAIService.getCompletionModel(completionImpl), temperature, generativeAIService.getApiToken(completionImpl)).getText();
 
             log.info("Completed text: " + completedText);
                 /*
