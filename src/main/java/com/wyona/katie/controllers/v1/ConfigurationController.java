@@ -410,7 +410,9 @@ public class ConfigurationController {
             authService.tryJWTLogin(request);
             rememberMeService.tryAutoLogin(request, response);
 
-            // TOOD: Check whether domain exists
+            if (!contextService.existsContext(id)) {
+                return new ResponseEntity<>(new Error("No such domain", "NOT_FOUND"), HttpStatus.NOT_FOUND);
+            }
             Context domain = contextService.getDomain(id);
             return new ResponseEntity<>(domain, HttpStatus.OK);
         } catch(AccessDeniedException e) {
