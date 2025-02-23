@@ -161,7 +161,11 @@ public class OpenAIGenerate implements GenerateProvider {
      * Generate answer using OpenAI Chat Completion API https://platform.openai.com/docs/api-reference/chat
      */
     private String chatCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        log.info("Complete prompt using OpenAI chat completion (API key: " + openAIKey.substring(0, 7) + "******) ...");
+        if (openAIKey != null) {
+            log.info("Complete prompt using OpenAI chat completion (API key: " + openAIKey.substring(0, 7) + "******) ...");
+        } else {
+            throw new Exception("No OpenAI API key configured!");
+        }
 
         String completedText = null;
 
