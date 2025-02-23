@@ -173,13 +173,14 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      *
      */
     private CompletionAssistant getAssistant(Context domain, List<CompletionTool> tools) throws Exception {
-        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
         }
 
-        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
-        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+        String model = domain.getCompletionConfig().getModel();
+        String apiToken = domain.getCompletionConfig().getApiKey();
 
         // TODO: Get assistant name and instructions from Katie domain configuration
         String name = "Legal Insurance Assistant";
@@ -217,12 +218,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
-        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
         }
-        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
-        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+        String model = domain.getCompletionConfig().getModel();
+        String apiToken = domain.getCompletionConfig().getApiKey();
         Double temperature = null;
 
         List<File> relevantDocs = new ArrayList<>();
@@ -280,9 +282,10 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
-        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
-        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
-        String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+        CompletionConfig completionConfig = domain.getCompletionConfig();
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionConfig.getCompletionImpl());
+        String model = domain.getCompletionConfig().getModel();
+        String apiToken = domain.getCompletionConfig().getApiKey();
         Double temperature = null;
 
         try {

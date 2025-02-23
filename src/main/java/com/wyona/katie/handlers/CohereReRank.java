@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.wyona.katie.models.Context;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -39,9 +40,9 @@ public class CohereReRank implements ReRankProvider {
     private String cohereReRankModel;
 
     /**
-     * @see ReRankProvider#getReRankedAnswers(String, String[], int)
+     * @see ReRankProvider#getReRankedAnswers(String, String[], int, com.wyona.katie.models.Context)
      */
-    public Integer[] getReRankedAnswers(String question, String[] answers, int limit) {
+    public Integer[] getReRankedAnswers(String question, String[] answers, int limit, Context domain) {
         log.info("Re-rank answers using Cohere's re-rank service");
 
         List<Integer> reRankedIndex = new ArrayList<Integer>();

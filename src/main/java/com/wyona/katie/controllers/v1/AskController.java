@@ -700,7 +700,7 @@ public class AskController {
      * @return completion message
      */
     private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
-        CompletionImpl completionImpl = domain.getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         //completionImpl = CompletionImpl.OLLAMA;
         if (completionImpl == CompletionImpl.UNSET) {
             String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
@@ -710,7 +710,7 @@ public class AskController {
             log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
         }
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-        String model = generativeAIService.getCompletionModel(completionImpl);
+        String model = domain.getCompletionConfig().getModel();
 
         List<PromptMessage> promptMessages = new ArrayList<>();
         for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
@@ -730,7 +730,7 @@ public class AskController {
             // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
         }
 
-        String apiToken = generativeAIService.getApiToken(completionImpl);
+        String apiToken = domain.getCompletionConfig().getApiKey();
 
         return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
     }

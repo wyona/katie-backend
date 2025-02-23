@@ -1873,8 +1873,9 @@ public class ContextService {
         boolean considerHumanFeedback = false; // TODO: Use argument
         boolean reRankAnswers = false; // TODO: Use argument
         boolean useGenerativeAI = false; // TODO: Use argument
+        CompletionConfig genAIConfig = null; // TODO: Use argument
         boolean katieSearchEnabled = true; // TODO: Use argument
-        Context newDomain = createDomainConfiguration(domainId, name, answersGenerallyProtected, mailSubjectTag, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled);
+        Context newDomain = createDomainConfiguration(domainId, name, answersGenerallyProtected, mailSubjectTag, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, genAIConfig, katieSearchEnabled);
 
         xmlService.saveMembersConfig(newDomain.getId());
 
@@ -1895,7 +1896,7 @@ public class ContextService {
     private Context createROOTDomain() throws Exception {
         log.info("Create context/domain ...");
         boolean answersGenerallyProtected = true;
-        Context newDomain = createDomainConfiguration("ROOT", "Root Domain", answersGenerallyProtected, "AskKatie", false, false, false, false, false, true);
+        Context newDomain = createDomainConfiguration("ROOT", "Root Domain", answersGenerallyProtected, "AskKatie", false, false, false, false, false, null, true);
 
         xmlService.saveMembersConfig(newDomain.getId());
 
@@ -1906,9 +1907,9 @@ public class ContextService {
      * @param name Name of Katie domain, e.g. "Wyona"
      * @param answersMustBeApproved True when answers must be approved by a moderator
      */
-    private Context createDomainConfiguration(String domainId, String name, boolean answersGenerallyProtected, String mailSubjectTag, boolean answersMustBeApproved, boolean informUserReModeration, boolean considerHumanFeedback, boolean reRankAnswers, boolean useGenerativeAI, boolean katieSearchEnabled) throws Exception {
+    private Context createDomainConfiguration(String domainId, String name, boolean answersGenerallyProtected, String mailSubjectTag, boolean answersMustBeApproved, boolean informUserReModeration, boolean considerHumanFeedback, boolean reRankAnswers, boolean useGenerativeAI, CompletionConfig genAIConfig, boolean katieSearchEnabled) throws Exception {
         File domainDir = createDomainDirectory(domainId);
-        Context newContext = new Context(domainId, domainDir, answersGenerallyProtected, mailBodyHost, mailDeepLink, mailSubjectTag, null, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled, null);
+        Context newContext = new Context(domainId, domainDir, answersGenerallyProtected, mailBodyHost, mailDeepLink, mailSubjectTag, null, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, genAIConfig, katieSearchEnabled, null);
         newContext.setName(name);
 
         if (defaultDetectDuplicatedQuestionImpl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {

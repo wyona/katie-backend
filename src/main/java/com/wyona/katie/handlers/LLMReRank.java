@@ -1,8 +1,6 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.models.CompletionImpl;
-import com.wyona.katie.models.PromptMessage;
-import com.wyona.katie.models.PromptMessageRole;
+import com.wyona.katie.models.*;
 import com.wyona.katie.services.GenerativeAIService;
 import com.wyona.katie.services.Utils;
 import com.wyona.katie.models.CompletionImpl;
@@ -33,10 +31,11 @@ public class LLMReRank implements ReRankProvider {
     private CompletionImpl completionImpl;
 
     /**
-     * @see ReRankProvider#getReRankedAnswers(String, String[], int)
+     * @see ReRankProvider#getReRankedAnswers(String, String[], int, com.wyona.katie.models.Context)
      */
-    public Integer[] getReRankedAnswers(String question, String[] answers, int limit) {
-        log.info("Re-rank answers using a LLM (" + generativeAIService.getCompletionModel(completionImpl) + ")...");
+    public Integer[] getReRankedAnswers(String question, String[] answers, int limit, Context domain) {
+        String model = domain.getCompletionConfig().getModel();
+        log.info("Re-rank answers using a LLM (" + model + ")...");
 
         List<Integer> reRankedIndex = new ArrayList<Integer>();
 
@@ -47,8 +46,7 @@ public class LLMReRank implements ReRankProvider {
         try {
             String completedText = null;
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            String model = generativeAIService.getCompletionModel(completionImpl);
-            String apiToken = generativeAIService.getApiToken(completionImpl);
+            String apiToken = domain.getCompletionConfig().getApiKey();
             if (generateProvider != null) {
                 // TODO: Use response_format json, see for example https://platform.openai.com/docs/guides/structured-outputs
                 completedText = generateProvider.getCompletion(promptMessages,null, model, temperature, apiToken).getText();

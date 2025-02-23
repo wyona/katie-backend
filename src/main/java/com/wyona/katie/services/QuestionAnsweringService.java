@@ -514,7 +514,7 @@ public class QuestionAnsweringService {
             log.info("Consider human feedback disabled.");
         }
 
-        if (domain.getGenerateCompleteAnswers() && !domain.getCompletionImpl().equals(CompletionImpl.UNSET)) {
+        if (domain.getGenerateCompleteAnswers() && !domain.getCompletionConfig().getCompletionImpl().equals(CompletionImpl.UNSET)) {
             hits = generateAnswer(analyzedQuestion, domain, hits);
         } else {
             if (!domain.getGenerateCompleteAnswers()) {
@@ -533,12 +533,13 @@ public class QuestionAnsweringService {
      * @return hits, whereas top hit contains generated answer by LLM based on retrieval results
      */
     private List<Hit> generateAnswer(Sentence question, Context domain, List<Hit> hits) {
-        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(domain.getCompletionImpl());
+        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
-            log.warn("No such completion implementation '" + domain.getCompletionImpl() + "'!");
+            log.warn("No such completion implementation '" + completionImpl + "'!");
             return hits;
         }
-        String model = generativeAIService.getCompletionModel(domain.getCompletionImpl());
+        String model = domain.getCompletionConfig().getModel();
 
         try {
             // TODO: Make flag "alwaysUseLLM" configurable
@@ -553,12 +554,11 @@ public class QuestionAnsweringService {
                     context = topRetrievalResult.getAnswer();
                     url = topRetrievalResult.getUrl();
                 } else {
-                    log.warn("No retrieval results / hits available, therefore get knowledge from LLM '" + domain.getCompletionImpl() + "' itself ...");
+                    log.warn("No retrieval results / hits available, therefore get knowledge from LLM '" + completionImpl + "' itself ...");
                 }
                 List<PromptMessage> promptMessages = getPromptMessages(domain, question, context, url); // TODO: When there are no retrieval results, then use different prompt
 
-                // TODO: Domain specific API token, similar to domain.getEmbeddingsApiToken();
-                String apiToken = generativeAIService.getApiToken(domain.getCompletionImpl());
+                String apiToken = domain.getCompletionConfig().getApiKey();
                 log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + model + " ...");
                 Double temperature = null;
                 // INFO: Get answer from LLM
@@ -592,7 +592,7 @@ public class QuestionAnsweringService {
                     hits.add(new Hit(llmAnswer, 0));
                 }
             } else {
-                log.info("No hits available, therefore do not ask LLM '" + domain.getCompletionImpl() + "' to generate answer.");
+                log.info("No hits available, therefore do not ask LLM '" + completionImpl + "' to generate answer.");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -709,7 +709,7 @@ public class QuestionAnsweringService {
             return answers;
         }
 
-        Integer[] reRankedIndex = reRankImpl.getReRankedAnswers(question.getSentence(), _answers.toArray(new String[0]), limit);
+        Integer[] reRankedIndex = reRankImpl.getReRankedAnswers(question.getSentence(), _answers.toArray(new String[0]), limit, domain);
 
         List<Hit> reRankedAnswers = new ArrayList<Hit>();
         for (int i:reRankedIndex) {

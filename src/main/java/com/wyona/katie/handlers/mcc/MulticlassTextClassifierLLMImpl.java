@@ -61,11 +61,11 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         log.info("Prompt: " + promptMessages.get(0).getContent());
 
         String completedText = null;
-        CompletionImpl completionImpl = domain.getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider != null) {
-            String model = generativeAIService.getCompletionModel(completionImpl);
-            String apiToken = generativeAIService.getApiToken(completionImpl);
+            String model = domain.getCompletionConfig().getModel();
+            String apiToken = domain.getCompletionConfig().getApiKey();
 
             // TODO: Use tool call!
             List<CompletionTool> tools = new ArrayList<>();

@@ -47,6 +47,15 @@ import java.util.UUID;
 @Component
 public class XMLService {
 
+    @Value("${mistral.ai.completion.model}")
+    private String mistralAIModel;
+
+    @Value("${openai.generate.model}")
+    private String openAIModel;
+
+    @Value("${ollama.completion.model}")
+    private String ollamaModel;
+
     @Value("${iam.data_path}")
     private String iamDataPath;
 
@@ -165,6 +174,8 @@ public class XMLService {
     private static final String CONTEXT_RE_RANK_IMPLEMENTATION_ATTR = "re-rank-impl";
     private static final String CONTEXT_USE_GENERATIVE_AI_ATTR = "generate-complete-answers";
     public static final String CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR = "completion-impl";
+    public static final String CONTEXT_GENERATIVE_AI_MODEL_ATTR = "completion-model";
+    public static final String CONTEXT_GENERATIVE_AI_API_KEY_ATTR = "completion-api-key";
     private static final String CONTEXT_KATIE_SEARCH_ENABLED_ATTR = "search-enabled";
     private static final String CONTEXT_SCORE_THRESHOLD_ATTR = "score-threshold";
     private static final String CONTEXT_ANALYZE_MESSAGES_ASK_REST_API = "analyze-messages-ask-rest-api";
@@ -1424,10 +1435,10 @@ public class XMLService {
         } else {
             indexSearchPipelineEl.setAttribute(CONTEXT_RE_RANK_IMPLEMENTATION_ATTR, "" + context.getReRankImpl());
         }
-        if (context.getCompletionImpl() == null) {
+        if (context.getCompletionConfig() == null) {
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + completionDefaultImpl);
         } else {
-            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + context.getCompletionImpl());
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + context.getCompletionConfig().getCompletionImpl());
         }
         doc.getDocumentElement().appendChild(indexSearchPipelineEl);
 
@@ -1819,7 +1830,7 @@ public class XMLService {
         boolean reRankAnswers = false;
         ReRankImpl reRankImpl = reRankDefaultImpl;
         boolean useGenerativeAI = false;
-        CompletionImpl generateImpl = completionDefaultImpl;
+        CompletionConfig genAIConfig = new CompletionConfig(completionDefaultImpl, null, null);
         boolean katieSearchEnabled = true;
         Double scoreThreshold = null;
         boolean analyzeMessagesAskRestApi = false;
@@ -1843,7 +1854,15 @@ public class XMLService {
             
             useGenerativeAI = getAttributeBooleanValue(indexSearchPipelineEl, CONTEXT_USE_GENERATIVE_AI_ATTR, false);
             if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR)) {
-                generateImpl = CompletionImpl.valueOf(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR));
+                genAIConfig.setCompletionImpl(CompletionImpl.valueOf(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR)));
+                if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR)) {
+                    genAIConfig.setModel(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR));
+                } else {
+                    genAIConfig.setModel(getCompletionModel(genAIConfig.getCompletionImpl()));
+                }
+                if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR)) {
+                    genAIConfig.setApiKey(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR));
+                }
             }
 
             katieSearchEnabled = getAttributeBooleanValue(indexSearchPipelineEl, CONTEXT_KATIE_SEARCH_ENABLED_ATTR, true);
@@ -1857,13 +1876,12 @@ public class XMLService {
 
         String reindexBackgroundProcessId = getReindexProcessId(domainId);
 
-        Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, katieSearchEnabled, reindexBackgroundProcessId);
+        Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, genAIConfig, katieSearchEnabled, reindexBackgroundProcessId);
         domain.setInformUserReNoAnswerAvailable(informUserReNoAnswerAvailable);
         domain.setReRankImpl(reRankImpl);
         domain.setReRankLLMImpl(reRankLLMDefaultImpl); // TODO: Make configurable
         domain.setClassifierImpl(classificationImpl);
 
-        domain.setCompletionImpl(generateImpl);
         Element generativePromptMessagesEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG);
         if (generativePromptMessagesEl != null) {
             List<PromptMessage> promptMessages = new ArrayList<>();
@@ -1954,6 +1972,27 @@ public class XMLService {
         }
 
         return domain;
+    }
+
+    /**
+     * Get GenAI model
+     * @return GenAI model, e.g. "deepseek-r1"
+     */
+    private String getCompletionModel(CompletionImpl completionImpl) {
+        String model = null;
+        if (completionImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
+            model = "luminous-base"; // TODO: Make configurable
+        } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
+            model = openAIModel;
+        } else if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
+            model = mistralAIModel;
+        } else if (completionImpl.equals(CompletionImpl.OLLAMA)) {
+            model = ollamaModel;
+        } else {
+            log.error("No such completion implemention supported yet: " + completionImpl);
+            model = null;
+        }
+        return model;
     }
 
     /**

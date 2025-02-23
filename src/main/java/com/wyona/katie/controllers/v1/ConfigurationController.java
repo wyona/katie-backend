@@ -414,6 +414,14 @@ public class ConfigurationController {
                 return new ResponseEntity<>(new Error("No such domain", "NOT_FOUND"), HttpStatus.NOT_FOUND);
             }
             Context domain = contextService.getDomain(id);
+
+            // WARN: API keys should only be accessible to users with the appropriate authorisation
+            if (domain.getCompletionConfig() != null && domain.getCompletionConfig().getApiKey() != null) {
+                CompletionConfig genAIConfig = domain.getCompletionConfig();
+                genAIConfig.setApiKey(genAIConfig.getApiKey().substring(0, 5) + "******");
+                domain.setCompletionConfig(genAIConfig);
+            }
+
             return new ResponseEntity<>(domain, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);

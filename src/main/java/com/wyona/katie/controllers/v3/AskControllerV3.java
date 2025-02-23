@@ -294,8 +294,8 @@ public class AskControllerV3 {
                 CompletionImpl genAIImpl = null;
                 String genAIModel = null;
                 if (domain.getGenerateCompleteAnswers()) {
-                    genAIImpl = domain.getCompletionImpl();;
-                    genAIModel = generativeAIService.getCompletionModel(genAIImpl);
+                    genAIImpl = domain.getCompletionConfig().getCompletionImpl();;
+                    genAIModel = domain.getCompletionConfig().getModel();
                 }
                 
                 AskResponse askResponse = new AskResponse(question, questionUUID, classifications, domain.getDetectDuplicatedQuestionImpl(), domain.getEmbeddingsImpl(), domain.getVectorSimilarityMetric(), genAIImpl, genAIModel);

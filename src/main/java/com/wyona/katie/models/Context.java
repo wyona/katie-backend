@@ -37,7 +37,7 @@ public class Context {
     private boolean analyzeMessagesAskRestApi = false;
     private ReRankImpl reRankImpl;
     private CompletionImpl reRankLLMImpl;
-    private CompletionImpl generateImpl;
+    private CompletionConfig generateConfig;
     private List<PromptMessage> promptMessages;
 
     private ClassificationImpl classifierImpl;
@@ -95,10 +95,11 @@ public class Context {
      * @param answersMustBeApprovedByModerator True when answers must be approved by a moderator
      * @param informUserReModeration TODO
      * @param useGenerativeAI True when Katie shall generate answers using Generative AI
+     * @param genAIConfig GenAI configuration, including implementation, model (e.g. "deepseek-r1"), api key, ...
      * @param katieSearchEnabled True when Katie shall search its own knowledge base
      * @param reindexBackgroundProcessId Background process Id when domain is being reindexed
      */
-    public Context(String contextId, File contextDirectory, boolean answersGenerallyProtected, String host, String mailBodyDeepLink, String mailSubjectTag, String mailSenderEmail, boolean answersMustBeApprovedByModerator, boolean informUserReModeration, boolean considerHumanFeedback, boolean reRankAnswers, boolean useGenerativeAI, boolean katieSearchEnabled, String reindexBackgroundProcessId) {
+    public Context(String contextId, File contextDirectory, boolean answersGenerallyProtected, String host, String mailBodyDeepLink, String mailSubjectTag, String mailSenderEmail, boolean answersMustBeApprovedByModerator, boolean informUserReModeration, boolean considerHumanFeedback, boolean reRankAnswers, boolean useGenerativeAI, CompletionConfig genAIConfig, boolean katieSearchEnabled, String reindexBackgroundProcessId) {
         this.contextId = contextId;
         this.contextDirectory = contextDirectory;
 
@@ -125,7 +126,7 @@ public class Context {
 
         this.reRankImpl = null;
         this.reRankLLMImpl = null;
-        this.generateImpl = null;
+        this.generateConfig = genAIConfig;
         this.promptMessages = new ArrayList<>();
 
         this.informUserReNoAnswerAvailable = false;
@@ -952,15 +953,23 @@ public class Context {
     /**
      *
      */
+    @Deprecated
     public CompletionImpl getCompletionImpl() {
-        return generateImpl;
+        return generateConfig.getCompletionImpl();
     }
 
     /**
      *
      */
-    public void setCompletionImpl(CompletionImpl generateImpl) {
-        this.generateImpl = generateImpl;
+    public CompletionConfig getCompletionConfig() {
+        return generateConfig;
+    }
+
+    /**
+     *
+     */
+    public void setCompletionConfig(CompletionConfig generateConfig) {
+        this.generateConfig = generateConfig;
     }
 
     /**

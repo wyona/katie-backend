@@ -49,7 +49,7 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
 
         // TODO: Make sure "Date sent:" and "Subject:" is located at the beginning of the text
         if (messageX.contains("Date sent:") && messageX.contains("Subject:")) {
-            _message = getEmailBody(_message);
+            _message = getEmailBody(_message, domain);
         }
 
         // TODO: Implement more sophisticated question detection algorithm. Also try to differentiate between questions asking for an opinion (e.g. "What time would be good for lunch?") and knowledge questions (e.g. "What is the highest mountain in Europe?")
@@ -107,7 +107,7 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
     /**
      *
      */
-    private String getEmailBody(String message) {
+    private String getEmailBody(String message, Context domain) {
         List<PromptMessage> promptMessages = new ArrayList<>();
         String prompt = "Please split the following email into Salutation, Body and Signature and provide the response as JSON: \"" + message + "\"";
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, prompt));
@@ -115,7 +115,7 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
             Double temperature = null;
             String completedText = null;
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            completedText = generateProvider.getCompletion(promptMessages, null, generativeAIService.getCompletionModel(completionImpl), temperature, generativeAIService.getApiToken(completionImpl)).getText();
+            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig().getModel(), temperature, domain.getCompletionConfig().getApiKey()).getText();
 
             log.info("Completed text: " + completedText);
                 /*
