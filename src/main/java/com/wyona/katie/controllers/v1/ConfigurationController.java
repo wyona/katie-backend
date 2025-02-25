@@ -416,9 +416,15 @@ public class ConfigurationController {
             Context domain = contextService.getDomain(id);
 
             // WARN: API keys should only be accessible to users with the appropriate authorisation
-            if (domain.getCompletionConfig() != null && domain.getCompletionConfig().getApiKey() != null) {
-                CompletionConfig genAIConfig = domain.getCompletionConfig();
-                genAIConfig.setApiKey(genAIConfig.getApiKey().substring(0, 5) + "******");
+            CompletionConfig genAIConfig = domain.getCompletionConfig();
+            if (genAIConfig != null && genAIConfig.getApiKey() != null && genAIConfig.getApiKey().length() > 0) {
+                if (genAIConfig.getApiKey().length() > 4) {
+                    // Only return the first 5 characters of the api key ...
+                    genAIConfig.setApiKey(genAIConfig.getApiKey().substring(0, 5) + "******");
+                } else {
+                    // Replace the whole api key ...
+                    genAIConfig.setApiKey("******");
+                }
                 domain.setCompletionConfig(genAIConfig);
             }
 
