@@ -58,7 +58,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, getPrompt(text, dataset.getLabels(), limit, domain)));
-        log.info("Prompt: " + promptMessages.get(0).getContent());
+        log.info("PROMPT:\n" + promptMessages.get(0).getContent());
 
         String completedText = null;
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
@@ -163,11 +163,12 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      * @param domain Domain associated with classification
      */
     private String getPrompt(String text, Classification[] labels, int limit, Context domain) {
-        boolean withDescriptionsOnly = false; // TODO: Make configurable
+        boolean labelsWithDescriptionOnly = false; // TODO: Make configurable
+
         // TODO: Scalability!
         StringBuilder listOfLabels = new StringBuilder();
         for (Classification label : labels) {
-            if (withDescriptionsOnly) {
+            if (labelsWithDescriptionOnly) {
                 if (label.getDescription() != null) {
                     listOfLabels.append(" - " + label.getTerm());
                     listOfLabels.append(" (" + label.getDescription() + ")");
