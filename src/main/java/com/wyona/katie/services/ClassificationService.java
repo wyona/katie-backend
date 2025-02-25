@@ -48,7 +48,11 @@ public class ClassificationService {
      * @return array of suggested labels
      */
     public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
+
+        // Predict labels for a text
         HitLabel[] hitLabels = getClassifier(domain.getClassifierImpl()).predictLabels(domain, text, limit);
+
+        // Get additional information of predicted labels
         for (HitLabel hitLabel : hitLabels) {
             String labelKatieId = hitLabel.getLabel().getKatieId();
             Classification classification = classificationRepoService.getClassification(domain, labelKatieId);
@@ -59,6 +63,7 @@ public class ClassificationService {
                 log.error("No such classification '" + labelKatieId + "'!");
             }
         }
+
         return hitLabels;
     }
 
