@@ -270,6 +270,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     /**
      * RAG: Generate answer based on relevant documents
      * @param relevantDocuments Paths of relevant documents
+     * @return generated answer based on relevant documents
      */
     private String getAnswerFromRelevantDocuments(File[] relevantDocuments, String question, List<String> classifications, CompletionAssistant assistant, Context domain) {
         PromptMessage promptMessage = new PromptMessage();
@@ -277,6 +278,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         // TODO: Make language configurable
         promptMessage.setContent("Wie lautet auf der Grundlage des beigefügten Dokuments die Antwort auf die folgende Frage \"" + question + "\"");
         //promptMessage.setContent("Based on the attached document, what is the answer to the following question \"" + question + "\"");
+        log.info("Generate answer based on relevant documents using prompt '" + promptMessage.getContent() + "' ...");
         promptMessage.setAttachments(relevantDocuments);
 
         List<PromptMessage> promptMessages = new ArrayList<>();
