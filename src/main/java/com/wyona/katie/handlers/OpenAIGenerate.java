@@ -70,6 +70,7 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Get list of previously uploaded files
      * @return list of files, which got previously uploaded to OpenAI
      */
     private FileResponse[] getFiles(String openAIKey) throws Exception {
@@ -384,9 +385,14 @@ public class OpenAIGenerate implements GenerateProvider {
                 if (attachments != null && attachments.length > 0) {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
-                    FileResponse[] alreadyUploadedFiles = getFiles(openAIKey);
+
+                    FileResponse[] previouslyloadedFiles = getFiles(openAIKey);
+                    for (FileResponse previouslyUploadedFile : previouslyloadedFiles) {
+                        log.debug("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + new Date(previouslyUploadedFile.getCreatedAt() * 1000) + ")");
+                    }
+
                     for (File attachment : attachments) {
-                        String fileId = getFileId(attachment, alreadyUploadedFiles, openAIKey);
+                        String fileId = getFileId(attachment, previouslyloadedFiles, openAIKey);
                         if (fileId != null) {
                             ObjectNode attachmentNode = mapper.createObjectNode();
                             attachmentNode.put("file_id", fileId);
@@ -402,6 +408,8 @@ public class OpenAIGenerate implements GenerateProvider {
                             log.error("No file Id available for attachment '" + attachment.getAbsolutePath() + "'!");
                         }
                     }
+                } else {
+                    log.info("No attachments provided.");
                 }
 
                 messages.add(messageNode);
@@ -446,19 +454,22 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     * Get file Id
+     * Get file Id of file which was previously uploaded or will be uploaded now
+     * @param file File (previously uploaded or will be uploaded) for which Id is being retrieved
+     * @param alreadyUploadedFiles Already uploaded files
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm" or "file-D72TcUvBpxs4aKa5BUssCA"
      */
     private String getFileId(File file, FileResponse[] alreadyUploadedFiles, String openAIKey) throws Exception {
         String filePathNormalized = Normalizer.normalize(file.getAbsolutePath(), Normalizer.Form.NFKD);
         for (FileResponse alreadyUploadedFile: alreadyUploadedFiles) {
-            log.debug("Already uploaded file: " + alreadyUploadedFile.getFilename());
+            log.debug("Previously uploaded file: " + alreadyUploadedFile.getFilename());
             // Files like for example "Auftragsrecht inkl. gemischte Verträge (Beendigung OR 404) in a nutshell.pdf" with special characters like for example "ä" can use different characters / sequences to represent special characters
             // Therefore use Normalizer to use the same form and being able to compare
             // See for example https://stackoverflow.com/questions/64574044/comparing-strings-with-equivalent-but-different-unicode-code-points-in-java-kotl
             String alreadyUploadedFilePathNormalized = Normalizer.normalize(alreadyUploadedFile.getFilename(), Normalizer.Form.NFKD);
             if (filePathNormalized.equals(alreadyUploadedFilePathNormalized)) {
-                log.info("File already uploaded: " + file.getAbsolutePath());
+                log.info("File was previously uploaded: " + file.getAbsolutePath() + " (Created: " + new Date(alreadyUploadedFile.getCreatedAt() * 1000) + ")");
+                // TODO: Check last modified and if local file is more recent, then upload again and overwrite remote file
                 return alreadyUploadedFile.getId();
             }
         }
