@@ -110,6 +110,16 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Delete file from OpenAI
+     * @param fileId OpenAI File Id, e.g. "file-RCViAw1sYooq4djLVq3eo9"
+     */
+    private void deleteFile(String fileId, String openAIKey) throws Exception {
+        log.info("File '" + fileId + "' will be deleted from OpenAI ...");
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+        openAI.files().delete(fileId).join();
+    }
+
+    /**
      * Upload file to OpenAI
      * @param file File, e.g. "/Users/michaelwechner/Desktop/Auftragsrecht.pdf"
      * @return file Id, e.g. "file-SLGUENEL9ZAPaCSZscBTcm"
@@ -118,12 +128,14 @@ public class OpenAIGenerate implements GenerateProvider {
         if (!file.isFile()) {
             throw new FileNotFoundException("No such file '" + file.getAbsolutePath() + "'!");
         }
+        log.info("File '" + file.getAbsolutePath() + "' will be uploaded to OpenAI ...");
         SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
         FileRequest fileRequest = FileRequest.builder()
                 .file(Paths.get(file.getAbsolutePath()))
                 .purpose(FileRequest.PurposeType.ASSISTANTS)
                 .build();
         FileResponse fileResponse = openAI.files().create(fileRequest).join();
+        log.info("File '" + file.getAbsolutePath() + "' successfully uploaded to OpenAI.");
 
         return fileResponse.getId();
 
@@ -386,13 +398,16 @@ public class OpenAIGenerate implements GenerateProvider {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
 
-                    FileResponse[] previouslyloadedFiles = getFiles(openAIKey);
-                    for (FileResponse previouslyUploadedFile : previouslyloadedFiles) {
-                        log.debug("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + new Date(previouslyUploadedFile.getCreatedAt() * 1000) + ")");
+                    deleteOutdatedFilesFromOpenAI(openAIKey);
+
+                    FileResponse[] previouslyUploadedFiles = getFiles(openAIKey);
+                    log.info("Number of uploaded files: " + previouslyUploadedFiles.length);
+                    for (FileResponse previouslyUploadedFile : previouslyUploadedFiles) {
+                        log.info("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + new Date(previouslyUploadedFile.getCreatedAt() * 1000) + ")");
                     }
 
                     for (File attachment : attachments) {
-                        String fileId = getFileId(attachment, previouslyloadedFiles, openAIKey);
+                        String fileId = getFileId(attachment, previouslyUploadedFiles, openAIKey);
                         if (fileId != null) {
                             ObjectNode attachmentNode = mapper.createObjectNode();
                             attachmentNode.put("file_id", fileId);
@@ -454,6 +469,35 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
+     * Delete all files from OpenAI which are not up to date
+     */
+    private void deleteOutdatedFilesFromOpenAI(String openAIKey) throws Exception {
+        FileResponse[] previouslyUploadedFiles = getFiles(openAIKey);
+        log.info("Number of uploaded files: " + previouslyUploadedFiles.length);
+        for (FileResponse previouslyUploadedFile : previouslyUploadedFiles) {
+            Date lastModifiedRemote = new Date(previouslyUploadedFile.getCreatedAt() * 1000);
+            log.info("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + lastModifiedRemote + ")");
+            if (new File(previouslyUploadedFile.getFilename()).isFile()) {
+                Date lastModifiedLocal = new Date(new File(previouslyUploadedFile.getFilename()).lastModified());
+                log.info("Last modified of local file: " + lastModifiedLocal);
+                try {
+                    if (lastModifiedLocal.getTime() > lastModifiedRemote.getTime()) {
+                        log.info("Local file (" + lastModifiedLocal + ") is more recent than remote file (" + lastModifiedRemote + ").");
+                        deleteFile(previouslyUploadedFile.getId(), openAIKey);
+                    } else {
+                        log.info("Remote file '" + previouslyUploadedFile.getId() + "' will not be deleted from OpenAI, because it is up to date.");
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else {
+                log.warn("No such file '" + previouslyUploadedFile.getFilename() + "'!");
+                // TODO: Consider to delete all files from OpenAI, which do not exist locally
+            }
+        }
+    }
+
+    /**
      * Get file Id of file which was previously uploaded or will be uploaded now
      * @param file File (previously uploaded or will be uploaded) for which Id is being retrieved
      * @param alreadyUploadedFiles Already uploaded files
@@ -474,7 +518,6 @@ public class OpenAIGenerate implements GenerateProvider {
             }
         }
 
-        log.info("File '" + file.getAbsolutePath() + "' will be uploaded ...");
         return uploadFile(file, openAIKey);
     }
 
