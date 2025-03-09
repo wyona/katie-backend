@@ -139,6 +139,8 @@ public class XMLService {
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
     private static final String CONTEXT_LLM_SEARCH_TAG = "llm-search";
     private static final String CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR = "assistant-id";
+    private static final String CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR = "assistant-name";
+    private static final String CONTEXT_LLM_SEARCH_ASSISTANT_INSTRUCTIONS_ATTR = "assistant-instructions";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
@@ -1439,6 +1441,8 @@ public class XMLService {
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + completionDefaultImpl);
         } else {
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + context.getCompletionConfig().getCompletionImpl());
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR, context.getCompletionConfig().getModel());
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR, context.getCompletionConfig().getApiKey());
         }
         doc.getDocumentElement().appendChild(indexSearchPipelineEl);
 
@@ -1470,6 +1474,12 @@ public class XMLService {
             Element llmSearchElement = doc.createElement(CONTEXT_LLM_SEARCH_TAG);
             if (context.getLlmSearchAssistantId() != null) {
                 llmSearchElement.setAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR, context.getLlmSearchAssistantId());
+            }
+            if (context.getLlmSearchAssistantName() != null) {
+                llmSearchElement.setAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR, context.getLlmSearchAssistantName());
+            }
+            if (context.getLlmSearchAssistantInstructions() != null) {
+                llmSearchElement.setAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_INSTRUCTIONS_ATTR, context.getLlmSearchAssistantInstructions());
             }
             doc.getDocumentElement().appendChild(llmSearchElement);
         }
@@ -1921,6 +1931,12 @@ public class XMLService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
             if (llmSearchEl.hasAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR)) {
                 domain.setLlmSearchAssistantId(llmSearchEl.getAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR));
+            }
+            if (llmSearchEl.hasAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR)) {
+                domain.setLlmSearchAssistantName(llmSearchEl.getAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR));
+            }
+            if (llmSearchEl.hasAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_INSTRUCTIONS_ATTR)) {
+                domain.setLlmSearchAssistantInstructions(llmSearchEl.getAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_INSTRUCTIONS_ATTR));
             }
         }
         if (katieSearchEl != null) {
