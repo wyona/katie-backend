@@ -182,9 +182,20 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         String model = domain.getCompletionConfig().getModel();
         String apiToken = domain.getCompletionConfig().getApiKey();
 
-        // TODO: Get assistant name and instructions from Katie domain configuration
+        // TODO: Make default name configurable
         String name = "Legal Insurance Assistant";
+        if (domain.getLlmSearchAssistantName() != null) {
+            name = domain.getLlmSearchAssistantName();
+        } else {
+            domain.setLlmSearchAssistantName(name);
+        }
+        // TODO: Make default instructions configurable
         String instructions = "You are a legal insurance expert. Use your knowledge base to select the relevant documents to answer questions about legal topics.";
+        if (domain.getLlmSearchAssistantInstructions() != null) {
+            instructions = domain.getLlmSearchAssistantInstructions();
+        } else {
+            domain.setLlmSearchAssistantInstructions(instructions);
+        }
         CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, model, apiToken);
         
         if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
