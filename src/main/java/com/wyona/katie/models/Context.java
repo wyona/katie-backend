@@ -51,6 +51,8 @@ public class Context {
     private float weaviateCertaintyThreshold;
 
     private String llmSearchAssistantId;
+    private String llmSearchAssistantName;
+    private String llmSearchAssistantInstructions;
 
     private String azureAISearchIndexName;
     private String azureAISearchEndpoint;
@@ -607,6 +609,34 @@ public class Context {
      */
     public String getLlmSearchAssistantId() {
         return llmSearchAssistantId;
+    }
+
+    /**
+     * @param name LLM Search Assistant name, e.g. "IT Service Desk Assistant"
+     */
+    public void setLlmSearchAssistantName(String name) {
+        this.llmSearchAssistantName = name;
+    }
+
+    /**
+     * @return LLM Search Assistant name, e.g. "IT Service Desk Assistant"
+     */
+    public String getLlmSearchAssistantName() {
+        return llmSearchAssistantName;
+    }
+
+    /**
+     * @param instructions LLM Search Assistant instructions, e.g. "You are a support agent. Use your knowledge base to select the relevant documents to answer IT Service Desk questions."
+     */
+    public void setLlmSearchAssistantInstructions(String instructions) {
+        this.llmSearchAssistantInstructions = instructions;
+    }
+
+    /**
+     * @return LLM Search Assistant instructions, e.g. "You are a support agent. Use your knowledge base to select the relevant documents to answer IT Service Desk questions."
+     */
+    public String getLlmSearchAssistantInstructions() {
+        return llmSearchAssistantInstructions;
     }
 
     /**
