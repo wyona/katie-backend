@@ -12,6 +12,21 @@ public class ChatCompletionsRequest {
     private List<PromptMessageWithRoleLowerCase> messages = new ArrayList<>();
     private List<String> suggestions = new ArrayList<>();
     private ChosenSuggestion chosenSuggestion = null;
+    private String conversationId;
+
+    /**
+     * @return conversation Id, e.g. 'ec76ce1b-1a8b-42d8-92ae-7b96a78cdc89'
+     */
+    public String getConversation_id() {
+        return conversationId;
+    }
+
+    /**
+     * @param conversationId Conversation Id, e.g. 'ec76ce1b-1a8b-42d8-92ae-7b96a78cdc89'
+     */
+    public void setConversation_id(String conversationId) {
+        this.conversationId = conversationId;
+    }
 
     /**
      *
