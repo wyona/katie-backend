@@ -640,6 +640,17 @@ public class AskController {
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
+
+        String conversationId = null;
+        if (chatCompletionsRequest.getConversation_id() != null) {
+            conversationId = chatCompletionsRequest.getConversation_id();
+            log.info("Continue existing conversation: " + conversationId);
+        } else {
+            conversationId = UUID.randomUUID().toString();
+            log.info("Create a new conversation: " + conversationId);
+        }
+        body.put("conversation_id", conversationId);
+
         ArrayNode choices = mapper.createArrayNode();
         body.put("choices", choices);
 
@@ -653,9 +664,11 @@ public class AskController {
 
         Context domain = null;
         try {
-            domain = contextService.getContext(yulupDomainId);
+            domain = contextService.getContext(_domainId);
+            //domain = contextService.getContext(yulupDomainId);
         } catch (Exception e) {
-            String content = getNoSuchDomainMessage(yulupDomainId);
+            String content = getNoSuchDomainMessage(_domainId);
+            //String content = getNoSuchDomainMessage(yulupDomainId);
             log.error(content);
             choices = addChoice(mapper, choices, "error", content, 0);
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
@@ -677,14 +690,16 @@ public class AskController {
 
         try {
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
-            String completedText = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
 
-            // TODO: Do not send suggestion prompt (secret sauce) to client, currently only for debugging purposes
+            // TODO: Do not send suggestion prompt (secret sauce) to client, but which is currently necessary to include in message history and also for debugging purposes
             if (chosenSuggestion != null) {
                 choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion), 1);
+                appendMessageToConversation(conversationId, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
             }
 
+            String completedText = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
             choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
+            appendMessageToConversation(conversationId, PromptMessageRoleLowerCase.assistant.toString(), completedText);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -697,9 +712,18 @@ public class AskController {
 
     /**
      * Get completion message
+     * @param chosenSuggestion TODO
+     * @param chatCompletionsRequest TODO
      * @return completion message
      */
     private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
+        if (false) {
+            log.info("Return mock completion ...");
+            return "Hi, this is a mock response from Katie :-)";
+        } else {
+            log.info("Get completion from LLM ...");
+        }
+
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         //completionImpl = CompletionImpl.OLLAMA;
         if (completionImpl == CompletionImpl.UNSET) {
@@ -736,7 +760,7 @@ public class AskController {
     }
 
     /**
-     *
+     * TODO
      */
     private ArrayNode addChoice(ObjectMapper mapper, ArrayNode choices, String role, String content, int id) {
         ObjectNode choice = mapper.createObjectNode();
@@ -748,6 +772,13 @@ public class AskController {
         choices.add(choice);
 
         return choices;
+    }
+
+    /**
+     * Append message to conversation
+     */
+    private void appendMessageToConversation(String conversationId, String role, String message) {
+        log.info("TODO: Add nessage to conversation '" + conversationId + "' ...");
     }
 
     /**
@@ -772,7 +803,7 @@ public class AskController {
 
         // INFO: Use an array instead a string only, in order to workaround "Variable used in lambda expression should be final or effectively final"
         String[] mockResponse = new String[1];
-        mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
+        //mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
 
         Context domain = null;
         try {
