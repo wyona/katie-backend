@@ -717,13 +717,6 @@ public class AskController {
      * @return completion message
      */
     private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
-        if (false) {
-            log.info("Return mock completion ...");
-            return "Hi, this is a mock response from Katie :-)";
-        } else {
-            log.info("Get completion from LLM ...");
-        }
-
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         //completionImpl = CompletionImpl.OLLAMA;
         if (completionImpl == CompletionImpl.UNSET) {
@@ -737,13 +730,10 @@ public class AskController {
         String model = domain.getCompletionConfig().getModel();
 
         List<PromptMessage> promptMessages = new ArrayList<>();
+
+        log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
         for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
             promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
-        }
-
-        Double temperature = 0.7;
-        if (chatCompletionsRequest.getTemperature() != null) {
-            temperature = chatCompletionsRequest.getTemperature();
         }
 
         if (chosenSuggestion != null) {
@@ -751,10 +741,23 @@ public class AskController {
             promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
             // TODO: Remember that conversation was started with suggestion
         } else {
+            log.info("No suggestion provided.");
             // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
         }
 
+        Double temperature = 0.7;
+        if (chatCompletionsRequest.getTemperature() != null) {
+            temperature = chatCompletionsRequest.getTemperature();
+        }
+
         String apiToken = domain.getCompletionConfig().getApiKey();
+
+        if (false) {
+            log.info("Return mock completion ...");
+            return "Hi, this is a mock response from Katie :-)";
+        } else {
+            log.info("Get completion from LLM ...");
+        }
 
         return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
     }
