@@ -694,7 +694,7 @@ public class AskController {
                 choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion), 1);
             }
 
-            String completedText = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
+            String completedText = generativeAIService.getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
             choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
@@ -704,61 +704,6 @@ public class AskController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * Get completion message
-     * @param chosenSuggestion TODO
-     * @param chatCompletionsRequest TODO
-     * @return completion message
-     */
-    private String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
-        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
-        //completionImpl = CompletionImpl.OLLAMA;
-        if (completionImpl == CompletionImpl.UNSET) {
-            String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
-            log.warn(warnMsg);
-            return warnMsg;
-        } else {
-            log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
-        }
-        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-        String model = domain.getCompletionConfig().getModel();
-
-        List<PromptMessage> promptMessages = new ArrayList<>();
-
-        log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
-        for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
-            promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
-        }
-
-        if (chosenSuggestion != null) {
-            log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-            promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
-            // TODO: Remember that conversation was started with suggestion
-            appendMessageToConversation(chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
-        } else {
-            log.info("No suggestion provided.");
-            // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
-        }
-
-        Double temperature = 0.7;
-        if (chatCompletionsRequest.getTemperature() != null) {
-            temperature = chatCompletionsRequest.getTemperature();
-        }
-
-        String apiToken = domain.getCompletionConfig().getApiKey();
-
-        String completedText = "Hi, this is a mock response from Katie :-)";
-        if (false) {
-            log.info("Return mock completion ...");
-        } else {
-            log.info("Get completion from LLM ...");
-            completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
-        }
-
-        appendMessageToConversation(chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant.toString(), completedText);
-        return completedText;
     }
 
     /**
@@ -774,13 +719,6 @@ public class AskController {
         choices.add(choice);
 
         return choices;
-    }
-
-    /**
-     * Append message to conversation
-     */
-    private void appendMessageToConversation(String conversationId, String role, String message) {
-        log.info("TODO: Add nessage to conversation '" + conversationId + "' ...");
     }
 
     /**
@@ -826,7 +764,7 @@ public class AskController {
 
         ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
         try {
-            mockResponse[0] = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
+            mockResponse[0] = generativeAIService.getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
         } catch (Exception e) {
             mockResponse[0] = e.getMessage();
             log.error(e.getMessage(), e);
