@@ -641,15 +641,13 @@ public class AskController {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode body = mapper.createObjectNode();
 
-        String conversationId = null;
         if (chatCompletionsRequest.getConversation_id() != null) {
-            conversationId = chatCompletionsRequest.getConversation_id();
-            log.info("Continue existing conversation: " + conversationId);
+            log.info("Continue existing conversation: " + chatCompletionsRequest.getConversation_id());
         } else {
-            conversationId = UUID.randomUUID().toString();
-            log.info("Create a new conversation: " + conversationId);
+            chatCompletionsRequest.setConversation_id(UUID.randomUUID().toString());
+            log.info("Create a new conversation: " + chatCompletionsRequest.getConversation_id());
         }
-        body.put("conversation_id", conversationId);
+        body.put("conversation_id", chatCompletionsRequest.getConversation_id());
 
         ArrayNode choices = mapper.createArrayNode();
         body.put("choices", choices);
@@ -694,12 +692,10 @@ public class AskController {
             // TODO: Do not send suggestion prompt (secret sauce) to client, but which is currently necessary to include in message history and also for debugging purposes
             if (chosenSuggestion != null) {
                 choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion), 1);
-                appendMessageToConversation(conversationId, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
             }
 
             String completedText = getCompletion(domain, chosenSuggestion, chatCompletionsRequest);
             choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
-            appendMessageToConversation(conversationId, PromptMessageRoleLowerCase.assistant.toString(), completedText);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -740,6 +736,7 @@ public class AskController {
             log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
             promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
             // TODO: Remember that conversation was started with suggestion
+            appendMessageToConversation(chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
         } else {
             log.info("No suggestion provided.");
             // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
@@ -752,14 +749,16 @@ public class AskController {
 
         String apiToken = domain.getCompletionConfig().getApiKey();
 
+        String completedText = "Hi, this is a mock response from Katie :-)";
         if (false) {
             log.info("Return mock completion ...");
-            return "Hi, this is a mock response from Katie :-)";
         } else {
             log.info("Get completion from LLM ...");
+            completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
         }
 
-        return generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+        appendMessageToConversation(chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant.toString(), completedText);
+        return completedText;
     }
 
     /**
