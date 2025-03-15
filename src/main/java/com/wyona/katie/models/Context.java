@@ -523,6 +523,13 @@ public class Context {
     }
 
     /**
+     * @return path of directory containing conversations (with LLM) of a particular domain
+     */
+    public File getConversationsDirectory() {
+        return new File(getContextDirectory(), "conversations");
+    }
+
+    /**
      * @return path of directory containing predicted text classifications associated with a particular domain
      */
     public File getPredictedLabelsDirectory() {
