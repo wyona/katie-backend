@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +50,10 @@ public class GenerativeAIService {
 
     /**
      * Get completion message
-     * @param chosenSuggestion TODO
      * @param chatCompletionsRequest TODO
      * @return completion message
      */
-    public String getCompletion(Context domain, ChosenSuggestion chosenSuggestion, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
+    public String getCompletion(Context domain, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         //completionImpl = CompletionImpl.OLLAMA;
         if (completionImpl == CompletionImpl.UNSET) {
@@ -68,14 +68,19 @@ public class GenerativeAIService {
 
         List<PromptMessage> promptMessages = new ArrayList<>();
 
+        ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
         if (chosenSuggestion != null) {
             log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
             promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
             // TODO: Remember that conversation was started with suggestion
             appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
+        } else if (chatCompletionsRequest.getSuggestions().length > 0) {
+            // TODO
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), "TODO");
         } else {
             log.info("No suggestion provided.");
             // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user.toString(), "TODO");
         }
 
         log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
@@ -107,13 +112,23 @@ public class GenerativeAIService {
      *
      */
     private void getConversationHistory(Context domain, String conversationId) {
-        // TODO
+        File conversationDir = new File(domain.getConversationsDirectory(), conversationId);
+        // TODO: Read conversation history
     }
 
     /**
      * Append message to conversation history
      */
     private void appendMessageToConversationHistory(Context domain, String conversationId, String role, String message) {
-        log.info("TODO: Add nessage to conversation '" + conversationId + "' ...");
+        log.info("Add nessage to conversation '" + conversationId + "' ...");
+
+        File conversationDir = new File(domain.getConversationsDirectory(), conversationId);
+        if (!conversationDir.isDirectory()) {
+            conversationDir.mkdirs();
+            // TODO: Create conversation history
+        }
+
+        getConversationHistory(domain, conversationId);
+        // TODO Append message and save conversation history
     }
 }
