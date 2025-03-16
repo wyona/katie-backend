@@ -1,10 +1,10 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyona.katie.handlers.*;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -29,6 +29,8 @@ public class GenerativeAIService {
     private MistralAIGenerate mistralAIGenerate;
     @Autowired
     private OllamaGenerate ollamaGenerate;
+
+    private static final String CHAT_HISTORY_FILENAME = "history.json";
 
     /**
      * Get GenAI implementation
@@ -72,15 +74,14 @@ public class GenerativeAIService {
         if (chosenSuggestion != null) {
             log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
             promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
-            // TODO: Remember that conversation was started with suggestion
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion));
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, learningCoachService.getSystemPrompt(chosenSuggestion));
         } else if (chatCompletionsRequest.getSuggestions().length > 0) {
             // TODO
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system.toString(), "TODO");
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, "TODO");
         } else {
             log.info("No suggestion provided.");
-            // TODO: Check whether conversation was started with a suggestion and if so, then add suggestion to beginning of conversation
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user.toString(), "TODO");
+            PromptMessageWithRoleLowerCase mostRecentUserMessage = chatCompletionsRequest.getMessages()[chatCompletionsRequest.getMessages().length - 1];
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, mostRecentUserMessage.getContent());
         }
 
         log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
@@ -104,31 +105,59 @@ public class GenerativeAIService {
             completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
         }
 
-        appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant.toString(), completedText);
+        appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant, completedText);
         return completedText;
     }
 
     /**
-     *
+     * Get a particular conversation history
      */
-    private void getConversationHistory(Context domain, String conversationId) {
+    private ChatHistory getConversationHistory(Context domain, String conversationId) throws Exception {
         File conversationDir = new File(domain.getConversationsDirectory(), conversationId);
-        // TODO: Read conversation history
+        File historyFile = new File(conversationDir, CHAT_HISTORY_FILENAME);
+        if (historyFile.isFile()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ChatHistory history = objectMapper.readValue(historyFile, ChatHistory.class);
+            return history;
+        } else {
+            return null;
+        }
     }
 
     /**
      * Append message to conversation history
      */
-    private void appendMessageToConversationHistory(Context domain, String conversationId, String role, String message) {
+    private void appendMessageToConversationHistory(Context domain, String conversationId, PromptMessageRoleLowerCase role, String message) {
         log.info("Add nessage to conversation '" + conversationId + "' ...");
 
+        try {
+            ChatHistory history = getConversationHistory(domain, conversationId);
+            if (history == null) {
+                // TODO: Add user name
+                history = new ChatHistory();
+            }
+            // TODO: Add timestamp
+            history.appendMessage(new PromptMessageWithRoleLowerCase(role, message));
+            saveHistory(history, domain, conversationId);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     *
+     */
+    private void saveHistory(ChatHistory history, Context domain, String conversationId) {
         File conversationDir = new File(domain.getConversationsDirectory(), conversationId);
         if (!conversationDir.isDirectory()) {
             conversationDir.mkdirs();
-            // TODO: Create conversation history
         }
-
-        getConversationHistory(domain, conversationId);
-        // TODO Append message and save conversation history
+        File historyFile = new File(conversationDir, CHAT_HISTORY_FILENAME);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.writeValue(historyFile, history);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 }
