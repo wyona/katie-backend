@@ -57,7 +57,6 @@ public class GenerativeAIService {
      */
     public String getCompletion(Context domain, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
-        //completionImpl = CompletionImpl.OLLAMA;
         if (completionImpl == CompletionImpl.UNSET) {
             String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
             log.warn(warnMsg);
@@ -68,13 +67,11 @@ public class GenerativeAIService {
         GenerateProvider generateProvider = getGenAIImplementation(completionImpl);
         String model = domain.getCompletionConfig().getModel();
 
-        List<PromptMessage> promptMessages = new ArrayList<>();
-
         ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
         if (chosenSuggestion != null) {
             log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
-            promptMessages.add(new PromptMessage(PromptMessageRole.SYSTEM, learningCoachService.getSystemPrompt(chosenSuggestion)));
             appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, learningCoachService.getSystemPrompt(chosenSuggestion));
+            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, learningCoachService.getSuggestionText(chosenSuggestion.getIndex()));
         } else if (chatCompletionsRequest.getSuggestions().length > 0) {
             // TODO
             appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, "TODO");
@@ -84,24 +81,25 @@ public class GenerativeAIService {
             appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, mostRecentUserMessage.getContent());
         }
 
-        log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
-        getConversationHistory(domain, chatCompletionsRequest.getConversation_id());
-        for (PromptMessageWithRoleLowerCase msg : chatCompletionsRequest.getMessages()) {
-            promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
-        }
-
-        Double temperature = 0.7;
-        if (chatCompletionsRequest.getTemperature() != null) {
-            temperature = chatCompletionsRequest.getTemperature();
-        }
-
-        String apiToken = domain.getCompletionConfig().getApiKey();
-
         String completedText = "Hi, this is a mock response from Katie :-)";
         if (false) {
             log.info("Return mock completion ...");
         } else {
             log.info("Get completion from LLM ...");
+            Double temperature = 0.7;
+            if (chatCompletionsRequest.getTemperature() != null) {
+                temperature = chatCompletionsRequest.getTemperature();
+            }
+
+            String apiToken = domain.getCompletionConfig().getApiKey();
+
+            log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
+            ChatHistory chatHistory = getConversationHistory(domain, chatCompletionsRequest.getConversation_id());
+            List<PromptMessage> promptMessages = new ArrayList<>();
+            for (PromptMessageWithRoleLowerCase msg : chatHistory.getMessages()) {
+                promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
+            }
+
             completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
         }
 
