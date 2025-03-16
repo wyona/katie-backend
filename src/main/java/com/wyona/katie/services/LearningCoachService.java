@@ -92,12 +92,11 @@ public class LearningCoachService {
     }
 
     /**
-     * Get system prompt for the chosen suggestion
+     * Get system prompt of the chosen suggestion
      * @param chosenSuggestion Chosen suggestion, e.g. conversation starter "Let's learn together how to read an analog clock"
      * @return prompt, e.g."Explain the basic components of an analog clock in a clear and simple way."
      */
     public String getSystemPrompt(ChosenSuggestion chosenSuggestion) {
-        //domain.getPromptMessages();
         File promptFile = new File(getConversationStartersDir(), chosenSuggestion.getIndex() + ".json");
         if (promptFile.exists()) {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -112,6 +111,28 @@ public class LearningCoachService {
         } else {
             log.warn("No such prompt file '" + promptFile.getAbsolutePath() + "'!");
             return "Tell the user, that no prompt for suggestion '" + chosenSuggestion.getIndex() + "' exists.";
+        }
+    }
+
+    /**
+     * Get text of the chosen suggestion
+     * @param chosenSuggestionId Chosen suggestion Id, e.g. conversation starter "Let's learn together how to read an analog clock"
+     * @return suggestion text, e.g."Let's learn together how to read an analog clock"
+     */
+    public String getSuggestionText(String chosenSuggestionId) {
+        File promptFile = new File(getConversationStartersDir(), chosenSuggestionId + ".json");
+        if (promptFile.exists()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                ConversationStarter conversationStarter = objectMapper.readValue(promptFile, ConversationStarter.class);
+                return conversationStarter.getSuggestion().getContent();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return "Tell the user, that an error occured when trying to read the system prompt.";
+            }
+        } else {
+            log.warn("No such prompt file '" + promptFile.getAbsolutePath() + "'!");
+            return "Tell the user, that no prompt for suggestion '" + chosenSuggestionId + "' exists.";
         }
     }
 }
