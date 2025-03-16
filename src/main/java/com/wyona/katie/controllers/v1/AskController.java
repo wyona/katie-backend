@@ -1,7 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.wyona.katie.handlers.GenerateProvider;
 import com.wyona.katie.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -688,10 +687,8 @@ public class AskController {
 
         try {
             ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
-
-            // TODO: Do not send suggestion prompt (secret sauce) to client, but which is currently necessary to include in message history and also for debugging purposes
             if (chosenSuggestion != null) {
-                choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.system.toString(), learningCoachService.getSystemPrompt(chosenSuggestion), 1);
+                choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.user.toString(), learningCoachService.getSuggestionText(chosenSuggestion.getIndex()), 1);
             }
 
             String completedText = generativeAIService.getCompletion(domain, chatCompletionsRequest);
