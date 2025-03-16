@@ -97,6 +97,7 @@ public class GenerativeAIService {
             ChatHistory chatHistory = getConversationHistory(domain, chatCompletionsRequest.getConversation_id());
             List<PromptMessage> promptMessages = new ArrayList<>();
             for (PromptMessageWithRoleLowerCase msg : chatHistory.getMessages()) {
+                // TODO: Do not always send complete history!!!
                 promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
             }
 
