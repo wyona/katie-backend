@@ -52,10 +52,12 @@ public class GenerativeAIService {
 
     /**
      * Get completion message
-     * @param chatCompletionsRequest TODO
+     * @param domain Katie domain associated with conversation
+     * @param chatCompletionsRequest Request containing user message or suggestion chosen by user
+     * @param user User having conversation with LLM
      * @return completion message
      */
-    public String getCompletion(Context domain, ChatCompletionsRequest chatCompletionsRequest) throws Exception {
+    public String getCompletion(Context domain, ChatCompletionsRequest chatCompletionsRequest, User user) throws Exception {
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         if (completionImpl == CompletionImpl.UNSET) {
             String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
@@ -64,8 +66,12 @@ public class GenerativeAIService {
         } else {
             log.info("Domain '" + domain.getId() + "' has '" + completionImpl + "' configured as completion implementation.");
         }
-        GenerateProvider generateProvider = getGenAIImplementation(completionImpl);
-        String model = domain.getCompletionConfig().getModel();
+
+        ChatHistory history = getConversationHistory(domain, chatCompletionsRequest.getConversation_id());
+        if (history == null) {
+            history = new ChatHistory(user.getId());
+            saveHistory(history, domain, chatCompletionsRequest.getConversation_id());
+        }
 
         ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
         if (chosenSuggestion != null) {
@@ -101,6 +107,8 @@ public class GenerativeAIService {
                 promptMessages.add(new PromptMessage(PromptMessageRole.fromString(msg.getRole().toString()), msg.getContent()));
             }
 
+            GenerateProvider generateProvider = getGenAIImplementation(completionImpl);
+            String model = domain.getCompletionConfig().getModel();
             completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
         }
 
@@ -131,10 +139,6 @@ public class GenerativeAIService {
 
         try {
             ChatHistory history = getConversationHistory(domain, conversationId);
-            if (history == null) {
-                // TODO: Add user name
-                history = new ChatHistory();
-            }
             // TODO: Add timestamp
             history.appendMessage(new PromptMessageWithRoleLowerCase(role, message));
             saveHistory(history, domain, conversationId);

@@ -691,7 +691,7 @@ public class AskController {
                 choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.user.toString(), learningCoachService.getSuggestionText(chosenSuggestion.getIndex()), 1);
             }
 
-            String completedText = generativeAIService.getCompletion(domain, chatCompletionsRequest);
+            String completedText = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
             choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
@@ -761,7 +761,8 @@ public class AskController {
 
         try {
             chatCompletionsRequest.setConversation_id("TODO_CREATE_CONVERSATION_ID");
-            mockResponse[0] = generativeAIService.getCompletion(domain, chatCompletionsRequest);
+            User user = authService.getUser(false, false);
+            mockResponse[0] = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
         } catch (Exception e) {
             mockResponse[0] = e.getMessage();
             log.error(e.getMessage(), e);
