@@ -8,12 +8,34 @@ import java.util.List;
  */
 public class ChatHistory {
 
+    String userId;
     List<PromptMessageWithRoleLowerCase> messages = new ArrayList<>();
 
     /**
      *
      */
     public ChatHistory() {
+    }
+
+    /**
+     * @param userId Id of user having conversation with LLM
+     */
+    public ChatHistory(String userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * @param userId Id of user having conversation with LLM
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * @return Id of user having conversation with LLM
+     */
+    public String getUserId() {
+        return userId;
     }
 
     /**
