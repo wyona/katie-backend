@@ -550,8 +550,12 @@ public class ContextService {
                 log.info("Predicted labels as TOPdesk HTML: " + labels.getPredictedLabelsAsTopDeskHtml());
 
                 // TODO: Make "Webhook" configurable
-                addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
-                backgroundProcessService.updateProcessStatus(processId, "Predicted labels to incident '" + clientMessageId + "' as invisible comment added.");
+                boolean added = addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
+                if (added) {
+                    backgroundProcessService.updateProcessStatus(processId, "Predicted labels to incident '" + clientMessageId + "' as invisible comment added.");
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "Predicted labels were not added to incident '" + clientMessageId + "'!", BackgroundProcessStatusType.WARN);
+                }
             } else {
                 log.info("No labels predicted.");
                 backgroundProcessService.updateProcessStatus(processId, "No labels predicted.");
@@ -565,11 +569,13 @@ public class ContextService {
 
     /**
      * Add classifications as TOPdesk incident comment
+     * @return true when comment was added successfully and false otherwise
      */
-    private void addClassificationResultAsIncidentCommentToTOPdesk(String domainId, String incidentId, PredictedLabelsResponse labels, String processId) throws Exception {
+    private boolean addClassificationResultAsIncidentCommentToTOPdesk(String domainId, String incidentId, PredictedLabelsResponse labels, String processId) throws Exception {
+        // TODO: Replace hard coded knowledge source id
         KnowledgeSourceMeta ksMeta = getKnowledgeSource(domainId, "432d418c-6672-4422-b8b9-abb5fe3ceb94");
 
-        topDeskConnector.addComment(incidentId, processId, ksMeta, labels.getPredictedLabelsAsTopDeskHtml());
+        return topDeskConnector.addComment(incidentId, processId, ksMeta, labels.getPredictedLabelsAsTopDeskHtml());
     }
 
     /**

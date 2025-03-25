@@ -322,9 +322,12 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
+     * Add comment to TOPdesk incident, which is invisible for caller
      * @param incidentId TOPdesk incident Id, e.g. "I-240606-0510"
+     * @param text Comment text
+     * @return true when comment was added successfully and false otherwise
      */
-    public void addComment(String incidentId, String processId, KnowledgeSourceMeta ksMeta, String text) {
+    public boolean addComment(String incidentId, String processId, KnowledgeSourceMeta ksMeta, String text) {
         String url = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId;
         log.info("Request URL: " + url);
         backgroundProcessService.updateProcessStatus(processId, "Request " + url);
@@ -344,6 +347,7 @@ public class TOPdeskConnector implements Connector {
             ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.PUT, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
             log.info("JSON response: " + bodyNode);
+            return true;
         } catch(HttpClientErrorException e) {
             if (e.getRawStatusCode() == 404) {
                 String logMsg = "No such resource '" + url + "'!";
@@ -354,6 +358,7 @@ public class TOPdeskConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, "Authentication failed", BackgroundProcessStatusType.ERROR);
             }
             if (e.getRawStatusCode() == 403) {
+                backgroundProcessService.updateProcessStatus(processId, "Permission denied", BackgroundProcessStatusType.ERROR);
             }
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -368,6 +373,7 @@ public class TOPdeskConnector implements Connector {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
+        return false;
     }
 
     /**
