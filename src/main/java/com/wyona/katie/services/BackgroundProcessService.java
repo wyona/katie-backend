@@ -144,6 +144,7 @@ public class BackgroundProcessService {
             body.append(katieHost + "/swagger-ui/#/background-process-controller/getStatusOfCompletedProcessUsingGET");
 
             if (domainId != null) {
+                boolean motificationSent = false;
                 try {
                     User[] users = xmlService.getMembers(domainId, false, false);
                     for (User user : users) {
@@ -151,10 +152,15 @@ public class BackgroundProcessService {
                             user = iamService.getUserByIdWithoutAuthCheck(user.getId());
                             log.info("Notify user " + user.getFirstname() + " (" + user.getEmail()+ ") about occured error(s) ...");
                             mailerService.send(user.getEmail(), null, subject, body.toString(), false);
+                            motificationSent = true;
                         }
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
+                }
+                if (!motificationSent) {
+                    log.warn("No member of domain '" + domainId + "' has role ADMIN or OWNER, therefore send notification to system administrator ...");
+                    mailerService.notifyAdministrator(subject, body.toString(), null, false);
                 }
             } else {
                 mailerService.notifyAdministrator(subject, body.toString(), null, false);
