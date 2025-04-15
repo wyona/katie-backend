@@ -7,6 +7,7 @@ import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.github.ollama4j.models.chat.OllamaChatResult;
 import io.github.ollama4j.models.response.OllamaResult;
 import io.github.ollama4j.types.OllamaModelType;
 import io.github.ollama4j.utils.Options;
@@ -70,8 +71,9 @@ public class OllamaGenerate implements GenerateProvider {
         }
 
         if (ollamaBearerToken != null) {
-            // TODO: Upgrade io.github.ollama4j inside pom.xml
-            //ollamaAPI.setBearerAuth(ollamaBearerToken);
+            ollamaAPI.setBearerAuth(ollamaBearerToken);
+        } else {
+            log.info("No Ollama Access Bearer Token configured.");
         }
 
         ollamaAPI.setRequestTimeoutSeconds(ollamaTimeout);
@@ -94,7 +96,7 @@ public class OllamaGenerate implements GenerateProvider {
 
         // TODO: Set options, see https://github.com/ollama4j/ollama4j/issues/70
         try {
-            OllamaResult result = ollamaAPI.chat(chatRequest);
+            OllamaChatResult result = ollamaAPI.chat(chatRequest);
             // https://ollama4j.github.io/ollama4j/apis-generate/generate
             //OllamaResult result = ollamaAPI.generate(model, promptMessages.get(promptMessages.size() - 1).getContent(), false, options);
             completedText = result.getResponse();
