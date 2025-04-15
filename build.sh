@@ -3,6 +3,7 @@
 TOMCAT_HOME=/Users/michaelwechner/local/apache-tomcat-8.5.53
 JAVA_VERSION_REQUIRED=11.0.11
 #JAVA_VERSION_REQUIRED=11.0.16
+JAVA_VERSION_REQUIRED=21.0.5
 
 # ----- Check for Java version
 JAVA_HOME_MACOSX=/System/Library/Frameworks/JavaVM.framework/Home
