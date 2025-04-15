@@ -31,8 +31,8 @@ To pull the most recent Katie image from [Docker Hub](https://hub.docker.com/r/w
 
 The <strong>Katie</strong> backend webapp is based on Spring Boot and to build and run locally in a terminal you need
 
-* JDK: 11 or higher
-    * https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html
+* JDK: 21 or higher
+    * https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html
 * Maven version: 3.9.6 or higher (IMPORTANT: Please double check Maven .m2/settings.xml)
     * https://maven.apache.org/download.cgi
     * https://maven.apache.org/install.html
@@ -40,8 +40,8 @@ The <strong>Katie</strong> backend webapp is based on Spring Boot and to build a
 ## Build and Run from Command Line
 
 * Open file 'src/main/resources/application-dev.properties' and configure property 'volume.base.path'
-* Set environment variable: export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
-* Set environment variable: export PATH=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home/bin:$PATH
+* Set environment variable: export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+* Set environment variable: export PATH=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin:$PATH
 * Set environment variable: export SPRING_PROFILES_ACTIVE=dev
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build Katie webapp as war file: <em>sh build.sh</em>
@@ -58,7 +58,7 @@ Optionally you can run Katie with an outgoing proxy configuration enabled (https
 * Download IntelliJ IDEA Ultimate: https://www.jetbrains.com/idea/download/other.html
 * Open file 'src/main/resources/application-dev.properties' and configure property 'volume.base.path'
 * Open IntelliJ: File > Open (select directory "katie-backend")
-* Set JDK version: File > Project Structure > Project SDK: 11
+* Set JDK version: File > Project Structure > Project SDK: 21
     * Also see https://www.jetbrains.com/help/idea/maven-support.html#change_jdk
 * Run Maven (askkatie-webapp > Lifecycle): clean + install
     * Optional: Disable tests (Preferences > Build, Execution, Deployment > Build Tools > Maven > Runner > Skip tests)
@@ -66,7 +66,7 @@ Optionally you can run Katie with an outgoing proxy configuration enabled (https
     * Click "+" to add new configuration: Spring Boot
     * Set Name, e.g. "Katie"
     * Main class: com.wyona.katie.Server
-    * Environment, JRE: /Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
+    * Environment, JRE: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
     * Active profiles: dev
         * Optional: Set environment variable SPRING_PROFILES_ACTIVE=dev
 * Close configuration and run "Katie"
@@ -112,7 +112,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 ## Generate Katie Docker image and run Katie Docker container
 
 * Optional: Comment/disable 'server.servlet.session.cookie.secure' inside src/main/resources/application.properties
-* Set environment variable: export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
+* Set environment variable: export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build webapp as war, run: 'sh build.sh'
 * Build image: docker build -t katie .
