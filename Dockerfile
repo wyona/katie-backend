@@ -1,4 +1,4 @@
-FROM openjdk:11.0.11-jdk
+FROM openjdk:21
 MAINTAINER katie.qa
 VOLUME /tmp
 COPY target/askkatie-webapp-*.war app.war
