@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
 import io.github.ollama4j.OllamaAPI;
+import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
@@ -33,10 +34,10 @@ public class OllamaGenerate implements GenerateProvider {
     @Value("${ollama.timeout.in.seconds}")
     private Integer ollamaTimeout;
 
-    @Value("${ollama.basic.auth.username}")
+    @Value("${ollama.basic.auth.username:#{null}}")
     private String ollamaBasicAuthUsername;
 
-    @Value("${ollama.basic.auth.password}")
+    @Value("${ollama.basic.auth.password:#{null}}")
     private String ollamaBasicAuthPassword;
 
     /**
@@ -51,7 +52,7 @@ public class OllamaGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String model, Double temperature, String apiKey) throws Exception {
-        log.info("Complete prompt using Ollama completion API (" + ollamaHost + ") ...");
+        log.info("Complete prompt using Ollama completion API (Ollama host: " + ollamaHost + ") ...");
 
         String completedText = null;
 
@@ -59,8 +60,15 @@ public class OllamaGenerate implements GenerateProvider {
         OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
         //ollamaAPI.setVerbose(false); // INFO: Default is true
 
-        // TODO: When not set inside secret-keys.properties, then do not set here
-        ollamaAPI.setBasicAuth(ollamaBasicAuthUsername, ollamaBasicAuthPassword);
+        if (ollamaBasicAuthUsername != null && ollamaBasicAuthPassword != null) {
+            ollamaAPI.setBasicAuth(ollamaBasicAuthUsername, ollamaBasicAuthPassword);
+        } else {
+            log.info("No Ollama Basic Auth credentials configured.");
+        }
+
+        if (true) {
+            //ollamaAPI.setBearerAuth("TODO");
+        }
 
         ollamaAPI.setRequestTimeoutSeconds(ollamaTimeout);
         OptionsBuilder optionsBuilder = new OptionsBuilder();
@@ -91,6 +99,12 @@ public class OllamaGenerate implements GenerateProvider {
         } catch (HttpTimeoutException e) {
             log.warn(e.getMessage(), e);
             throw new HttpTimeoutException("Timeout is set to " + ollamaTimeout + " seconds. The timeout should be increased if necessary, see parameter 'ollama.timeout.in.seconds'. Original exception message: " + e.getMessage());
+        } catch (OllamaBaseException e) {
+            log.error(e.getMessage(), e);
+            throw new Exception("Exception when trying to connect to Ollama. Original exception message: " + e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
         }
     }
 
