@@ -40,6 +40,9 @@ public class OllamaGenerate implements GenerateProvider {
     @Value("${ollama.basic.auth.password:#{null}}")
     private String ollamaBasicAuthPassword;
 
+    @Value("${ollama.bearer.token:#{null}}")
+    private String ollamaBearerToken;
+
     /**
      * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
      */
@@ -66,8 +69,9 @@ public class OllamaGenerate implements GenerateProvider {
             log.info("No Ollama Basic Auth credentials configured.");
         }
 
-        if (true) {
-            //ollamaAPI.setBearerAuth("TODO");
+        if (ollamaBearerToken != null) {
+            // TODO: Upgrade io.github.ollama4j inside pom.xml
+            //ollamaAPI.setBearerAuth(ollamaBearerToken);
         }
 
         ollamaAPI.setRequestTimeoutSeconds(ollamaTimeout);
