@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:21
 #https://hub.docker.com/_/openjdk
 #https://hub.docker.com/_/tomcat
 #https://www.middlewareinventory.com/blog/docker-tomcat-example-dockerfile-sample/
@@ -7,8 +7,9 @@ MAINTAINER katie.qa
 
 VOLUME /tmp
 
-# TLS 1.0 and 1.1 enabled in order to be able to connect to IMAP servers which do not support more recent protocols, whereas see jdk.tls.disabledAlgorithms
-COPY java.security /usr/local/openjdk-11/conf/security/.
+# TLS 1.0 and 1.1 (TLSv1, TLSv1.1) enabled in order to be able to connect to IMAP servers which do not support more recent protocols, whereas see property jdk.tls.disabledAlgorithms inside file java.security
+# For more details see src/main/webapp/email-integration.html
+COPY java.security /usr/java/openjdk-21/conf/security/.
 
 RUN mkdir /opt/tomcat/
 WORKDIR /opt/tomcat
