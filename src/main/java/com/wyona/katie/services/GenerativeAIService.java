@@ -135,7 +135,7 @@ public class GenerativeAIService {
      * Append message to conversation history
      */
     private void appendMessageToConversationHistory(Context domain, String conversationId, PromptMessageRoleLowerCase role, String message) {
-        log.info("Add nessage to conversation '" + conversationId + "' ...");
+        log.info("Add message to conversation '" + conversationId + "' ...");
 
         try {
             ChatHistory history = getConversationHistory(domain, conversationId);
