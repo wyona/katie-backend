@@ -13,11 +13,11 @@ COPY java.security /usr/java/openjdk-21/conf/security/.
 
 RUN mkdir /opt/tomcat/
 WORKDIR /opt/tomcat
-RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.100/bin/apache-tomcat-8.5.100.tar.gz
-#RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
+RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.104/bin/apache-tomcat-9.0.104.tar.gz
+#RUN curl -O https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.6/bin/apache-tomcat-11.0.6.tar.gz
 RUN tar xvfz apache*.tar.gz
-RUN mv apache-tomcat-8.5.100/* /opt/tomcat/.
-#RUN mv apache-tomcat-9.0.56/* /opt/tomcat/.
+RUN mv apache-tomcat-9.0.104/* /opt/tomcat/.
+#RUN mv apache-tomcat-11.0.6/* /opt/tomcat/.
 RUN chmod -R 775 /opt/tomcat
 
 COPY target/askkatie-webapp-*.war /opt/tomcat/webapps/katie.war
