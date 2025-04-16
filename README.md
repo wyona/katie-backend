@@ -140,8 +140,8 @@ whereas make sure to configure VOLUME_KATIE inside the script accordingly.
 * Either remove &lt;base href="/"&gt; or set prefix &lt;base href="/katie/"&gt; inside src/main/webapp/index.html
 * Set i18n path to "./assets/i18n/" (1 location) and TinyMCE path to 'base_url:"./tinymce"' (7 locations) inside src/main/webapp/main.js
 * sh build.sh
-* Check available Tomcat version at https://dlcdn.apache.org/tomcat/tomcat-8/ and update inside Dockerfile_Java11_Tomcat
-* Build image containing Tomcat: docker build -t katie-tomcat -f Dockerfile_Java11_Tomcat .
+* Check available Tomcat version at https://dlcdn.apache.org/tomcat/tomcat-9/ and update inside Dockerfile_Java21_Tomcat
+* Build image containing Tomcat: docker build -t katie-tomcat -f Dockerfile_Java21_Tomcat .
 * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie-tomcat
 * http://localhost:7070/katie/
 
