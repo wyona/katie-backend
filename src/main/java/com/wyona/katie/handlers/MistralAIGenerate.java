@@ -71,7 +71,7 @@ public class MistralAIGenerate implements GenerateProvider {
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
             String requestUrl = mistralAIHost + "/v1/chat/completions";
-            log.info("Get chat completion: " + requestUrl + " (Body: " + requestBodyNode + ")");
+            log.info("Get chat completion: " + requestUrl + " (Request Body: " + requestBodyNode + ")");
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
             JsonNode responseBodyNode = response.getBody();
             log.info("Response JSON: " + responseBodyNode);
