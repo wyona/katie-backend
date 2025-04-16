@@ -21,8 +21,8 @@ services:
       - APP_MAIL_PORT=587
       - APP_MAIL_USERNAME=TODO
       - APP_MAIL_PASSWORD=TODO
-      # Set to false when using self-signed certificate
-      - APP_MAIL_SMTP_STARTTLS_ENABLED=true
+      # Set to false, because the Wyona mail server is using a self-signed certificate
+      - APP_MAIL_SMTP_STARTTLS_ENABLED=false
       # Defaul mail addresses
       - MAIL_DEFAULT_ADMIN_EMAIL_ADDRESS=contact@wyona.com
       - MAIL_DEFAULT_SENDER_EMAIL_ADDRESS=Katie <contact@wyona.com>
