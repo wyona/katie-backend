@@ -259,8 +259,13 @@ public class OpenAIGenerate implements GenerateProvider {
                 ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
                 responseBodyNode = response.getBody();
             } else {
-                log.warn("Use mock response ...");
-                responseBodyNode = getMockResponse();
+                if (true) {
+                    log.warn("Use mock response ...");
+                    responseBodyNode = getMockResponse();
+                } else {
+                    log.warn("Use mock response (structured) ...");
+                    responseBodyNode = getMockResponseStructured();
+                }
             }
 
             log.info("JSON Response of OpenAI API: " + responseBodyNode);
@@ -335,7 +340,7 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      *
      */
-    private String getMockResponseStructured() {
+    private JsonNode getMockResponseStructured() {
         String mockResponse = "{\n" +
                 "  \"conversation_id\": \"60e5d045-21aa-4255-a999-2d3cde9ff95a\",\n" +
                 "  \"choices\": [\n" +
@@ -348,7 +353,15 @@ public class OpenAIGenerate implements GenerateProvider {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        return mockResponse;
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(mockResponse);
+            return jsonNode;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
     /***
