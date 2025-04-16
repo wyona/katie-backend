@@ -11,7 +11,6 @@ import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.assistant.Assistant;
 import io.github.sashirestela.openai.domain.file.FileRequest;
 import io.github.sashirestela.openai.domain.file.FileResponse;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.*;
@@ -25,7 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.text.Normalizer;
@@ -42,6 +40,14 @@ public class OpenAIGenerate implements GenerateProvider {
     private String openAIHost;
 
     private static final String ASSISTANT_TOOL_FILE_SEARCH = "file_search";
+
+    /**
+     * Get OpenAI API host or OpenAI API compatible host
+     * @return host, e.g. "https://api.openai.com"
+     */
+    private String getHost() {
+        return openAIHost;
+    }
 
     /**
      * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
@@ -198,6 +204,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 messages.add(messageNode);
             }
 
+            // TODO: Allow choosing a response format
             String responseFormat = null;
             if (responseFormat != null && responseFormat.equals("json")) {
                 // See https://platform.openai.com/docs/guides/structured-outputs
@@ -218,17 +225,27 @@ public class OpenAIGenerate implements GenerateProvider {
                 ObjectNode propertyNode = mapper.createObjectNode();
                 propertiesNode.put("selected-answer", propertyNode);
                 propertyNode.put("type", "string");
+            } else {
+                log.info("No response format set.");
             }
 
             HttpHeaders headers = getHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String requestUrl = openAIHost + "/v1/chat/completions";
-            log.info("Get chat completion: " + requestUrl + " (Body: " + requestBodyNode + ")");
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
-            JsonNode responseBodyNode = response.getBody();
-            log.info("JSON Response: " + responseBodyNode);
+            JsonNode responseBodyNode = null;
+
+            if (true) {
+                String requestUrl = getHost() + "/v1/chat/completions";
+                log.info("Get chat completion: " + requestUrl + " (Request Body: " + requestBodyNode + ")");
+                RestTemplate restTemplate = new RestTemplate();
+                ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+                responseBodyNode = response.getBody();
+            } else {
+                log.warn("Use mock response ...");
+                responseBodyNode = getMockResponse();
+            }
+
+            log.info("JSON Response of OpenAI API: " + responseBodyNode);
 
             JsonNode choicesNode = responseBodyNode.get("choices");
             if (choicesNode.isArray()) {
@@ -242,6 +259,59 @@ public class OpenAIGenerate implements GenerateProvider {
         }
 
         return completedText;
+    }
+
+    /**
+     *
+     */
+    private JsonNode getMockResponse() {
+        String mockResponse =  "{\n" +
+                "   \"id\":\"chatcmpl-BMvqJjm1xipWcRwIRTjoDqdGr0JRv\",\n" +
+                "   \"object\":\"chat.completion\",\n" +
+                "   \"created\":1744805263,\n" +
+                "   \"model\":\"gpt-4o-2024-08-06\",\n" +
+                "   \"choices\":[\n" +
+                "      {\n" +
+                "         \"index\":0,\n" +
+                "         \"message\":{\n" +
+                "            \"role\":\"assistant\",\n" +
+                "            \"content\":\"The least action principle, also known as the principle of stationary action or Hamilton's principle, is a fundamental concept in physics that describes how the path taken by a physical system between two states is determined. According to this principle, the actual path taken by the system is the one for which the action is stationary (usually a minimum, but not necessarily always) compared to nearby paths.\\n\\nIn more formal terms, action (\\\\(S\\\\)) is defined as the integral over time of the Lagrangian (\\\\(L\\\\)) of a system, which is the difference between the kinetic and potential energies:\\n\\n\\\\[ S = \\\\int_{t_1}^{t_2} L(q, \\\\dot{q}, t) \\\\, dt \\\\]\\n\\nwhere \\\\(q\\\\) represents the generalized coordinates that describe the system, and \\\\(\\\\dot{q}\\\\) is the time derivative of \\\\(q\\\\).\\n\\nThe least action principle states that the actual path taken by the system from time \\\\(t_1\\\\) to \\\\(t_2\\\\) will render the action \\\\(S\\\\) stationary (i.e., a minimum, maximum, or saddle point). In classical mechanics, this leads to the Euler-Lagrange equations, which provide the equations of motion for the system.\\n\\nThis principle is significant because it applies across various areas of physics and is foundational in both classical mechanics and quantum mechanics, providing a unifying framework for understanding how physical systems evolve over time.\",\n" +
+                "            \"refusal\":null,\n" +
+                "            \"annotations\":[\n" +
+                "               \n" +
+                "            ]\n" +
+                "         },\n" +
+                "         \"logprobs\":null,\n" +
+                "         \"finish_reason\":\"stop\"\n" +
+                "      }\n" +
+                "   ],\n" +
+                "   \"usage\":{\n" +
+                "      \"prompt_tokens\":14,\n" +
+                "      \"completion_tokens\":291,\n" +
+                "      \"total_tokens\":305,\n" +
+                "      \"prompt_tokens_details\":{\n" +
+                "         \"cached_tokens\":0,\n" +
+                "         \"audio_tokens\":0\n" +
+                "      },\n" +
+                "      \"completion_tokens_details\":{\n" +
+                "         \"reasoning_tokens\":0,\n" +
+                "         \"audio_tokens\":0,\n" +
+                "         \"accepted_prediction_tokens\":0,\n" +
+                "         \"rejected_prediction_tokens\":0\n" +
+                "      }\n" +
+                "   },\n" +
+                "   \"service_tier\":\"default\",\n" +
+                "   \"system_fingerprint\":\"fp_22890b9c0a\"\n" +
+                "}";
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(mockResponse);
+            return jsonNode;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
     /***
@@ -352,7 +422,7 @@ public class OpenAIGenerate implements GenerateProvider {
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String requestUrl = openAIHost + "/v1/assistants";
+            String requestUrl = getHost() + "/v1/assistants";
             log.info("Create assistant: " + requestUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
@@ -433,7 +503,7 @@ public class OpenAIGenerate implements GenerateProvider {
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String createThreadUrl = openAIHost + "/v1/threads";
+            String createThreadUrl = getHost() + "/v1/threads";
             log.info("Create thread: " + createThreadUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(createThreadUrl, HttpMethod.POST, request, JsonNode.class);
@@ -551,7 +621,7 @@ public class OpenAIGenerate implements GenerateProvider {
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode2.toString(), headers);
 
-            String runThreadUrl = openAIHost + "/v1/threads/" +threadId + "/runs";
+            String runThreadUrl = getHost() + "/v1/threads/" +threadId + "/runs";
             log.info("Run thread " + runThreadUrl + " (Body: " + requestBodyNode2 + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(runThreadUrl, HttpMethod.POST, request, JsonNode.class);
@@ -631,7 +701,7 @@ public class OpenAIGenerate implements GenerateProvider {
         try {
             HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(headers);
-            String getMessagesUrl = openAIHost + "/v1/threads/" +threadId + "/messages";
+            String getMessagesUrl = getHost() + "/v1/threads/" +threadId + "/messages";
             log.info("Get messages " + getMessagesUrl);
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(getMessagesUrl, HttpMethod.GET, request, JsonNode.class);
@@ -684,7 +754,7 @@ public class OpenAIGenerate implements GenerateProvider {
     private JsonNode getRunResponseBodyNode(String threadId, String runId, String openAIKey) throws Exception {
         HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        String getRunUrl = openAIHost + "/v1/threads/" + threadId + "/runs/" + runId;
+        String getRunUrl = getHost() + "/v1/threads/" + threadId + "/runs/" + runId;
         log.info("Get run " + getRunUrl);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<JsonNode> response = restTemplate.exchange(getRunUrl, HttpMethod.GET, request, JsonNode.class);
