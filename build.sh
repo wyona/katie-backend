@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOMCAT_HOME=/Users/michaelwechner/local/apache-tomcat-8.5.53
+TOMCAT_HOME=/Users/michaelwechner/local/apache-tomcat-9.0.104
 JAVA_VERSION_REQUIRED=11.0.11
 #JAVA_VERSION_REQUIRED=11.0.16
 JAVA_VERSION_REQUIRED=21.0.5
