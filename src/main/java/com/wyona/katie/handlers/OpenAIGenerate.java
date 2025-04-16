@@ -18,8 +18,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -47,6 +45,7 @@ public class OpenAIGenerate implements GenerateProvider {
      */
     private String getHost() {
         return openAIHost;
+        //return "https://chat.aintegrator.ch/";
     }
 
     /**
@@ -204,8 +203,20 @@ public class OpenAIGenerate implements GenerateProvider {
                 messages.add(messageNode);
             }
 
-            // TODO: Allow choosing a response format
+            // TODO: Allow choosing a response format, in order to for example extract information more easily from the LLM response
+            /*
+            {
+              "messages": [
+                {
+                  "content": "Please extract the ISIN number and fundname from the following text: Product FTGF ClearBridge US Large Cap Growth Fund Class E EUR ACC • ISIN IE00B55VZM92 • A sub-fund of Franklin Templeton Global Funds plc Management company (and Manufacturer): Franklin Templeton International Services S.à r.l. (FTIS), part of the Franklin Templeton group of companies. Website: www.franklintempleton.lu Call (+352) 46 66 67-1 for more information The Commission de Surveillance du Secteur Financier (CSSF) is responsible for supervising Franklin Templeton International Services S.à r.l. in relation to this Key Information Document. This PRIIP is authorised in Ireland. Date of Production of the KID: 12/02/2025",
+                  "role": "user"
+                }
+              ],
+              "temperature": 0
+            }
+            */
             String responseFormat = null;
+            //String responseFormat = "json";
             if (responseFormat != null && responseFormat.equals("json")) {
                 // See https://platform.openai.com/docs/guides/structured-outputs
                 ObjectNode responseFormatNode = mapper.createObjectNode();
@@ -214,7 +225,9 @@ public class OpenAIGenerate implements GenerateProvider {
                 responseFormatNode.put("type", "json_schema");
                 ObjectNode jsonSchemaNode = mapper.createObjectNode();
                 responseFormatNode.put("json_schema", jsonSchemaNode);
-                jsonSchemaNode.put("name", "TODO");
+
+                // Custom schema name
+                jsonSchemaNode.put("name", "kid-information");
 
                 ObjectNode schemaNode = mapper.createObjectNode();
                 jsonSchemaNode.put("schema", schemaNode);
@@ -222,11 +235,16 @@ public class OpenAIGenerate implements GenerateProvider {
                 ObjectNode propertiesNode = mapper.createObjectNode();
                 schemaNode.put("properties", propertiesNode);
 
-                ObjectNode propertyNode = mapper.createObjectNode();
-                propertiesNode.put("selected-answer", propertyNode);
-                propertyNode.put("type", "string");
+                // Custom property nodes
+                ObjectNode isinNode = mapper.createObjectNode();
+                isinNode.put("type", "string");
+                propertiesNode.put("isin", isinNode);
+
+                ObjectNode fundnameNode = mapper.createObjectNode();
+                isinNode.put("type", "string");
+                propertiesNode.put("fundname", isinNode);
             } else {
-                log.info("No response format set.");
+                log.info("No particular response format set.");
             }
 
             HttpHeaders headers = getHttpHeaders(openAIKey);
@@ -262,7 +280,7 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     *
+     * Get LLM mock response
      */
     private JsonNode getMockResponse() {
         String mockResponse =  "{\n" +
@@ -312,6 +330,25 @@ public class OpenAIGenerate implements GenerateProvider {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    /**
+     *
+     */
+    private String getMockResponseStructured() {
+        String mockResponse = "{\n" +
+                "  \"conversation_id\": \"60e5d045-21aa-4255-a999-2d3cde9ff95a\",\n" +
+                "  \"choices\": [\n" +
+                "    {\n" +
+                "      \"id\": 0,\n" +
+                "      \"message\": {\n" +
+                "        \"role\": \"assistant\",\n" +
+                "        \"content\": \"{\\\"isin\\\":\\\"IE00B55VZM92\\\",\\\"fundname\\\":\\\"FTGF ClearBridge US Large Cap Growth Fund Class E EUR ACC\\\"}\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        return mockResponse;
     }
 
     /***
