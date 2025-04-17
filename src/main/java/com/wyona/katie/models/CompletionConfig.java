@@ -1,13 +1,14 @@
 package com.wyona.katie.models;
 
 /**
- *
+ * Completion configuration
  */
 public class CompletionConfig {
 
     CompletionImpl completionImpl;
     String model;
     String apiKey;
+    String host;
 
     /**
      *
@@ -16,12 +17,14 @@ public class CompletionConfig {
     }
 
     /**
-     * @param model Completion model, e.g. "deepseek-r1"
+     * @param model Completion model, e.g. "deepseek-r1" or OpenAI's "gpt-3.5-turbo"
+     * @param host Custom host, e.g. "http://localhost:11434/" or "https://ollama.katie.qa/"
      */
-    public CompletionConfig(CompletionImpl completionImpl, String model, String apiKey) {
+    public CompletionConfig(CompletionImpl completionImpl, String model, String apiKey, String host) {
         this.completionImpl = completionImpl;
         this.model = model;
         this.apiKey = apiKey;
+        this.host = host;
     }
 
     /**
@@ -64,5 +67,19 @@ public class CompletionConfig {
      */
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    /**
+     * @return host of completion endpoint, e.g. "http://localhost:11434/" or "https://ollama.katie.qa/"
+     */
+    public String getHost() {
+        return host;
+    }
+
+    /**
+     * @param host Host of completion endpoint, e.g. "http://localhost:11434/" or "https://ollama.katie.qa/"
+     */
+    public void setHost(String host) {
+        this.host = host;
     }
 }
