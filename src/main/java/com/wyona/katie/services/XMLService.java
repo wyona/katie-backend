@@ -178,6 +178,7 @@ public class XMLService {
     public static final String CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR = "completion-impl";
     public static final String CONTEXT_GENERATIVE_AI_MODEL_ATTR = "completion-model";
     public static final String CONTEXT_GENERATIVE_AI_API_KEY_ATTR = "completion-api-key";
+    public static final String CONTEXT_GENERATIVE_AI_HOST_ATTR = "completion-host";
     private static final String CONTEXT_KATIE_SEARCH_ENABLED_ATTR = "search-enabled";
     private static final String CONTEXT_SCORE_THRESHOLD_ATTR = "score-threshold";
     private static final String CONTEXT_ANALYZE_MESSAGES_ASK_REST_API = "analyze-messages-ask-rest-api";
@@ -1443,6 +1444,11 @@ public class XMLService {
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + context.getCompletionConfig().getCompletionImpl());
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR, context.getCompletionConfig().getModel());
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR, context.getCompletionConfig().getApiKey());
+            if (context.getCompletionConfig().getHost() != null) {
+                indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR, context.getCompletionConfig().getHost());
+            } else {
+                // Use default host set globally
+            }
         }
         doc.getDocumentElement().appendChild(indexSearchPipelineEl);
 
@@ -1872,6 +1878,9 @@ public class XMLService {
                 }
                 if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR)) {
                     genAIConfig.setApiKey(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR));
+                }
+                if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR)) {
+                    genAIConfig.setHost(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR));
                 }
             }
 
