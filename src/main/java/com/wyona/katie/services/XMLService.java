@@ -1840,7 +1840,7 @@ public class XMLService {
         boolean reRankAnswers = false;
         ReRankImpl reRankImpl = reRankDefaultImpl;
         boolean useGenerativeAI = false;
-        CompletionConfig genAIConfig = new CompletionConfig(completionDefaultImpl, null, null);
+        CompletionConfig genAIConfig = new CompletionConfig(completionDefaultImpl, null, null, null);
         boolean katieSearchEnabled = true;
         Double scoreThreshold = null;
         boolean analyzeMessagesAskRestApi = false;
