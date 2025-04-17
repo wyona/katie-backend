@@ -314,7 +314,9 @@ public class ConfigurationController {
         java.util.List<Context> configs = new java.util.ArrayList<Context>();
         for (int i = 0; i < domainIDs.length; i++) {
             try {
-                configs.add(contextService.getDomain(domainIDs[i]));
+                Context domainConfig = contextService.getDomain(domainIDs[i]);
+                domainConfig.setCompletionConfig(obfuscateApiKey(domainConfig.getCompletionConfig()));
+                configs.add(domainConfig);
             } catch(Exception e) {
                 log.error(e.getMessage(), e);
             }
