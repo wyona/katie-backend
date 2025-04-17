@@ -80,8 +80,9 @@ public class OpenAIGenerate implements GenerateProvider {
      * Get list of previously uploaded files
      * @return list of files, which got previously uploaded to OpenAI
      */
-    private FileResponse[] getFiles(String openAIKey) throws Exception {
-        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+    private FileResponse[] getFiles(CompletionConfig completionConfig) throws Exception {
+        // TODO: Allow using OpenAI compatible host
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(completionConfig.getApiKey()).build();
         //openAI.files().getList(FileRequest.PurposeType.ASSISTANTS).join();
         //var fileResponses = openAI.files().getList(null).join();
         List<FileResponse> fileResponses = openAI.files().getList(null).join();
@@ -120,9 +121,10 @@ public class OpenAIGenerate implements GenerateProvider {
      * Delete file from OpenAI
      * @param fileId OpenAI File Id, e.g. "file-RCViAw1sYooq4djLVq3eo9"
      */
-    private void deleteFile(String fileId, String openAIKey) throws Exception {
+    private void deleteFile(String fileId, CompletionConfig completionConfig) throws Exception {
         log.info("File '" + fileId + "' will be deleted from OpenAI ...");
-        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(openAIKey).build();
+        // TODO: Allow using OpenAI compatible host
+        SimpleOpenAI openAI = SimpleOpenAI.builder().apiKey(completionConfig.getApiKey()).build();
         openAI.files().delete(fileId).join();
     }
 
@@ -591,9 +593,9 @@ public class OpenAIGenerate implements GenerateProvider {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
 
-                    deleteOutdatedFilesFromOpenAI(completionConfig.getApiKey());
+                    deleteOutdatedFilesFromOpenAI(completionConfig);
 
-                    FileResponse[] previouslyUploadedFiles = getFiles(completionConfig.getApiKey());
+                    FileResponse[] previouslyUploadedFiles = getFiles(completionConfig);
                     log.info("Number of uploaded files: " + previouslyUploadedFiles.length);
                     for (FileResponse previouslyUploadedFile : previouslyUploadedFiles) {
                         log.info("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + new Date(previouslyUploadedFile.getCreatedAt() * 1000) + ")");
@@ -664,8 +666,8 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * Delete all files from OpenAI which are not up to date
      */
-    private void deleteOutdatedFilesFromOpenAI(String openAIKey) throws Exception {
-        FileResponse[] previouslyUploadedFiles = getFiles(openAIKey);
+    private void deleteOutdatedFilesFromOpenAI(CompletionConfig completionConfig) throws Exception {
+        FileResponse[] previouslyUploadedFiles = getFiles(completionConfig);
         log.info("Number of uploaded files: " + previouslyUploadedFiles.length);
         for (FileResponse previouslyUploadedFile : previouslyUploadedFiles) {
             Date lastModifiedRemote = new Date(previouslyUploadedFile.getCreatedAt() * 1000);
@@ -676,7 +678,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 try {
                     if (lastModifiedLocal.getTime() > lastModifiedRemote.getTime()) {
                         log.info("Local file (" + lastModifiedLocal + ") is more recent than remote file (" + lastModifiedRemote + ").");
-                        deleteFile(previouslyUploadedFile.getId(), openAIKey);
+                        deleteFile(previouslyUploadedFile.getId(), completionConfig);
                     } else {
                         log.info("Remote file '" + previouslyUploadedFile.getId() + "' will not be deleted from OpenAI, because it is up to date.");
                     }
@@ -718,8 +720,8 @@ public class OpenAIGenerate implements GenerateProvider {
      * Get file
      * @param fileId OpenAI file Id
      */
-    private File getFile(String fileId, String openAIKey) throws Exception {
-        FileResponse[] fileResponses = getFiles(openAIKey);
+    private File getFile(String fileId, CompletionConfig completionConfig) throws Exception {
+        FileResponse[] fileResponses = getFiles(completionConfig);
         for (FileResponse fileResponse: fileResponses) {
             if (fileResponse.getId().equals(fileId)) {
                 return new File(fileResponse.getFilename());
@@ -848,7 +850,7 @@ public class OpenAIGenerate implements GenerateProvider {
                             if (annotationNode.get("type").asText().equals("file_citation")) {
                                 String fileId = annotationNode.get("file_citation").get("file_id").asText();
                                 log.info("File citation: " + fileId);
-                                File file = getFile(fileId, completionConfig.getApiKey());
+                                File file = getFile(fileId, completionConfig);
                                 log.info("File: " + file.getAbsolutePath());
                             } else {
                                 log.info("Annotation type: " + annotationNode.get("type").asText());
