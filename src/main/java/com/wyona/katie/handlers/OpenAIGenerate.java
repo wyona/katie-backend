@@ -45,7 +45,7 @@ public class OpenAIGenerate implements GenerateProvider {
      */
     private String getHost() {
         return openAIHost;
-        //return "https://chat.aintegrator.ch/";
+        //return "https://chat.aintegrator.ch/"; // TODO: Allow OpenAI compatible hosts
     }
 
     /**
@@ -226,14 +226,30 @@ public class OpenAIGenerate implements GenerateProvider {
                 ObjectNode jsonSchemaNode = mapper.createObjectNode();
                 responseFormatNode.put("json_schema", jsonSchemaNode);
 
-                // Custom schema name
-                jsonSchemaNode.put("name", "kid-information");
-
                 ObjectNode schemaNode = mapper.createObjectNode();
                 jsonSchemaNode.put("schema", schemaNode);
                 schemaNode.put("type", "object");
                 ObjectNode propertiesNode = mapper.createObjectNode();
                 schemaNode.put("properties", propertiesNode);
+
+                // Custom schema name
+                jsonSchemaNode.put("name", "matching-classifications");
+
+                // Custom property nodes
+                ObjectNode classificationIDs = mapper.createObjectNode();
+                classificationIDs.put("type", "array");
+                propertiesNode.put("classification-ids", classificationIDs);
+                ObjectNode itemdsNode = mapper.createObjectNode();
+                itemdsNode.put("type", "string");
+                classificationIDs.put("items", itemdsNode);
+
+                ObjectNode notApplicable = mapper.createObjectNode();
+                notApplicable.put("type", "boolean");
+                propertiesNode.put("not-applicable", notApplicable);
+
+                /*
+                // Custom schema name
+                jsonSchemaNode.put("name", "kid-information");
 
                 // Custom property nodes
                 ObjectNode isinNode = mapper.createObjectNode();
@@ -241,8 +257,9 @@ public class OpenAIGenerate implements GenerateProvider {
                 propertiesNode.put("isin", isinNode);
 
                 ObjectNode fundnameNode = mapper.createObjectNode();
-                isinNode.put("type", "string");
-                propertiesNode.put("fundname", isinNode);
+                fundnameNode.put("type", "string");
+                propertiesNode.put("fundname", fundnameNode);
+                */
             } else {
                 log.info("No particular response format set.");
             }
@@ -261,7 +278,8 @@ public class OpenAIGenerate implements GenerateProvider {
             } else {
                 if (true) {
                     log.warn("Use mock response ...");
-                    responseBodyNode = getMockResponse();
+                    //responseBodyNode = getMockResponse();
+                    responseBodyNode = getMockResponse2();
                 } else {
                     log.warn("Use mock response (structured) ...");
                     responseBodyNode = getMockResponseStructured();
@@ -352,6 +370,59 @@ public class OpenAIGenerate implements GenerateProvider {
                 "      }\n" +
                 "    }\n" +
                 "  ]\n" +
+                "}";
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(mockResponse);
+            return jsonNode;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     *
+     */
+    private JsonNode getMockResponse2() {
+        String mockResponse = "{\n" +
+                "   \"id\":\"chatcmpl-BN0M427ZzGyBe8Ydp184Zvbo6kKmz\",\n" +
+                "   \"object\":\"chat.completion\",\n" +
+                "   \"created\":1744822608,\n" +
+                "   \"model\":\"gpt-4o-2024-08-06\",\n" +
+                "   \"choices\":[\n" +
+                "      {\n" +
+                "         \"index\":0,\n" +
+                "         \"message\":{\n" +
+                "            \"role\":\"assistant\",\n" +
+                "            \"content\":\"The text \\\"Ich kann mich nicht mehr einloggen, was muss ich tun?\\\" pertains to login or access issues. Here are the three categories and their IDs that might relate to such a problem:\\n\\n1. Identität und Zugang (ZI), AD / EntraID inkl. MFA / PKI (Category Id: 497eb461-04da-4a2c-b9f3-ab438423a4a0)\\n2. Identität und Zugang (ZI), Identity Services (Category Id: 9a8d1058-5b82-4825-b900-0fb0da303b5e)\\n3. ITV ZDU/KITS (ZI), Access Management (Category Id: 8e1a08ac-2fc2-4669-a6cb-d4f246f2c896)\",\n" +
+                "            \"refusal\":null,\n" +
+                "            \"annotations\":[\n" +
+                "               \n" +
+                "            ]\n" +
+                "         },\n" +
+                "         \"logprobs\":null,\n" +
+                "         \"finish_reason\":\"stop\"\n" +
+                "      }\n" +
+                "   ],\n" +
+                "   \"usage\":{\n" +
+                "      \"prompt_tokens\":10461,\n" +
+                "      \"completion_tokens\":171,\n" +
+                "      \"total_tokens\":10632,\n" +
+                "      \"prompt_tokens_details\":{\n" +
+                "         \"cached_tokens\":0,\n" +
+                "         \"audio_tokens\":0\n" +
+                "      },\n" +
+                "      \"completion_tokens_details\":{\n" +
+                "         \"reasoning_tokens\":0,\n" +
+                "         \"audio_tokens\":0,\n" +
+                "         \"accepted_prediction_tokens\":0,\n" +
+                "         \"rejected_prediction_tokens\":0\n" +
+                "      }\n" +
+                "   },\n" +
+                "   \"service_tier\":\"default\",\n" +
+                "   \"system_fingerprint\":\"fp_92f14e8683\"\n" +
                 "}";
 
         ObjectMapper mapper = new ObjectMapper();
