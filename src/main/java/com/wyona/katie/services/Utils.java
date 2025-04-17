@@ -14,7 +14,8 @@ import java.util.Locale;
 public class Utils {
 
     /**
-     *
+     * @param secret Secret, e.g. "3202FGgKalMnVTLOX6AldOcFlmtWdsiUV4Fo2iNuPAx"
+     * @return obfuscated secrect, e.g. "3***x"
      */
     public static String obfuscateSecret(String secret) {
         if (secret != null && secret.length() > 0) {
