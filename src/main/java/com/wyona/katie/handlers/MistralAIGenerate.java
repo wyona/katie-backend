@@ -3,10 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.models.CompletionAssistant;
-import com.wyona.katie.models.CompletionResponse;
-import com.wyona.katie.models.CompletionTool;
-import com.wyona.katie.models.PromptMessage;
+import com.wyona.katie.models.*;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -41,9 +38,9 @@ public class MistralAIGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String model, Double temperature, String mistralAIKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         log.info("Complete prompt using Mistral AI chat completion ...");
 
         String completedText = null;
@@ -52,7 +49,7 @@ public class MistralAIGenerate implements GenerateProvider {
             // INFO: See https://docs.mistral.ai/api/ and https://platform.openai.com/docs/api-reference/chat/create
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode requestBodyNode = mapper.createObjectNode();
-            requestBodyNode.put("model", model);
+            requestBodyNode.put("model", completionConfig.getModel());
             if (temperature != null) {
                 requestBodyNode.put("temperature", temperature);
             }
@@ -67,7 +64,7 @@ public class MistralAIGenerate implements GenerateProvider {
             }
 
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = getHttpHeaders(mistralAIKey);
+            HttpHeaders headers = getHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
             String requestUrl = mistralAIHost + "/v1/chat/completions";

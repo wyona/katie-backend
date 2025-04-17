@@ -53,9 +53,9 @@ public class OllamaGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String model, Double temperature, String apiKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         log.info("Complete prompt using Ollama completion API (Ollama host: " + ollamaHost + ") ...");
 
         String completedText = null;
@@ -84,7 +84,7 @@ public class OllamaGenerate implements GenerateProvider {
         Options options = optionsBuilder.build();
 
         // https://ollama4j.github.io/ollama4j/apis-generate/chat
-        OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(model);
+        OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(completionConfig.getModel());
         //OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(OllamaModelType.MISTRAL);
         PromptMessage firstMessage = promptMessages.get(0);
         OllamaChatRequest chatRequest = builder.withMessage(getOllamaChatMessageRole(firstMessage.getRole()), firstMessage.getContent()).build();

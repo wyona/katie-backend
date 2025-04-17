@@ -64,8 +64,6 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
         CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider != null) {
-            String model = domain.getCompletionConfig().getModel();
-            String apiToken = domain.getCompletionConfig().getApiKey();
 
             // TODO: Use tool call!
             List<CompletionTool> tools = new ArrayList<>();
@@ -73,9 +71,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             getFilePathTool.setFunctionArgument("file_path");
             // TODO: Finish tool / function definition (See OpenAIGenerate#createAssistant(...)
             tools.add(getFilePathTool);
-            CompletionAssistant assistant = getAssistant(generateProvider, domain, tools, model, apiToken);
+            CompletionAssistant assistant = getAssistant(generateProvider, domain, tools, domain.getCompletionConfig().getModel(), domain.getCompletionConfig().getApiKey());
 
-            CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken);
+            CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature);
             //completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
             completedText = completionResponse.getText();
         } else {

@@ -34,8 +34,7 @@ public class LLMReRank implements ReRankProvider {
      * @see ReRankProvider#getReRankedAnswers(String, String[], int, com.wyona.katie.models.Context)
      */
     public Integer[] getReRankedAnswers(String question, String[] answers, int limit, Context domain) {
-        String model = domain.getCompletionConfig().getModel();
-        log.info("Re-rank answers using a LLM (" + model + ")...");
+        log.info("Re-rank answers using a LLM (" + domain.getCompletionConfig().getModel() + ")...");
 
         List<Integer> reRankedIndex = new ArrayList<Integer>();
 
@@ -46,10 +45,9 @@ public class LLMReRank implements ReRankProvider {
         try {
             String completedText = null;
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            String apiToken = domain.getCompletionConfig().getApiKey();
             if (generateProvider != null) {
                 // TODO: Use response_format json, see for example https://platform.openai.com/docs/guides/structured-outputs
-                completedText = generateProvider.getCompletion(promptMessages,null, model, temperature, apiToken).getText();
+                completedText = generateProvider.getCompletion(promptMessages,null, domain.getCompletionConfig(), temperature).getText();
             } else {
                 log.error("Completion provider '" + completionImpl + "' not implemented yet!");
                 return reRankedIndex.toArray(new Integer[0]);

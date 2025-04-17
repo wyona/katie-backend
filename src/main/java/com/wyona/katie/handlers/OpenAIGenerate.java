@@ -3,10 +3,7 @@ package com.wyona.katie.handlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.models.CompletionAssistant;
-import com.wyona.katie.models.CompletionResponse;
-import com.wyona.katie.models.CompletionTool;
-import com.wyona.katie.models.PromptMessage;
+import com.wyona.katie.models.*;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.assistant.Assistant;
 import io.github.sashirestela.openai.domain.file.FileRequest;
@@ -64,13 +61,13 @@ public class OpenAIGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String openAIModel, Double temperature, String openAIKey) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         if (assistant != null) {
-            return assistantThread(promptMessages, assistant.getId(), temperature, openAIKey);
+            return assistantThread(promptMessages, assistant.getId(), temperature, completionConfig.getApiKey());
         } else {
-            return new CompletionResponse(chatCompletion(promptMessages, openAIModel, temperature, openAIKey));
+            return new CompletionResponse(chatCompletion(promptMessages, completionConfig.getModel(), temperature, completionConfig.getApiKey()));
         }
     }
 

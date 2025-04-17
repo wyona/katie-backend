@@ -234,13 +234,11 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         if (generateProvider == null) {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
         }
-        String model = domain.getCompletionConfig().getModel();
-        String apiToken = domain.getCompletionConfig().getApiKey();
         Double temperature = null;
 
         List<File> relevantDocs = new ArrayList<>();
 
-        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken);
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
         if (filePath != null) {
@@ -302,7 +300,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, assistant, model, temperature, apiToken).getText();
+            String answer = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature).getText();
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

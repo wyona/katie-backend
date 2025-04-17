@@ -539,7 +539,6 @@ public class QuestionAnsweringService {
             log.warn("No such completion implementation '" + completionImpl + "'!");
             return hits;
         }
-        String model = domain.getCompletionConfig().getModel();
 
         try {
             // TODO: Make flag "alwaysUseLLM" configurable
@@ -558,11 +557,10 @@ public class QuestionAnsweringService {
                 }
                 List<PromptMessage> promptMessages = getPromptMessages(domain, question, context, url); // TODO: When there are no retrieval results, then use different prompt
 
-                String apiToken = domain.getCompletionConfig().getApiKey();
-                log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + model + " ...");
+                log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + domain.getCompletionConfig().getModel() + " ...");
                 Double temperature = null;
                 // INFO: Get answer from LLM
-                String completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+                String completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(), temperature).getText();
 
                 log.info("Completed text: " + completedText);
 

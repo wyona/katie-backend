@@ -97,8 +97,6 @@ public class GenerativeAIService {
                 temperature = chatCompletionsRequest.getTemperature();
             }
 
-            String apiToken = domain.getCompletionConfig().getApiKey();
-
             log.info("Conversation history contains " + chatCompletionsRequest.getMessages().length + " messages.");
             ChatHistory chatHistory = getConversationHistory(domain, chatCompletionsRequest.getConversation_id());
             List<PromptMessage> promptMessages = new ArrayList<>();
@@ -108,8 +106,7 @@ public class GenerativeAIService {
             }
 
             GenerateProvider generateProvider = getGenAIImplementation(completionImpl);
-            String model = domain.getCompletionConfig().getModel();
-            completedText = generateProvider.getCompletion(promptMessages, null, model, temperature, apiToken).getText();
+            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(), temperature).getText();
         }
 
         appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant, completedText);

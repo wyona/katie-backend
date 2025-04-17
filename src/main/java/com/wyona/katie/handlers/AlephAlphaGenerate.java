@@ -2,10 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.models.CompletionAssistant;
-import com.wyona.katie.models.CompletionResponse;
-import com.wyona.katie.models.CompletionTool;
-import com.wyona.katie.models.PromptMessage;
+import com.wyona.katie.models.*;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -40,9 +37,9 @@ public class AlephAlphaGenerate implements GenerateProvider {
     }
 
     /**
-     * @see GenerateProvider#getCompletion(List, CompletionAssistant, String, Double, String)
+     * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
-    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, String alephAlphaModel, Double temperature, String alephAlphaToken) throws Exception {
+    public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         log.info("Complete prompt using Aleph Alpha completion ...");
 
         String completedText = null;
@@ -50,8 +47,8 @@ public class AlephAlphaGenerate implements GenerateProvider {
         try {
             // INFO: See https://docs.aleph-alpha.com/api/complete/
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = getHttpHeaders(alephAlphaToken);
-            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(promptMessages.get(0).getContent(), alephAlphaModel), headers);
+            HttpHeaders headers = getHttpHeaders(completionConfig.getApiKey());
+            HttpEntity<String> request = new HttpEntity<String>(createRequestBody(promptMessages.get(0).getContent(), completionConfig.getModel()), headers);
 
             String requestUrl = alephAlphaHost + "/complete";
             log.info("Get completion: " + requestUrl);
