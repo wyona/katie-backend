@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.Utils;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.domain.assistant.Assistant;
 import io.github.sashirestela.openai.domain.file.FileRequest;
@@ -40,20 +41,24 @@ public class OpenAIGenerate implements GenerateProvider {
      * Get OpenAI API host or OpenAI API compatible host
      * @return host, e.g. "https://api.openai.com"
      */
-    private String getHost() {
-        return openAIHost;
-        //return "https://chat.aintegrator.ch/"; // TODO: Allow OpenAI compatible hosts
+    private String getHost(CompletionConfig completionConfig) {
+        if (completionConfig.getHost() != null) {
+            log.info("Use OpenAI compatible custom host ...");
+            return completionConfig.getHost();
+        } else {
+            return openAIHost;
+        }
     }
 
     /**
-     * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
+     * @see GenerateProvider#getAssistant(String, String, String, List, CompletionConfig)
      */
-    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) throws Exception {
-        if (id == null || (id != null && !assistantExists(id, apiToken))) {
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, CompletionConfig completionConfig) throws Exception {
+        if (id == null || (id != null && !assistantExists(id, completionConfig.getApiKey()))) {
             if (id != null) {
                 log.warn("No assistant exists with Id '" + id + "'!");
             }
-            return createAssistant(new CompletionAssistant(id, name, instructions), tools, model, apiToken);
+            return createAssistant(new CompletionAssistant(id, name, instructions), tools, completionConfig);
         }
 
         log.info("Assistant " + id + "'' already exists.");
@@ -65,9 +70,9 @@ public class OpenAIGenerate implements GenerateProvider {
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         if (assistant != null) {
-            return assistantThread(promptMessages, assistant.getId(), temperature, completionConfig.getApiKey());
+            return assistantThread(promptMessages, assistant.getId(), temperature, completionConfig);
         } else {
-            return new CompletionResponse(chatCompletion(promptMessages, completionConfig.getModel(), temperature, completionConfig.getApiKey()));
+            return new CompletionResponse(chatCompletion(promptMessages, completionConfig, temperature));
         }
     }
 
@@ -175,9 +180,9 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * Generate answer using OpenAI Chat Completion API https://platform.openai.com/docs/api-reference/chat
      */
-    private String chatCompletion(List<PromptMessage> promptMessages, String openAIModel, Double temperature, String openAIKey) throws Exception {
-        if (openAIKey != null) {
-            log.info("Complete prompt using OpenAI chat completion (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private String chatCompletion(List<PromptMessage> promptMessages, CompletionConfig completionConfig, Double temperature) throws Exception {
+        if (completionConfig.getApiKey() != null) {
+            log.info("Complete prompt using OpenAI chat completion (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
         } else {
             throw new Exception("No OpenAI API key configured!");
         }
@@ -188,7 +193,7 @@ public class OpenAIGenerate implements GenerateProvider {
             // INFO: See https://platform.openai.com/docs/api-reference/chat/create
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode requestBodyNode = mapper.createObjectNode();
-            requestBodyNode.put("model", openAIModel);
+            requestBodyNode.put("model", completionConfig.getModel());
             //requestBodyNode.put("model", "gpt-4o-2024-08-06");
             ArrayNode messages = mapper.createArrayNode();
             requestBodyNode.put("messages", messages);
@@ -261,13 +266,13 @@ public class OpenAIGenerate implements GenerateProvider {
                 log.info("No particular response format set.");
             }
 
-            HttpHeaders headers = getHttpHeaders(openAIKey);
+            HttpHeaders headers = getHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
             JsonNode responseBodyNode = null;
 
             if (true) {
-                String requestUrl = getHost() + "/v1/chat/completions";
+                String requestUrl = getHost(completionConfig) + "/v1/chat/completions";
                 log.info("Get chat completion: " + requestUrl + " (Request Body: " + requestBodyNode + ")");
                 RestTemplate restTemplate = new RestTemplate();
                 ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
@@ -435,11 +440,11 @@ public class OpenAIGenerate implements GenerateProvider {
     /***
      * Generate answer using OpenAI Assistant Thread API https://platform.openai.com/docs/api-reference/threads
      */
-    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, String assistantId, Double temperature, String openAIKey) throws Exception {
-        log.info("Complete prompt using OpenAI assistant thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private CompletionResponse assistantThread(List<PromptMessage> promptMessages, String assistantId, Double temperature, CompletionConfig completionConfig) throws Exception {
+        log.info("Complete prompt using OpenAI assistant thread (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
 
-        String threadId = createThread(promptMessages, openAIKey);
-        return runThread(assistantId, threadId, openAIKey);
+        String threadId = createThread(promptMessages, completionConfig);
+        return runThread(assistantId, threadId, completionConfig);
     }
 
     /**
@@ -488,14 +493,14 @@ public class OpenAIGenerate implements GenerateProvider {
      * @param assistant Assistant name and instructions
      * @return assistant including its Id, e.g. "asst_79S9rWytfx7oNqyIr2rrJGBB"
      */
-    private CompletionAssistant createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, String openAIModel, String openAIKey) throws Exception {
-        log.info("Create assistant (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private CompletionAssistant createAssistant(CompletionAssistant assistant, List<CompletionTool> tools, CompletionConfig completionConfig) throws Exception {
+        log.info("Create assistant (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
 
         try {
             // INFO: See https://platform.openai.com/docs/api-reference/threads
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode requestBodyNode = mapper.createObjectNode();
-            requestBodyNode.put("model", openAIModel);
+            requestBodyNode.put("model", completionConfig.getModel());
             //requestBodyNode.put("model", "gpt-4o-2024-08-06");
             requestBodyNode.put("instructions", assistant.getInstructions());
             requestBodyNode.put("name", assistant.getName());
@@ -537,10 +542,10 @@ public class OpenAIGenerate implements GenerateProvider {
                 }
             }
 
-            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+            HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String requestUrl = getHost() + "/v1/assistants";
+            String requestUrl = getHost(completionConfig) + "/v1/assistants";
             log.info("Create assistant: " + requestUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
@@ -565,8 +570,8 @@ public class OpenAIGenerate implements GenerateProvider {
      * Create new thread
      * @return thread Id
      */
-    private String createThread(List<PromptMessage> promptMessages, String openAIKey) throws Exception {
-        log.info("Create thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private String createThread(List<PromptMessage> promptMessages, CompletionConfig completionConfig) throws Exception {
+        log.info("Create thread (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
 
         try {
             // INFO: See https://platform.openai.com/docs/api-reference/threads
@@ -586,16 +591,16 @@ public class OpenAIGenerate implements GenerateProvider {
                     ArrayNode attachmentsNode = mapper.createArrayNode();
                     messageNode.put("attachments", attachmentsNode);
 
-                    deleteOutdatedFilesFromOpenAI(openAIKey);
+                    deleteOutdatedFilesFromOpenAI(completionConfig.getApiKey());
 
-                    FileResponse[] previouslyUploadedFiles = getFiles(openAIKey);
+                    FileResponse[] previouslyUploadedFiles = getFiles(completionConfig.getApiKey());
                     log.info("Number of uploaded files: " + previouslyUploadedFiles.length);
                     for (FileResponse previouslyUploadedFile : previouslyUploadedFiles) {
                         log.info("Previously uploaded file: " + previouslyUploadedFile.getFilename() + " (" + new Date(previouslyUploadedFile.getCreatedAt() * 1000) + ")");
                     }
 
                     for (File attachment : attachments) {
-                        String fileId = getFileId(attachment, previouslyUploadedFiles, openAIKey);
+                        String fileId = getFileId(attachment, previouslyUploadedFiles, completionConfig.getApiKey());
                         if (fileId != null) {
                             ObjectNode attachmentNode = mapper.createObjectNode();
                             attachmentNode.put("file_id", fileId);
@@ -618,10 +623,10 @@ public class OpenAIGenerate implements GenerateProvider {
                 messages.add(messageNode);
             }
 
-            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+            HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
-            String createThreadUrl = getHost() + "/v1/threads";
+            String createThreadUrl = getHost(completionConfig) + "/v1/threads";
             log.info("Create thread: " + createThreadUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(createThreadUrl, HttpMethod.POST, request, JsonNode.class);
@@ -727,8 +732,8 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @return response message
      */
-    private CompletionResponse runThread(String assistantId, String threadId, String openAIKey) throws Exception {
-        log.info("Run thread (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private CompletionResponse runThread(String assistantId, String threadId, CompletionConfig completionConfig) throws Exception {
+        log.info("Run thread (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
 
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -736,10 +741,10 @@ public class OpenAIGenerate implements GenerateProvider {
             ObjectNode requestBodyNode2 = mapper.createObjectNode();
             requestBodyNode2.put("assistant_id", assistantId);
 
-            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+            HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode2.toString(), headers);
 
-            String runThreadUrl = getHost() + "/v1/threads/" +threadId + "/runs";
+            String runThreadUrl = getHost(completionConfig) + "/v1/threads/" +threadId + "/runs";
             log.info("Run thread " + runThreadUrl + " (Body: " + requestBodyNode2 + ")");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(runThreadUrl, HttpMethod.POST, request, JsonNode.class);
@@ -760,7 +765,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 } catch(Exception e) {
                     log.error(e.getMessage(), e);
                 }
-                responseBodyNode = getRunResponseBodyNode(threadId, runId, openAIKey);
+                responseBodyNode = getRunResponseBodyNode(threadId, runId, completionConfig);
                 status = responseBodyNode.get("status").asText();
                 log.info("Thread status: " + status);
             }
@@ -768,7 +773,7 @@ public class OpenAIGenerate implements GenerateProvider {
             log.info("Response generation completed.");
 
             if (status.equals("completed")) {
-                return new CompletionResponse(getResponseMessage(threadId, openAIKey));
+                return new CompletionResponse(getResponseMessage(threadId, completionConfig));
             } else if (status.equals("requires_action")) {
                 CompletionResponse completionResponse = new CompletionResponse("Tool call completed");
                 Map<String, String> arguments = getArguments(responseBodyNode);
@@ -778,7 +783,7 @@ public class OpenAIGenerate implements GenerateProvider {
                 return completionResponse;
             } else {
                 log.warn("No such status '" + status + "' implemented!");
-                return new CompletionResponse(getResponseMessage(threadId, openAIKey));
+                return new CompletionResponse(getResponseMessage(threadId, completionConfig));
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -813,13 +818,13 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      * @return LLM response message
      */
-    private String getResponseMessage(String threadId, String openAIKey) throws Exception {
-        log.info("Get response message (API key: " + openAIKey.substring(0, 7) + "******) ...");
+    private String getResponseMessage(String threadId, CompletionConfig completionConfig) throws Exception {
+        log.info("Get response message (API key: " + Utils.obfuscateSecret(completionConfig.getApiKey()) + " ...");
 
         try {
-            HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+            HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(headers);
-            String getMessagesUrl = getHost() + "/v1/threads/" +threadId + "/messages";
+            String getMessagesUrl = getHost(completionConfig) + "/v1/threads/" +threadId + "/messages";
             log.info("Get messages " + getMessagesUrl);
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<JsonNode> response = restTemplate.exchange(getMessagesUrl, HttpMethod.GET, request, JsonNode.class);
@@ -843,7 +848,7 @@ public class OpenAIGenerate implements GenerateProvider {
                             if (annotationNode.get("type").asText().equals("file_citation")) {
                                 String fileId = annotationNode.get("file_citation").get("file_id").asText();
                                 log.info("File citation: " + fileId);
-                                File file = getFile(fileId, openAIKey);
+                                File file = getFile(fileId, completionConfig.getApiKey());
                                 log.info("File: " + file.getAbsolutePath());
                             } else {
                                 log.info("Annotation type: " + annotationNode.get("type").asText());
@@ -869,10 +874,10 @@ public class OpenAIGenerate implements GenerateProvider {
     /**
      *
      */
-    private JsonNode getRunResponseBodyNode(String threadId, String runId, String openAIKey) throws Exception {
-        HttpHeaders headers = getAssistantHttpHeaders(openAIKey);
+    private JsonNode getRunResponseBodyNode(String threadId, String runId, CompletionConfig completionConfig) throws Exception {
+        HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        String getRunUrl = getHost() + "/v1/threads/" + threadId + "/runs/" + runId;
+        String getRunUrl = getHost(completionConfig) + "/v1/threads/" + threadId + "/runs/" + runId;
         log.info("Get run " + getRunUrl);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<JsonNode> response = restTemplate.exchange(getRunUrl, HttpMethod.GET, request, JsonNode.class);

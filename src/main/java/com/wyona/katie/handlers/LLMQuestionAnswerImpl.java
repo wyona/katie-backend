@@ -179,9 +179,6 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
         }
 
-        String model = domain.getCompletionConfig().getModel();
-        String apiToken = domain.getCompletionConfig().getApiKey();
-
         // TODO: Make default name configurable
         String name = "Legal Insurance Assistant";
         if (domain.getLlmSearchAssistantName() != null) {
@@ -196,7 +193,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         } else {
             domain.setLlmSearchAssistantInstructions(instructions);
         }
-        CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, model, apiToken);
+        CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, domain.getCompletionConfig());
         
         if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
             domain.setLlmSearchAssistantId(assistant.getId());

@@ -22,6 +22,7 @@ public interface GenerateProvider {
     /**
      * Get assistant to help generate / complete text
      * @param id Assistant Id, e.g. "asst_hB84DejccTGxt3hI8xqsGykJ"
+     * @param completionConfig Completion configuration, including model, API key, host, ...
      */
-    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) throws Exception;
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, CompletionConfig completionConfig) throws Exception;
 }

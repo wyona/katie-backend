@@ -29,9 +29,9 @@ public class AlephAlphaGenerate implements GenerateProvider {
     private String alephAlphaHost;
 
     /**
-     * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
+     * @see GenerateProvider#getAssistant(String, String, String, List, CompletionConfig)
      */
-    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) {
+    public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, CompletionConfig completionConfig) {
         log.error("Not implemented yet!");
         return null;
     }
