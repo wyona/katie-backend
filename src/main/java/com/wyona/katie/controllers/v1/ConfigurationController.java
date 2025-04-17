@@ -415,18 +415,7 @@ public class ConfigurationController {
             }
             Context domain = contextService.getDomain(id);
 
-            // WARN: API keys should only be accessible to users with the appropriate authorisation
-            CompletionConfig genAIConfig = domain.getCompletionConfig();
-            if (genAIConfig != null && genAIConfig.getApiKey() != null && genAIConfig.getApiKey().length() > 0) {
-                if (genAIConfig.getApiKey().length() > 4) {
-                    // Only return the first 5 characters of the api key ...
-                    genAIConfig.setApiKey(genAIConfig.getApiKey().substring(0, 5) + "******");
-                } else {
-                    // Replace the whole api key ...
-                    genAIConfig.setApiKey("******");
-                }
-                domain.setCompletionConfig(genAIConfig);
-            }
+            domain.setCompletionConfig(obfuscateApiKey(domain.getCompletionConfig()));
 
             return new ResponseEntity<>(domain, HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -435,6 +424,16 @@ public class ConfigurationController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /**
+     * API keys should only be accessible to users with the appropriate authorisation
+     */
+    private CompletionConfig obfuscateApiKey(CompletionConfig completionConfig) {
+        if (completionConfig != null && completionConfig.getApiKey() != null && completionConfig.getApiKey().length() > 0) {
+            completionConfig.setApiKey(Utils.obfuscateSecret(completionConfig.getApiKey()));
+        }
+        return completionConfig;
     }
 
     /**
