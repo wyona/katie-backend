@@ -45,6 +45,18 @@ public class OllamaGenerate implements GenerateProvider {
     private String ollamaBearerToken;
 
     /**
+     *
+     */
+    private String getHost(CompletionConfig completionConfig) {
+        if (completionConfig.getHost() != null) {
+            return completionConfig.getHost();
+        } else {
+            log.info("Use Ollama default host ...");
+            return ollamaHost;
+        }
+    }
+
+    /**
      * @see GenerateProvider#getAssistant(String, String, String, List, String, String)
      */
     public CompletionAssistant getAssistant(String id, String name, String instructions, List<CompletionTool> tools, String model, String apiToken) {
@@ -56,12 +68,12 @@ public class OllamaGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
-        log.info("Complete prompt using Ollama completion API (Ollama host: " + ollamaHost + ") ...");
+        log.info("Complete prompt using Ollama completion API (Ollama host: " + getHost(completionConfig) + ") ...");
 
         String completedText = null;
 
         // INFO: https://github.com/ollama4j/ollama4j and https://ollama4j.github.io/ollama4j/intro and https://ollama4j.github.io/ollama4j/apidocs/io/github/ollama4j/OllamaAPI.html
-        OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
+        OllamaAPI ollamaAPI = new OllamaAPI(getHost(completionConfig));
         //ollamaAPI.setVerbose(false); // INFO: Default is true
 
         if (ollamaBasicAuthUsername != null && ollamaBasicAuthPassword != null) {
@@ -118,7 +130,7 @@ public class OllamaGenerate implements GenerateProvider {
      * @return true when Ollama server is alive and false otherwise
      */
     public boolean isAlive() {
-        log.info("Check whether Ollama is alive: " + ollamaHost);
+        log.info("Check whether Ollama default host is alive: " + ollamaHost);
         OllamaAPI ollamaAPI = new OllamaAPI(ollamaHost);
         ollamaAPI.setBasicAuth(ollamaBasicAuthUsername, ollamaBasicAuthPassword);
         return ollamaAPI.ping();
