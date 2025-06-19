@@ -210,7 +210,7 @@ public class BenchmarkController {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
 
-        // TODO: Billing per domain for embeddings, e.g. Cohere, OpenAPI, Aleph Alpha, ...
+        // TODO: Billing per domain for embeddings, e.g. Cohere, OpenAI, Aleph Alpha, ...
 
         try {
             Context domain = contextService.getContext(domainId);
@@ -251,7 +251,7 @@ public class BenchmarkController {
             return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
         }
 
-        // TODO: Billing per domain for embeddings, e.g. Cohere, OpenAPI, Aleph Alpha, ...
+        // TODO: Billing per domain for embeddings, e.g. Cohere, OpenAI, Aleph Alpha, ...
 
         try {
             Context domain = contextService.getContext(domainId);
