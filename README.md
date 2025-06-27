@@ -61,7 +61,7 @@ Optionally you can run Katie with an outgoing proxy configuration enabled (https
 * Set JDK version: File > Project Structure > Project SDK: 21
     * Also see https://www.jetbrains.com/help/idea/maven-support.html#change_jdk
 * Run Maven (askkatie-webapp > Lifecycle): clean + install
-    * Optional: Disable tests (Preferences > Build, Execution, Deployment > Build Tools > Maven > Runner > Skip tests)
+    * Optional: Disable tests (Settings... > Build, Execution, Deployment > Build Tools > Maven > Runner > Skip tests)
 * Click on "Add Configuration..."
     * Click "+" to add new configuration: Spring Boot
     * Set Name, e.g. "Katie"
