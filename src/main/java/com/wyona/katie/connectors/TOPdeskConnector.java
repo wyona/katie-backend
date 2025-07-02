@@ -118,50 +118,7 @@ public class TOPdeskConnector implements Connector {
         } else if (pl.getRequestType() == 4) {
             getAnalyticsOfIncidents(processId, ksMeta);
         } else if (pl.getRequestType() == 0) {
-            backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
-            // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
-            // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
-            int offset = 0; // TODO: Introduce pagination
-            int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
-            backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
-
-            // TODO: Use getListOfIncidentIDs(...)
-            // List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
-
-            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
-            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-            log.info("Get individual incidents ...");
-            if (bodyNode.isArray()) {
-                // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
-                for (int i = 0; i < bodyNode.size(); i++) {
-                    JsonNode numberNode = bodyNode.get(i);
-                    String incidentNumber = numberNode.get("number").asText();
-                    log.info("Get incident '" + incidentNumber + "' as classification training sample ...");
-                    try {
-                        TextSample sample = getIncidentAsClassificationSample(incidentNumber, ksMeta, processId);
-                        if (sample != null) {
-                            classificationService.importSample(domain, sample);
-                        } else {
-                            log.warn("Incident '" + incidentNumber + "' not imported.");
-                        }
-                    } catch (Exception e) {
-                        backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
-                        log.error(e.getMessage(), e);
-                    }
-                }
-
-                boolean trainClassifier = false;
-                if (trainClassifier) {
-                    backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
-                } else {
-                    backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
-                }
-                try {
-                    //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
+            importBatchOfIncidents(processId, ksMeta, domain);
         } else if (pl.getRequestType() == 3) {
             boolean testRun = false; // INFO: When true, then do not delete obsolete or add new categories and also do not retrain classifier
             if (pl.getIsTestRun() != null) {
@@ -284,7 +241,61 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * Import batch of incidents
+     */
+    private void importBatchOfIncidents(String processId, KnowledgeSourceMeta ksMeta, Context domain) {
+        backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
+        // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
+        // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+        int offset = 0; // TODO: Introduce pagination
+        int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
+        backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
+
+        // TODO: Use getListOfIncidentIDs(...)
+        // List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        log.info("Get individual incidents ...");
+        if (bodyNode.isArray()) {
+            // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
+            for (int i = 0; i < bodyNode.size(); i++) {
+                JsonNode numberNode = bodyNode.get(i);
+                String incidentNumber = numberNode.get("number").asText();
+                log.info("Get incident '" + incidentNumber + "' as classification training sample ...");
+                try {
+                    TextSample sample = getIncidentAsClassificationSample(incidentNumber, ksMeta, processId);
+                    if (sample != null) {
+                        classificationService.importSample(domain, sample);
+                    } else {
+                        log.warn("Incident '" + incidentNumber + "' not imported.");
+                    }
+                } catch (Exception e) {
+                    backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+                    log.error(e.getMessage(), e);
+                }
+            }
+
+            boolean trainClassifier = false;
+            if (trainClassifier) {
+                backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
+            } else {
+                backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
+            }
+            try {
+                //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Import a particular incident
+     * @param incidentId TOPdesk incident Id
+     * @param processId Background process Id
+     * @param ksMeta Knowledge source meta information, e.g. base URL or access token
+     * @param domain Katie domain
      */
     private void importIncident(String incidentId, String processId, KnowledgeSourceMeta ksMeta, Context domain) {
         backgroundProcessService.updateProcessStatus(processId, "Import one particular incident '" + incidentId + "' ...");
