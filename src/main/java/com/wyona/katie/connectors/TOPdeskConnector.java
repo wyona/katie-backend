@@ -113,19 +113,8 @@ public class TOPdeskConnector implements Connector {
             String incidentId = pl.getIncidentId();
             List<String> visibleReplies = getVisibleReplies(incidentId, processId, ksMeta);
         } else if (pl.getRequestType() == 1) {
-            backgroundProcessService.updateProcessStatus(processId, "Import one particular incident ...");
             String incidentId = pl.getIncidentId();
-            try {
-                TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
-                if (sample != null) {
-                    classificationService.importSample(domain, sample);
-                } else {
-                    log.warn("Incident '" + incidentId + "' not imported.");
-                }
-            } catch (Exception e) {
-                backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
-                log.error(e.getMessage(), e);
-            }
+            importIncident(incidentId, processId, ksMeta, domain);
         } else if (pl.getRequestType() == 4) {
             getAnalyticsOfIncidents(processId, ksMeta);
         } else if (pl.getRequestType() == 0) {
@@ -295,6 +284,24 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
+     *
+     */
+    private void importIncident(String incidentId, String processId, KnowledgeSourceMeta ksMeta, Context domain) {
+        backgroundProcessService.updateProcessStatus(processId, "Import one particular incident '" + incidentId + "' ...");
+        try {
+            TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
+            if (sample != null) {
+                classificationService.importSample(domain, sample);
+            } else {
+                log.warn("Incident '" + incidentId + "' not imported.");
+            }
+        } catch (Exception e) {
+            backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Get visible replies of a particular incident
      * @param incidentId TOPdesk incident Id
      * @param processId Background process Id
@@ -307,7 +314,7 @@ public class TOPdeskConnector implements Connector {
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         if (bodyNode != null && bodyNode.isArray()) {
-            backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " replies in total.");
+            backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " reply / replies in total.");
             for (int i = 0; i < bodyNode.size(); i++) {
                 JsonNode entryNode = bodyNode.get(i);
                 boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
