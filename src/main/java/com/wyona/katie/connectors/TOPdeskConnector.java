@@ -246,12 +246,22 @@ public class TOPdeskConnector implements Connector {
     private void importBatchOfIncidents(String processId, KnowledgeSourceMeta ksMeta, Context domain) {
         backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
         // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
-        // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
-        int offset = 0; // TODO: Introduce pagination
-        int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
-        backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
+        //String categoryId = "c9e346b4-a113-473f-b1de-deaa40e85269"; // E-Learning & Examination (ZI)
 
-        List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+        String categoryId = "f2942ce2-d2d1-4b48-920a-ea5ef3d76de7";
+        String categoryName = "IT Arbeitsplatz (ZI)";
+        String subCategoryId = "c89f71dc-c97b-4912-a609-e8d9a26b962e";
+        String subCategoryName = "UZH Print Plus";
+
+        int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
+        if (categoryId != null && subCategoryId != null) {
+            backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents of category '" + categoryName + "' and subcategory '" + subCategoryName + "' as classification training samples ...");
+        } else {
+            backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
+        }
+
+        // INFO: See "Returns a list of incidents" https://developers.topdesk.com/explorer/?page=incident#/incident/get_incidents
+        List<String> ids = getListOfIncidentIDs(0, limit, categoryId, subCategoryId, processId, ksMeta);
 
         // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
         for (String incidentId : ids) {
@@ -413,7 +423,7 @@ public class TOPdeskConnector implements Connector {
         Map<Integer, Integer> numberOfTotalMessages = new HashMap<>();
         Map<Integer, Integer> numberOfVisibleMessages = new HashMap<>();
 
-        List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+        List<String> ids = getListOfIncidentIDs(offset, limit, null, null, processId, ksMeta);
         for (String id : ids) {
             log.info("Get TOPdesk incident '" + id + "' to analyze ...");
             Integer[] numbers = getNumberOfMessagesOfIncident(id, processId, ksMeta);
@@ -502,11 +512,21 @@ public class TOPdeskConnector implements Connector {
     }
 
     /**
-     *
+     * Get list of incident IDs
      */
-    private List<String> getListOfIncidentIDs(int offset, int limit, String processId, KnowledgeSourceMeta ksMeta) {
+    private List<String> getListOfIncidentIDs(int offset, int limit, String categoryId, String subCategoryId, String processId, KnowledgeSourceMeta ksMeta) {
         List<String> ids = new ArrayList<>();
+
+        String query = null;
+        if (categoryId != null && subCategoryId != null) {
+            query = "category.id==" + categoryId + ";subcategory.id==" + subCategoryId;
+        }
+
         String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
+        if (query != null) {
+            requestUrl = requestUrl + "&query=" + query;
+        }
+
         JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
         if (bodyNode.isArray()) {
             // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
