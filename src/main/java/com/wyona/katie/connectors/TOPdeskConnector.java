@@ -111,36 +111,7 @@ public class TOPdeskConnector implements Connector {
 
         if (pl.getRequestType() == 2) {
             String incidentId = pl.getIncidentId();
-
-            // TODO: Use getVisibleReplies(...)
-            //List<String> visibleReplies = getVisibleReplies(incidentId, processId, ksMeta);
-
-            backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
-            String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
-            JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-            if (bodyNode != null && bodyNode.isArray()) {
-                backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
-                boolean visibleReplies = false;
-                for (int i = 0; i < bodyNode.size(); i++) {
-                    JsonNode entryNode = bodyNode.get(i);
-                    boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
-                    if (!invisibleForCaller) {
-                        if (entryNode.has("memoText")) {
-                            visibleReplies = true;
-                            String _answer = entryNode.get("memoText").asText();
-                            log.info("Response to user: " + _answer);
-                            Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
-                            // TODO: Set chosenAnswer
-                        }
-                    }
-                }
-
-                if (!visibleReplies) {
-                    log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
-                }
-            } else {
-                log.warn("No body node as array available.");
-            }
+            List<String> visibleReplies = getVisibleReplies(incidentId, processId, ksMeta);
         } else if (pl.getRequestType() == 1) {
             backgroundProcessService.updateProcessStatus(processId, "Import one particular incident ...");
             String incidentId = pl.getIncidentId();
@@ -321,6 +292,49 @@ public class TOPdeskConnector implements Connector {
         }
 
         return null;
+    }
+
+    /**
+     * Get visible replies of a particular incident
+     * @param incidentId TOPdesk incident Id
+     * @param processId Background process Id
+     * @param ksMeta Knowledge source meta information, e.g. base URL or access token
+     */
+    private List<String> getVisibleReplies(String incidentId, String processId, KnowledgeSourceMeta ksMeta) {
+        List<String> visibleReplies = new ArrayList<>();
+
+        backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
+        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
+        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
+        if (bodyNode != null && bodyNode.isArray()) {
+            backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " replies in total.");
+            for (int i = 0; i < bodyNode.size(); i++) {
+                JsonNode entryNode = bodyNode.get(i);
+                boolean invisibleForCaller = entryNode.get("invisibleForCaller").asBoolean();
+                if (!invisibleForCaller) {
+                    if (entryNode.has("memoText")) {
+                        String _answer = entryNode.get("memoText").asText();
+                        log.info("Visible reply to user: " + _answer);
+                        visibleReplies.add(_answer);
+                        Answer answer = new Answer(null, _answer, null, null, null, null, null, null, null, null, null, null, null, null, true, null, false, null);
+                        // TODO: Set chosenAnswer
+                    }
+                }
+            }
+
+            if (visibleReplies.size() == 0) {
+                log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
+            } else {
+                backgroundProcessService.updateProcessStatus(processId, "Incident contains " + visibleReplies.size() + " visible reply / replies.");
+                for (String reply : visibleReplies) {
+                    backgroundProcessService.updateProcessStatus(processId, "Visible Reply: " + reply);
+                }
+            }
+        } else {
+            log.warn("No body node as array available.");
+        }
+
+        return visibleReplies;
     }
 
     /**
