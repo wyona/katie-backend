@@ -248,9 +248,9 @@ public class TOPdeskConnector implements Connector {
         // TODO: Replace code below by getting all subcategories and then get a certain number of incidents per subcategory as training samples
         //String categoryId = "c9e346b4-a113-473f-b1de-deaa40e85269"; // E-Learning & Examination (ZI)
 
-        String categoryId = "f2942ce2-d2d1-4b48-920a-ea5ef3d76de7";
+        String categoryId = null; // "f2942ce2-d2d1-4b48-920a-ea5ef3d76de7";
         String categoryName = "IT Arbeitsplatz (ZI)";
-        String subCategoryId = "c89f71dc-c97b-4912-a609-e8d9a26b962e";
+        String subCategoryId = null; // "c89f71dc-c97b-4912-a609-e8d9a26b962e";
         String subCategoryName = "UZH Print Plus";
 
         int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
