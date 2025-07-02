@@ -118,7 +118,7 @@ public class TOPdeskConnector implements Connector {
             backgroundProcessService.updateProcessStatus(processId, "Get visible replies of TOPdesk incident '" + incidentId + "' ...");
             String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents/number/" + incidentId + "/progresstrail";
             JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-            if (bodyNode.isArray()) {
+            if (bodyNode != null && bodyNode.isArray()) {
                 backgroundProcessService.updateProcessStatus(processId, "Incident contains " + bodyNode.size() + " answers.");
                 boolean visibleReplies = false;
                 for (int i = 0; i < bodyNode.size(); i++) {
@@ -138,6 +138,8 @@ public class TOPdeskConnector implements Connector {
                 if (!visibleReplies) {
                     log.warn("Incident '" + incidentId + "' does not contain any visible replies yet.");
                 }
+            } else {
+                log.warn("No body node as array available.");
             }
         } else if (pl.getRequestType() == 1) {
             backgroundProcessService.updateProcessStatus(processId, "Import one particular incident ...");
