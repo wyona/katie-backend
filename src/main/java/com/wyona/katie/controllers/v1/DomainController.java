@@ -939,7 +939,7 @@ public class DomainController {
             @PathVariable(value = "id", required = true) String id,
             @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by TOPdesk", required = true)
+            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents", required = true)
             @RequestBody WebhookPayloadTOPdesk payload,
             HttpServletRequest request) {
 
