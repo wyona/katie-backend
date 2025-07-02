@@ -251,42 +251,34 @@ public class TOPdeskConnector implements Connector {
         int limit = ksMeta.getTopDeskIncidentsRetrievalLimit();
         backgroundProcessService.updateProcessStatus(processId, "Get maximum " + limit + " incidents as classification training samples ...");
 
-        // TODO: Use getListOfIncidentIDs(...)
-        // List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
+        List<String> ids = getListOfIncidentIDs(offset, limit, processId, ksMeta);
 
-        String requestUrl = ksMeta.getTopDeskBaseUrl() + "/tas/api/incidents?fields=number&pageStart=" + offset + "&pageSize=" + limit;
-        JsonNode bodyNode = getData(requestUrl, ksMeta, processId);
-        log.info("Get individual incidents ...");
-        if (bodyNode.isArray()) {
-            // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
-            for (int i = 0; i < bodyNode.size(); i++) {
-                JsonNode numberNode = bodyNode.get(i);
-                String incidentNumber = numberNode.get("number").asText();
-                log.info("Get incident '" + incidentNumber + "' as classification training sample ...");
-                try {
-                    TextSample sample = getIncidentAsClassificationSample(incidentNumber, ksMeta, processId);
-                    if (sample != null) {
-                        classificationService.importSample(domain, sample);
-                    } else {
-                        log.warn("Incident '" + incidentNumber + "' not imported.");
-                    }
-                } catch (Exception e) {
-                    backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
-                    log.error(e.getMessage(), e);
-                }
-            }
-
-            boolean trainClassifier = false;
-            if (trainClassifier) {
-                backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
-            } else {
-                backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
-            }
+        // TODO: Consider concurrent requests, but beware of scalability of TOPdesk!
+        for (String incidentId : ids) {
+            log.info("Get incident '" + incidentId + "' as classification training sample ...");
             try {
-                //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
+                TextSample sample = getIncidentAsClassificationSample(incidentId, ksMeta, processId);
+                if (sample != null) {
+                    classificationService.importSample(domain, sample);
+                } else {
+                    log.warn("Incident '" + incidentId + "' not imported.");
+                }
             } catch (Exception e) {
+                backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 log.error(e.getMessage(), e);
             }
+        }
+
+        boolean trainClassifier = false;
+        if (trainClassifier) {
+            backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
+        } else {
+            backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
+        }
+        try {
+            //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
