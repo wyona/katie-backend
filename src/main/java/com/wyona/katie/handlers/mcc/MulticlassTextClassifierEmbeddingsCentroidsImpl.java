@@ -126,16 +126,17 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         IndexSearcher searcher = new IndexSearcher(indexReader);
         // TODO: k should be greater than limit
         int k = 2 * limit; // INFO: The number of documents to find
-        Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+        Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
         TopDocs topDocs = searcher.search(query, limit);
-        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-            Document doc = indexReader.document(scoreDoc.doc);
+        StoredFields storedFields = indexReader.storedFields();
+        for (ScoreDoc hit : topDocs.scoreDocs) {
+            Document doc = storedFields.document(hit.doc);
             String uuid = doc.get(UUID_FIELD);
             String labelUuid = doc.get(LABEL_UUID_FIELD);
-            log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+            log.info("Sample vector found with UUID '" + uuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + hit.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, null, labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, null, labelUuid), hit.score));
         }
         indexReader.close();
 
@@ -153,15 +154,16 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
         IndexSearcher searcher = new IndexSearcher(indexReader);
         // TODO: k should be greater than limit
         int k = 2 * limit; // INFO: The number of documents to find
-        Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+        Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
         TopDocs topDocs = searcher.search(query, limit);
-        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-            Document doc = indexReader.document(scoreDoc.doc);
+        StoredFields storedFields = indexReader.storedFields();
+        for (ScoreDoc hit : topDocs.scoreDocs) {
+            Document doc = storedFields.document(hit.doc);
             String labelUuid = doc.get(LABEL_UUID_FIELD);
-            log.info("Centroid vector found with label ID '" + labelUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+            log.info("Centroid vector found with label ID '" + labelUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + hit.score + "'.");
 
-            labels.add(new HitLabel(new Classification(null, null, labelUuid), scoreDoc.score));
+            labels.add(new HitLabel(new Classification(null, null, labelUuid), hit.score));
         }
         indexReader.close();
 
@@ -216,9 +218,9 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             Field labelField = new StringField(LABEL_UUID_FIELD, labelUuid, Field.Store.YES);
             doc.add(labelField);
 
-            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+            FieldType vectorFieldType = KnnFloatVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
             // TODO: Use KnnFloatVectorField
-            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
+            KnnFloatVectorField vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
 
             log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene '" + SAMPLE_INDEX + "' index ...");
@@ -250,8 +252,8 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
             Field labelField = new StringField(LABEL_UUID_FIELD, labelUuid, Field.Store.YES);
             doc.add(labelField);
 
-            FieldType vectorFieldType = KnnVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
-            KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, vector, vectorFieldType);
+            FieldType vectorFieldType = KnnFloatVectorField.createFieldType(vector.length, domain.getVectorSimilarityMetric());
+            KnnFloatVectorField vectorField = new KnnFloatVectorField(VECTOR_FIELD, vector, vectorFieldType);
             doc.add(vectorField);
 
             log.info("Add vector with " + vector.length + " dimensions to Lucene index '" + CENTROID_INDEX + "' ...");
