@@ -3,6 +3,7 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;
+import org.apache.lucene.index.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,18 +14,14 @@ import java.util.ArrayList;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.KnnVectorField;
+import org.apache.lucene.document.KnnFloatVectorField;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.KnnVectorQuery;
+import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.ScoreDoc;
 
@@ -101,11 +98,12 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             IndexSearcher searcher = new IndexSearcher(indexReader);
 
-            Query query = new KnnVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
 
             TopDocs topDocs = searcher.search(query, k);
+            StoredFields storedFields = indexReader.storedFields();
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document doc = indexReader.document(scoreDoc.doc);
+                Document doc = storedFields.document(scoreDoc.doc);
                 String answerUuid = doc.get(UUID_FIELD);
                 int ratingScore = Integer.parseInt(doc.get(RATING_FIELD));
                 log.info("Vector found with answer UUID '" + answerUuid + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
@@ -141,9 +139,9 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         Vector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null,null);
 
-        FieldType vectorFieldType = KnnVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
+        FieldType vectorFieldType = KnnFloatVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
         // TODO: Use KnnFloatVectorField
-        KnnVectorField vectorField = new KnnVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
+        KnnFloatVectorField vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
         doc.add(vectorField);
 
         log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene index ...");
