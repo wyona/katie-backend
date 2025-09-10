@@ -350,7 +350,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
             QueryScorer scorer = new QueryScorer(query);
             Highlighter highlighter = new Highlighter(scorer);
 
-            if (results.totalHits.value > 0) {
+            if (results.totalHits.value() > 0) {
                 log.info("Total hits found: " + results.totalHits);
                 for (ScoreDoc hit : results.scoreDocs) {
                     log.info("Lucene hit: " + hit.toString());
