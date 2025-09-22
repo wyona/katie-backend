@@ -1390,7 +1390,7 @@ public class DomainController {
                 preferences.add(localPreference);
             }
 
-            classificationService.retrain(domain, preferences, 80, bgProcessId, userId);
+            classificationService.retrain(domain, preferences, bgProcessId, userId);
 
             String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
             return new ResponseEntity<>(responseBody, HttpStatus.OK);

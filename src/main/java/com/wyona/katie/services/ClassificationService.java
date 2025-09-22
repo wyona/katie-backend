@@ -70,11 +70,10 @@ public class ClassificationService {
     /**
      * Retrain classifier, using existing samples and with new samples from human preferences dataset
      * @param preferences Optional human preferences
-     * @param trainPercentage How many samples used to train, e.g. 80% (and 20% for testing)
      * @param bgProcessId Background process Id
      */
     @Async
-    public void retrain(Context domain, List<HumanPreferenceLabel> preferences, int trainPercentage, String bgProcessId, String userId) {
+    public void retrain(Context domain, List<HumanPreferenceLabel> preferences, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
 
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
