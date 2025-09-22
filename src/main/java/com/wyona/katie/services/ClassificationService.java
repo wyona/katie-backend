@@ -68,8 +68,8 @@ public class ClassificationService {
     }
 
     /**
-     * Retrain classifier, using existing samples and with new samples from human preferences dataset
-     * @param preferences Optional human preferences
+     * Retrain classifier with human preferences dataset
+     * @param preferences Human preferences
      * @param bgProcessId Background process Id
      */
     @Async
@@ -79,7 +79,7 @@ public class ClassificationService {
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
 
         if (preferences != null && preferences.size() > 0) {
-            backgroundProcessService.updateProcessStatus(bgProcessId, "Enhance training dataset using preference dataset ...");
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Retrain classifier with human preferences dataset ...");
             // TODO: Get all approved ratings and do batch training
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
