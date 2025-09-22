@@ -1,5 +1,5 @@
 FROM openjdk:21
-MAINTAINER katie.qa
+LABEL maintainer="Michael Wechner <contact@wyona.com>"
 VOLUME /tmp
 COPY target/askkatie-webapp-*.war app.war
 
