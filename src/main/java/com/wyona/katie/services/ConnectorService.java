@@ -128,6 +128,7 @@ public class ConnectorService {
                     backgroundProcessService.updateProcessStatus(processId, "Sync info updated.");
                 } else {
                     log.warn("No QnAs imported!");
+                    counterSuccessful = -1;
                     backgroundProcessService.updateProcessStatus(processId, ConnectorService.class.getSimpleName() + ": No QnAs imported! Maybe Connector itself already imported / updated QnAs.", BackgroundProcessStatusType.WARN);
                 }
                 updateSyncInfo(counterSuccessful, domainId, ksId);
