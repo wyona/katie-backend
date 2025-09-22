@@ -810,6 +810,19 @@ public class ContextService {
     }
 
     /**
+     * Add TOPdesk as knowledge source
+     */
+    public void addKnowledgeSourceTOPdesk(String domainId, String name, String baseUrl, String username, String password, Integer limit) throws Exception {
+        if (!isMemberOrAdmin(domainId)) {
+            log.info("User has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        //Context domain = getContext(domainId);
+        String ksUUID = knowledgeSourceXMLFileService.addTOPdesk(domainId, name, baseUrl, username, password, limit);
+    }
+
+    /**
      * Add OneNote as knowledge source
      * Also see https://developers.glean.com/docs/indexing_api_getting_started/#set-up-a-datasource and https://developers.glean.com/docs/indexing_api_datasource_category/
      */

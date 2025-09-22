@@ -67,6 +67,10 @@ public class KnowledgeSourceXMLFileService {
     private static final String SUPBASE_CHUNK_SIZE_ATTR = "chunk-size";
 
     private static final String TOPDESK_TAG = "topdesk";
+    private static final String TOPDESK_BASE_URL_ATTR = "base-url";
+    private static final String TOPDESK_USERNAME_ATTR = "username";
+    private static final String TOPDESK_PASSWORD_ATTR = "password";
+    private static final String TOPDESK_LIMIT_ATTR = "limit";
 
     private static final String FILESYSTEM_TAG = "filesystem";
     private static final String FILESYTSME_BASE_PATH_ATTR = "base-path";
@@ -222,11 +226,11 @@ public class KnowledgeSourceXMLFileService {
 
                 if (connector.equals(KnowledgeSourceConnector.TOP_DESK)) {
                     Element topDeskEl = xmlService.getDirectChildByTagName(ksEl, TOPDESK_TAG);
-                    ksMeta.setTopDeskBaseUrl(topDeskEl.getAttribute("base-url"));
-                    ksMeta.setTopDeskUsername(topDeskEl.getAttribute("username"));
-                    ksMeta.setTopDeskAPIPassword(topDeskEl.getAttribute("password"));
-                    if (topDeskEl.hasAttribute("limit")) {
-                        ksMeta.setTopDeskIncidentsRetrievalLimit(Integer.parseInt(topDeskEl.getAttribute("limit")));
+                    ksMeta.setTopDeskBaseUrl(topDeskEl.getAttribute(TOPDESK_BASE_URL_ATTR));
+                    ksMeta.setTopDeskUsername(topDeskEl.getAttribute(TOPDESK_USERNAME_ATTR));
+                    ksMeta.setTopDeskAPIPassword(topDeskEl.getAttribute(TOPDESK_PASSWORD_ATTR));
+                    if (topDeskEl.hasAttribute(TOPDESK_LIMIT_ATTR)) {
+                        ksMeta.setTopDeskIncidentsRetrievalLimit(Integer.parseInt(topDeskEl.getAttribute(TOPDESK_LIMIT_ATTR)));
                     }
                 }
 
@@ -368,6 +372,46 @@ public class KnowledgeSourceXMLFileService {
 
         File config = getKnowledgeSourcesConfig(domainId);
         xmlService.save(doc, config);
+    }
+
+    /**
+     * Add TOPdesk knowledge source
+     * @return knowledge source Id
+     */
+    public String addTOPdesk(String domainId, String name, String baseUrl, String username, String password, Integer limit) throws Exception {
+        log.info("Add TOPdesk as knowledge source to domain '" + domainId + "' ...");
+        Document doc = getKnowledgeSourcesDocument(domainId);
+        if (doc == null) {
+            doc = xmlService.createDocument(KATIE_NAMESPACE_1_0_0,  KNOWLEDGE_SOURCES_TAG);
+        }
+
+        Element ksEl = doc.createElement(KNOWLEDGE_SOURCE_TAG);
+        doc.getDocumentElement().appendChild(ksEl);
+        String uuid = UUID.randomUUID().toString();
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ID_ATTR, uuid);
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_ENABLED_ATTR, "false");
+        ksEl.setAttribute(KNOWLEDGE_SOURCE_CONNECTOR_ATTR, KnowledgeSourceConnector.TOP_DESK.toString());
+
+        Element nameEl = doc.createElement(KNOWLEDGE_SOURCE_NAME_TAG);
+        ksEl.appendChild(nameEl);
+        nameEl.setTextContent(name);
+
+        Element topdeskEl = doc.createElement(TOPDESK_TAG);
+        ksEl.appendChild(topdeskEl);
+
+        topdeskEl.setAttribute(TOPDESK_BASE_URL_ATTR, baseUrl);
+        topdeskEl.setAttribute(TOPDESK_USERNAME_ATTR, username);
+        topdeskEl.setAttribute(TOPDESK_PASSWORD_ATTR, password);
+        if (limit != null) {
+            topdeskEl.setAttribute(TOPDESK_LIMIT_ATTR, limit.toString());
+        } else {
+            topdeskEl.setAttribute(TOPDESK_LIMIT_ATTR, "100");
+        }
+
+        File config = getKnowledgeSourcesConfig(domainId);
+        xmlService.save(doc, config);
+
+        return uuid;
     }
 
     /**

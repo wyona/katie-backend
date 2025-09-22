@@ -596,6 +596,42 @@ public class DomainController {
     }
 
     /**
+     * Add TOPdesk as knowledge source
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/topdesk", method = RequestMethod.POST, produces = "application/json")
+    @ApiOperation(value="Add TOPdesk as knowledge source")
+    public ResponseEntity<?> addKnowledgeSourceTOPdesk(
+            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'TOPdesk Wyona'",required = true)
+            @RequestParam(value = "name", required = true) String name,
+            @ApiParam(name = "base-url", value = "TOPdesk Base URL, e.g. 'https://topdesk.wyona.com'", required = true)
+            @RequestParam(value = "base-url", required = true) String baseUrl,
+            @ApiParam(name = "username", value = "Username", required = true)
+            @RequestParam(value = "username", required = true) String username,
+            @ApiParam(name = "password", value = "Password", required = true)
+            @RequestParam(value = "password", required = true) String password,
+            @ApiParam(name = "limit", value = "Limit", required = false)
+            @RequestParam(value = "limit", required = false) Integer limit,
+            HttpServletRequest request) {
+
+        if (!domainService.existsContext(id)) {
+            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            domainService.addKnowledgeSourceTOPdesk(id, name, baseUrl, username, password, limit);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Add OneNote as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/onenote", method = RequestMethod.POST, produces = "application/json")
