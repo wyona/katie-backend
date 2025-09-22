@@ -1,9 +1,6 @@
 package com.wyona.katie.connectors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -242,6 +239,7 @@ public class TOPdeskConnector implements Connector {
 
     /**
      * Import batch of incidents
+     * @param processId Background process Id
      */
     private void importBatchOfIncidents(String processId, KnowledgeSourceMeta ksMeta, Context domain) {
         backgroundProcessService.updateProcessStatus(processId, "Import batch of incidents ...");
@@ -285,16 +283,18 @@ public class TOPdeskConnector implements Connector {
             }
         }
 
-        boolean trainClassifier = false;
+        boolean trainClassifier = true; // TODO: Make configurable, respectively check whether classifier is configured
         if (trainClassifier) {
-            backgroundProcessService.updateProcessStatus(processId, "Train classifier with imported samples ...");
+            backgroundProcessService.updateProcessStatus(processId, "Train classifier (" + domain.getClassifierImpl() + ") with imported samples ...");
+            MulticlassTextClassifier classifier = classificationService.getClassifier(domain.getClassifierImpl());
+            try {
+                classifier.retrain(domain, processId);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            }
         } else {
             backgroundProcessService.updateProcessStatus(processId, "Classifier training disabled.");
-        }
-        try {
-            //classificationService.retrain(domain, 80, null, null); // TODO: Do not start another thread
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
         }
     }
 
