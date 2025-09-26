@@ -246,6 +246,9 @@ public class JwtService {
         String pem = "-----BEGIN " + description + "-----\n" + encoded + "\n-----END " + description + "-----\n";
 
         File file = new File(configDataPath,"jwt/" + filename);
+        if (!file.getParentFile().isDirectory()) {
+            file.getParentFile().mkdirs();
+        }
         Files.write(Paths.get(file.getAbsolutePath()), pem.getBytes());
     }
 
