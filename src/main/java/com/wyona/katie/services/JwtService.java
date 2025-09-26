@@ -200,6 +200,11 @@ public class JwtService {
         //return readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
 
         File file = new File(configDataPath,"jwt/private_key_pkcs8.pem");
+        if (!file.isFile()) {
+            log.error("No private key exists: " + file.getAbsolutePath());
+            throw new Exception("No private key exists: " + file.getName());
+        }
+
         InputStream in = new FileInputStream(file);
         String key = readString(in);
         in.close();
