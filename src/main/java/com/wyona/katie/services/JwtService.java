@@ -3,22 +3,23 @@ package com.wyona.katie.services;
 import com.wyona.katie.models.JWT;
 import com.wyona.katie.models.JWTPayload;
 import com.wyona.katie.models.User;
+import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.security.Principal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
 
 import io.jsonwebtoken.*;
 
-import org.springframework.core.io.ClassPathResource;
-import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -183,8 +184,6 @@ public class JwtService {
      * Get public key in PEM format
      */
     public String getPublicKeyAsPem() throws Exception {
-        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
-
         File file = new File(configDataPath,"jwt/" + PUBLIC_KEY_AS_PEM);
 
         if (!file.isFile()) {
@@ -202,18 +201,52 @@ public class JwtService {
      * Get private key as PEM
      */
     public String getPrivateKeyAsPem() throws Exception {
-        // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
-
         File file = new File(configDataPath,"jwt/" + PRIVATE_KEY_AS_PEM);
         if (!file.isFile()) {
             log.error("No private key as PEM exists: " + file.getAbsolutePath());
-            throw new Exception("No private key as PEM exists: " + file.getName());
+
+            // TODO: Consider doing this through a REST interface, instead just automatically generating keys
+            generatePrivatePublicKeysAsPEM();
+            //throw new Exception("No private key as PEM exists: " + file.getName());
         }
 
         InputStream in = new FileInputStream(file);
         String key = readString(in);
         in.close();
         return key;
+    }
+
+    /**
+     * Generate private key and public key in order to sign and verify JWT Tokens
+     */
+    public void generatePrivatePublicKeysAsPEM() throws Exception {
+        log.info("Generate private key and public key in order to sign and verify JWT Tokens ...");
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048);
+        KeyPair pair = keyGen.generateKeyPair();
+
+        PrivateKey privateKey = pair.getPrivate();
+        // Save private key in PKCS#8 PEM format
+        writePemFile(privateKey.getEncoded(), "PRIVATE KEY", "private_key_pkcs8.pem");
+
+        PublicKey publicKey = pair.getPublic();
+        // Save public key in X.509 PEM format
+        writePemFile(publicKey.getEncoded(), "PUBLIC KEY", "public_key.pem");
+    }
+
+    /**
+     * Write PEM file
+     * @param keyBytes
+     * @param description
+     * @param filename Filename, e.g. "private_key_pkcs8.pem" or "public_key.pem"
+     */
+    private void writePemFile(byte[] keyBytes, String description, String filename) throws IOException {
+        String encoded = Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(keyBytes);
+
+        String pem = "-----BEGIN " + description + "-----\n" + encoded + "\n-----END " + description + "-----\n";
+
+        File file = new File(configDataPath,"jwt/" + filename);
+        Files.write(Paths.get(file.getAbsolutePath()), pem.getBytes());
     }
 
     /**
