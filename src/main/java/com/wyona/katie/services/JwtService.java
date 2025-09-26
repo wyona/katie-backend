@@ -37,6 +37,9 @@ public class JwtService {
     @Value("${jwt.allowed.clock.skew.seconds}")
     private Long allowedClockSkewSeconds;
 
+    private static final String PUBLIC_KEY_AS_PEM = "public_key.pem";
+    private static final String PRIVATE_KEY_AS_PEM = "private_key_pkcs8.pem";
+
     public static final String JWT_CLAIM_DOMAIN_ID = "did";
     public static final String JWT_CLAIM_SCOPE = "scope";
     public static final String JWT_CLAIM_ENDPOINT = "endpoint";
@@ -182,9 +185,13 @@ public class JwtService {
     public String getPublicKeyAsPem() throws Exception {
         // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
 
-        //return readString(new ClassPathResource("jwt/public_key.pem").getInputStream());
+        File file = new File(configDataPath,"jwt/" + PUBLIC_KEY_AS_PEM);
 
-        File file = new File(configDataPath,"jwt/public_key.pem");
+        if (!file.isFile()) {
+            log.error("No public key as PEM exists: " + file.getAbsolutePath());
+            throw new Exception("No public key as PEM exists: " + file.getName());
+        }
+
         InputStream in = new FileInputStream(file);
         String key = readString(in);
         in.close();
@@ -192,17 +199,15 @@ public class JwtService {
     }
 
     /**
-     *
+     * Get private key as PEM
      */
     public String getPrivateKeyAsPem() throws Exception {
         // TODO: If private and public keys do not exist yet, then generate them, see for example https://docs.oracle.com/javase/tutorial/security/apisign/step2.html
 
-        //return readString(new ClassPathResource("jwt/private_key_pkcs8.pem").getInputStream());
-
-        File file = new File(configDataPath,"jwt/private_key_pkcs8.pem");
+        File file = new File(configDataPath,"jwt/" + PRIVATE_KEY_AS_PEM);
         if (!file.isFile()) {
-            log.error("No private key exists: " + file.getAbsolutePath());
-            throw new Exception("No private key exists: " + file.getName());
+            log.error("No private key as PEM exists: " + file.getAbsolutePath());
+            throw new Exception("No private key as PEM exists: " + file.getName());
         }
 
         InputStream in = new FileInputStream(file);
