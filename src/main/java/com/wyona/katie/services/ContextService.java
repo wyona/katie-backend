@@ -572,8 +572,7 @@ public class ContextService {
      * @return true when comment was added successfully and false otherwise
      */
     private boolean addClassificationResultAsIncidentCommentToTOPdesk(String domainId, String incidentId, PredictedLabelsResponse labels, String processId) throws Exception {
-        // TODO: Replace hard coded knowledge source id
-        KnowledgeSourceMeta ksMeta = getKnowledgeSource(domainId, "432d418c-6672-4422-b8b9-abb5fe3ceb94");
+        KnowledgeSourceMeta ksMeta = getKnowledgeSource(domainId, KnowledgeSourceConnector.TOP_DESK);
 
         return topDeskConnector.addComment(incidentId, processId, ksMeta, labels.getPredictedLabelsAsTopDeskHtml());
     }
@@ -943,7 +942,7 @@ public class ContextService {
     }
 
     /**
-     *
+     * Get knowledge source meta object
      */
     public KnowledgeSourceMeta getKnowledgeSource(String domainId, String ksId) throws Exception {
         KnowledgeSourceMeta[] knowledgeSourceMetas = getKnowledgeSources(domainId, false);
@@ -954,6 +953,23 @@ public class ContextService {
         }
 
         log.warn("No such knowledge source: " + ksId);
+        return null;
+    }
+
+    /**
+     * Get knowledge source meta object
+     */
+    public KnowledgeSourceMeta getKnowledgeSource(String domainId, KnowledgeSourceConnector ksConnector) throws Exception {
+        KnowledgeSourceMeta[] knowledgeSourceMetas = getKnowledgeSources(domainId, false);
+
+        // TODO: A domain could have multiple connectors of the same type
+        for (KnowledgeSourceMeta ksMeta : knowledgeSourceMetas) {
+            if (ksMeta.getConnector().equals(ksConnector)) {
+                return ksMeta;
+            }
+        }
+
+        log.warn("Domian '" + domainId + "' does not have knowledge source connector '" + ksConnector + "' configured.");
         return null;
     }
 
