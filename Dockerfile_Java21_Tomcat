@@ -3,7 +3,7 @@ FROM openjdk:21
 #https://hub.docker.com/_/tomcat
 #https://www.middlewareinventory.com/blog/docker-tomcat-example-dockerfile-sample/
 #https://spring.io/blog/2018/11/08/spring-boot-in-a-container
-MAINTAINER katie.qa
+LABEL maintainer="Michael Wechner <contact@wyona.com>"
 
 VOLUME /tmp
 
