@@ -598,11 +598,11 @@ public class AIService {
     }
 
     /**
-     * Get implementation to find similar QnA
-     * @param impl Search implementation
+     * Get retrieval implementation to index content and find similar content
+     * @param impl Retrieval implementation
      */
     private QuestionAnswerHandler getAnswerQuestionImpl(DetectDuplicatedQuestionImpl impl) {
-        log.info("Load question answer implementation '" + impl + "' ...");
+        log.info("Load retrieval implementation '" + impl + "' ...");
         if (impl.equals(DetectDuplicatedQuestionImpl.ELASTICSEARCH)) {
             return elasticsearchImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
@@ -613,6 +613,9 @@ public class AIService {
             return knowledgeGraphImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
             return weaviateImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
+            log.error("Milvus not implemented yet!");
+            return luceneImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             return queryServiceImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.KATIE)) {
@@ -765,13 +768,13 @@ public class AIService {
     /**
      * Create tenant
      * @param domain Domain using AI Service
-     * @param questionAnswerImplementation Search implementation
+     * @param retrievalImplementation Retrieval implementation
      * @return base URL or UUID of tenant, e.g. "https://deeppavlov.wyona.com" or "ace1ced2-3dda-40e3-8fb9-cdbf22694051"
      */
-    protected String createTenant(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation) throws Exception {
-        log.info("Create AI Service tenant (Implementation: " + questionAnswerImplementation + ") for domain '" + domain.getId() + "' ...");
+    protected String createTenant(Context domain, DetectDuplicatedQuestionImpl retrievalImplementation) throws Exception {
+        log.info("Create AI Service tenant (Implementation: " + retrievalImplementation + ") for domain '" + domain.getId() + "' ...");
 
-        QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(questionAnswerImplementation);
+        QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(retrievalImplementation);
         String baseURL = answerQuestionImpl.createTenant(domain);
         log.info("Base URL / UUID of AI Service tenant: " + baseURL);
         return baseURL;
