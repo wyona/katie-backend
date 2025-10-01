@@ -11,6 +11,7 @@ public enum DetectDuplicatedQuestionImpl {
     ELASTICSEARCH,
     LUCENE_VECTOR_SEARCH,
     WEAVIATE,
+    MILVUS,
     QUERY_SERVICE,
     KATIE,
     AZURE_AI_SEARCH,
