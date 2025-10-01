@@ -1526,7 +1526,7 @@ public class ContextService {
     /**
      * Reindex in background "all" QnAs of a particular domain
      * @param domainId Domain Id
-     * @param detectDuplicatedQuestionsImpl New detect duplicated question implementation
+     * @param retrievalImpl New retrieval implementation, e.g. Lucene, Weaviate, Milvus
      * @param queryServiceBaseUrl Query service base URL when the "query service implementation" is set
      * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
@@ -1540,7 +1540,7 @@ public class ContextService {
      * @param userId Id of signed in user
      */
     @Async
-    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
+    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
         if (existsReindexLock(domainId)) {
             String existingProcessId = getReindexProcessId(domainId);
             log.warn("Reindexing of domain '" + domainId + "' already in progress (Process Id: " + existingProcessId + "), therefore no other reindex process will be started.");
@@ -1568,7 +1568,7 @@ public class ContextService {
          */
 
         try {
-            reindex(domainId, detectDuplicatedQuestionsImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
+            reindex(domainId, retrievalImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -1617,7 +1617,7 @@ public class ContextService {
     /**
      * Reindex "all" QnAs of a particular domain
      * @param domainId Domain Id
-     * @param detectDuplicatedQuestionsImpl New detect duplicated question implementation
+     * @param retrievalImpl New retrieval implementation
      * @param queryServiceBaseUrl Query service base URL when the "query service implementation" is set
      * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
@@ -1630,9 +1630,9 @@ public class ContextService {
      * @param processId Background process UUID
      * @param throttleTimeInMillis Time in milliseconds to throttle re-indexing, because OpenAI, Cohere, etc. do have rate limits
      */
-    protected void reindex(String domainId, DetectDuplicatedQuestionImpl detectDuplicatedQuestionsImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
+    protected void reindex(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
         Context domain = getContext(domainId);
-        log.info("Reindex domain '" + domainId + "' and replace current index implementation '" + domain.getDetectDuplicatedQuestionImpl() + "' by '" + detectDuplicatedQuestionsImpl+ "' ...");
+        log.info("Reindex domain '" + domainId + "' and replace current index implementation '" + domain.getDetectDuplicatedQuestionImpl() + "' by '" + retrievalImpl + "' ...");
 
         // TODO: Test API token
 
@@ -1646,14 +1646,14 @@ public class ContextService {
         }
         domain.unsetDetectDuplicatedQuestionImpl();
 
-        String logMsg = "Set new index / search implementation '" + detectDuplicatedQuestionsImpl;
+        String logMsg = "Set new index / search implementation '" + retrievalImpl;
         if (embeddingImpl != null) {
             logMsg = logMsg + "' (Embedding Service: " + embeddingImpl + ", Embedding Model: " + embeddingModel + ", Embedding Value Type: " + embeddingValueType + ")";
         }
         logMsg = logMsg + " ...";
         backgroundProcessService.updateProcessStatus(processId, logMsg);
         log.info(logMsg);
-        if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
+        if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             if (queryServiceBaseUrl != null) {
                 domain.setQueryServiceUrl(queryServiceBaseUrl.trim());
                 // TODO: Add queryServiceToken
@@ -1662,7 +1662,7 @@ public class ContextService {
                 throw new Exception("No query service base URL provided!");
             }
         }
-        if (detectDuplicatedQuestionsImpl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
+        if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             if (queryServiceBaseUrl != null) {
                 domain.setAzureAISearchEndpoint(queryServiceBaseUrl.trim());
                 domain.setAzureAISearchAdminKey(queryServiceToken);
@@ -1671,10 +1671,10 @@ public class ContextService {
             }
         }
 
-        String aiServiceBaseUrl = aiService.createTenant(domain, detectDuplicatedQuestionsImpl);
+        String aiServiceBaseUrl = aiService.createTenant(domain, retrievalImpl);
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);
 
-        domain = setQuestionAnswerImplementation(domain, detectDuplicatedQuestionsImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken);
+        domain = setRetrievalImplementation(domain, retrievalImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken);
         saveDomainConfig(domain);
 
 
@@ -1961,7 +1961,7 @@ public class ContextService {
         EmbeddingValueType defaultEmbeddingValueType = EmbeddingValueType.float32; // TODO: Make configurable
         String defaultEmbeddingEndpoint = null; // TOOD: Make configurable
 
-        newContext = setQuestionAnswerImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, defaultEmbeddingValueType, defaultEmbeddingEndpoint, newContext.getEmbeddingsApiToken());
+        newContext = setRetrievalImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, defaultEmbeddingValueType, defaultEmbeddingEndpoint, newContext.getEmbeddingsApiToken());
         saveDomainConfig(newContext);
 
         return newContext;
@@ -1988,13 +1988,16 @@ public class ContextService {
     }
 
     /**
+     * Set retrieval implementation
+     * @param domain Domain for which retrieval implementation will be set
+     * @param questionAnswerImplementation Retrieval implementation
      * @param aiServiceBaseUrl DeepKatie base URL or index or corpus Id, e.g. "https://deeppavlov.wyona.com" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken API Token of Embeddings Implementation
      */
-    private Context setQuestionAnswerImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
+    private Context setRetrievalImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
         if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH)) {
@@ -2002,6 +2005,8 @@ public class ContextService {
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
             domain.setWeaviateQueryUrl(aiServiceBaseUrl);
             domain.setWeaviateCertaintyThreshold(certaintyThreshold);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
+            log.error("Setter for Milvus not implemented yet!");
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             // INFO: Might be already set before
             domain.setQueryServiceUrl(aiServiceBaseUrl);
@@ -2065,7 +2070,7 @@ public class ContextService {
 
             domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(vectorSimilarityMetric));
         } else {
-            log.error("No such question/answer implementation: " + questionAnswerImplementation);
+            log.error("No setter for retrieval implementation " + questionAnswerImplementation + " exists yet!");
         }
         return domain;
     }
