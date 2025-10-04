@@ -40,6 +40,8 @@ public class AIService {
     @Autowired
     private WeaviateQuestionAnswerImpl weaviateImpl;
     @Autowired
+    private MilvusRetrievalImpl milvusImpl;
+    @Autowired
     private QueryServiceQuestionAnswerImpl queryServiceImpl;
     @Autowired
     private KatieQuestionAnswerImpl katieImpl;
@@ -614,8 +616,7 @@ public class AIService {
         } else if (impl.equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
             return weaviateImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
-            log.error("Milvus not implemented yet!");
-            return luceneImpl;
+            return milvusImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             return queryServiceImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.KATIE)) {
