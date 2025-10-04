@@ -1991,7 +1991,7 @@ public class ContextService {
      * Set retrieval implementation
      * @param domain Domain for which retrieval implementation will be set
      * @param questionAnswerImplementation Retrieval implementation
-     * @param aiServiceBaseUrl DeepKatie base URL or index or corpus Id, e.g. "https://deeppavlov.wyona.com" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
+     * @param aiServiceBaseUrl Retrieval base URL or index or corpus Id, e.g. "http://localhost:19530/" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
@@ -2006,7 +2006,7 @@ public class ContextService {
             domain.setWeaviateQueryUrl(aiServiceBaseUrl);
             domain.setWeaviateCertaintyThreshold(certaintyThreshold);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
-            log.error("Setter for Milvus not implemented yet!");
+            domain.setMilvusBaseUrl(aiServiceBaseUrl);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             // INFO: Might be already set before
             domain.setQueryServiceUrl(aiServiceBaseUrl);
