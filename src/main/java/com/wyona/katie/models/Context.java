@@ -47,8 +47,11 @@ public class Context {
     private Double scoreThreshold; // INFO: Independent of search implementation, whereas also see implementation specific thresholds: weaviateCertaintyThreshold, sentenceBERTDistanceThreshold
 
     private String queryServiceUrl;
+
     private String weaviateQueryUrl;
     private float weaviateCertaintyThreshold;
+
+    private String milvusBaseUrl;
 
     private String llmSearchAssistantId;
     private String llmSearchAssistantName;
@@ -342,6 +345,7 @@ public class Context {
         this.knowledgeGraphQueryUrl = null;
         this.queryServiceUrl = null;
         this.weaviateQueryUrl = null;
+        this.milvusBaseUrl = null;
         this.elasticsearchIndex = null;
 
         this.detectDuplicatedQuestionImpl = DetectDuplicatedQuestionImpl.UNSET;
@@ -686,6 +690,21 @@ public class Context {
      */
     public String getAzureAISearchAdminKey() {
         return azureAISearchAdminKey;
+    }
+
+    /**
+     * @return Milvus query URL, e.g. http://localhost:19530/
+     */
+    public String getMilvuseBaseUrl() {
+        return milvusBaseUrl;
+    }
+
+    /**
+     * @param milvusBaseUrl Milvus query URL, e.g. http://localhost:19530/
+     */
+    public void setMilvusBaseUrl(String milvusBaseUrl) {
+        this.milvusBaseUrl = milvusBaseUrl;
+        detectDuplicatedQuestionImpl = DetectDuplicatedQuestionImpl.MILVUS;
     }
 
     /**
