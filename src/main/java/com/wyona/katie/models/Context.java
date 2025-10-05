@@ -695,7 +695,7 @@ public class Context {
     /**
      * @return Milvus query URL, e.g. http://localhost:19530/
      */
-    public String getMilvuseBaseUrl() {
+    public String getMilvusBaseUrl() {
         return milvusBaseUrl;
     }
 

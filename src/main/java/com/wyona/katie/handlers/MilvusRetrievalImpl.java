@@ -65,7 +65,7 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
     public String createTenant(Context domain) {;
         log.error("TODO: Implement method createTenant()!");
         domain.setMilvusBaseUrl(getHost(null));
-        return domain.getMilvuseBaseUrl();
+        return domain.getMilvusBaseUrl();
     }
 
     /**
