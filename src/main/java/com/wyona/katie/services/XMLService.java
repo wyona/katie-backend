@@ -1518,6 +1518,13 @@ public class XMLService {
             doc.getDocumentElement().appendChild(qsElement);
         }
 
+        // INFO: Milvus
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.MILVUS) && context.getMilvusBaseUrl() != null) {
+            Element milvusEl = doc.createElement(CONTEXT_MILVUS_TAG);
+            milvusEl.setAttribute(CONTEXT_MILVUS_BASE_URL_ATTR, context.getMilvusBaseUrl());
+            doc.getDocumentElement().appendChild(milvusEl);
+        }
+
         // INFO: Weaviate
         if (ddqi.equals(DetectDuplicatedQuestionImpl.WEAVIATE) && context.getWeaviateQueryUrl() != null) {
             Element weaviateElement = doc.createElement(CONTEXT_WEAVIATE_TAG);
