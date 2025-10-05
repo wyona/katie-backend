@@ -1646,7 +1646,7 @@ public class ContextService {
         }
         domain.unsetDetectDuplicatedQuestionImpl();
 
-        String logMsg = "Set new index / search implementation '" + retrievalImpl;
+        String logMsg = "Set new retrieval implementation '" + retrievalImpl;
         if (embeddingImpl != null) {
             logMsg = logMsg + "' (Embedding Service: " + embeddingImpl + ", Embedding Model: " + embeddingModel + ", Embedding Value Type: " + embeddingValueType + ")";
         }
