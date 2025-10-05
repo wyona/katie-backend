@@ -133,6 +133,8 @@ public class XMLService {
     private static final String CONTEXT_KNOWLEDGE_GRAPH_TAG = "knowledge-graph";
     private static final String CONTEXT_WEAVIATE_TAG = "weaviate";
     private static final String CONTEXT_WEAVIATE_THRESHOLD_ATTR = "certainty-threshold";
+    private static final String CONTEXT_MILVUS_TAG = "milvus";
+    private static final String CONTEXT_MILVUS_BASE_URL_ATTR = "base-url";
     private static final String CONTEXT_AZURE_AI_SEARCH_ENDPOINT_ATTR = "endpoint";
     private static final String CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR = "admin-key";
     private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
@@ -425,6 +427,7 @@ public class XMLService {
      * @param parent Parent element
      * @param name Tag name of child
      * @param create If set to true, then create child element when child element does not exist yet
+     * @return child element if it exists and null otherwise
      */
     private Element getChildByTagName(Element parent, String name, boolean create) {
         NodeList nl = parent.getElementsByTagName(name);
@@ -1707,6 +1710,13 @@ public class XMLService {
             }
         }
 
+        // INFO: Milvus configuration
+        String milvusBaseUrl = null;
+        Element milvusEl = getChildByTagName(doc.getDocumentElement(), CONTEXT_MILVUS_TAG, false);
+        if (milvusEl != null && milvusEl.hasAttribute(CONTEXT_MILVUS_BASE_URL_ATTR)) {
+            milvusBaseUrl = milvusEl.getAttribute(CONTEXT_MILVUS_BASE_URL_ATTR);
+        }
+
         // INFO: Knowledge graph configuration
         String knowledgeGraphQueryUrl = null;
         NodeList knowledgeGraphNL = doc.getElementsByTagName(CONTEXT_KNOWLEDGE_GRAPH_TAG);
@@ -1965,6 +1975,10 @@ public class XMLService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.WEAVIATE);
             domain.setWeaviateQueryUrl(weaviateQueryUrl);
             domain.setWeaviateCertaintyThreshold(weaviateCertaintyThreshold);
+        }
+        if (milvusBaseUrl != null) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.MILVUS);
+            domain.setMilvusBaseUrl(milvusBaseUrl);
         }
         if (knowledgeGraphQueryUrl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH);
