@@ -324,7 +324,7 @@ public class Context {
     }
 
     /**
-     * Get cognitive service to find duplicated question
+     * Get retrieval implementation to answer questions
      */
     public DetectDuplicatedQuestionImpl getDetectDuplicatedQuestionImpl() {
         return detectDuplicatedQuestionImpl;
