@@ -6,9 +6,6 @@ import com.wyona.katie.services.JwtService;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.ContextService;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 
@@ -27,6 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.file.AccessDeniedException;
 import java.util.Base64;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to manage users, etc.
@@ -268,7 +274,7 @@ public class IAMController {
     @RequestMapping(value = "/user", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Add user, whereas username, email, role (ADMIN, USER) and password are required. Username and email can be the same.")
     public ResponseEntity<?> addUser(
-            @ApiParam(name = "mykatie", value = "When set to true, then a personal MyKatie domain will be created", required = false, defaultValue = "true")
+            @Parameter(name = "mykatie", description = "When set to true, then a personal MyKatie domain will be created", required = false, schema = @Schema(defaultValue = "true"))
             @RequestParam(value = "mykatie", required = false) Boolean createPersonalDomain,
             @RequestBody User user,
             HttpServletRequest request) {
@@ -414,9 +420,13 @@ public class IAMController {
      */
     @RequestMapping(value = "/user/{id}/profile-picture", method = RequestMethod.PUT, produces = "application/json")
     @Operation(summary = "Update profile picture of a particular user")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> updateProfilePicture(
             @Parameter(name = "id", description = "Katie user Id, e.g. '9cfc7e09-fe62-4ae4-81b6-1605424d6f87'",required = true)
             @PathVariable(value = "id", required = true) String id,
