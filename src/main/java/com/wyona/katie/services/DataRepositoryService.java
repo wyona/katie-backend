@@ -1203,7 +1203,7 @@ public class DataRepositoryService {
 
             String respondentId = rs.getString(RESPONDENT);
             log.debug("Question '" + question + "' and email '" + email + "'.");
-            long epochTimestampResubmitted = new Long(rs.getString("TIMESTAMP_RESUBMITTED")).longValue();
+            long epochTimestampResubmitted = Long.valueOf(rs.getString("TIMESTAMP_RESUBMITTED"));
             resubmittedQuestion = new ResubmittedQuestion(uuid, question, questionerUserId, questionerLanguage, channelType, channelRequestId, email, fcmToken, answerLinkType, questionStatus, remoteAddress, new Date(epochTimestampResubmitted), answer, answerClientSideEncryptedAlgorithm, ownership, respondentId, contextId);
 
             if (resubmittedQuestion.getRespondentUserId() != null && inclRespondentData) {
@@ -1412,7 +1412,7 @@ public class DataRepositoryService {
 
             String respondent = rs.getString(RESPONDENT);
             log.info("Question '" + question + "' and email '" + email + "'.");
-            long epochTimestampResubmitted = new Long(rs.getString("TIMESTAMP_RESUBMITTED")).longValue();
+            long epochTimestampResubmitted = Long.valueOf(rs.getString("TIMESTAMP_RESUBMITTED"));
             questions.add(new ResubmittedQuestion(uuid, question, questionerUserId, questionerLanguage, channelType, channelRequestId, email, fcmToken, answerLinkType, questionStatus, remoteAddress, new Date(epochTimestampResubmitted), answer, answerClientSideEncryptedAlgorithm, ownership, respondent, questionContextId));
         }
         rs.close();
@@ -1444,7 +1444,7 @@ public class DataRepositoryService {
         ResultSet rs = stmt.executeQuery(sql);
         List<Date> timestamps = new ArrayList<Date>();
         while (rs.next()) {
-            long epochTimestamp = new Long(rs.getString(TIMESTAMP)).longValue();
+            long epochTimestamp = Long.valueOf(rs.getString(TIMESTAMP));
             //log.debug("Timestamp of question: " + epochTimestamp);
             timestamps.add(new Date(epochTimestamp));
         }
