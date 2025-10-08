@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.Error;
 import com.wyona.katie.models.Username;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.*;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -24,17 +22,27 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Duration;
 import java.util.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+
 /**
  * Controller to ask questions (Version 1)
  */
 @Slf4j
+@Tag(name = "Ask Controller", description = "Endpoints for asking Katie questions")
 @RestController
 @RequestMapping(value = "/api/v1") 
 public class AskController {
@@ -82,19 +90,34 @@ public class AskController {
      * REST interface to generate a fake / synthetic answer for a particular question, which can be used to search for the actual answer
      */
     @RequestMapping(value = "/fake-answer/{domain-id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Generate fake / synthetic answer")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
+    @Operation(summary="Generate fake / synthetic answer")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseAnswer.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Error.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Error.class))
+            )
     })
     public ResponseEntity<?> getFakeAnswer(
             //public ResponseEntity<ResponseAnswer> getAnswer(
-            @ApiParam(name = "question", value = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
+            @Parameter(name = "question", description = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
             @RequestParam(value = "question", required = true) String question,
-            @ApiParam(name = "questionerLanguage", value = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
+            @Parameter(name = "questionerLanguage", description = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
             @RequestParam(value = "questionerLanguage", required = false) String questionerLanguage,
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -141,30 +164,29 @@ public class AskController {
      * REST interface to get an answer for a particular question
      */
     @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getAnswer(
     //public ResponseEntity<ResponseAnswer> getAnswer(
-        @ApiParam(name = "question", value = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
+        @Parameter(name = "question", description = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
         @RequestParam(value = "question", required = true) String question,
-        @ApiParam(name = "questionerLanguage", value = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
+        @Parameter(name = "questionerLanguage", description = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
         @RequestParam(value = "questionerLanguage", required = false) String questionerLanguage,
-        @ApiParam(name = "email", value = "Email address of user asking question (e.g. 'louise@wyona.com'), such that user can be notified by email when an expert has answered the question",required = false)
+        @Parameter(name = "email", description = "Email address of user asking question (e.g. 'louise@wyona.com'), such that user can be notified by email when an expert has answered the question",required = false)
         @RequestParam(value = "email", required = false) String email,
-        @ApiParam(name = "fcm_token", value = "Firebase Cloud Messaging token associated with mobile device of user asking question, such that a push notification can be sent when an expert has answered the question",required = false)
+        @Parameter(name = "fcm_token", description = "Firebase Cloud Messaging token associated with mobile device of user asking question, such that a push notification can be sent when an expert has answered the question",required = false)
         @RequestParam(value = "fcm_token", required = false) String fcmToken,
-        @ApiParam(name = "webhook_echo_content", value = "Content which is echoed back by webhook(s), in case webhook(s) configured for the given domain Id ",required = false)
+        @Parameter(name = "webhook_echo_content", description = "Content which is echoed back by webhook(s), in case webhook(s) configured for the given domain Id ",required = false)
         @RequestParam(value = "webhook_echo_content", required = false) String webhookEchoContent,
-        @ApiParam(name = "answer_link_type", value = "Answer link type. When value is set to 'deeplink' and as soon as expert will have answered question, then email or push notification to questioner will contain a deep link to answer, such that mobile app is opened and answer can be read within mobile app",required = false)
+        @Parameter(name = "answer_link_type", description = "Answer link type. When value is set to 'deeplink' and as soon as expert will have answered question, then email or push notification to questioner will contain a deep link to answer, such that mobile app is opened and answer can be read within mobile app",required = false)
         @RequestParam(value = "answer_link_type", required = false) String answerLinkType,
-        @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers. When no domain Id is set, then the ROOT domain Id will be used.",required = false)
+        @Parameter(name = "domainId", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers. When no domain Id is set, then the ROOT domain Id will be used.",required = false)
         @RequestParam(value = "domainId", required = false) String domainId,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -216,16 +238,11 @@ public class AskController {
      * REST interface to get an answer for a particular question
      */
     @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
+    @Operation(summary="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
     public ResponseEntity<?> postQuestion(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "question-and-contact-info", value = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            @Parameter(name = "question-and-contact-info", description = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndContact,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -428,11 +445,11 @@ public class AskController {
      * REST interface to submit question (when signed in) to expert
      */
     @RequestMapping(value = "/submitQuestionToExpert", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Submit question (when signed in) to expert")
+    @Operation(summary="Submit question (when signed in) to expert")
     public ResponseEntity<?> submitQuestionToExpert(
-        @ApiParam(name = "question", value = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
+        @Parameter(name = "question", description = "Question, e.g. 'What is the highest mountain of the world?'",required = true)
         @RequestParam(value = "question", required = true) String question,
-        @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers, etc.",required = false)
+        @Parameter(name = "domainId", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers, etc.",required = false)
         @RequestParam(value = "domainId", required = false) String domainId,
         HttpServletRequest request) {
 
@@ -471,11 +488,11 @@ public class AskController {
      * REST interface to autocomplete taxonomy term / return suggestions
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/suggest", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Complete taxonomy term (e.g. birth) / return suggestions (e.g. birthdate, birthplace)")
+    @Operation(summary="Complete taxonomy term (e.g. birth) / return suggestions (e.g. birthdate, birthplace)")
     public ResponseEntity<?> completeTaxonomyEntry(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "incomplete-term", value = "Incomplete taxonomy term, e.g. 'birth'", required = true)
+            @Parameter(name = "incomplete-term", description = "Incomplete taxonomy term, e.g. 'birth'", required = true)
             @RequestParam(value = "incomplete-term", required = true) String incompleteTerm,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -497,22 +514,21 @@ public class AskController {
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
     @Operation(summary="Classify a text")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = PredictedLabelsResponse.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> predictTaxonomyEntries(
-            @ApiParam(name = "asynchronous", value = "When set to true, then prediction will be done asynchronous", required = false, defaultValue = "false")
+            @Parameter(name = "asynchronous", description = "When set to true, then prediction will be done asynchronous", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "asynchronous", required = false) Boolean asynchronous,
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "limit", value = "Maximum number of labels returned", required = false, defaultValue = "3")
+            @Parameter(name = "limit", description = "Maximum number of labels returned", required = false, schema = @Schema(defaultValue = "3"))
             @RequestParam(value = "limit", required = false) Integer limit,
-            @ApiParam(name = "text", value = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
+            @Parameter(name = "text", description = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
             @RequestBody Message text,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -563,11 +579,11 @@ public class AskController {
      * REST interface to autocomplete question / return suggestions
      */
     @RequestMapping(value = "/ask/{domain-id}/autocomplete", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Complete question / return suggestions")
+    @Operation(summary="Complete question / return suggestions")
     public ResponseEntity<?> completeQuestion(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "question", value = "Incomplete question, e.g. 'highest moun'",required = true)
+            @Parameter(name = "question", description = "Incomplete question, e.g. 'highest moun'",required = true)
             @RequestParam(value = "question", required = true) String question,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -589,11 +605,11 @@ public class AskController {
     @RequestMapping(value = "/ask/{domain-id}/semantics", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Get semantic analysis of message, for example that message is a question asking for instructions or that message is an announcement")
     public ResponseEntity<?> analyzeMessage(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "message", value = "Message, e.g. 'Hi :-), my name is Michael' or 'What is the easiest way to remove a bike tyre'",required = true)
+            @Parameter(name = "message", description = "Message, e.g. 'Hi :-), my name is Michael' or 'What is the easiest way to remove a bike tyre'",required = true)
             @RequestParam(value = "message", required = true) String message,
-            @ApiParam(name = "mc-impl", value = "Message classification implementation",required = true)
+            @Parameter(name = "mc-impl", description = "Message classification implementation",required = true)
             @RequestParam(value = "mc-impl", required = true) QuestionClassificationImpl qcImpl,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -619,13 +635,17 @@ public class AskController {
      */
     @RequestMapping(value = "/chat/completions/{domain-id}", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary="Chat with a LLM")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> chatCompletions(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
             @PathVariable(value = "domain-id", required = true) String _domainId,
-            @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            @Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
             @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -726,7 +746,7 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
     public Flux<ServerSentEvent<String>> chatCompletionsAsSSE(
-            @ApiParam(name = "request-body", value = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            @Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
             @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
