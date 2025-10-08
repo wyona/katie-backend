@@ -32,8 +32,8 @@ import io.swagger.annotations.ApiImplicitParam;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.nio.file.AccessDeniedException;
 import java.util.*;

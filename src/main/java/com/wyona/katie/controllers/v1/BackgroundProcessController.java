@@ -6,20 +6,24 @@ import com.wyona.katie.models.Role;
 import com.wyona.katie.models.User;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.BackgroundProcessService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to generate and send reports
@@ -40,11 +44,15 @@ public class BackgroundProcessController {
      */
     @RequestMapping(value = "/{process-id}/status", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get status of a particular background process (running or completed)")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getStatusOfRunningProcess(
-        @ApiParam(name = "process-id", value = "Process Id",required = true)
+        @Parameter(name = "process-id", description = "Process Id",required = true)
         @PathVariable(value = "process-id", required = true) String processId,
         HttpServletRequest request) {
 

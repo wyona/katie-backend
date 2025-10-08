@@ -4,9 +4,6 @@ import com.wyona.katie.models.*;
 
 import com.wyona.katie.models.Error;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiParam;
 
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -40,7 +37,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Benchmark / Quality Assurance controller
@@ -80,7 +86,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/accuracy-true-positives", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Ask questions which have an answer inside domain / knowledge base")
     public ResponseEntity<?> getAccuracyTruePositives(
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             HttpServletRequest request) {
 
@@ -105,7 +111,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/accuracy-true-negatives", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Ask questions which do not have an answer inside domain / knowledge base")
     public ResponseEntity<?> getAccuracyTrueNegatives(
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             @RequestBody String[] questions,
             HttpServletRequest request) {
@@ -132,7 +138,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/precision-recall", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Get Precision (Number of retrieved correct resp. relevant answers divided by total number of retrieved answers) and Recall (Number of retrieved correct resp. relevant answers divided by total number of relevant answers)")
     public ResponseEntity<?> getPrecisionAndRecall(
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             //@RequestBody String[] questionsAndRelevantUuids, // TODO: Add expected UUIDs of relevant answers
             HttpServletRequest request) {
@@ -189,19 +195,23 @@ public class BenchmarkController {
      */
     @RequestMapping(value = "/similarity-sentences", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Get confidence score whether two sentences are similar")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getSentencesSimilarity(
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "sentence-one", value = "Sentence One, e.g. 'How old are you'",required = true)
+            @Parameter(name = "sentence-one", description = "Sentence One, e.g. 'How old are you'",required = true)
             @RequestParam(value = "sentence-one", required = true) String sentenceOne,
-            @ApiParam(name = "sentence-two", value = "Sentence Two, e.g. 'What is your age'",required = true)
+            @Parameter(name = "sentence-two", description = "Sentence Two, e.g. 'What is your age'",required = true)
             @RequestParam(value = "sentence-two", required = true) String sentenceTwo,
-            @ApiParam(name = "embeddings-impl", value = "Embeddings implementation / provider",required = true)
+            @Parameter(name = "embeddings-impl", description = "Embeddings implementation / provider",required = true)
             @RequestParam(value = "embeddings-impl", required = true) EmbeddingsImpl embeddingsImpl,
-            @ApiParam(name = "get-embeddings", value = "When set to true, then embeddings will be returned as well", required = false, defaultValue = "false")
+            @Parameter(name = "get-embeddings", description = "When set to true, then embeddings will be returned as well", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
@@ -235,15 +245,15 @@ public class BenchmarkController {
     @RequestMapping(value = "/similarity-words", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Get confidence score whether two words are similar")
     public ResponseEntity<?> getWordsSimilarity(
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "word-one", value = "Word One, e.g. 'old'",required = true)
+            @Parameter(name = "word-one", description = "Word One, e.g. 'old'",required = true)
             @RequestParam(value = "word-one", required = true) String wordOne,
-            @ApiParam(name = "word-two", value = "Word Two, e.g. 'age'",required = true)
+            @Parameter(name = "word-two", description = "Word Two, e.g. 'age'",required = true)
             @RequestParam(value = "word-two", required = true) String wordTwo,
-            @ApiParam(name = "embeddings-impl", value = "Embeddings implementation / provider",required = true)
+            @Parameter(name = "embeddings-impl", description = "Embeddings implementation / provider",required = true)
             @RequestParam(value = "embeddings-impl", required = true) WordEmbeddingImpl embeddingsImpl,
-            @ApiParam(name = "get-embeddings", value = "When set to true, then embeddings will be returned as well (false by default)", required = false)
+            @Parameter(name = "get-embeddings", description = "When set to true, then embeddings will be returned as well (false by default)", required = false)
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
@@ -288,25 +298,29 @@ public class BenchmarkController {
      */
     @RequestMapping(value = "/run-benchmark", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> performBenchmark(
-            @ApiParam(name = "email", value = "E-Mail to get notification when benchmark is completed",required = false)
+            @Parameter(name = "email", description = "E-Mail to get notification when benchmark is completed",required = false)
             @RequestParam(value = "email", required = false) String email,
-            @ApiParam(name = "index-alternative-questions", value = "Also index alternative questions when set to true", required = true, defaultValue = "false")
+            @Parameter(name = "index-alternative-questions", description = "Also index alternative questions when set to true", required = true, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "index-alternative-questions", required = true) Boolean indexAlternativeQuestions,
-            @ApiParam(name = "re-rank-answers", value = "Re-rank answers when set to true", required = false, defaultValue = "false")
+            @Parameter(name = "re-rank-answers", description = "Re-rank answers when set to true", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "re-rank-answers", required = false) Boolean reRankAnswers,
-            @ApiParam(name = "throttle-time", value = "Throttle time in milliseconds",required = false)
+            @Parameter(name = "throttle-time", description = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
-            @ApiParam(name = "delete-domain", value = "When set to true, then delete domain which was created to run benchmark", required = false , defaultValue = "true")
+            @Parameter(name = "delete-domain", description = "When set to true, then delete domain which was created to run benchmark", required = false , schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "delete-domain", required = false) Boolean deleteDomain,
             // TODO: Add description for file, e.g. "Test Dataset" and if not provided, then a default test dataset is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
-            @ApiParam(name = "search-implementations", value = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
+            @Parameter(name = "search-implementations", description = "Comma separated list of search implementations to be benchmarked: LUCENE_DEFAULT, SENTENCE_BERT, LUCENE_VECTOR_SEARCH, WEAVIATE, ELASTICSEARCH",required = true)
             @RequestParam(value = "search-implementations", required = true) String searchImplementations,
-            //@ApiParam(name = "benchmark_config", value = "Benchmark configuration", required = true)
+            //@Parameter(name = "benchmark_config", value = "Benchmark configuration", required = true)
             //@RequestPart(name = "benchmark_config", required = true) BenchmarkConfiguration benchmarkConfiguration,
             @RequestPart(name = "benchmark_config", required = false) MultipartFile benchmark_config,
             HttpServletRequest request) {
@@ -405,15 +419,19 @@ public class BenchmarkController {
      */
     @RequestMapping(value = "/run-classification-benchmark", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Run a classification benchmark")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> performClassificationBenchmark(
-            @ApiParam(name = "domain-id", value = "Domain Id containing preference dataset", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id containing preference dataset", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "email", value = "E-Mail to get notification when benchmark is completed", required = false)
+            @Parameter(name = "email", description = "E-Mail to get notification when benchmark is completed", required = false)
             @RequestParam(value = "email", required = false) String email,
-            @ApiParam(name = "throttle-time", value = "Throttle time in milliseconds",required = false)
+            @Parameter(name = "throttle-time", description = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
             HttpServletRequest request) {
 
@@ -521,7 +539,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/report/{id}/json", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get a report (as JSON) of a particular benchmark, containing execution date, dataset info")
     public ResponseEntity<?> getBenchmarkReportAsJson(
-            @ApiParam(name = "id", value = "Benchmark Id, for example '230214_112023', which represents the results of all benchmarks performed at a specific time", required = true)
+            @Parameter(name = "id", description = "Benchmark Id, for example '230214_112023', which represents the results of all benchmarks performed at a specific time", required = true)
             @PathVariable(value = "id", required = true) String benchmarkId,
             HttpServletRequest request) {
 
@@ -550,7 +568,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/report/{id}/pdf", method = RequestMethod.GET, produces = "application/pdf")
     @Operation(summary = "Get a report (as PDF) of a particular benchmark, containing execution date, dataset info and result graphs")
     public ResponseEntity<?> getBenchmarkReportAsPDF(
-            @ApiParam(name = "id", value = "Benchmark Id, for example '230214_112023', which represents the results of all benchmarks performed at a specific time", required = true)
+            @Parameter(name = "id", description = "Benchmark Id, for example '230214_112023', which represents the results of all benchmarks performed at a specific time", required = true)
             @PathVariable(value = "id", required = true) String benchmarkId,
             HttpServletRequest request) {
 
