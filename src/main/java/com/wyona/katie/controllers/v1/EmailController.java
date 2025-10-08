@@ -14,13 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to process emails
@@ -43,11 +49,11 @@ public class EmailController {
      * REST interface to trigger processing new emails
      */
     @RequestMapping(value = "/sync", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Process new emails associated with a particular Katie domain")
+    @Operation(summary="Process new emails associated with a particular Katie domain")
     public ResponseEntity<?> processEmails(
-        @ApiParam(name = "domain", value = "Domain Id",required = true)
+        @Parameter(name = "domain", description = "Domain Id",required = true)
         @RequestParam(value = "domain", required = true) String domainId,
-        @ApiParam(name = "include-feedback-links", value = "When true, then answer contains feedback links", required = false)
+        @Parameter(name = "include-feedback-links", description = "When true, then answer contains feedback links", required = false)
         @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,
         HttpServletRequest request) {
 

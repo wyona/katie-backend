@@ -5,9 +5,6 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.RememberMeService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +17,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.file.AccessDeniedException;
 import java.util.Date;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to submit feedback (e.g. rate answers and rate predicted labels) and to get saved ratings
@@ -45,15 +51,19 @@ public class FeedbackController {
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rate-answer", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Rate answer to question")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> rateAnswer(
-            @ApiParam(name = "uuid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String quuid,
-            @ApiParam(name = "domainid", value = "Domain Id question and answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id question and answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "rating", value = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
+            @Parameter(name = "rating", description = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
             @RequestBody Rating rating,
             HttpServletRequest request,
             HttpServletResponse response
@@ -122,11 +132,11 @@ public class FeedbackController {
     @RequestMapping(value = "/ratings-of-answers", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get ratings of answers to asked questions (as preference dataset)")
     public ResponseEntity<?> getRatingsOfAnswersToAskedQuestions(
-            @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned ratings", required = true, defaultValue = "10")
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(defaultValue = "10"))
             @RequestParam(value = "limit", required = true) int limit,
-            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned ratings", required = true, defaultValue = "0")
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(defaultValue = "0"))
             @RequestParam(value = "offset", required = true) int offset,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -165,11 +175,15 @@ public class FeedbackController {
      */
     @RequestMapping(value = "/rate-predicted-labels", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Rate predicted labels")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> ratePredictedLabels(
-            @ApiParam(name = "rating", value = "Rating of predicted labels", required = true)
+            @Parameter(name = "rating", description = "Rating of predicted labels", required = true)
             @RequestBody RatingPredictedLabels rating,
             HttpServletRequest request,
             HttpServletResponse response
@@ -235,15 +249,15 @@ public class FeedbackController {
     @RequestMapping(value = "/ratings-of-predicted-labels", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get ratings of predicted labels (as preference dataset)")
     public ResponseEntity<?> getRatingsOfPredictedLabels(
-            @ApiParam(name = "domain-id", value = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "get-chosen", value = "Labels which were predicted correctly", required = false, defaultValue = "true")
+            @Parameter(name = "get-chosen", description = "Labels which were predicted correctly", required = false, schema = @Schema(defaultValue = "true"))
             @RequestParam(value = "get-chosen", required = false) Boolean getChosen,
-            @ApiParam(name = "get-rejected", value = "Labels which were rejected respectively not predicted correctly", required = false, defaultValue = "true")
+            @Parameter(name = "get-rejected", description = "Labels which were rejected respectively not predicted correctly", required = false, schema = @Schema(defaultValue = "true"))
             @RequestParam(value = "get-rejected", required = false) Boolean getRejected,
-            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned ratings", required = true, defaultValue = "10")
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(defaultValue = "10"))
             @RequestParam(value = "limit", required = true) int limit,
-            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned ratings", required = true, defaultValue = "0")
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(defaultValue = "0"))
             @RequestParam(value = "offset", required = true) int offset,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -283,9 +297,9 @@ public class FeedbackController {
     @RequestMapping(value = "/{domain-id}/rating-label/{rating-id}", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Delete label rating")
     public ResponseEntity<?> deleteLabelRating(
-            @ApiParam(name = "domain-id", value = "Domain Id",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "rating-id", value = "Rating Id",required = true)
+            @Parameter(name = "rating-id", description = "Rating Id",required = true)
             @PathVariable(value = "rating-id", required = true) String ratingId,
             HttpServletRequest request) {
 
@@ -317,9 +331,9 @@ public class FeedbackController {
     @RequestMapping(value = "/{domain-id}/rating-label/{rating-id}/approve-disapprove", method = RequestMethod.PUT, produces = "application/json")
     @Operation(summary="Toggle approval of a label rating")
     public ResponseEntity<?> toggleApprovalOfLabelRating(
-            @ApiParam(name = "domain-id", value = "Domain Id",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "rating-id", value = "Rating Id",required = true)
+            @Parameter(name = "rating-id", description = "Rating Id",required = true)
             @PathVariable(value = "rating-id", required = true) String ratingId,
             HttpServletRequest request) {
 
