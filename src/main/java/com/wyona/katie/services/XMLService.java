@@ -1826,7 +1826,7 @@ public class XMLService {
         IMAPConfiguration imapConfiguration = null;
         Element imapEl = getChildByTagName(mailEl, DOMAIN_MAIL_IMAP_TAG, false);
         if (imapEl != null) {
-            imapConfiguration = new IMAPConfiguration(imapEl.getAttribute("hostname"), new Integer(imapEl.getAttribute("port")).intValue(), imapEl.getAttribute("username"), imapEl.getAttribute("password"));
+            imapConfiguration = new IMAPConfiguration(imapEl.getAttribute("hostname"), Integer.valueOf(imapEl.getAttribute("port")), imapEl.getAttribute("username"), imapEl.getAttribute("password"));
         }
 
         DomainSlackConfiguration slackConfig = null;
@@ -2082,7 +2082,7 @@ public class XMLService {
         NodeList nodeList = doc.getElementsByTagName(elementName);
         if (nodeList.getLength() > 0) {
             Element element = (Element)nodeList.item(0);
-            value = new Boolean(element.getAttribute(attributeName)).booleanValue();
+            value = Boolean.valueOf(element.getAttribute(attributeName));
         }
         return value;
     }
