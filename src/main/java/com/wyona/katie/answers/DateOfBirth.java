@@ -56,9 +56,9 @@ public class DateOfBirth {
             java.util.Date dOfBirth = dateFormat.parse(dateOfBirth);
             java.util.Date currentDate = new java.util.Date();
             if ((currentDate.getMonth() < dOfBirth.getMonth()) || (currentDate.getMonth() == dOfBirth.getMonth() && currentDate.getDate() < dOfBirth.getDate())) {
-                return new Integer(currentDate.getYear() - dOfBirth.getYear()) - 1;
+                return Integer.valueOf(currentDate.getYear() - dOfBirth.getYear()) - 1;
             } else {
-                return new Integer(currentDate.getYear() - dOfBirth.getYear());
+                return Integer.valueOf(currentDate.getYear() - dOfBirth.getYear());
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
