@@ -17,12 +17,12 @@ import com.wyona.katie.integrations.matrix.MatrixMessageSender;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.QuestionAnsweringService;
 
-import io.swagger.annotations.ApiOperation;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.file.AccessDeniedException;
+
+import io.swagger.v3.oas.annotations.Operation;
 
 /**
  * Matrix controller (https://matrix.org/)
@@ -46,7 +46,7 @@ public class MatrixController {
      * https://matrix.org/docs/spec/client_server/latest#get-matrix-client-r0-sync
      */
     @RequestMapping(value = "/sync", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Synchronise Katie's state with the latest state on the Matrix homeserver")
+    @Operation(summary="Synchronise Katie's state with the latest state on the Matrix homeserver")
     public ResponseEntity<?> sync(HttpServletRequest request) {
 
         try {
