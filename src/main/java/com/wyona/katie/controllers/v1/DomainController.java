@@ -13,10 +13,6 @@ import com.wyona.katie.models.insights.EventType;
 import com.wyona.katie.models.insights.Interval;
 import com.wyona.katie.models.insights.NgxChartsSeries;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +33,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to access and manage a particular domain
@@ -72,9 +77,9 @@ public class DomainController {
      * Export all questions of a particular domain including labels whether questions were recognized successfully
      */
     @RequestMapping(value = "/{id}/export/dataset-questions", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Export all questions of a particular domain including labels whether questions were recognized successfully, which can be used for training a model")
+    @Operation(summary="Export all questions of a particular domain including labels whether questions were recognized successfully, which can be used for training a model")
     public ResponseEntity<?> exportQuestionsDataset(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String domainId,
             HttpServletRequest request) {
 
@@ -124,9 +129,9 @@ public class DomainController {
      * Export all QnAs of a particular domain
      */
     @RequestMapping(value = "/{id}/export/qnas", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Export all QnAs of a particular domain")
+    @Operation(summary="Export all QnAs of a particular domain")
     public ResponseEntity<?> exportQnAs(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -167,14 +172,18 @@ public class DomainController {
      * Import QnAs from JSON text into a particular domain
      */
     @RequestMapping(value = "/{id}/import/qnas-from-text", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Import QnAs from JSON text into a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Import QnAs from JSON text into a particular domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> importQnAsFromText(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "qnas", value = "An array of QnAs", required = true)
+            @Parameter(name = "qnas", description = "An array of QnAs", required = true)
             @RequestBody QnA[] qnas,
             HttpServletRequest request) {
 
@@ -216,12 +225,16 @@ public class DomainController {
      * Import QnAs from JSON file into a particular domain
      */
     @RequestMapping(value = "/{id}/import/qnas-from-file", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Import QnAs from JSON file into a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Import QnAs from JSON file into a particular domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> importQnAsFromFile(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -269,13 +282,17 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/import/pdf", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Import PDF into a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> importPDF(
-            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "text-splitter", value = "Text Splitter", required = true)
+            @Parameter(name = "text-splitter", description = "Text Splitter", required = true)
             @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -325,17 +342,21 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/import/html-web-page", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Import HTML web page into a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> importHTMLWebPage(
-            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "text-splitter", value = "Text Splitter", required = true)
+            @Parameter(name = "text-splitter", description = "Text Splitter", required = true)
             @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
-            @ApiParam(name = "url", value = "URL of HTML web page", required = true)
+            @Parameter(name = "url", description = "URL of HTML web page", required = true)
             @RequestParam(value = "url", required = true) URL url,
-            @ApiParam(name = "css-selector", value = "CSS selector, element[attribute=value], e.g. div[id='content'] or [id='text']", required = false)
+            @Parameter(name = "css-selector", description = "CSS selector, element[attribute=value], e.g. div[id='content'] or [id='text']", required = false)
             @RequestParam(value = "css-selector", required = false) String cssSelector,
             HttpServletRequest request) {
 
@@ -377,11 +398,11 @@ public class DomainController {
      * REST interface to update the mail sender email address, e.g. "Katie <no-reply@wyona.com>"
      */
     @RequestMapping(value = "/{id}/mail-sender", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update mail sender")
+    @Operation(summary = "Update mail sender")
     public ResponseEntity<?> updateMailSender(
-            @ApiParam(name = "id", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("id") String domainid,
-            @ApiParam(name = "mail-sender", value = "Updated mail sender (Parameter: mail-sender)", required = true) @RequestBody JsonNode body
+            @Parameter(name = "mail-sender", description = "Updated mail sender (Parameter: mail-sender)", required = true) @RequestBody JsonNode body
     ) {
         try {
             log.info("JSON: " + body);
@@ -404,11 +425,11 @@ public class DomainController {
      * REST interface to update the mail subject, e.g. replace "FAQ wyona" by "FAQ Wyona"
      */
     @RequestMapping(value = "/{id}/mail-subject", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update mail subject")
+    @Operation(summary = "Update mail subject")
     public ResponseEntity<?> updateMailSubject(
-            @ApiParam(name = "id", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("id") String domainid,
-            @ApiParam(name = "mail-subject", value = "Updated mail subject (Parameter: mail-subject)", required = true) @RequestBody JsonNode body
+            @Parameter(name = "mail-subject", description = "Updated mail subject (Parameter: mail-subject)", required = true) @RequestBody JsonNode body
     ) {
         try {
             log.info("JSON: " + body);
@@ -431,11 +452,11 @@ public class DomainController {
      * REST interface to update the domain name, e.g. replace "FAQ wyona" by "FAQ Wyona"
      */
     @RequestMapping(value = "/{id}/name", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update domain name")
+    @Operation(summary = "Update domain name")
     public ResponseEntity<?> updateDomainName(
-            @ApiParam(name = "id", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("id") String domainid,
-            @ApiParam(name = "name", value = "Updated domain name, e.g. 'Apache Lucene'", required = true) @RequestBody DomainName name
+            @Parameter(name = "name", description = "Updated domain name, e.g. 'Apache Lucene'", required = true) @RequestBody DomainName name
     ) {
         try {
             log.info("Update name of domain '" + domainid + "': " + name.getName());
@@ -456,11 +477,11 @@ public class DomainController {
      * REST interface to update the domain tag name, e.g. replace "apachelucene" by "apache-lucene"
      */
     @RequestMapping(value = "/{id}/tag-name", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update domain tag name")
+    @Operation(summary= "Update domain tag name")
     public ResponseEntity<?> updateDomainTagName(
-            @ApiParam(name = "id", value = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("id") String domainid,
-            @ApiParam(name = "tag-name", value = "Updated domain tag name, e.g. 'apache-lucene'", required = true)
+            @Parameter(name = "tag-name", description = "Updated domain tag name, e.g. 'apache-lucene'", required = true)
             @RequestParam(value = "tag-name", required = true) String tagName
     ) {
         try {
@@ -482,11 +503,11 @@ public class DomainController {
      * Get insights summary of a particular domain
      */
     @RequestMapping(value = "/{id}/insights/summary", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get insights summary of a particular domain")
+    @Operation(summary="Get insights summary of a particular domain")
     public ResponseEntity<?> getInsightsSummary(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "last-number-of-days", value = "Last number of days, e.g. last 30 days",required = false)
+            @Parameter(name = "last-number-of-days", description = "Last number of days, e.g. last 30 days",required = false)
             @RequestParam(value = "last-number-of-days", required = false) Integer lastNumberOfDays,
             HttpServletRequest request) {
 
@@ -523,15 +544,15 @@ public class DomainController {
      * Get insights history of a particular domain
      */
     @RequestMapping(value = "/{id}/insights/history", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get insights history of a particular domain")
+    @Operation(summary="Get insights history of a particular domain")
     public ResponseEntity<?> getInsightsHistory(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "last-number-of-days", value = "Last number of days, e.g. last 30 days", required = false)
+            @Parameter(name = "last-number-of-days", description = "Last number of days, e.g. last 30 days", required = false)
             @RequestParam(value = "last-number-of-days", required = false) Integer lastNumberOfDays,
-            @ApiParam(name = "event-type", value = "Event type", required = true)
+            @Parameter(name = "event-type", description = "Event type", required = true)
             @RequestParam(value = "event-type", required = true) EventType type,
-            @ApiParam(name = "interval", value = "Interval", required = true)
+            @Parameter(name = "interval", description = "Interval", required = true)
             @RequestParam(value = "interval", required = true) Interval interval,
             HttpServletRequest request) {
 
@@ -573,9 +594,9 @@ public class DomainController {
      * Get insights re users of a particular domain
      */
     @RequestMapping(value = "/{id}/insights/users", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get insights re users of a particular domain")
+    @Operation(summary="Get insights re users of a particular domain")
     public ResponseEntity<?> getInsightsUsers(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -599,19 +620,19 @@ public class DomainController {
      * Add TOPdesk as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/topdesk", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add TOPdesk as knowledge source")
+    @Operation(summary="Add TOPdesk as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceTOPdesk(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'TOPdesk Wyona'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'TOPdesk Wyona'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "base-url", value = "TOPdesk Base URL, e.g. 'https://topdesk.wyona.com'", required = true)
+            @Parameter(name = "base-url", description = "TOPdesk Base URL, e.g. 'https://topdesk.wyona.com'", required = true)
             @RequestParam(value = "base-url", required = true) String baseUrl,
-            @ApiParam(name = "username", value = "Username", required = true)
+            @Parameter(name = "username", description = "Username", required = true)
             @RequestParam(value = "username", required = true) String username,
-            @ApiParam(name = "password", value = "Password", required = true)
+            @Parameter(name = "password", description = "Password", required = true)
             @RequestParam(value = "password", required = true) String password,
-            @ApiParam(name = "limit", value = "Limit", required = false)
+            @Parameter(name = "limit", description = "Limit", required = false)
             @RequestParam(value = "limit", required = false) Integer limit,
             HttpServletRequest request) {
 
@@ -635,23 +656,23 @@ public class DomainController {
      * Add OneNote as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/onenote", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add OneNote as knowledge source")
+    @Operation(summary="Add OneNote as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceOneNote(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "apiToken", value = "MS Graph API Token", required = false)
+            @Parameter(name = "apiToken", description = "MS Graph API Token", required = false)
             @RequestParam(value = "apiToken", required = false) String apiToken,
-            @ApiParam(name = "tenant", value = "Tenant", required = false)
+            @Parameter(name = "tenant", description = "Tenant", required = false)
             @RequestParam(value = "tenant", required = false) String tenant,
-            @ApiParam(name = "client-id", value = "Client Id", required = false)
+            @Parameter(name = "client-id", description = "Client Id", required = false)
             @RequestParam(value = "client-id", required = false) String clientId,
-            @ApiParam(name = "client-secret", value = "Client secret", required = false)
+            @Parameter(name = "client-secret", description = "Client secret", required = false)
             @RequestParam(value = "client-secret", required = false) String clientSecret,
-            @ApiParam(name = "scope", value = "Scope, e.g. 'Notes.Read.All'", required = false)
+            @Parameter(name = "scope", description = "Scope, e.g. 'Notes.Read.All'", required = false)
             @RequestParam(value = "scope", required = false) String scope,
-            @ApiParam(name = "location", value = "Location, e.g. 'groups/c5a3125f-f85a-472a-8561-db2cf74396ea' or 'users/michael.wechner@wyona.com'", required = false)
+            @Parameter(name = "location", description = "Location, e.g. 'groups/c5a3125f-f85a-472a-8561-db2cf74396ea' or 'users/michael.wechner@wyona.com'", required = false)
             @RequestParam(value = "location", required = false) String location,
             HttpServletRequest request) {
 
@@ -675,11 +696,11 @@ public class DomainController {
      * Add Filesystem directory as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/filesystem", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add Filesystem directory as knowledge source")
+    @Operation(summary="Add Filesystem directory as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceFilesystem(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
             @RequestParam(value = "name", required = true) String name,
             HttpServletRequest request) {
 
@@ -703,25 +724,25 @@ public class DomainController {
      * Add SharePoint as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/sharepoint", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add SharePoint as knowledge source, whereas see https://app.katie.qa/connectors/sharepoint-connector.html")
+    @Operation(summary="Add SharePoint as knowledge source, whereas see https://app.katie.qa/connectors/sharepoint-connector.html")
     public ResponseEntity<?> addKnowledgeSourceSharePoint(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Katie SharePoint'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'Katie SharePoint'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "apiToken", value = "MS Graph API Token", required = false)
+            @Parameter(name = "apiToken", description = "MS Graph API Token", required = false)
             @RequestParam(value = "apiToken", required = false) String apiToken,
-            @ApiParam(name = "tenant", value = "Tenant Id, whereas see https://portal.azure.com/#settings/directory", required = true)
+            @Parameter(name = "tenant", description = "Tenant Id, whereas see https://portal.azure.com/#settings/directory", required = true)
             @RequestParam(value = "tenant", required = true) String tenant,
-            @ApiParam(name = "client-id", value = "Client Id, whereas see Microsoft Entra ID / Applications, https://portal.azure.com/#view/Microsoft_AAD_IAM/StartboardApplicationsMenuBlade/~/AppAppsPreview/menuId~/null", required = true)
+            @Parameter(name = "client-id", description = "Client Id, whereas see Microsoft Entra ID / Applications, https://portal.azure.com/#view/Microsoft_AAD_IAM/StartboardApplicationsMenuBlade/~/AppAppsPreview/menuId~/null", required = true)
             @RequestParam(value = "client-id", required = true) String clientId,
-            @ApiParam(name = "client-secret", value = "Client secret", required = true)
+            @Parameter(name = "client-secret", description = "Client secret", required = true)
             @RequestParam(value = "client-secret", required = true) String clientSecret,
-            @ApiParam(name = "scope", value = "Scope, e.g. 'Sites.Read.All', whereas make sure to enable permissions for client / app id accordingly", required = true)
+            @Parameter(name = "scope", description = "Scope, e.g. 'Sites.Read.All', whereas make sure to enable permissions for client / app id accordingly", required = true)
             @RequestParam(value = "scope", required = true) String scope,
-            @ApiParam(name = "site-id", value = "SharePoint site Id, e.g. 'ee403fc5-vfd8-7fhe-9171-k11dw4db239c', whereas get Site Id using Microsoft Graph, e.g. https://graph.microsoft.com/v1.0/sites?search=KatieTest or https://graph.microsoft.com/v1.0/sites/wyona.sharepoint.com:/sites/KatieTest?$select=id", required = true)
+            @Parameter(name = "site-id", description = "SharePoint site Id, e.g. 'ee403fc5-vfd8-7fhe-9171-k11dw4db239c', whereas get Site Id using Microsoft Graph, e.g. https://graph.microsoft.com/v1.0/sites?search=KatieTest or https://graph.microsoft.com/v1.0/sites/wyona.sharepoint.com:/sites/KatieTest?$select=id", required = true)
             @RequestParam(value = "site-id", required = true) String siteId,
-            @ApiParam(name = "base-url", value = "SharePoint base URL, e.g. https://wyona.sharepoint.com (ROOT site) or https://wyona.sharepoint.com/sites/KatieTest", required = true)
+            @Parameter(name = "base-url", description = "SharePoint base URL, e.g. https://wyona.sharepoint.com (ROOT site) or https://wyona.sharepoint.com/sites/KatieTest", required = true)
             @RequestParam(value = "base-url", required = true) String baseUrl,
             HttpServletRequest request) {
 
@@ -745,19 +766,19 @@ public class DomainController {
      * Add Website (pages) as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/website", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add Website (pages) as knowledge source")
+    @Operation(summary="Add Website (pages) as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceWebsite(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'Katie Documentation'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "seed-url", value = "Seed URL, e.g. https://wyona.com", required = false)
+            @Parameter(name = "seed-url", description = "Seed URL, e.g. https://wyona.com", required = false)
             @RequestParam(value = "seed-url", required = false) String seedUrl,
-            @ApiParam(name = "urls", value = "Comma separated list of page URLs, e.g. https://wyona.com/about,https://wyona.com/contact", required = false)
+            @Parameter(name = "urls", description = "Comma separated list of page URLs, e.g. https://wyona.com/about,https://wyona.com/contact", required = false)
             @RequestParam(value = "urls", required = false) String pageURLs,
-            @ApiParam(name = "chunk-size", value = "Chunk size, e.g. 1500", required = false)
+            @Parameter(name = "chunk-size", description = "Chunk size, e.g. 1500", required = false)
             @RequestParam(value = "chunk-size", required = false) Integer chunkSize,
-            @ApiParam(name = "chunk-overlap", value = "Chunk overlap, e.g. 30", required = false)
+            @Parameter(name = "chunk-overlap", description = "Chunk overlap, e.g. 30", required = false)
             @RequestParam(value = "chunk-overlap", required = false) Integer chunkOverlap,
             HttpServletRequest request) {
 
@@ -788,19 +809,19 @@ public class DomainController {
      * Add third-party RAG as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/third-party-rag", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add third-party RAG as knowledge source")
+    @Operation(summary="Add third-party RAG as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceThirdPartyRAG(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'Law Assistant RAG'",required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'Law Assistant RAG'",required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "endpoint-url", value = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = true)
+            @Parameter(name = "endpoint-url", description = "Endpoint URL, e.g. http://0.0.0.0:8000/chat", required = true)
             @RequestParam(value = "endpoint-url", required = true) String endpointUrl,
-            @ApiParam(name = "response-json-pointer", value = "Response / Answer JSON pointer, e.g. '/data/content' or '/response/docs/0/content_txt'", required = true)
+            @Parameter(name = "response-json-pointer", description = "Response / Answer JSON pointer, e.g. '/data/content' or '/response/docs/0/content_txt'", required = true)
             @RequestParam(value = "response-json-pointer", required = true) String responseJsonPointer,
-            @ApiParam(name = "reference-json-pointer", value = "Reference / Source JSON pointer, e.g. '/data/reasoning_thread/0/result/art_para/0' or '/response/docs/0/id'", required = false)
+            @Parameter(name = "reference-json-pointer", description = "Reference / Source JSON pointer, e.g. '/data/reasoning_thread/0/result/art_para/0' or '/response/docs/0/id'", required = false)
             @RequestParam(value = "reference-json-pointer", required = false) String referenceJsonPointer,
-            @ApiParam(name = "endpoint-payload", value = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false} or {\"query\" : \"{{QUESTION}}\"}", required = true)
+            @Parameter(name = "endpoint-payload", description = "Payload sent to endpoint, e.g. {\"message\":[{\"content\":\"{{QUESTION}}\",\"role\":\"user\"}],\"stream\":false} or {\"query\" : \"{{QUESTION}}\"}", required = true)
             @RequestBody String payload,
             HttpServletRequest request) {
 
@@ -824,21 +845,21 @@ public class DomainController {
      * Add Supabase as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/supabase", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add Supabase as knowledge source")
+    @Operation(summary="Add Supabase as knowledge source")
     public ResponseEntity<?> addKnowledgeSourceSupabase(
-            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "name", value = "Knowledge source name, e.g. 'My Supabase'", required = true)
+            @Parameter(name = "name", description = "Knowledge source name, e.g. 'My Supabase'", required = true)
             @RequestParam(value = "name", required = true) String name,
-            @ApiParam(name = "answer-field-names", value = "Comma separated list of field names, e.g. 'abstract, text'", required = true)
+            @Parameter(name = "answer-field-names", description = "Comma separated list of field names, e.g. 'abstract, text'", required = true)
             @RequestParam(value = "answer-field-names", required = true) String answerFieldNames,
-            @ApiParam(name = "classifications-field-names", value = "Comma separated list of field names, e.g. 'tags, custom_tags, coauthors'", required = true)
+            @Parameter(name = "classifications-field-names", description = "Comma separated list of field names, e.g. 'tags, custom_tags, coauthors'", required = true)
             @RequestParam(value = "classifications-field-names", required = true) String classificationsFieldNames,
-            @ApiParam(name = "question-field-names", value = "Comma separated list of field names, e.g. 'titel'", required = true)
+            @Parameter(name = "question-field-names", description = "Comma separated list of field names, e.g. 'titel'", required = true)
             @RequestParam(value = "question-field-names", required = true) String questionFieldNames,
-            @ApiParam(name = "url", value = "Base URL, e.g. 'https://repid.ch'", required = true)
+            @Parameter(name = "url", description = "Base URL, e.g. 'https://repid.ch'", required = true)
             @RequestParam(value = "url", required = true) String url,
-            @ApiParam(name = "chunk-size", value = "Chunk size, e.g. 1000", required = false, defaultValue = "1000")
+            @Parameter(name = "chunk-size", description = "Chunk size, e.g. 1000", required = false, schema = @Schema(defaultValue = "1000"))
             @RequestParam(value = "chunk-size", required = false) Integer chunkSize,
             HttpServletRequest request) {
 
@@ -862,11 +883,11 @@ public class DomainController {
      * Delete a particular knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete a particular knowledge source.")
+    @Operation(summary="Delete a particular knowledge source.")
     public ResponseEntity<?> deleteKnowledgeSource(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
             HttpServletRequest request) {
 
@@ -890,13 +911,13 @@ public class DomainController {
      * Trigger a particular Directus based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-directus", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Directus based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Directus based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceDirectus(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Directus", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Directus", required = true)
             @RequestBody WebhookPayloadDirectus payload,
             HttpServletRequest request) {
 
@@ -923,16 +944,20 @@ public class DomainController {
      * Trigger a particular Supabase based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-supabase", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Supabase based knowledge source by a webhook")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Trigger a particular Supabase based knowledge source by a webhook")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> triggerKnowledgeSourceSupabase(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Supabase", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Supabase", required = true)
             @RequestBody WebhookPayloadSupabase payload,
             HttpServletRequest request) {
 
@@ -969,13 +994,13 @@ public class DomainController {
      * Trigger a particular TOPdesk based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular TOPdesk based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular TOPdesk based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceTOPdesk(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents", required = true)
             @RequestBody WebhookPayloadTOPdesk payload,
             HttpServletRequest request) {
 
@@ -996,13 +1021,13 @@ public class DomainController {
      * Trigger a particular Discourse based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Supabase based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Supabase based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceDiscourse(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Discourse", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Discourse", required = true)
             @RequestBody WebhookPayloadDiscourse payload,
             HttpServletRequest request) {
 
@@ -1026,13 +1051,13 @@ public class DomainController {
      * Get configured Webhooks: GET https://wyona.atlassian.net/wiki/rest/webhooks/1.0/webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-confluence", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Confluence based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Confluence based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceConfluence(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Confluence", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Confluence", required = true)
             @RequestBody WebhookPayloadConfluence payload,
             HttpServletRequest request) {
 
@@ -1059,13 +1084,13 @@ public class DomainController {
      * Trigger a particular Website based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-website", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Website based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Website based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceWebsite(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Website", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Website", required = true)
             @RequestBody WebhookPayloadWebsite payload,
             HttpServletRequest request) {
 
@@ -1092,13 +1117,13 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-outlook", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Outlook based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Outlook based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceOutlook(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Outlook", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Outlook", required = true)
             @RequestBody WebhookPayload payload,
             HttpServletRequest request) {
 
@@ -1126,13 +1151,13 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-onenote", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular OneNote based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular OneNote based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceOneNote(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by OneNote", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by OneNote", required = true)
             @RequestBody WebhookPayloadOneNote payload,
             HttpServletRequest request) {
 
@@ -1160,13 +1185,13 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Trigger a particular Sharepoint based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Sharepoint based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceSharepoint(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @ApiParam(name = "webhook-payload", value = "Webhook payload sent by Sharepoint", required = true)
+            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Sharepoint", required = true)
             @RequestBody WebhookPayload payload,
             HttpServletRequest request) {
 
@@ -1193,9 +1218,9 @@ public class DomainController {
      * Get knowledge sources of a particular domain
      */
     @RequestMapping(value = "/{id}/knowledge-sources", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get knowledge sources of a particular domain")
+    @Operation(summary="Get knowledge sources of a particular domain")
     public ResponseEntity<?> getKnowledgeSources(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -1219,12 +1244,16 @@ public class DomainController {
      * Import Classification dataset from JSON file into a particular domain
      */
     @RequestMapping(value = "/{id}/classification/import-dataset", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Import classification dataset from JSON file into a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Import classification dataset from JSON file into a particular domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> importClassificationDatasetFromFile(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -1271,11 +1300,11 @@ public class DomainController {
      * Get classification dataset of a particular domain
      */
     @RequestMapping(value = "/{id}/classification/dataset", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Get classification dataset")
+    @Operation(summary="Get classification dataset")
     public ResponseEntity<?> getClassificationDataset(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "labels-only", value = "When set to true, then only labels are returned", required = false, defaultValue = "false")
+            @Parameter(name = "labels-only", description = "When set to true, then only labels are returned", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "labels-only", required = false) Boolean labelsOnly,
             HttpServletRequest request) {
 
@@ -1310,13 +1339,17 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="Get classification labels")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getClassificationLabels(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "with-descriptions-only", value = "When set to true, then only labels are returned which contain a description", required = false, defaultValue = "false")
+            @Parameter(name = "with-descriptions-only", description = "When set to true, then only labels are returned which contain a description", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "with-descriptions-only", required = false) Boolean withDescriptionsOnly,
             HttpServletRequest request) {
 
@@ -1367,7 +1400,7 @@ public class DomainController {
     @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="Retrain classifier (using existing samples and with optional new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
     public ResponseEntity<?> retrainClassifier(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             // TODO: Add description for file, e.g. "Preference Dataset" and if not provided, then the existing samples are being used
             @RequestPart(name = "file", required = false) MultipartFile preferenceDataset,
@@ -1462,9 +1495,9 @@ public class DomainController {
      * Get taxonomy entries of a particular domain
      */
     @RequestMapping(value = "/{id}/taxonomy/entries", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get taxonomy entries")
+    @Operation(summary="Get taxonomy entries")
     public ResponseEntity<?> getTaxonomyEntries(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -1501,11 +1534,11 @@ public class DomainController {
      * Add multiple taxonomy entries
      */
     @RequestMapping(value = "/{id}/taxonomy/entries", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add multiple taxomnomy entries, e.g. birthdate, birthplace")
+    @Operation(summary="Add multiple taxomnomy entries, e.g. birthdate, birthplace")
     public ResponseEntity<?> addTaxonomyEntries(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "entries", value = "Array of entries", required = true)
+            @Parameter(name = "entries", description = "Array of entries", required = true)
             @RequestBody String[] entries,
             HttpServletRequest request) {
 
@@ -1529,9 +1562,9 @@ public class DomainController {
      * Get autocompletion entries of a particular domain
      */
     @RequestMapping(value = "/{id}/autocompletion/entries", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get autocompletion entries")
+    @Operation(summary="Get autocompletion entries")
     public ResponseEntity<?> getAutocompletionEntries(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -1568,11 +1601,11 @@ public class DomainController {
      * Add multiple autocompletion entries
      */
     @RequestMapping(value = "/{id}/autocompletion/entries", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add multiple autocompletion entries / questions")
+    @Operation(summary="Add multiple autocompletion entries / questions")
     public ResponseEntity<?> addAutocompletionEntries(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "entries", value = "Array of entries", required = true)
+            @Parameter(name = "entries", description = "Array of entries", required = true)
             @RequestBody String[] entries,
             HttpServletRequest request) {
 
@@ -1596,11 +1629,11 @@ public class DomainController {
      * Add single autocompletion entry
      */
     @RequestMapping(value = "/{id}/autocompletion/entry", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add single autocompletion entry / question")
+    @Operation(summary="Add single autocompletion entry / question")
     public ResponseEntity<?> addAutocompletionEntry(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "entry", value = "Entry value, e.g. 'mountain' or question, e.g. 'What's the weather expected to be tomorrow?'", required = true)
+            @Parameter(name = "entry", description = "Entry value, e.g. 'mountain' or question, e.g. 'What's the weather expected to be tomorrow?'", required = true)
             @RequestBody Question entry,
             HttpServletRequest request) {
 
@@ -1624,11 +1657,11 @@ public class DomainController {
      * Delete autocompletion entry
      */
     @RequestMapping(value = "/{id}/autocompletion/entry", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete autocompletion entry")
+    @Operation(summary="Delete autocompletion entry")
     public ResponseEntity<?> deleteAutocompletionEntry(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "value", value = "Entry value, e.g. 'speed of light'",required = true)
+            @Parameter(name = "value", description = "Entry value, e.g. 'speed of light'",required = true)
             @RequestParam(value = "value", required = true) String value,
             HttpServletRequest request) {
 
@@ -1652,9 +1685,9 @@ public class DomainController {
      * Get URLs of webpages which contain imported QnAs
      */
     @RequestMapping(value = "/{id}/third-party-urls", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get URLs of webpages which contain imported QnAs")
+    @Operation(summary="Get URLs of webpages which contain imported QnAs")
     public ResponseEntity<?> getThirdPartyUrls(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -1678,9 +1711,9 @@ public class DomainController {
      * Get webhooks of a particular domain
      */
     @RequestMapping(value = "/{id}/webhooks", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get webhooks of a particular domain")
+    @Operation(summary="Get webhooks of a particular domain")
     public ResponseEntity<?> getWebhooks(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -1704,11 +1737,11 @@ public class DomainController {
      * Get deliveries of a particular webhook
      */
     @RequestMapping(value = "/{id}/webhooks/{webhook-id}/deliveries", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get deliveries of a particular webhook")
+    @Operation(summary="Get deliveries of a particular webhook")
     public ResponseEntity<?> getWebhookDeliveries(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "webhook-id", value = "Webhook Id",required = true)
+            @Parameter(name = "webhook-id", description = "Webhook Id",required = true)
             @PathVariable(value = "webhook-id", required = true) String webhookId,
             HttpServletRequest request) {
 
@@ -1732,11 +1765,11 @@ public class DomainController {
      * Delete a particular webhook
      */
     @RequestMapping(value = "/{id}/webhooks/{webhook-id}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete a particular webhook")
+    @Operation(summary="Delete a particular webhook")
     public ResponseEntity<?> deleteWebhook(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "webhook-id", value = "Webhook Id",required = true)
+            @Parameter(name = "webhook-id", description = "Webhook Id",required = true)
             @PathVariable(value = "webhook-id", required = true) String webhookId,
             HttpServletRequest request) {
 
@@ -1760,11 +1793,11 @@ public class DomainController {
      * Add webhook to a particular domain
      */
     @RequestMapping(value = "/{id}/webhook", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add webhook to a particular domain")
+    @Operation(summary="Add webhook to a particular domain")
     public ResponseEntity<?> addWebhook(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "webhook", value = "Webhook, whereas only payloadURL required, e.g. 'https://postman-echo.com/post'", required = true)
+            @Parameter(name = "webhook", description = "Webhook, whereas only payloadURL required, e.g. 'https://postman-echo.com/post'", required = true)
             @RequestBody Webhook webhook,
             HttpServletRequest request) {
 
@@ -1789,33 +1822,37 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/reindex", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Reindex all QnAs of a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> reindex(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "impl", value = "Detect duplicated question implementation",required = true)
+            @Parameter(name = "impl", description = "Detect duplicated question implementation",required = true)
             @RequestParam(value = "impl", required = true) DetectDuplicatedQuestionImpl searchImpl,
-            @ApiParam(name = "query-service-url", value = "Query service base URL (e.g. http://localhost:8383/api/v2) or Azure AI Search endpoint (e.g. https://katie.search.windows.net)", required = false)
+            @Parameter(name = "query-service-url", description = "Query service base URL (e.g. http://localhost:8383/api/v2) or Azure AI Search endpoint (e.g. https://katie.search.windows.net)", required = false)
             @RequestParam(value = "query-service-url", required = false) String queryServiceBaseUrl,
-            @ApiParam(name = "query-service-token", value = "Query service Token / Key / Secret", required = false)
+            @Parameter(name = "query-service-token", description = "Query service Token / Key / Secret", required = false)
             @RequestParam(value = "query-service-token", required = false) String queryServiceToken,
-            @ApiParam(name = "embedding-impl", value = "Embedding implementation",required = false)
+            @Parameter(name = "embedding-impl", description = "Embedding implementation",required = false)
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
-            @ApiParam(name = "embedding-model", value = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
+            @Parameter(name = "embedding-model", description = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
             @RequestParam(value = "embedding-model", required = false) String embeddingModel,
-            @ApiParam(name = "embedding-value-type", value = "Embedding value type",required = false)
+            @Parameter(name = "embedding-description-type", description = "Embedding value type",required = false)
             @RequestParam(value = "embedding-value-type", required = false) EmbeddingValueType embeddingValueType,
-            @ApiParam(name = "embedding-endpoint", value = "OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings", required = false)
+            @Parameter(name = "embedding-endpoint", description = "OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings", required = false)
             @RequestParam(value = "embedding-endpoint", required = false) String embeddingEndpoint,
-            @ApiParam(name = "api-token", value = "Embedding implementation API token",required = false)
+            @Parameter(name = "api-token", description = "Embedding implementation API token",required = false)
             @RequestParam(value = "api-token", required = false) String apiToken,
-            @ApiParam(name = "index-alternative-questions", value = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
+            @Parameter(name = "index-alternative-questions", description = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
             @RequestParam(value = "index-alternative-questions", required = false) Boolean indexAlternativeQuestions,
-            @ApiParam(name = "index-all-qnas", value = "Default is false, but when set to true, then also index QnAs which were not indexed yet",required = false)
+            @Parameter(name = "index-all-qnas", description = "Default is false, but when set to true, then also index QnAs which were not indexed yet",required = false)
             @RequestParam(value = "index-all-qnas", required = false) Boolean indexAllQnAs,
-            @ApiParam(name = "throttle-time", value = "Throttle time in milliseconds",required = false)
+            @Parameter(name = "throttle-time", description = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
             HttpServletRequest request) {
 
@@ -1901,11 +1938,11 @@ public class DomainController {
      * Invite user by email to a particular domain
      */
     @RequestMapping(value = "/{id}/invite-user", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Invite user by email to a particular domain")
+    @Operation(summary="Invite user by email to a particular domain")
     public ResponseEntity<?> inviteUser(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "email", value = "Email of invited user",required = true)
+            @Parameter(name = "email", description = "Email of invited user",required = true)
             @RequestParam(value = "email", required = true) String email,
             HttpServletRequest request) {
 
@@ -1943,11 +1980,11 @@ public class DomainController {
      * Add user by username to a particular domain
      */
     @RequestMapping(value = "/{id}/add-user", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add user by username to a particular domain")
+    @Operation(summary="Add user by username to a particular domain")
     public ResponseEntity<?> addUser(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "username", value = "Username",required = true)
+            @Parameter(name = "username", description = "Username",required = true)
             @RequestParam(value = "username", required = true) String username,
             HttpServletRequest request) {
 
@@ -1982,11 +2019,11 @@ public class DomainController {
      * Remove user as member from a particular domain
      */
     @RequestMapping(value = "/{id}/remove-user", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Remove user as member from a particular domain")
+    @Operation(summary = "Remove user as member from a particular domain")
     public ResponseEntity<?> removeUser(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "username", value = "Username of domain member",required = true)
+            @Parameter(name = "username", description = "Username of domain member",required = true)
             @RequestParam(value = "username", required = true) String username,
             HttpServletRequest request) {
 
@@ -2014,11 +2051,11 @@ public class DomainController {
      * Get all members of a particular domain
      */
     @RequestMapping(value = "/{id}/users", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all members of a particular domain")
+    @Operation(summary="Get all members of a particular domain")
     public ResponseEntity<?> getMembers(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "property", value = "User domain property (EXPERT or MODERATOR)", required = false)
+            @Parameter(name = "property", description = "User domain property (EXPERT or MODERATOR)", required = false)
             @RequestParam(value = "property", required = false) DomainProperty property,
             HttpServletRequest request) {
 
@@ -2055,11 +2092,11 @@ public class DomainController {
      * Update IMAP configuration
      */
     @RequestMapping(value = "/{id}/imap-configuration", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Update IMAP configuration")
+    @Operation(summary="Update IMAP configuration")
     public ResponseEntity<?> updateIMAPConfiguration(
-            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String domainId,
-            @ApiParam(name = "imap_config", value = "IMAP configuration", required = true)
+            @Parameter(name = "imap_config", description = "IMAP configuration", required = true)
             @RequestBody IMAPConfiguration imapConfiguration,
             HttpServletRequest request) {
 
@@ -2081,11 +2118,11 @@ public class DomainController {
      * Update match reply-to email address
      */
     @RequestMapping(value = "/{id}/match-reply-to-email", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Update match reply-to email address")
+    @Operation(summary="Update match reply-to email address")
     public ResponseEntity<?> updateMatchReplyToEmailAddress(
-            @ApiParam(name = "id", value = "Domain Id", required = true)
+            @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String domainId,
-            @ApiParam(name = "emails", value = "Match reply-to emails", required = true)
+            @Parameter(name = "emails", description = "Match reply-to emails", required = true)
             @RequestBody MatchReplyToEmails emails,
             HttpServletRequest request) {
 
@@ -2109,9 +2146,9 @@ public class DomainController {
     @RequestMapping(value = "/{id}/user/{username}/moderator", method = RequestMethod.PUT, produces = "application/json")
     @Operation(summary="Toggle whether a particular user is a moderator")
     public ResponseEntity<?> toggleModerator(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String domainId,
-            @ApiParam(name = "username", value = "Username",required = true)
+            @Parameter(name = "username", description = "Username",required = true)
             @PathVariable(value = "username", required = true) String userName,
             HttpServletRequest request) {
 
@@ -2146,11 +2183,11 @@ public class DomainController {
      * Toggle whether a particular user is an expert
      */
     @RequestMapping(value = "/{id}/user/{username}/expert", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether a particular user is an expert")
+    @Operation(summary="Toggle whether a particular user is an expert")
     public ResponseEntity<?> toggleExpert(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String domainId,
-            @ApiParam(name = "username", value = "Username",required = true)
+            @Parameter(name = "username", description = "Username",required = true)
             @PathVariable(value = "username", required = true) String userName,
             HttpServletRequest request) {
 
@@ -2185,9 +2222,9 @@ public class DomainController {
      * Toggle whether answers of domain should be generally protected or public
      */
     @RequestMapping(value = "/{id}/answers-generally-protected", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether answers of domain should be generally protected or public")
+    @Operation(summary="Toggle whether answers of domain should be generally protected or public")
     public ResponseEntity<?> toggleAnswersGenerallyProtected(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2213,9 +2250,9 @@ public class DomainController {
      * Toggle whether human feedback should be considered when answering questions
      */
     @RequestMapping(value = "/{id}/consider-human-feedback", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether human feedback should be considered when answering questions")
+    @Operation(summary="Toggle whether human feedback should be considered when answering questions")
     public ResponseEntity<?> toggleConsiderHumanFeedback(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2241,9 +2278,9 @@ public class DomainController {
      * Toggle whether answers should be generated / completed
      */
     @RequestMapping(value = "/{id}/generate-answers", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether answers should be generated / completed")
+    @Operation(summary="Toggle whether answers should be generated / completed")
     public ResponseEntity<?> toggleGenerateAnswers(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2269,9 +2306,9 @@ public class DomainController {
      * Toggle whether answers should be re-ranked
      */
     @RequestMapping(value = "/{id}/re-rank-answers", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether answers should be re-ranked")
+    @Operation(summary="Toggle whether answers should be re-ranked")
     public ResponseEntity<?> toggleReRankAnswers(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2297,11 +2334,11 @@ public class DomainController {
      * Toggle whether knowledge source is enabled or disabled
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/enable-disable", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether knowledge source is enabled or disabled")
+    @Operation(summary="Toggle whether knowledge source is enabled or disabled")
     public ResponseEntity<?> toggleKnowledgeSourceEnabled(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "ks-id", value = "Knowledge Source Id",required = true)
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
             HttpServletRequest request) {
 
@@ -2334,9 +2371,9 @@ public class DomainController {
      * Toggle whether answers must be approved / moderated
      */
     @RequestMapping(value = "/{id}/moderation", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether answers must be approved / moderated")
+    @Operation(summary="Toggle whether answers must be approved / moderated")
     public ResponseEntity<?> toggleModeration(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2362,9 +2399,9 @@ public class DomainController {
      * Toggle whether user (who asked question) should be informed re moderation
      */
     @RequestMapping(value = "/{id}/moderation/inform", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether user (who asked question) should be informed re moderation")
+    @Operation(summary="Toggle whether user (who asked question) should be informed re moderation")
     public ResponseEntity<?> toggleInformReModeration(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
 
@@ -2390,11 +2427,11 @@ public class DomainController {
      * Toggle whether a particular webhook is active or inactive
      */
     @RequestMapping(value = "/{id}/webhooks/{webhook-id}/active", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Toggle whether a particular webhook is active or inactive")
+    @Operation(summary="Toggle whether a particular webhook is active or inactive")
     public ResponseEntity<?> toggleWebhook(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @ApiParam(name = "webhook-id", value = "Webhook Id",required = true)
+            @Parameter(name = "webhook-id", description = "Webhook Id",required = true)
             @PathVariable(value = "webhook-id", required = true) String webhookId,
             HttpServletRequest request) {
 
