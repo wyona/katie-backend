@@ -9,8 +9,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,12 +18,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to tokenize texts
@@ -49,13 +53,17 @@ public class TokenizerController {
      */
     @RequestMapping(value = "/bert-base-cased", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary="Get bert-base-cased tokenization of text")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getBertBaseCasedTokenization(
-        @ApiParam(name = "domainId", value = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
+        @Parameter(name = "domainId", description = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
         @RequestParam(value = "domainId", required = true) String domainId,
-        @ApiParam(name = "text", value = "Text to be tokenized", required = true)
+        @Parameter(name = "text", description = "Text to be tokenized", required = true)
         @RequestParam(value = "text", required = true) String text,
         HttpServletRequest request) {
 

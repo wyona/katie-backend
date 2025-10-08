@@ -11,13 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.file.AccessDeniedException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to generate and send reports
@@ -40,11 +46,11 @@ public class ReportController {
      */
     @RequestMapping(value = "/current", method = RequestMethod.GET, produces = "application/json")
     //@RequestMapping(value = "/current", method = RequestMethod.GET, produces = "text/html;charset=UTF-8")
-    @ApiOperation(value="Generate report for a particular domain")
+    @Operation(summary="Generate report for a particular domain")
     public ResponseEntity<?> getCurrentSummary(
-        @ApiParam(name = "domainId", value = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
+        @Parameter(name = "domainId", description = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
         @RequestParam(value = "domainId", required = true) String domainId,
-        @ApiParam(name = "lastNumberOfDays", value = "Last number of days for which insights", required = true)
+        @Parameter(name = "lastNumberOfDays", description = "Last number of days for which insights", required = true)
         @RequestParam(value = "lastNumberOfDays", required = true) Integer lastNumberOfDays,
         HttpServletRequest request) {
 

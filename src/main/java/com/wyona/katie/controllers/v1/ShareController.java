@@ -7,7 +7,6 @@ import com.wyona.katie.models.Context;
 import com.wyona.katie.models.ResponseAnswer;
 import com.wyona.katie.models.ShareInformationBody;
 import com.wyona.katie.services.ContextService;
-import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,15 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Locale;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to share information with Katie, e.g. "The best seats in the movie theatre Alba are seats 12 and 13, row 5"
@@ -51,16 +59,11 @@ public class ShareController {
      * REST interface to share information / text  with Katie
      */
     @RequestMapping(value = "/share/{domain-id}/text", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Share information / text / knowledge with Katie, e.g. 'The best seats in the movie theatre Alba are seats 12 and 13, row 5'.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
+    @Operation(summary="Share information / text / knowledge with Katie, e.g. 'The best seats in the movie theatre Alba are seats 12 and 13, row 5'.")
     public ResponseEntity<?> shareInformation(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "information", value = "Text (information required, url optional) which user is sharing with Katie.", required = true)
+            @Parameter(name = "information", description = "Text (information required, url optional) which user is sharing with Katie.", required = true)
             @RequestBody ShareInformationBody information,
             HttpServletRequest request) {
 
@@ -102,16 +105,11 @@ public class ShareController {
      * REST interface to share link / URL
      */
     @RequestMapping(value = "/share/{domain-id}/link", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Share link / URL with Katie, e.g. https://www.wyona.com with Katie")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
+    @Operation(summary="Share link / URL with Katie, e.g. https://www.wyona.com with Katie")
     public ResponseEntity<?> shareLink(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "information", value = "Link / URL which user is sharing with Katie (keywords, url)", required = true)
+            @Parameter(name = "information", description = "Link / URL which user is sharing with Katie (keywords, url)", required = true)
             @RequestBody ShareInformationBody information,
             HttpServletRequest request) {
 
@@ -148,16 +146,11 @@ public class ShareController {
      * REST interface to share client side encrypted credentials with Katie
      */
     @RequestMapping(value = "/share/{domain-id}/credentials", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Share credentials with Katie, whereas make sure credentials are client side encrypted")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
+    @Operation(summary="Share credentials with Katie, whereas make sure credentials are client side encrypted")
     public ResponseEntity<?> shareCredentials(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "information", value = "Credentials which user is sharing with Katie (credentialsHint, encryptedCredentials, clientSideEncryptionAlgorithm)", required = true)
+            @Parameter(name = "information", description = "Credentials which user is sharing with Katie (credentialsHint, encryptedCredentials, clientSideEncryptionAlgorithm)", required = true)
             @RequestBody ShareInformationBody information,
             HttpServletRequest request) {
 
@@ -191,16 +184,11 @@ public class ShareController {
      * REST interface to share shopping list with Katie
      */
     @RequestMapping(value = "/share/{domain-id}/shopping-list", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Share shopping list with Katie")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class),
-            @ApiResponse(code = 403, message = "Forbidden", response = Error.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class)
-    })
+    @Operation(summary="Share shopping list with Katie")
     public ResponseEntity<?> shareShoppingList(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b'.",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "information", value = "Shopping list which user is sharing with Katie (keywords, information)", required = true)
+            @Parameter(name = "information", description = "Shopping list which user is sharing with Katie (keywords, information)", required = true)
             @RequestBody ShareInformationBody information,
             HttpServletRequest request) {
 

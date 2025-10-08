@@ -19,9 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +34,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Slack controller
@@ -81,9 +87,9 @@ public class SlackController {
      * Approve connection of a Slack team/channel with a Katie domain
      */
     @RequestMapping(value = "/connect-team-channel-domain", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Approve connection of a Slack team/channel with a Katie domain")
+    @Operation(summary="Approve connection of a Slack team/channel with a Katie domain")
     public ResponseEntity<?> connectTeamChannelWithDomain(
-            @ApiParam(name = "token", value = "JWT token containing info re team Id, channel Id (private claims: team_id, channel_id) to approve previously requested connection with domain", required = true)
+            @Parameter(name = "token", description = "JWT token containing info re team Id, channel Id (private claims: team_id, channel_id) to approve previously requested connection with domain", required = true)
             @RequestParam(value = "token", required = true) String token,
             HttpServletRequest request) {
         try {
@@ -107,11 +113,11 @@ public class SlackController {
      * Disconnect a team/channel from a domain
      */
     @RequestMapping(value = "/disconnect-team-channel-domain", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Disconnect a team/channel from a domain")
+    @Operation(summary="Disconnect a team/channel from a domain")
     public ResponseEntity<?> disconnectTeamChannelFromDomain(
-            @ApiParam(name = "team-id", value = "Slack Team Id",required = true)
+            @Parameter(name = "team-id", description = "Slack Team Id",required = true)
             @RequestParam(value = "team-id", required = true) String teamId,
-            @ApiParam(name = "channel-id", value = "Slack Channel Id",required = true)
+            @Parameter(name = "channel-id", description = "Slack Channel Id",required = true)
             @RequestParam(value = "channel-id", required = true) String channelId,
             HttpServletRequest request) {
         try {
@@ -132,13 +138,13 @@ public class SlackController {
      * Reroute team/channel to another domain
      */
     @RequestMapping(value = "/reroute-team-channel-domain", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Reroute team/channel to another domain")
+    @Operation(summary="Reroute team/channel to another domain")
     public ResponseEntity<?> reconnectTeamChannelFromDomain(
-            @ApiParam(name = "team-id", value = "Slack Team Id",required = true)
+            @Parameter(name = "team-id", description = "Slack Team Id",required = true)
             @RequestParam(value = "team-id", required = true) String teamId,
-            @ApiParam(name = "channel-id", value = "Slack Channel Id",required = true)
+            @Parameter(name = "channel-id", description = "Slack Channel Id",required = true)
             @RequestParam(value = "channel-id", required = true) String channelId,
-            @ApiParam(name = "domain-id", value = "Katie Domain Id",required = true)
+            @Parameter(name = "domain-id", description = "Katie Domain Id",required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
             HttpServletRequest request) {
         try {
@@ -158,7 +164,7 @@ public class SlackController {
      *
      */
     @RequestMapping(value = "/domains", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all domains which are connected with Slack Teams / Channels")
+    @Operation(summary="Get all domains which are connected with Slack Teams / Channels")
     public ResponseEntity<?> getDomains() {
         try {
             SlackDomainMapping[] mappings = domainService.getMappings();
@@ -172,9 +178,9 @@ public class SlackController {
      * Get all Slack channels which are connected with a particular Katie domain
      */
     @RequestMapping(value = "/domain/{id}/channels", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all Slack channels which are connected with a particular Katie domain")
+    @Operation(summary="Get all Slack channels which are connected with a particular Katie domain")
     public ResponseEntity<?> getChannels(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request
     ) {
@@ -190,11 +196,11 @@ public class SlackController {
      * Get most recent messages from a particular Slack team / channel
      */
     @RequestMapping(value = "/sync/{team_id}/{channel_id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get most recent messages from a particular Slack team / channel")
+    @Operation(summary="Get most recent messages from a particular Slack team / channel")
     public ResponseEntity<?> sync(
-            @ApiParam(name = "team_id", value = "Slack team Id",required = true)
+            @Parameter(name = "team_id", description = "Slack team Id",required = true)
             @PathVariable(value = "team_id", required = true) String teamId,
-            @ApiParam(name = "channel_id", value = "Slack channel Id",required = true)
+            @Parameter(name = "channel_id", description = "Slack channel Id",required = true)
             @PathVariable(value = "channel_id", required = true) String channelId,
             HttpServletRequest request
     ) {
@@ -210,11 +216,11 @@ public class SlackController {
      * OAuth2 callback for Slack
      */
     @RequestMapping(value = "/oauth2-callback", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="SLACK: OAuth2 callback for Slack for default App")
+    @Operation(summary="SLACK: OAuth2 callback for Slack for default App")
     public ResponseEntity<?> oauth2CallbackSlack(
-            @ApiParam(name = "state", value = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
+            @Parameter(name = "state", description = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
             @RequestParam(value = "state", required = false) String state,
-            @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
+            @Parameter(name = "code", description = "Temporary authorization code in order to exchange for an access token",required = true)
             @RequestParam(value = "code", required = true) String code,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -239,13 +245,13 @@ public class SlackController {
      * OAuth2 callback for Slack for custom App
      */
     @RequestMapping(value = "/oauth2-callback/{custom_client_id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="SLACK: OAuth2 callback for Slack for custom App")
+    @Operation(summary="SLACK: OAuth2 callback for Slack for custom App")
     public ResponseEntity<?> oauth2CallbackSlackCustom(
-            @ApiParam(name = "state", value = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
+            @Parameter(name = "state", description = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = false)
             @RequestParam(value = "state", required = false) String state,
-            @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
+            @Parameter(name = "code", description = "Temporary authorization code in order to exchange for an access token",required = true)
             @RequestParam(value = "code", required = true) String code,
-            @ApiParam(name = "custom_client_id", value = "Custom Client ID",required = true)
+            @Parameter(name = "custom_client_id", description = "Custom Client ID",required = true)
             @PathVariable(value = "custom_client_id", required = true) String customClientId,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -325,7 +331,7 @@ public class SlackController {
      * REST interface to handle Slack events (also see https://api.slack.com/apps/A0184KMLJJE/event-subscriptions)
      */
     @RequestMapping(value = "/events", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="SLACK: Handle Slack events")
+    @Operation(summary="SLACK: Handle Slack events")
     //public ResponseEntity<?> handleEvents(@RequestBody SlackEventWrapper event,
     public ResponseEntity<?> handleEvents(HttpServletRequest request) {
 
@@ -378,7 +384,7 @@ public class SlackController {
 payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018A7XUWSY%22%2C%22username%22%3A%22michael.wechner%22%2C%22name%22%3A%22michael.wechner%22%2C%22team_id%22%3A%22T01848J69AP%22%7D%2C%22api_app_id%22%3A%22A0184KMLJJE%22%2C%22token%22%3A%22hoMub0zJ8kMXIxgqFgrDIc3x%22%2C%22container%22%3A%7B%22type%22%3A%22message%22%2C%22message_ts%22%3A%221600724836.000800%22%2C%22channel_id%22%3A%22C017PA1MC1M%22%2C%22is_ephemeral%22%3Afalse%7D%2C%22trigger_id%22%3A%221364028095735.1276290213363.94dfc599c4ba788c5f2b9e8ab51e5e88%22%2C%22team%22%3A%7B%22id%22%3A%22T01848J69AP%22%2C%22domain%22%3A%22wyonaworkspace%22%7D%2C%22channel%22%3A%7B%22id%22%3A%22C017PA1MC1M%22%2C%22name%22%3A%22allgemein%22%7D%2C%22message%22%3A%7B%22bot_id%22%3A%22B018B5MRHFW%22%2C%22type%22%3A%22message%22%2C%22text%22%3A%22The+current+time+is+2020%5C%2F09%5C%2F21+21%3A47%3A16%2C+whereas+also+see+%3Chttps%3A%5C%2F%5C%2Fwww.timeanddate.com%5C%2F%3E%22%2C%22user%22%3A%22U018505QFA6%22%2C%22ts%22%3A%221600724836.000800%22%2C%22team%22%3A%22T01848J69AP%22%2C%22blocks%22%3A%5B%7B%22type%22%3A%22section%22%2C%22block_id%22%3A%221qH%5C%2F%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22The+current+time+is+2020%5C%2F09%5C%2F21+21%3A47%3A16%2C+whereas+also+see+https%3A%5C%2F%5C%2Fwww.timeanddate.com%5C%2F%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22actions%22%2C%22block_id%22%3A%22yqELu%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22button%22%2C%22action_id%22%3A%22bVdPR%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Send+question+to+an+expert+...%22%2C%22emoji%22%3Afalse%7D%7D%5D%7D%5D%7D%2C%22response_url%22%3A%22https%3A%5C%2F%5C%2Fhooks.slack.com%5C%2Factions%5C%2FT00000000%5C%2FB00000000%5C%2FXXXXXXXXXXXXXXXXXXXXXXXX%22%2C%22actions%22%3A%5B%7B%22action_id%22%3A%22bVdPR%22%2C%22block_id%22%3A%22yqELu%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Send+question+to+an+expert+...%22%2C%22emoji%22%3Afalse%7D%2C%22type%22%3A%22button%22%2C%22action_ts%22%3A%221600760697.097898%22%7D%5D%7D
 */
     @RequestMapping(value = "/interactivity", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="SLACK: Handle Slack interactions")
+    @Operation(summary="SLACK: Handle Slack interactions")
     public ResponseEntity<?> handleInteractions(HttpServletRequest request) {
 
         String payload = getRequestBody(request); // INFO: The payload is URL encoded JSON, see https://api.slack.com/messaging/interactivity#components
@@ -412,7 +418,7 @@ payload=%7B%22type%22%3A%22block_actions%22%2C%22user%22%3A%7B%22id%22%3A%22U018
      * REST interface to handle command '/katie' (also see https://api.slack.com/interactivity/slash-commands)
      */
     @RequestMapping(value = "/command/katie", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="SLACK: Handle '/katie' command")
+    @Operation(summary="SLACK: Handle '/katie' command")
     public ResponseEntity<?> commandKatie(HttpServletRequest request) {
 
         String payload = getRequestBody(request);

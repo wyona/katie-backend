@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.integrations.slack.SlackMessageSender;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,9 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 //import org.hibernate.validator.constraints.NotEmpty;
 //import javax.validation.constraints.NotEmpty;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +32,15 @@ import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to get questions (all and resubmitted) (Version 1)
@@ -88,9 +92,9 @@ public class QuestionsController {
      * REST interface to approve answer of asked question
      */
     @RequestMapping(value = "/asked/{qid}/approve", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Approve answer of asked question")
+    @Operation(summary="Approve answer of asked question")
     public ResponseEntity<?> approveAnswerOfAskedQuestion(
-        @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("qid") String qid,
         HttpServletRequest request, HttpServletResponse response) {
 
@@ -209,9 +213,9 @@ public class QuestionsController {
      * REST interface to discard answer of asked question (because maybe there is no meaningful answer)
      */
     @RequestMapping(value = "/asked/{qid}/discard", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Discard answer of asked question")
+    @Operation(summary="Discard answer of asked question")
     public ResponseEntity<?> discardAnswerOfAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -249,9 +253,9 @@ public class QuestionsController {
      * REST interface to ignore answer of asked question (because maybe somebody else already answered)
      */
     @RequestMapping(value = "/asked/{qid}/ignore", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Ignore answer of asked question (because maybe somebody else already answered)")
+    @Operation(summary="Ignore answer of asked question (because maybe somebody else already answered)")
     public ResponseEntity<?> ignoreAnswerOfAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -279,11 +283,11 @@ public class QuestionsController {
      * REST interface to replace suggested answer to asked question
      */
     @RequestMapping(value = "/asked/{qid}/replace", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Replace suggested answer to asked question")
+    @Operation(summary="Replace suggested answer to asked question")
     public ResponseEntity<?> replaceSuggestedAnswerToAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')", required = true)
+            @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')", required = true)
             @PathVariable("qid") String qid,
-            @ApiParam(name = "qna-uuid", value = "UUID of new answer / QnA (e.g. 'a629fdd5-fd6f-41a0-a516-b723aba954e7')", required = true)
+            @Parameter(name = "qna-uuid", description = "UUID of new answer / QnA (e.g. 'a629fdd5-fd6f-41a0-a516-b723aba954e7')", required = true)
             @RequestParam("qna-uuid") String uuid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -316,9 +320,9 @@ public class QuestionsController {
      * REST interface to get a particular asked question
      */
     @RequestMapping(value = "/asked/{qid}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get a particular asked question")
+    @Operation(summary="Get a particular asked question")
     public ResponseEntity<?> getAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -354,9 +358,9 @@ public class QuestionsController {
      */
     //@RequestMapping(value = "/asked/{qid}/email", method = RequestMethod.GET, produces = "application/octet-stream")
     @RequestMapping(value = "/asked/{qid}/email", method = RequestMethod.GET, produces = "text/plain")
-    @ApiOperation(value="Get email containing asked question")
+    @Operation(summary="Get email containing asked question")
     public ResponseEntity<?> getEmailContainingAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "qid", description = "UUID of question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -399,9 +403,9 @@ public class QuestionsController {
      * REST interface to get thread messages of asked question
      */
     @RequestMapping(value = "/asked/{qid}/thread", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get thread messages of asked question")
+    @Operation(summary="Get thread messages of asked question")
     public ResponseEntity<?> getThreadOfAskedQuestion(
-            @ApiParam(name = "qid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "qid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -473,16 +477,20 @@ public class QuestionsController {
      * REST interface to add a thread message / response to an originally asked question
      */
     @RequestMapping(value = "/asked/thread-message", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Add a thread message / response to an originally asked question")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Add a thread message / response to an originally asked question")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> addThreadMessage(
-            @ApiParam(name = "client-message-id", value = "Client message / thread Id", required = true)
+            @Parameter(name = "client-message-id", description = "Client message / thread Id", required = true)
             @RequestParam(value = "client-message-id", required = true) String messageId,
-            @ApiParam(name = "domain-id", value = "Katie domain Id", required = true)
+            @Parameter(name = "domain-id", description = "Katie domain Id", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "message", value = "The 'message' field is required, all other fields are optional", required = true)
+            @Parameter(name = "message", description = "The 'message' field is required, all other fields are optional", required = true)
             @RequestBody ThreadMessage message,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -589,16 +597,16 @@ public class QuestionsController {
      * REST interface to get resubmitted questions
      */
     @RequestMapping(value = "/resubmitted", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all resubmitted questions")
+    @Operation(summary="Get all resubmitted questions")
     public ResponseEntity<?> getResubmittedQuestions(
-        @ApiParam(name = "status", value = "Status of resubmitted questions (e.g. 'answer-pending', 'answered-and-ready-to-send', 'answer-sent', 'answer-rated', 'trained-with-answer')",required = false)
+        @Parameter(name = "status", description = "Status of resubmitted questions (e.g. 'answer-pending', 'answered-and-ready-to-send', 'answer-sent', 'answer-rated', 'trained-with-answer')",required = false)
         @RequestParam(value = "status", required = false) String status,
-        @ApiParam(name = "contextId", value = "Context Id of resubmitted questions (e.g. 'wyona' or 'ROOT')",required = false)
+        @Parameter(name = "contextId", description = "Context Id of resubmitted questions (e.g. 'wyona' or 'ROOT')",required = false)
         @RequestParam(value = "contextId", required = false) String contextId,
         // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#pagination
-        @ApiParam(name = "limit", value = "Pagination: Limit the number of returned resubmitted questions",required = true)
+        @Parameter(name = "limit", description = "Pagination: Limit the number of returned resubmitted questions",required = true)
         @RequestParam(value = "limit", required = true) int limit,
-        @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned resubmitted questions",required = true)
+        @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned resubmitted questions",required = true)
         @RequestParam(value = "offset", required = true) int offset,
         HttpServletRequest request, HttpServletResponse response) {
 
@@ -638,13 +646,13 @@ public class QuestionsController {
     @RequestMapping(value = "/asked", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary="Get all questions asked")
     public ResponseEntity<?> getQuestionsAsked(
-        @ApiParam(name = "contextId", value = "Domain Id of asked questions (e.g. 'wyona' or 'ROOT')",required = false)
+        @Parameter(name = "contextId", description = "Domain Id of asked questions (e.g. 'wyona' or 'ROOT')",required = false)
         @RequestParam(value = "contextId", required = false) String contextId,
-        @ApiParam(name = "limit", value = "Pagination: Limit the number of returned questions",required = true, defaultValue = "10")
+        @Parameter(name = "limit", description = "Pagination: Limit the number of returned questions",required = true, schema = @Schema(defaultValue = "10"))
         @RequestParam(value = "limit", required = true) int limit,
-        @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned questions",required = true, defaultValue = "0")
+        @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned questions",required = true, schema = @Schema(defaultValue = "0"))
         @RequestParam(value = "offset", required = true) int offset,
-        @ApiParam(name = "unanswered", value = "When set to true, then only return unanswered questions",required = false)
+        @Parameter(name = "unanswered", description = "When set to true, then only return unanswered questions",required = false)
         @RequestParam(value = "unanswered", required = false) Boolean unanswered,
         HttpServletRequest request, HttpServletResponse response) {
         log.info("Get all asked questions");
@@ -686,13 +694,17 @@ public class QuestionsController {
      */
     @RequestMapping(value = "/asked", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Delete all questions asked by a particular user or by anonymous users when domain public and users not signed in")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> deleteQuestionsAsked(
-            @ApiParam(name = "user-id", value = "User Id (e.g. 'superadmin') or empty string when deleting questions asked by anonymous users", required = false)
+            @Parameter(name = "user-id", description = "User Id (e.g. 'superadmin') or empty string when deleting questions asked by anonymous users", required = false)
             @RequestParam(value = "user-id", required = false) String userId,
-            @ApiParam(name = "domain-id", value = "Domain Id, e.g. 'd99008db-78e8-46de-864c-0dfe10f88125'", required = true)
+            @Parameter(name = "domain-id", description = "Domain Id, e.g. 'd99008db-78e8-46de-864c-0dfe10f88125'", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -735,9 +747,9 @@ public class QuestionsController {
      * REST interface to get index of all trained questions/answers of a particular domain
      */
     @RequestMapping(value = "/trained/index", method = RequestMethod.GET, produces = "text/plain")
-    @ApiOperation(value="Get index (UUID and question) of all trained QnAs of a particular domain")
+    @Operation(summary="Get index (UUID and question) of all trained QnAs of a particular domain")
     public ResponseEntity<?> getTrainedQuestionsIndex(
-        @ApiParam(name = "domainId", value = "Domain Id of resubmitted questions (e.g. 'wyona' or 'ROOT')",required = true)
+        @Parameter(name = "domainId", description = "Domain Id of resubmitted questions (e.g. 'wyona' or 'ROOT')",required = true)
         @RequestParam(value = "domainId", required = true) String domainId,
         HttpServletRequest request, HttpServletResponse response) {
 
@@ -773,17 +785,21 @@ public class QuestionsController {
      * REST interface to get all trained questions/answers of a particular domain
      */
     @RequestMapping(value = "/trained", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all trained QnAs of a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Get all trained QnAs of a particular domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getTrainedQuestions(
-            @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
+            @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#pagination@ApiParam(name = "limit", value = "Pagination: Limit the number of returned trained QnAs", required = false)
-            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned trained QnAs", required = false)
+            // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#pagination@Parameter(name = "limit", value = "Pagination: Limit the number of returned trained QnAs", required = false)
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned trained QnAs", required = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned trained QnAs", required = false)
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned trained QnAs", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -843,11 +859,15 @@ public class QuestionsController {
      */
     @RequestMapping(value = "/trained", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Delete all trained QnAs of a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> deleteTrainedQnAs(
-            @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
+            @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -889,12 +909,16 @@ public class QuestionsController {
      * REST interface to delete all questions/answers (trained and not trained) of a particular domain
      */
     @RequestMapping(value = "/all", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete all QnAs (trained and not trained) of a particular domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Delete all QnAs (trained and not trained) of a particular domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> deleteAllQnAs(
-            @ApiParam(name = "domainId", value = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
+            @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             HttpServletRequest request, HttpServletResponse response) {
 

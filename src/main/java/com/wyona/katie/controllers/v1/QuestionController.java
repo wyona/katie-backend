@@ -25,10 +25,6 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 //import org.hibernate.validator.constraints.NotEmpty;
 //import javax.validation.constraints.NotEmpty;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiImplicitParam;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +36,15 @@ import java.util.*;
 import java.io.StringWriter;
 
 import freemarker.template.Template;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to get questions (all and resubmitted) (Version 1)
@@ -109,14 +114,18 @@ public class QuestionController {
      * REST interface to add/train a new QnA
      */
     @RequestMapping(value = "/trained/{domainid}", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value = "Add a new QnA to domain and train QnA once added")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary = "Add a new QnA to domain and train QnA once added")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> addQuestionAndAnswer(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "newQnA", value = "Only needs to contain originalQuestion and answer", required = true)
+            @Parameter(name = "newQnA", description = "Only needs to contain originalQuestion and answer", required = true)
             @RequestBody Answer newQnA
     ) {
         log.info("Add new QnA to domain '" + domainid + "': " + newQnA.getOriginalquestion() + " | " + newQnA.getAnswer());
@@ -148,14 +157,18 @@ public class QuestionController {
      * REST interface to get a trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value = "Get a particular trained QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary = "Get a particular trained QnA")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getTrainedQnA(
-        @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+        @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
         @PathVariable("domainid") String domainid,
-        @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid
         ) {
         log.info("Get trained question/answer '" + domainid + "' / '" + uuid + "' ...");
@@ -195,16 +208,20 @@ public class QuestionController {
      * REST interface to get only answer of a trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/answer", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value = "Get only answer of a particular trained QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary = "Get only answer of a particular trained QnA")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getTrainedAnswer(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "content-type", value = "When set, then try to return answer as selected content type, otherwise return as saved", required = false)
+            @Parameter(name = "content-type", description = "When set, then try to return answer as selected content type, otherwise return as saved", required = false)
             @RequestParam(value = "content-type", required = false) ContentType outputContentType
     ) {
         log.info("Get answer of trained QnA '" + domainid + "' / '" + uuid + "' ...");
@@ -274,13 +291,13 @@ public class QuestionController {
      * REST interface to update the question of a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/question", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update question of a particular trained QnA")
+    @Operation(summary = "Update question of a particular trained QnA")
     public ResponseEntity<?> updateTrainedQuestion(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "question", value = "Updated question", required = true) @RequestBody Question question
+            @Parameter(name = "question", description = "Updated question", required = true) @RequestBody Question question
     ) {
         log.info("Update question of trained QnA '" + domainid + "' / '" + uuid + "': " + question.getQuestion());
         try {
@@ -300,13 +317,13 @@ public class QuestionController {
      * REST interface to update the source URL of a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/source-url", method = RequestMethod.PATCH, produces = "application/json")
-    @ApiOperation(value = "Update source URL of a particular trained QnA")
+    @Operation(summary = "Update source URL of a particular trained QnA")
     public ResponseEntity<?> updateSourceURL(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "source-url", value = "Updated source URL (only 'url' parameter necessary)", required = true) @RequestBody QnA qna
+            @Parameter(name = "source-url", description = "Updated source URL (only 'url' parameter necessary)", required = true) @RequestBody QnA qna
     ) {
         log.info("Update source URL of trained QnA '" + domainid + "' / '" + uuid + "': " + qna.getUrl());
         try {
@@ -326,14 +343,18 @@ public class QuestionController {
      * REST interface to extract auto-suggest terms from QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/autocompletion-terms", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value = "Exract auto-suggest terms from QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary = "Exract auto-suggest terms from QnA")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getExtractedSuggestions(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid
     ) {
         log.info("Get trained question/answer '" + domainid + "' / '" + uuid + "' ...");
@@ -386,13 +407,13 @@ public class QuestionController {
      * REST interface to add an alternative question to a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/alternative-question", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value = "Add alternative question to a particular trained QnA")
+    @Operation(summary = "Add alternative question to a particular trained QnA")
     public ResponseEntity<?> addAlternativeQuestion(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "question", value = "Alternative question", required = true) @RequestBody Question question
+            @Parameter(name = "question", description = "Alternative question", required = true) @RequestBody Question question
     ) {
         log.info("Add alternative question to trained QnA '" + domainid + "' / '" + uuid + "': " + question.getQuestion());
         try {
@@ -412,13 +433,13 @@ public class QuestionController {
      * REST interface to delete an alternative question of a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/alternative-question/{index}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value = "Delete alternative question of a particular trained QnA")
+    @Operation(summary = "Delete alternative question of a particular trained QnA")
     public ResponseEntity<?> deleteAlternativeQuestion(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "index", value = "Position/index of alternative question (e.g. '2')",required = true)
+            @Parameter(name = "index", description = "Position/index of alternative question (e.g. '2')",required = true)
             @PathVariable("index") Integer index
     ) {
         log.info("Delete alternative question of trained QnA '" + domainid + "' / '" + uuid + "': " + index);
@@ -439,13 +460,13 @@ public class QuestionController {
      * REST interface to add a classification to a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/classification", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value = "Add classification to a particular trained QnA")
+    @Operation(summary = "Add classification to a particular trained QnA")
     public ResponseEntity<?> addClassificcation(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "classification", value = "Classification", required = true) @RequestBody Classification classification
+            @Parameter(name = "classification", description = "Classification", required = true) @RequestBody Classification classification
     ) {
         log.info("Add classification to trained QnA '" + domainid + "' / '" + uuid + "': " + classification.getTerm());
         try {
@@ -465,13 +486,13 @@ public class QuestionController {
      * REST interface to delete a classification of a particular trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/classification/{index}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value = "Delete classification of a particular trained QnA")
+    @Operation(summary = "Delete classification of a particular trained QnA")
     public ResponseEntity<?> deleteClassification(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "index", value = "Position/index of classification (e.g. '2')",required = true)
+            @Parameter(name = "index", description = "Position/index of classification (e.g. '2')",required = true)
             @PathVariable("index") Integer index
     ) {
         log.info("Delete classification of trained QnA '" + domainid + "' / '" + uuid + "': " + index);
@@ -492,13 +513,13 @@ public class QuestionController {
      * REST interface to update a trained question/answer
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value = "Update a particular trained QnA")
+    @Operation(summary = "Update a particular trained QnA")
     public ResponseEntity<?> updateTrainedAnswer(
-        @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+        @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
         @PathVariable("domainid") String domainid,
-        @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid,
-        @ApiParam(name = "updatedAnswer", value = "Only needs to contain answer", required = true) @RequestBody Answer updatedAnswer
+        @Parameter(name = "updatedAnswer", description = "Only needs to contain answer", required = true) @RequestBody Answer updatedAnswer
         ) {
         log.info("Update answer of trained question/answer '" + domainid + "' / '" + uuid + "': " + updatedAnswer.getAnswer());
         try {
@@ -533,13 +554,13 @@ public class QuestionController {
      * REST interface to share a trained QnA with somebody else
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/share", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value = "Share a particular trained question/answer with somebody else")
+    @Operation(summary = "Share a particular trained question/answer with somebody else")
     public ResponseEntity<?> shareQnAWithSomebodyElse(
-            @ApiParam(name = "domainid", value = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained question/answer (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "email", value = "Email of user information will be shared with",required = true)
+            @Parameter(name = "email", description = "Email of user information will be shared with",required = true)
             @RequestParam(value = "email", required = true) String email
     ) {
         log.info("Share trained question/answer '" + domainid + "' / '" + uuid + "' with '" + email + "' ...");
@@ -560,11 +581,11 @@ public class QuestionController {
      * REST interface to delete trained QnA for example by backend team member
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete a particular trained QnA")
+    @Operation(summary="Delete a particular trained QnA")
     public ResponseEntity<?> deleteTrainedQnA(
-            @ApiParam(name = "domainid", value = "Domain Id trained QnA is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained QnA is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "uuid", value = "UUID of trained QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of trained QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid
     ) {
         log.info("Try to delete trained QnA '" + domainid + "/" + uuid + "' ...");
@@ -597,11 +618,11 @@ public class QuestionController {
      * REST interface to get resubmitted question
      */
     @RequestMapping(value = "/resubmitted/{uuid}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value = "Get a particular resubmitted question")
+    @Operation(summary = "Get a particular resubmitted question")
     public ResponseEntity<?> getResubmittedQuestion(
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid,
-        @ApiParam(name = "analyze", value = "True when question should be analyzed using NER and false otherwise",required = false)
+        @Parameter(name = "analyze", description = "True when question should be analyzed using NER and false otherwise",required = false)
         @RequestParam(value = "analyze", required = false) boolean analyze
         ) {
         log.info("Get resubmitted question '" + uuid + "' ...");
@@ -634,11 +655,11 @@ public class QuestionController {
      * REST interface to update question of resubmitted question, for example when question contains typos
      */
     @RequestMapping(value = "/resubmitted/{uuid}/question", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Update question of a particular resubmitted question, for example when question contains typos")
+    @Operation(summary="Update question of a particular resubmitted question, for example when question contains typos")
     public ResponseEntity<?> updateQuestionOfResubmittedQuestion(
-            @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "question", value = "Only needs to contain question", required = true) @RequestBody ResubmittedQuestion question
+            @Parameter(name = "question", description = "Only needs to contain question", required = true) @RequestBody ResubmittedQuestion question
     ) { // TODO: Replace @RequestBody ResubmittedQuestion by @RequestBody Answer
         log.info("Update question of resubmitted question '" + uuid + "' ...");
 
@@ -675,11 +696,11 @@ public class QuestionController {
      * REST interface to update the answer of a resubmitted question for example by a backend team member in order to answer a question
      */
     @RequestMapping(value = "/resubmitted/{uuid}", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Answer a particular resubmitted question")
+    @Operation(summary="Answer a particular resubmitted question")
     public ResponseEntity<?> answerResubmittedQuestion(
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid,
-        @ApiParam(name = "answeredQuestion", value = "Only needs to contain answer", required = true) @RequestBody ResubmittedQuestion answeredQuestion
+        @Parameter(name = "answeredQuestion", description = "Only needs to contain answer", required = true) @RequestBody ResubmittedQuestion answeredQuestion
         ) { // TODO: Replace @RequestBody ResubmittedQuestion by @RequestBody Answer
         log.info("Update answer of resubmitted question '" + uuid + "' ...");
 
@@ -726,9 +747,9 @@ public class QuestionController {
      * REST interface to delete resubmitted question for example by backend team member
      */
     @RequestMapping(value = "/resubmitted/{uuid}", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Delete a particular resubmitted question")
+    @Operation(summary="Delete a particular resubmitted question")
     public ResponseEntity<?> deleteResubmittedQuestion(
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid
         ) {
         log.info("Delete resubmitted question '" + uuid + "' ...");
@@ -765,9 +786,9 @@ public class QuestionController {
      * REST interface to send answer to user which resubmitted question
      */
     @RequestMapping(value = "/resubmitted/{uuid}/sendAnswer", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Send answer back to user which resubmitted question")
+    @Operation(summary="Send answer back to user which resubmitted question")
     public ResponseEntity<?> sendAnswerToUserWhichResubmittedQuestion(
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid
         ) {
         log.info("Get QnA '" + uuid + "' ...");
@@ -940,11 +961,11 @@ public class QuestionController {
      * REST interface such that user which resubmitted question can view answer of respondent
      */
     @RequestMapping(value = "/resubmitted/{domainid}/{uuid}/answer", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get answer to resubmitted question")
+    @Operation(summary="Get answer to resubmitted question")
     public ResponseEntity<?> getRepliedAnswer(
-        @ApiParam(name = "domainid", value = "Domain Id resubmitted question is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+        @Parameter(name = "domainid", description = "Domain Id resubmitted question is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
         @PathVariable("domainid") String domainid,
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid
         ) {
         log.info("Get answer to resubmitted question '" + uuid + "' of domain '" + domainid + "' ...");
@@ -996,17 +1017,21 @@ public class QuestionController {
      * TODO: See for example git@github.com:wyona/katie-4-faq.git
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rateAnswer", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Rate answer to question")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Rate answer to question")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     @Deprecated
     public ResponseEntity<?> rateAnswer(
-            @ApiParam(name = "uuid", value = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String quuid,
-            @ApiParam(name = "domainid", value = "Domain Id question and answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id question and answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "rating", value = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
+            @Parameter(name = "rating", description = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
             @RequestBody Rating rating,
             HttpServletRequest request,
             HttpServletResponse response
@@ -1072,16 +1097,20 @@ public class QuestionController {
      * REST interface such that user can rate a QnA
      */
     @RequestMapping(value = "/resubmitted/{domainid}/{uuid}/rateQnA", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Rate QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Rate QnA")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> rateQnA(
-            @ApiParam(name = "uuid", value = "UUID of QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+            @Parameter(name = "uuid", description = "UUID of QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,
-            @ApiParam(name = "domainid", value = "Domain Id QnA is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id QnA is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
-            @ApiParam(name = "rating", value = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
+            @Parameter(name = "rating", description = "User rating re replied answer, between 0 and 10, whereas 0 means not helpful and 10 means very helpful", required = true)
             @RequestBody Rating rating,
             HttpServletRequest request,
             HttpServletResponse response
@@ -1146,9 +1175,9 @@ public class QuestionController {
      * REST interface to trigger training of AI service with resubmitted question and associated answer
      */
     @RequestMapping(value = "/resubmitted/{uuid}/train", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Trigger training of AI service with resubmitted question and associated answer")
+    @Operation(summary="Trigger training of AI service with resubmitted question and associated answer")
     public ResponseEntity<?> trainAIWithResubmittedQuestionAndAssociatedAnswer(
-        @ApiParam(name = "uuid", value = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
+        @Parameter(name = "uuid", description = "UUID of resubmitted question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
         @PathVariable("uuid") String uuid
         ) {
         log.info("Get resubmitted question '" + uuid + "' ...");
