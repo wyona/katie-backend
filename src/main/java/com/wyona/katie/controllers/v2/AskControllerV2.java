@@ -7,7 +7,6 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.QuestionAnsweringService;
 import com.wyona.katie.services.RememberMeService;
-import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +17,22 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to ask questions (Version 2)
@@ -55,36 +63,35 @@ public class AskControllerV2 {
      * REST interface to get answer(s) for a particular question
      */
     @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
-    })
-    @ApiImplicitParams({
-    @ApiImplicitParam(name = "Authorization", value = "Bearer JWT", 
-                      required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getAnswer(
             //public ResponseEntity<Answer, AnswerError> getAnswer(
-            @ApiParam(name = "question", value = "Question, e.g. 'What is the highest mountain of the world?'", required = true)
+            @Parameter(name = "question", description = "Question, e.g. 'What is the highest mountain of the world?'", required = true)
             @RequestParam(value = "question", required = true) String question,
-            @ApiParam(name = "classification", value = "Classification filter, e.g. 'gravel bike' or 'mountain bike'", required = false)
+            @Parameter(name = "classification", description = "Classification filter, e.g. 'gravel bike' or 'mountain bike'", required = false)
             @RequestParam(value = "classification", required = false) String classification,
-            @ApiParam(name = "questionerLanguage", value = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
+            @Parameter(name = "questionerLanguage", description = "Language code of user asking question, e.g. 'en' or 'de'", required = false)
             @RequestParam(value = "questionerLanguage", required = false) String questionerLanguage,
-            @ApiParam(name = "email", value = "Email address of user asking question (e.g. 'louise@wyona.com'), such that user can be notified by email when answer has been found",required = false)
+            @Parameter(name = "email", description = "Email address of user asking question (e.g. 'louise@wyona.com'), such that user can be notified by email when answer has been found",required = false)
             @RequestParam(value = "email", required = false) String email,
-            @ApiParam(name = "fcm_token", value = "Firebase Cloud Messaging token associated with mobile device of user asking question, such that a push notification can be sent when answer has been found",required = false)
+            @Parameter(name = "fcm_token", description = "Firebase Cloud Messaging token associated with mobile device of user asking question, such that a push notification can be sent when answer has been found",required = false)
             @RequestParam(value = "fcm_token", required = false) String fcmToken,
-            @ApiParam(name = "answer_link_type", value = "Answer link type, for example 'deeplink', which is used for linking answer when user is being notified either by email or push notification",required = false)
+            @Parameter(name = "answer_link_type", description = "Answer link type, for example 'deeplink', which is used for linking answer when user is being notified either by email or push notification",required = false)
             @RequestParam(value = "answer_link_type", required = false) String answerLinkType,
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers, etc.",required = false)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of questions/answers, etc.",required = false)
             @RequestParam(value = "domainId", required = false) String domainId,
-            @ApiParam(name = "limit", value = "Pagination: Limit the number of returned answers, e.g. return 10 answers", required = false)
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned answers, e.g. return 10 answers", required = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            @ApiParam(name = "offset", value = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @ApiParam(name = "accept-content-type", value = "Content type of answer accepted by client, e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'", required = false)
+            @Parameter(name = "accept-content-type", description = "Content type of answer accepted by client, e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'", required = false)
             @RequestParam(value = "accept-content-type", required = false) ContentType acceptContentType,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -114,19 +121,18 @@ public class AskControllerV2 {
      * REST interface to get answer(s) for a particular question
      */
     @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = ResponseAnswer.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Bad Request", response = Error.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> postQuestion(
-            @ApiParam(name = "domain-id", value = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
+            @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "question-and-contact-info", value = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            @Parameter(name = "question-and-contact-info", description = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndContact,
             HttpServletRequest request,
             HttpServletResponse response) {
