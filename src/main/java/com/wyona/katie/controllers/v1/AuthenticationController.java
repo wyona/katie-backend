@@ -12,17 +12,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.security.Principal;
 
 import org.springframework.security.core.Authentication;
@@ -59,9 +63,9 @@ public class AuthenticationController {
     @RequestMapping(value = "/token/generic", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Create generic JWT token (only Administrators)")
     public ResponseEntity<?> generateGenericJWT(
-        @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
+        @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
-        @ApiParam(name = "request-body", value = "Token payload, to set generic and custom claims, like for example custom claims 'endpoint' and 'scope'", required = true)
+        @Parameter(name = "request-body", description = "Token payload, to set generic and custom claims, like for example custom claims 'endpoint' and 'scope'", required = true)
         @RequestBody JWTPayload payload,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -93,13 +97,13 @@ public class AuthenticationController {
     @RequestMapping(value = "/token/katie", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Create a JWT token for a particular Katie user which exists inside the IAM of Katie")
     public ResponseEntity<?> generateJWT(
-        @ApiParam(name = "username", value = "Username (e.g. 'louise@wyona.com' or 'lawrence')",required = true)
+        @Parameter(name = "username", description = "Username (e.g. 'louise@wyona.com' or 'lawrence')",required = true)
         @RequestParam(value = "username", required = true) String username,
-        @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
+        @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
-        @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, defaultValue = "false")
+        @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(defaultValue = "false"))
         @RequestParam(value = "addProfile", required = true) boolean addProfile,
-        @ApiParam(name = "linkAccount", value = "When true, then add JWT to user account",required = true)
+        @Parameter(name = "linkAccount", description = "When true, then add JWT to user account",required = true)
         @RequestParam(value = "linkAccount", required = true) boolean linkWithUserAccount,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -141,9 +145,9 @@ public class AuthenticationController {
     @RequestMapping(value = "/token/myself", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary="Create a JWT token for my own Katie user which exists inside the IAM of Katie")
     public ResponseEntity<?> generateJWTForMyself(
-            @ApiParam(name = "seconds", value = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
+            @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
             @RequestParam(value = "seconds", required = true) long seconds,
-            @ApiParam(name = "addProfile", value = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, defaultValue = "false")
+            @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "addProfile", required = true) boolean addProfile,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -202,11 +206,15 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Login with username/password or JWT token")
-    @ApiImplicitParams({
-    @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                      required = false, dataTypeClass = String.class, paramType = "header") })
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
-        @ApiParam(name = "rememberMe", value = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, defaultValue = "false")
+        @Parameter(name = "rememberMe", description = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, schema = @Schema(defaultValue = "false"))
         @RequestParam(value = "rememberMe", required = false) Boolean rememberMe,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -298,7 +306,7 @@ public class AuthenticationController {
     @RequestMapping(value = "/impersonate", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Impersonate a user")
     public ResponseEntity<?> impersonate(
-            @ApiParam(name = "username", value = "Username of impersonated user",required = true)
+            @Parameter(name = "username", description = "Username of impersonated user",required = true)
             @RequestParam(value = "username", required = true) String username,
             HttpServletRequest request) {
 
