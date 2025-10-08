@@ -62,7 +62,7 @@ public class UtilsService {
             centroid.add(vector);
             //log.debug("Centroid: " + centroid);
         }
-        centroid.scale(new Float(1.0/vectors.length).floatValue());
+        centroid.scale((float)(1.0/vectors.length));
 
         return centroid;
     }
