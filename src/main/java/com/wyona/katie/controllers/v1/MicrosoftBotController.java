@@ -15,9 +15,6 @@ import com.wyona.katie.models.KnowledgeSourceMeta;
 import com.wyona.katie.models.msteams.MSTeamsDomainMapping;
 import com.wyona.katie.models.msteams.MicrosoftBotMessage;
 import com.wyona.katie.services.ContextService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -34,8 +31,6 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.models.msteams.MicrosoftBotMessage;
 import com.wyona.katie.integrations.msteams.MicrosoftMessageSender;
 
-import io.swagger.annotations.ApiOperation;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,6 +45,15 @@ import java.security.spec.X509EncodedKeySpec;
 import java.security.spec.EncodedKeySpec;
 //import java.security.interfaces.RSAPublicKey;
 import java.security.PublicKey;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Microsoft bot controller
@@ -94,13 +98,13 @@ public class MicrosoftBotController {
      * OAuth2 callback for Microsoft
      */
     @RequestMapping(value = "/oauth2-callback", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="MICROSOFT: OAuth2 callback for Microsoft")
+    @Operation(summary="MICROSOFT: OAuth2 callback for Microsoft")
     public ResponseEntity<?> oauth2Callback(
-            @ApiParam(name = "session_state", value = "A unique value that identifies the current user session. This value is a GUID, but should be treated as an opaque value that is passed without examination.",required = true)
+            @Parameter(name = "session_state", description = "A unique value that identifies the current user session. This value is a GUID, but should be treated as an opaque value that is passed without examination.",required = true)
             @RequestParam(value = "session_state", required = true) String sessionState,
-            @ApiParam(name = "state", value = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = true)
+            @Parameter(name = "state", description = "Allows you to prevent an attack by confirming that the state value coming from the response matches the one you sent.",required = true)
             @RequestParam(value = "state", required = true) String state,
-            @ApiParam(name = "code", value = "Temporary authorization code in order to exchange for an access token",required = true)
+            @Parameter(name = "code", description = "Temporary authorization code in order to exchange for an access token",required = true)
             @RequestParam(value = "code", required = true) String code,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -146,7 +150,7 @@ public class MicrosoftBotController {
      * Get all Katie domains which are connected with an Azure Bot configuration
      */
     @RequestMapping(value = "/domains", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all domains which are connected with Azure Bot / MS Teams")
+    @Operation(summary="Get all domains which are connected with Azure Bot / MS Teams")
     public ResponseEntity<?> getDomains() {
         try {
             MSTeamsDomainMapping[] mappings = msDomainService.getMappings();
@@ -160,11 +164,11 @@ public class MicrosoftBotController {
      * Approve connection of a MS team with a Katie domain
      */
     @RequestMapping(value = "/connect-team-domain", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Approve connection of a MS team with a Katie domain")
+    @Operation(summary="Approve connection of a MS team with a Katie domain")
     public ResponseEntity<?> connectTeamWithDomain(
-            @ApiParam(name = "token", value = "JWT token containing info re team Id (private claims: team_id) to approve previously requested connection with domain", required = true)
+            @Parameter(name = "token", description = "JWT token containing info re team Id (private claims: team_id) to approve previously requested connection with domain", required = true)
             @RequestParam(value = "token", required = true) String token,
-            @ApiParam(name = "domain-id", value = "Existing domain Id", required = false)
+            @Parameter(name = "domain-id", description = "Existing domain Id", required = false)
             @RequestParam(value = "domain-id", required = false) String domainIdTMP,
             HttpServletRequest request) {
         try {
@@ -190,13 +194,13 @@ public class MicrosoftBotController {
      * Disconnect a team/channel from a domain
      */
     @RequestMapping(value = "/disconnect-team-channel-domain", method = RequestMethod.DELETE, produces = "application/json")
-    @ApiOperation(value="Disconnect a team/channel from a domain")
+    @Operation(summary="Disconnect a team/channel from a domain")
     public ResponseEntity<?> disconnectTeamChannelFromDomain(
-            @ApiParam(name = "domain-id", value = "Katie Domain Id",required = true)
+            @Parameter(name = "domain-id", description = "Katie Domain Id",required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @ApiParam(name = "team-id", value = "Team Id",required = true)
+            @Parameter(name = "team-id", description = "Team Id",required = true)
             @RequestParam(value = "team-id", required = true) String teamId,
-            @ApiParam(name = "channel-id", value = "Channel Id",required = false)
+            @Parameter(name = "channel-id", description = "Channel Id",required = false)
             @RequestParam(value = "channel-id", required = false) String channelId,
             HttpServletRequest request) {
         try {
@@ -223,10 +227,14 @@ public class MicrosoftBotController {
   POST /api/v1/micrososft/message HTTP/1.1..Host: 127.0.0.1:6060..Authorization: Bearer ew0KIC...qaoZW_DDw-FxbC1Q..User-Agent: BF-DirectLine (Microsoft-BotFramework/3.2 +https://botframework.com/ua)..x-ms-conversation-id: 5fXxxuMPf5gnSy2OnSl67-h..Content-Type: application/json; charset=utf-8..Request-Id: |6954d980-47f8d9d78d8a0d35.14.1...X-Forwarded-For: 13.94.244.42..X-Forwarded-Host: ukatie.com..X-Forwarded-Server: ukatie.com..Connection: Keep-Alive..Content-Length: 504....{"type":"message","id":"5fXxxuMPf5gnSy2OnSl67-h|0000001","timestamp":"2020-08-30T07:09:43.3133668Z","serviceUrl":"https://webchat.botframework.com/","channelId":"webchat","from":{"id":"97b40934-6f23-4705-83dd-a60b8451f784","name":"You"},"conversation":{"id":"5fXxxuMPf5gnSy2OnSl67-h"},"recipient":{"id":"askkatie@BwUXs4nRsbg","name":"Katie"},"textFormat":"plain","locale":"de-CH","text":"Test 2","channelData":{"clientActivityID":"15987713832991mh8krcwc1xj","clientTimestamp":"2020-08-30T07:09:43.299Z"}}
 */
     @RequestMapping(value = "/message", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="MICROSOFT: Handle Microsoft bot messages")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="MICROSOFT: Handle Microsoft bot messages")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> handleEvents(@RequestBody MicrosoftBotMessage message,
         HttpServletRequest request) {
 
