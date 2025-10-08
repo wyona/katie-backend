@@ -5,8 +5,6 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.mail.EmailSenderConfig;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +26,15 @@ import java.io.BufferedReader;
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to ask questions (Version 1)
@@ -159,7 +163,7 @@ public class ConfigurationController {
      * REST interface to get version of Katie
      */
     @RequestMapping(value = "/configuration/version", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get version of Katie and environment type")
+    @Operation(summary="Get version of Katie and environment type")
     public ResponseEntity<?> getVersion(
             HttpServletRequest request) {
 
@@ -175,9 +179,9 @@ public class ConfigurationController {
      * REST interface to get domain Id for a particular domain tag name
      */
     @RequestMapping(value = "/configuration/domain-id", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get domain Id for a particular domain tag name")
+    @Operation(summary="Get domain Id for a particular domain tag name")
     public ResponseEntity<?> getDomainId(
-            @ApiParam(name = "tag-name", value = "Tag name of domain, e.g. 'apache-lucene'",required = true)
+            @Parameter(name = "tag-name", description = "Tag name of domain, e.g. 'apache-lucene'",required = true)
             @RequestParam("tag-name") String tagName,
             HttpServletRequest request) {
 
@@ -197,7 +201,7 @@ public class ConfigurationController {
      * REST interface to get server configuration
      */
     @RequestMapping(value = "/configuration", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get server configuration")
+    @Operation(summary="Get server configuration")
     public ResponseEntity<?> getConfiguration(
         HttpServletRequest request) {
 
@@ -216,7 +220,7 @@ public class ConfigurationController {
      * REST interface to get application properties
      */
     @RequestMapping(value = "/application-properties", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get application properties")
+    @Operation(summary="Get application properties")
     public ResponseEntity<?> getApplicationProperties(
             HttpServletRequest request) {
 
@@ -279,7 +283,7 @@ public class ConfigurationController {
      */
     // TODO: Rename to my-domains
     @RequestMapping(value = "/configuration/context", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all domain configurations which signed in user has access to")
+    @Operation(summary="Get all domain configurations which signed in user has access to")
     public ResponseEntity<?> getContextConfiguration(HttpServletRequest request, HttpServletResponse response) {
 
         rememberMeService.tryAutoLogin(request, response);
@@ -329,9 +333,9 @@ public class ConfigurationController {
      * REST interface to get all domain configurations a particular user is member of
      */
     @RequestMapping(value = "/configuration/domains/{user-id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get all domain configurations a particular user is member of")
+    @Operation(summary="Get all domain configurations a particular user is member of")
     public ResponseEntity<?> getDomainIDsUserIsMemberOf(
-            @ApiParam(name = "user-id", value = "User Id",required = true)
+            @Parameter(name = "user-id", description = "User Id",required = true)
             @PathVariable("user-id") String userId,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -367,7 +371,7 @@ public class ConfigurationController {
      * REST interface to get MyKatie domain of signed in user
      */
     @RequestMapping(value = "/configuration/my-katie-domain", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get MyKatie domain of signed in user")
+    @Operation(summary="Get MyKatie domain of signed in user")
     public ResponseEntity<?> getMyKatieDomain(HttpServletRequest request, HttpServletResponse response) {
 
         rememberMeService.tryAutoLogin(request, response);
@@ -399,12 +403,16 @@ public class ConfigurationController {
      * REST interface to get a particular domain configuration
      */
     @RequestMapping(value = "/configuration/context/{id}", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get domain configuration")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Get domain configuration")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> getContextConfiguration(
-        @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
+        @Parameter(name = "id", description = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,
         HttpServletRequest request, HttpServletResponse response) {
 
@@ -442,9 +450,9 @@ public class ConfigurationController {
      * REST interface to get public display information of a particular domain
      */
     @RequestMapping(value = "/configuration/domain/{id}/display-information", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get public display information of a domain")
+    @Operation(summary="Get public display information of a domain")
     public ResponseEntity<?> getDomainDisplayInformation(
-            @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'e4ff3246-372b-4042-a9e2-d30f612d1244')",required = true)
+            @Parameter(name = "id", description = "Id of domain (e.g. 'ROOT' or 'e4ff3246-372b-4042-a9e2-d30f612d1244')",required = true)
             @PathVariable("id") String id,
             HttpServletRequest request) {
 
@@ -462,11 +470,11 @@ public class ConfigurationController {
      * REST interface to update the hostname used inside mail/message body
      */
     @RequestMapping(value = "/configuration/domain/{id}/message-body-hostname", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Update the hostname used inside mail/message body")
+    @Operation(summary="Update the hostname used inside mail/message body")
     public ResponseEntity<?> updateMessageBodyHostname(
-        @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
+        @Parameter(name = "id", description = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,
-        @ApiParam(name = "hostname", value = "Mail/message body hostname", required = true) @RequestBody Hostname hostname,
+        @Parameter(name = "hostname", description = "Mail/message body hostname", required = true) @RequestBody Hostname hostname,
         HttpServletRequest request) {
 
         try {
@@ -485,16 +493,20 @@ public class ConfigurationController {
      * REST interface to create a new domain
      */
     @RequestMapping(value = "/configuration/domain", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Create a new domain")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataTypeClass = String.class, paramType = "header") })
+    @Operation(summary="Create a new domain")
+    @Parameter(
+            name = "Authorization",
+            description = "Bearer JWT",
+            required = false,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string")
+    )
     public ResponseEntity<?> createDomain(
-        @ApiParam(name = "name", value = "Name of domain (e.g. 'Wyona Research & Development')",required = true)
+        @Parameter(name = "name", description = "Name of domain (e.g. 'Wyona Research & Development')",required = true)
         @RequestParam("name") String name,
-        @ApiParam(name = "mailSubjectTag", value = "E-Mail subject tag (e.g. 'Katie of Wyona')",required = true)
+        @Parameter(name = "mailSubjectTag", description = "E-Mail subject tag (e.g. 'Katie of Wyona')",required = true)
         @RequestParam("mailSubjectTag") String mailSubjectTag,
-        @ApiParam(name = "answersGenerallyProtected", value = "When true, then answers are generally protected",required = true)
+        @Parameter(name = "answersGenerallyProtected", description = "When true, then answers are generally protected",required = true)
         @RequestParam(value = "answersGenerallyProtected", required = true) boolean answersGenerallyProtected,
         HttpServletRequest request) {
 
@@ -530,7 +542,7 @@ public class ConfigurationController {
     @RequestMapping(value = "/configuration/domain/{id}", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Delete domain")
     public ResponseEntity<?> deleteDomain(
-        @ApiParam(name = "id", value = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
+        @Parameter(name = "id", description = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,
         HttpServletRequest request) {
 
@@ -552,7 +564,7 @@ public class ConfigurationController {
      * REST interface that browsers supporting "Content-Security-Policy" and "Content-Security-Policy-Report-Only" can report CSP violations
      */
     @RequestMapping(value = "/configuration/csp-violation-report", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(value="Process Content Security Policy violation report")
+    @Operation(summary="Process Content Security Policy violation report")
     public ResponseEntity<?> cspViolationReport(
             HttpServletRequest request) {
 

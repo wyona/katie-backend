@@ -17,12 +17,18 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.services.ContextService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to get and set FAQ
@@ -39,12 +45,12 @@ public class FAQController {
      * REST interface to get FAQ
      */
     @RequestMapping(value = "/faq", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get Frequently Asked Questions")
+    @Operation(summary="Get Frequently Asked Questions")
     @Deprecated
     public ResponseEntity<?> getFAQ(
-        @ApiParam(name = "language", value = "Language of FAQ, e.g. 'de' or 'en'",required = true)
+        @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
         @RequestParam(value = "language", required = true) String language,
-        @ApiParam(name = "context", value = "Context, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+        @Parameter(name = "context", description = "Context, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
         @RequestParam(value = "context", required = false) String context,
         HttpServletRequest request) {
 
