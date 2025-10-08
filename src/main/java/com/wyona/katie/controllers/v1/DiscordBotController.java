@@ -7,7 +7,6 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.QuestionAnsweringService;
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.file.AccessDeniedException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Discord bot controller
@@ -88,7 +96,7 @@ public class DiscordBotController {
     @RequestMapping(value = "/approve-guild-channel-domain", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary="Approve connection of a Discord guild/channel with a Katie domain")
     public ResponseEntity<?> connectGuildChannelWithDomain(
-            @ApiParam(name = "token", value = "JWT token containing info re guild Id, channel Id (private claims: guild_id, channel_id) TEMP: Payload requires domain_id, team_id, channel_id", required = true)
+            @Parameter(name = "token", description = "JWT token containing info re guild Id, channel Id (private claims: guild_id, channel_id) TEMP: Payload requires domain_id, team_id, channel_id", required = true)
             @RequestParam(value = "token", required = true) String token,
             HttpServletRequest request) {
         try {
@@ -121,9 +129,9 @@ public class DiscordBotController {
     @RequestMapping(value = "/disconnect-guild-channel-domain", method = RequestMethod.DELETE, produces = "application/json")
     @Operation(summary="Disconnect a Discord guild/channel from a domain")
     public ResponseEntity<?> disconnectGuildChannelFromDomain(
-            @ApiParam(name = "guild_id", value = "Discord guild Id",required = true)
+            @Parameter(name = "guild_id", description = "Discord guild Id",required = true)
             @RequestParam(value = "guild_id", required = true) String guildId,
-            @ApiParam(name = "channel_id", value = "Discord channel Id",required = true)
+            @Parameter(name = "channel_id", description = "Discord channel Id",required = true)
             @RequestParam(value = "channel_id", required = true) String channelId,
             HttpServletRequest request) {
         try {
@@ -144,7 +152,7 @@ public class DiscordBotController {
     @RequestMapping(value = "/domain/{id}/channels", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary="Get all Discord channels which are connected with a particular Katie domain")
     public ResponseEntity<?> getChannels(
-            @ApiParam(name = "id", value = "Domain Id",required = true)
+            @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request
     ) {
