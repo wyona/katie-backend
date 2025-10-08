@@ -17,9 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
 import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +26,15 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 /**
  * Controller to get and set FAQ
@@ -51,9 +57,9 @@ public class FAQControllerV2 {
      * REST interface to get status / progress of import
      */
     @RequestMapping(value = "/faq/import/progress", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get status / progress of import")
+    @Operation(summary="Get status / progress of import")
     public ResponseEntity<?> getImportProgress(
-            @ApiParam(name = "import-process-id", value = "Import process Id",required = false)
+            @Parameter(name = "import-process-id", description = "Import process Id",required = false)
             @RequestParam(value = "import-process-id", required = false) String importProcessId,
             HttpServletRequest request) {
 
@@ -72,9 +78,9 @@ public class FAQControllerV2 {
      * REST interface to get available languages of FAQ
      */
     @RequestMapping(value = "/faq/languages", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get available languages of FAQ")
+    @Operation(summary="Get available languages of FAQ")
     public ResponseEntity<?> getAvailableLanguages(
-            @ApiParam(name = "context", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+            @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
             @RequestParam(value = "context", required = false) String context,
             HttpServletRequest request) {
 
@@ -97,17 +103,17 @@ public class FAQControllerV2 {
      * REST interface to get FAQ
      */
     @RequestMapping(value = "/faq", method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Get Frequently Asked Questions")
+    @Operation(summary="Get Frequently Asked Questions")
     public ResponseEntity<?> getFAQ(
-        @ApiParam(name = "language", value = "Language of FAQ, e.g. 'de' or 'en'",required = true)
+        @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
         @RequestParam(value = "language", required = true) String language,
-        @ApiParam(name = "context", value = "Domain Id, for example '45c6068a-e94b-46d6-zfa1-938f755d446g', which represents a single realm containing its own set of FAQ, etc.",required = false)
+        @Parameter(name = "context", description = "Domain Id, for example '45c6068a-e94b-46d6-zfa1-938f755d446g', which represents a single realm containing its own set of FAQ, etc.",required = false)
         @RequestParam(value = "context", required = false) String domainId,
-        @ApiParam(name = "tag-name", value = "Tag name of domain, for example 'apache-lucene', which is associated with a particular domain Id",required = false)
+        @Parameter(name = "tag-name", description = "Tag name of domain, for example 'apache-lucene', which is associated with a particular domain Id",required = false)
         @RequestParam(value = "tag-name", required = false) String tagName,
-        @ApiParam(name = "uuid-only", value = "When set to true, then for performance/scalability reasons only get UUIDs of questions and do pagination inside client",required = false)
+        @Parameter(name = "uuid-only", description = "When set to true, then for performance/scalability reasons only get UUIDs of questions and do pagination inside client",required = false)
         @RequestParam(value = "uuid-only", required = false) boolean uuidOnly,
-        @ApiParam(name = "public-only", value = "When set to true, then only topics where the visibility is set to public", required = false)
+        @Parameter(name = "public-only", description = "When set to true, then only topics where the visibility is set to public", required = false)
         @RequestParam(value = "public-only", required = false) Boolean publicOnly,
         HttpServletRequest request) {
 
@@ -152,11 +158,11 @@ public class FAQControllerV2 {
      * REST interface to import FAQs from a third-party webpage, e.g. https://cwiki.apache.org/confluence/display/LUCENE/LuceneFAQ
      */
     @RequestMapping(value = "/faq/import/url", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Batch Import of FAQs from a third-party webpage, e.g. https://cwiki.apache.org/confluence/display/LUCENE/LuceneFAQ")
+    @Operation(summary="Batch Import of FAQs from a third-party webpage, e.g. https://cwiki.apache.org/confluence/display/LUCENE/LuceneFAQ")
     public ResponseEntity<?> importFAQsFromWebPage(
-            @ApiParam(name = "context", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+            @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
             @RequestParam(value = "context", required = false) String context,
-            @ApiParam(name = "url", value = "URL of third-party webpage, .e.g https://cwiki.apache.org/confluence/display/LUCENE/LuceneFAQ", required = true)
+            @Parameter(name = "url", description = "URL of third-party webpage, .e.g https://cwiki.apache.org/confluence/display/LUCENE/LuceneFAQ", required = true)
             @RequestBody ExtractQnAsArgs extractQnAsArgs,
             HttpServletRequest request) {
 
@@ -187,13 +193,13 @@ public class FAQControllerV2 {
      */
     @RequestMapping(value = "/faq/import/json", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     //@RequestMapping(value = "/faq/import/json", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Batch Import of Frequently Asked Questions (create and update)")
+    @Operation(summary="Batch Import of Frequently Asked Questions (create and update)")
     public ResponseEntity<?> importFAQ(
-            @ApiParam(name = "language", value = "Language of FAQ, e.g. 'de' or 'en'",required = true)
+            @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
             @RequestParam(value = "language", required = true) String language,
-            @ApiParam(name = "context", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+            @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
             @RequestParam(value = "context", required = false) String context,
-            @ApiParam(name = "faq", value = "A set of new (without id) or existing (with id) topics including FAQs, whereas question and answer are mandatory for each FAQ", required = true)
+            @Parameter(name = "faq", description = "A set of new (without id) or existing (with id) topics including FAQs, whereas question and answer are mandatory for each FAQ", required = true)
             @RequestBody FAQ faq,
             HttpServletRequest request) {
 
@@ -222,18 +228,18 @@ public class FAQControllerV2 {
      */
     @RequestMapping(value = "/faq/import/squad", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     //@RequestMapping(value = "/faq/import/squad", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Import QnAs from a file in SQuAD format (https://rajpurkar.github.io/SQuAD-explorer/). Make sure that max-file-size, max-request-size is configured accordingly!")
+    @Operation(summary="Import QnAs from a file in SQuAD format (https://rajpurkar.github.io/SQuAD-explorer/). Make sure that max-file-size, max-request-size is configured accordingly!")
     public ResponseEntity<?> importSQuAD(
-            @ApiParam(name = "language", value = "Language of SQuAD, e.g. 'de' or 'en'",required = true)
+            @Parameter(name = "language", description = "Language of SQuAD, e.g. 'de' or 'en'",required = true)
             @RequestParam(value = "language", required = true) String language,
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             // WARNING: value does not seem to work for RequestPart, see https://github.com/springfox/springfox/issues/3571
-            //@ApiParam(name = "file", value ="SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", required = true)
-            //@ApiParam(name = "SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", value ="SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", required = true)
+            //@Parameter(name = "file", value ="SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", required = true)
+            //@Parameter(name = "SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", value ="SQuAD file (make sure that max-file-size, max-request-size is configured accordingly)", required = true)
             @RequestPart("file") MultipartFile file,
             //@RequestPart(name = "file", required = true) MultipartFile file,
-            //@ApiParam(name = "faq", value = "A set of QnAs in the SQuAD format", required = true)
+            //@Parameter(name = "faq", value = "A set of QnAs in the SQuAD format", required = true)
             //@RequestBody SQuAD squad,
             HttpServletRequest request) {
 
@@ -276,11 +282,11 @@ public class FAQControllerV2 {
      * REST interface to import FAQ from an XML
      */
     @RequestMapping(value = "/faq/import/xml", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value="Import Frequently Asked Questions from an XML file")
+    @Operation(summary="Import Frequently Asked Questions from an XML file")
     public ResponseEntity<?> importFAQfromXMLFile(
-            @ApiParam(name = "language", value = "Language of FAQ, e.g. 'de' or 'en'",required = true)
+            @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
             @RequestParam(value = "language", required = true) String language,
-            @ApiParam(name = "context", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+            @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
             @RequestParam(value = "context", required = false) String context,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
@@ -314,15 +320,15 @@ public class FAQControllerV2 {
      * REST interface to get FAQ
      */
     @RequestMapping(value = "/faq/qna", method = RequestMethod.PUT, produces = "application/json")
-    @ApiOperation(value="Add existing QnA to a particular FAQ topic")
+    @Operation(summary="Add existing QnA to a particular FAQ topic")
     public ResponseEntity<?> addQnA(
-            @ApiParam(name = "language", value = "Language of FAQ topic, e.g. 'de' or 'en'",required = true)
+            @Parameter(name = "language", description = "Language of FAQ topic, e.g. 'de' or 'en'",required = true)
             @RequestParam(value = "language", required = true) String language,
-            @ApiParam(name = "domainId", value = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = true)
+            @Parameter(name = "domainId", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
-            @ApiParam(name = "uuid", value = "UUID of QnA",required = true)
+            @Parameter(name = "uuid", description = "UUID of QnA",required = true)
             @RequestParam(value = "uuid", required = true) String uuid,
-            @ApiParam(name = "topicId", value = "Topic Id",required = true)
+            @Parameter(name = "topicId", description = "Topic Id",required = true)
             @RequestParam(value = "topicId", required = true) String topicId,
             HttpServletRequest request) {
 
