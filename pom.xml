@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.12</version> <!-- See https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent --> <!-- IMPORTANT: Also check/comment log4j2.version below and run "mvn dependency:tree > dependencies.txt" -->
+        <version>3.5.6</version>
     </parent>
 
 <!-- INFO: Use for Tomcat -->
@@ -79,7 +79,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <dependency> <!-- INFO: See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -96,26 +96,11 @@
             <classifier>osx-aarch_64</classifier>
         </dependency>
 
-        <!-- Swagger: http://127.0.0.1:8044/swagger-ui/ resp. http://localhost:8044/swagger-ui/index.html -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-<!-- TODO: Replace springfox by springdoc for Spring Boot 2
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.8.0</version>
-        </dependency>
--->
-<!-- TODO: Spring Boot 3
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.5.0</version>
-        </dependency>
--->
+            <version>2.6.0</version>
+       </dependency>
 
         <dependency>
             <groupId>junit</groupId>
@@ -200,6 +185,24 @@
           <groupId>com.google.api-client</groupId>
           <artifactId>google-api-client-gson</artifactId>
           <version>2.0.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+        </exclusion>
+    </exclusions>
         </dependency>
 
         <dependency>
@@ -223,14 +226,9 @@
 
         <!-- JSON String to Java Object Array using JSON-B -->
         <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>1.0.6</version>
-            <scope>runtime</scope>
+            <version>3.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -275,15 +273,33 @@
         <!-- Elasticsearch -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
-            <artifactId>rest</artifactId>
-            <version>5.5.1</version>
+            <artifactId>elasticsearch-rest-client</artifactId>
+            <version>9.1.5</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+        </exclusion>
+    </exclusions>
         </dependency>
 
         <!-- JWT: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+            <version>0.13.0</version>
         </dependency>
         <!-- io.jsonwebtoken is using javax/xml/bind/DatatypeConverter which is not part of Java 11 or greater, therefore we have to add jaxb-xjc -->
         <dependency>
@@ -295,7 +311,6 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>6.0.8</version>
         </dependency>
 
         <!-- INFO: Necessary for HTML to (Discord) Markdown converter, see https://github.com/furstenheim/copy-down -->
@@ -320,6 +335,24 @@
           <groupId>com.azure</groupId>
           <artifactId>azure-search-documents</artifactId>
           <version>11.6.1</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+        </exclusion>
+    </exclusions>
         </dependency>
         <dependency>
           <groupId>org.jsoup</groupId>
@@ -332,6 +365,24 @@
           <groupId>org.wyona.triton.client</groupId>
           <artifactId>java-api</artifactId>
           <version>0.0.1</version>
+<exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+        </exclusion>
+    </exclusions>
         </dependency>
 
        <dependency>
@@ -375,6 +426,15 @@
             <version>2.5.0</version>
         </dependency>
 -->
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -431,6 +491,24 @@
 <!--
             <version>3.1.0</version>
 -->
+<exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+        </exclusion>
+    </exclusions>
         </dependency>
 
         <dependency>
@@ -523,8 +601,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-                <source>11</source>
-                <target>11</target>
+                <source>21</source>
+                <target>21</target>
             </configuration>
         </plugin>
     </plugins>
