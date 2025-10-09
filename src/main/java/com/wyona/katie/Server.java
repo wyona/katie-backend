@@ -5,6 +5,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
 import discord4j.rest.RestClient;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -12,14 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
 import org.springframework.context.annotation.Bean;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import static springfox.documentation.builders.PathSelectors.regex;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Optional;
@@ -28,7 +22,6 @@ import java.util.Optional;
  *
  */
 @Configuration
-@EnableSwagger2
 @SpringBootApplication
 @Slf4j
 public class Server extends SpringBootServletInitializer {
@@ -80,7 +73,7 @@ public class Server extends SpringBootServletInitializer {
         return application.sources(Server.class);
     }
 
-    @Bean
+    @PostConstruct
     public void setOutgoingProxy() {
         if (httpProxyEnabled) {
             // INFO: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/doc-files/net-properties.html
@@ -107,39 +100,6 @@ public class Server extends SpringBootServletInitializer {
         } else {
             log.info("No outgoing proxy set.");
         }
-    }
-
-    @Bean
-    public Docket swaggerApiV1() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("API V1")
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.wyona.katie"))
-                .paths(regex("/.*/v1.*"))
-                .build()
-                .apiInfo(new ApiInfoBuilder().version("1.0").title("API").description("Documentation API V1").build());
-    }
-
-    @Bean
-    public Docket swaggerApiV2() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("API V2")
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.wyona.katie"))
-                .paths(regex("/.*/v2.*"))
-                .build()
-                .apiInfo(new ApiInfoBuilder().version("2.0").title("API").description("Documentation API V2").build());
-    }
-
-    @Bean
-    public Docket swaggerApiV3() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("API V3")
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.wyona.katie"))
-                .paths(regex("/.*/v3.*"))
-                .build()
-                .apiInfo(new ApiInfoBuilder().version("3.0").title("API").description("Documentation API V3").build());
     }
 
     @Bean
