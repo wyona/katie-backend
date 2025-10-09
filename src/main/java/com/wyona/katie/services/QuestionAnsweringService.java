@@ -164,7 +164,7 @@ public class QuestionAnsweringService {
 
         log.info("Try to answer question '" + question + "' ...");
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         String usernameKatie = authService.getUsername();
         //String usernameKatie = user.getUsername();
 
