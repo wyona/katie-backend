@@ -101,12 +101,16 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
 
             HttpEntity entity = new StringEntity(sb.toString(), "application/json", "utf-8");
             RestClient restClient = getRestClient();
+            log.error("TODO: Fix performing request!");
+            /*
             Response response = restClient.performRequest("POST", "/" + context.getElasticsearchIndex() + "/" + TYPE, java.util.Collections.<String, String>emptyMap(), entity);
             if (response.getStatusLine().getStatusCode() == 200) {
                 log.info("Question/answer entity added successfully to index");
             } else {
                 log.warn("Response code '" + response.getStatusLine().getStatusCode() + "'");
             }
+
+             */
             restClient.close();
         } catch(ResponseException e) {
             log.error(e.getMessage(), e);
@@ -160,12 +164,16 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
 
             HttpEntity entity = new StringEntity(sb.toString(), "application/json", "utf-8");
             RestClient restClient = getRestClient();
+            log.error("TODO: Fix performing request!");
+            /*
             Response response = restClient.performRequest("POST", "/" + domain.getElasticsearchIndex() + "/_delete_by_query", java.util.Collections.<String, String>emptyMap(), entity);
             if (response.getStatusLine().getStatusCode() == 200) {
                 log.info("Question deleted successfully.");
             } else {
                 log.warn("Response code '" + response.getStatusLine().getStatusCode() + "'");
             }
+
+             */
             restClient.close();
             return true;
         } catch(ResponseException e) {
@@ -217,6 +225,8 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
             log.info("Elasticsearch query: " + query);
             HttpEntity entity = new StringEntity(query.toString(), "application/json", "utf-8");
             RestClient restClient = getRestClient();
+            log.error("TODO: Fix performing request!");
+            /*
             Response response = restClient.performRequest("GET", "/" + context.getElasticsearchIndex() + "/_search", java.util.Collections.singletonMap("pretty", "true"), entity);
             if (response.getStatusLine().getStatusCode() == 200) {
                 java.io.InputStream in = response.getEntity().getContent();
@@ -254,6 +264,8 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
             } else {
                 log.warn("Response code '" + response.getStatusLine().getStatusCode() + "'");
             }
+
+             */
             restClient.close();
         } catch(ResponseException e) {
             log.error(e.getMessage(), e);
@@ -282,11 +294,15 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
         RestClient restClient = getRestClient();
         try {
             log.info("Delete index '" + indexName + "' ...");
+            log.error("TODO: Fix performing request!");
             // INFO: curl -XDELETE http://localhost:9200/askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184/
-            restClient.performRequest("DELETE", "/" + indexName + "/");
+            //restClient.performRequest("DELETE", "/" + indexName + "/");
+            /*
         } catch(ResponseException re) {
             Response errorResponse = re.getResponse();
             log.warn("Response status: " + errorResponse.getStatusLine() + ", Status code: " + errorResponse.getStatusLine().getStatusCode());
+
+             */
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -324,7 +340,8 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
             String body = "{ \"mappings\": { \"" + TYPE + "\": { \"properties\": { \"" + DATE_KATIE_FIELD + "\": { \"type\": \"date\", \"format\":\"" + ELASTICSEARCH_DATE_PATTERN + "\" },\"" + QUESTION_FIELD + "\":{\"type\":\"text\"},\"" + CONTEXT_ID_FIELD + "\":{\"type\":\"keyword\"},\"" + ANSWER_ID_FIELD + "\":{\"type\":\"keyword\"} } } } }";
             log.info("Create index '" + indexName + "' with mappings '" + body + "' ...");
             HttpEntity entity = new StringEntity(body, "application/json", "utf-8");
-            Response response = restClient.performRequest("PUT", "/" + indexName + "/", java.util.Collections.<String, String>emptyMap(), entity);
+            log.error("TODO: Fix performing request!");
+            //Response response = restClient.performRequest("PUT", "/" + indexName + "/", java.util.Collections.<String, String>emptyMap(), entity);
             return indexName;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -349,9 +366,11 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
         RestClient restClient = getRestClient();
         try {
             log.info("Check whether index '" + indexName + "' exists ...");
+            log.error("TODO: Fix performing request!");
             // INFO: curl -XGET http://localhost:9200/askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184/
-            restClient.performRequest("GET", "/" + indexName + "/");
+            //restClient.performRequest("GET", "/" + indexName + "/");
             indexExists = true;
+            /*
         } catch(ResponseException re) {
             Response errorResponse = re.getResponse();
             log.debug("Response status: " + errorResponse.getStatusLine() + ", Status code: " + errorResponse.getStatusLine().getStatusCode());
@@ -359,6 +378,8 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
             if (errorResponse.getStatusLine().getStatusCode() == 404) {
                 log.debug("Index '" + indexName + "' does not exist yet.");
             }
+
+             */
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -380,7 +401,9 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
 
         // INFO: Add Basic Auth credentials
         if (elasticsearchBasicAuthUsername != null && elasticsearchBasicAuthUsername.length() > 0) {
-            org.apache.http.client.CredentialsProvider credentialsProvider = new org.apache.http.impl.client.BasicCredentialsProvider();
+            log.error("TODO: Replace code which is httpclient5 compatible");
+            /*
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(org.apache.http.auth.AuthScope.ANY, new org.apache.http.auth.UsernamePasswordCredentials(elasticsearchBasicAuthUsername, elasticsearchBasicAuthPassword));
 
             builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {
@@ -389,6 +412,8 @@ public class ElasticsearchQuestionAnswerImpl implements QuestionAnswerHandler {
                     return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 }
             });
+
+             */
         }
 
         return builder.build();
