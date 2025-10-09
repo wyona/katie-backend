@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -343,7 +343,11 @@ public class JwtService {
                 publicKey = getPublicKey();
             }
 
-            Jwts.parser().setSigningKey(publicKey).setAllowedClockSkewSeconds(allowedClockSkewSeconds).parseClaimsJws(jwtToken);
+            Jwts.parser().verifyWith(publicKey)
+                    .clockSkewSeconds(allowedClockSkewSeconds)
+                    .build()
+                    .parseSignedClaims(jwtToken)
+                    .getPayload();
             log.info("JWT is valid :-)");
             return true;
         } catch (SignatureException e) {
@@ -509,9 +513,10 @@ public class JwtService {
     private Claims getAllClaimsFromToken(String jwtToken) throws Exception {
         return Jwts.parser()
                 // TODO: Why is it necessary to set public key as signing key in order to read claims (see for example https://jwt.io/)?!
-                .setSigningKey(getPublicKey())
-                .parseClaimsJws(jwtToken)
-                .getBody();
+                .verifyWith(getPublicKey())
+                .build()
+                .parseSignedClaims(jwtToken)
+                .getPayload();
     }
 
     /**
