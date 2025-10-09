@@ -33,7 +33,7 @@ import freemarker.template.Template;
 import org.apache.commons.io.FileUtils;
 
 import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * TODO: Consider renaming it to DomainService
