@@ -1,20 +1,20 @@
 package com.wyona.katie.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.ProxyAuthenticationStrategy;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.core5.http.HttpHost;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -39,34 +39,42 @@ public class RestProxyTemplate {
 
     @PostConstruct
     public void init() {
-        this.restTemplate = new RestTemplate();
-
         if (proxyEnabled) {
             log.info("Set proxy settings ...");
 
-            final int proxyPortNum = Integer.parseInt(proxyPort);
-            final CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(proxyHost, proxyPortNum), new UsernamePasswordCredentials(proxyUser, proxyPassword));
+            int proxyPortNum = Integer.parseInt(proxyPort);
 
-            final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-            clientBuilder.useSystemProperties();
-            clientBuilder.setProxy(new HttpHost(proxyHost, proxyPortNum));
-            clientBuilder.setDefaultCredentialsProvider(credsProvider);
-            clientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
-            final CloseableHttpClient client = clientBuilder.build();
+            // Setup credentials
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(
+                    new AuthScope(proxyHost, proxyPortNum),
+                    new UsernamePasswordCredentials(proxyUser, proxyPassword.toCharArray())
+            );
 
-            final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-            factory.setHttpClient(client);
+            RequestConfig config = RequestConfig.custom()
+                    .setConnectTimeout(5, TimeUnit.SECONDS)
+                    .setResponseTimeout(5, TimeUnit.SECONDS)
+                    .build();
 
-            restTemplate.setRequestFactory(factory);
+            // Setup HttpClient 5 with proxy
+            CloseableHttpClient client = HttpClients.custom()
+                    .setDefaultCredentialsProvider(credsProvider)
+                    .setDefaultRequestConfig(config)
+                    .setProxy(new HttpHost(proxyHost, proxyPortNum))
+                    .build();
+
+            // Setup Spring RestTemplate factory
+            HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(client);
+
+            restTemplate = new RestTemplate(factory);
         } else {
             log.info("Proxy not enabled.");
+            restTemplate = new RestTemplate();
         }
     }
 
     /**
-     * Get RestTemplate
-     * @return
+     * Get RestTemplate connecting through a proxy when a required proxy is configured
      */
     public RestTemplate getRestTemplate() {
         log.info("Get custom RestTemplate ...");
