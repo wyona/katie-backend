@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.config.CustomAuthenticationProvider;
 import com.wyona.katie.models.User;
 
 import com.wyona.katie.models.UserDetails;
@@ -14,15 +15,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.security.Principal;
 
@@ -55,13 +54,9 @@ public class AuthenticationService {
     private JwtService jwtService;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
     public static final String JWT_CLAIM_DOMAIN_ID = "did";
-
-    @Autowired
-    public AuthenticationService() {
-    }
 
     /**
      * Generate a secure random password
@@ -118,7 +113,7 @@ public class AuthenticationService {
      */
     public void login(String username, String password) throws ServletException {
         log.info("Try to login user '" + username + "' using AuthenticationManager ...");
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        Authentication authentication = customAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(authentication);
     }
