@@ -9,6 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -66,7 +70,6 @@ public class IAMService {
 
     private static final String PROFILE_PICTURE_CLASS_NAME = "ProfilePicture";
 
-    private AuthenticationService authService;
     private XMLService xmlService;
     private UsersXMLFileService usersXMLFileService;
     private MailerService mailerService;
@@ -77,8 +80,7 @@ public class IAMService {
     private final static String USER_ID = "user_id";
 
     @Autowired
-    public IAMService(AuthenticationService authService, XMLService xmlService, UsersXMLFileService usersXMLFileService, MailerService mailerService, JwtService jwtService) {
-        this.authService = authService;
+    public IAMService(XMLService xmlService, UsersXMLFileService usersXMLFileService, MailerService mailerService, JwtService jwtService) {
         this.xmlService = xmlService;
         this.usersXMLFileService = usersXMLFileService;
         this.mailerService = mailerService;
@@ -341,7 +343,7 @@ public class IAMService {
      * @param id User Id
      */
     public void deleteUser(String id) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (signedInUser != null && signedInUser.getRole() == Role.ADMIN) {
             log.info("User '" + signedInUser.getId() + "' has role " + Role.ADMIN + " and therefore can delete all users.");
             //User user = getUserById(id, false, false);
@@ -358,13 +360,38 @@ public class IAMService {
     }
 
     /**
+     * Get user object of signed in user or user associated with valid bearer token (JWT)
+     * @return user when user has a valid session or request contains a valid bearer token (JWT), otherwise return null
+     */
+    private User getUser(boolean includingPassword, boolean includingJWT) {
+        String username = getUsername();
+        return getUserByUsername(new Username(username), includingPassword, includingJWT);
+    }
+
+    /**
+     * Get username of signed in user
+     * @return username when user is signed in and null otherwise
+     */
+    public String getUsername() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            log.info("User is not signed in.");
+            return null;
+        }
+        String username = (String)authentication.getPrincipal();
+        log.info("Username of signed in user: " + username);
+        return username;
+    }
+
+    /**
      * Update user profile
      * @param id User Id
      * @param user Updated user profile
      * @return updated user
      */
     public User updateUser(String id, User user) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (signedInUser != null && signedInUser.getRole() == Role.ADMIN) {
             log.info("User '" + signedInUser.getId() + "' has role " + Role.ADMIN + " and therefore can update all users.");
         } else {
@@ -451,7 +478,7 @@ public class IAMService {
      * @return user if user exists and null otherwise
      */
     public User getUserById(String id, boolean includingJWT) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (signedInUser != null && signedInUser.getRole() == Role.ADMIN) {
             return usersXMLFileService.getIAMUserById(id, false, includingJWT);
         } else {
@@ -593,7 +620,7 @@ public class IAMService {
      * @param tokenAdmin JWT token
      */
     public void approveSelfRegistration(String tokenAdmin) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (!(signedInUser != null && signedInUser.getRole() == Role.ADMIN)) {
             throw new AccessDeniedException("User is either not signed in or has not role " + Role.ADMIN + "!");
         }
@@ -646,7 +673,7 @@ public class IAMService {
      * @param tokenAdmin JWT token
      */
     public void rejectSelfRegistration(String tokenAdmin) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (!(signedInUser != null && signedInUser.getRole() == Role.ADMIN)) {
             throw new AccessDeniedException("User is either not signed in or has not role " + Role.ADMIN + "!");
         }
@@ -1110,7 +1137,7 @@ public class IAMService {
      */
     public User[] getUsers() throws Exception {
         log.info("Check whether user is signed in and has role " + Role.ADMIN);
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = getUser(false, false);
         if (!(signedInUser != null && signedInUser.getRole() == Role.ADMIN)) {
             log.warn("Signed in user has not role " + Role.ADMIN + ", therefore permission denied.");
             throw new AccessDeniedException("Signed in user has not role " + Role.ADMIN + "!");
