@@ -311,7 +311,7 @@ public class AuthenticationController {
             HttpServletRequest request) {
 
         if (authService.userIsSignedInBySession(request)) {
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             if (!signedInUser.getRole().equals(Role.ADMIN)) {
                 log.warn("User does not have role " + Role.ADMIN);
                 return new ResponseEntity<>(new Error("Impersonation failed", "IMPERSONATION_FAILED"), HttpStatus.BAD_REQUEST);

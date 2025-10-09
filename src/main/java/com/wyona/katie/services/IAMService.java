@@ -363,7 +363,7 @@ public class IAMService {
      * Get user object of signed in user or user associated with valid bearer token (JWT)
      * @return user when user has a valid session or request contains a valid bearer token (JWT), otherwise return null
      */
-    private User getUser(boolean includingPassword, boolean includingJWT) {
+    public User getUser(boolean includingPassword, boolean includingJWT) {
         String username = getUsername();
         return getUserByUsername(new Username(username), includingPassword, includingJWT);
     }
