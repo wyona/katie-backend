@@ -125,7 +125,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
     * docker run -p 7070:8080 -v $(pwd)/volume:/ask-katie katie ("/ask-katie" is set inside application-prod.properties)
     * docker run -p 7070:8080 katie (If you do not mount a volume, then Katie creates the necessary files and directories within the docker container, which gets reset upon restart though)
 * Open http://localhost:7070 inside your browser and login with U: superadmin, P: Katie1234%
-* REST interfaces: http://127.0.0.1:7070/swagger-ui/
+* REST interfaces: http://127.0.0.1:7070/swagger-ui/index.html
 * Health check endpoint: http://127.0.0.1:7070/actuator/health
     * Other actuator endpoints: http://127.0.0.1:7070/actuator (whereas set management.endpoints.web.exposure.include=* inside application(-dev).properties)
 
@@ -165,7 +165,7 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED          S
 
 ## API and Testing API
 
-* https://app.katie.qa/swagger-ui/
+* https://app.katie.qa/swagger-ui/index.html
 * Postman: env/postman/AskKatie.postman_collection.json
 * Private and public keys to generate JWTs: https://github.com/wyona/katie-backend/blob/main/volume/config/jwt/README.md
 
