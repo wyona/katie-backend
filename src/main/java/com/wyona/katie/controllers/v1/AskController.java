@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.Error;
 import com.wyona.katie.models.Username;
 import com.wyona.katie.services.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -164,13 +165,9 @@ public class AskController {
      * REST interface to get an answer for a particular question
      */
     @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
+    @Operation(
+            summary = "Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     public ResponseEntity<?> getAnswer(
     //public ResponseEntity<ResponseAnswer> getAnswer(
