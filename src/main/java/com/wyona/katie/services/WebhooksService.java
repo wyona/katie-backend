@@ -128,7 +128,7 @@ public class WebhooksService {
 
             log.info("Send request to webhook: " + webhook.getPayloadURL());
             ResponseEntity<JsonNode> response = restTemplate.exchange(webhook.getPayloadURL(), HttpMethod.POST, request, JsonNode.class);
-            status = response.getStatusCode();
+            status = HttpStatus.valueOf(response.getStatusCode().toString());
             JsonNode bodyNode = response.getBody();
             log.info("JSON: " + bodyNode);
         } catch(RestClientException e) {
