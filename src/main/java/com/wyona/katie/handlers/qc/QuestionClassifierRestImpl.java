@@ -5,6 +5,9 @@ import com.wyona.katie.services.MailerService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.http.HttpHost;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -236,12 +240,17 @@ public class QuestionClassifierRestImpl implements QuestionClassifier, Classific
      * @return clientHttpRequestFactory with timeout of 3000ms
      */
     private ClientHttpRequestFactory getClientHttpRequestFactory() {
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
-                = new HttpComponentsClientHttpRequestFactory();
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                .setResponseTimeout(readTimeout, TimeUnit.MILLISECONDS)
+                .build();
 
-        clientHttpRequestFactory.setConnectTimeout(connectTimeout);
-        clientHttpRequestFactory.setReadTimeout(readTimeout);
+        CloseableHttpClient client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(config)
+                .build();
 
-        return clientHttpRequestFactory;
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(client);
+
+        return factory;
     }
 }
