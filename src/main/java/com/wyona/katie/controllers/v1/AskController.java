@@ -543,7 +543,7 @@ public class AskController {
             }
             String requestedLanguage = "de"; // TODO: Make language configurable
 
-            User user = authService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new java.nio.file.AccessDeniedException("User is not signed in!");
             }
@@ -688,7 +688,7 @@ public class AskController {
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
         }
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         if (!contextService.isUserMemberOfDomain(user.getId(), domain.getId())) {
             log.info("User '" + user.getUsername() + "' is not member of domain '" + domain.getId() + "'!");
             // WARN: Do not add users to this domain, because otherwise they can see all other members!
@@ -778,7 +778,7 @@ public class AskController {
 
         try {
             chatCompletionsRequest.setConversation_id("TODO_CREATE_CONVERSATION_ID");
-            User user = authService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             mockResponse[0] = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
         } catch (Exception e) {
             mockResponse[0] = e.getMessage();
