@@ -2,6 +2,9 @@ package com.wyona.katie.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST implementation to return answer from text service
@@ -122,13 +126,18 @@ public class AnswerFromTextServiceRestImpl implements AnswerFromTextService {
      * @return clientHttpRequestFactory with timeout of 3000ms
      */
     private ClientHttpRequestFactory getClientHttpRequestFactory() {
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
-                = new HttpComponentsClientHttpRequestFactory();
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                .setResponseTimeout(readTimeout, TimeUnit.MILLISECONDS)
+                .build();
 
-        clientHttpRequestFactory.setConnectTimeout(connectTimeout);
-        clientHttpRequestFactory.setReadTimeout(readTimeout);
+        CloseableHttpClient client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(config)
+                .build();
 
-        return clientHttpRequestFactory;
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(client);
+
+        return factory;
     }
 
     /**
