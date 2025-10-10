@@ -1671,6 +1671,12 @@ public class ContextService {
             }
         }
 
+        // INFO: Milvus sets the vector dimension when the collection is being created when executing createTenant()
+        if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
+            // TODO: Replace hard coded SBERT implementation
+            domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
+        }
+
         String aiServiceBaseUrl = aiService.createTenant(domain, retrievalImpl);
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);
 
