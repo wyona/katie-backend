@@ -9,6 +9,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
+import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetLoadStateReq;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -39,71 +40,87 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
     public void deleteTenant(Context domain) {
-        log.error("TODO: Implement method deleteTenant()!");
-        log.info("Milvus implementation of deleting tenant ...");
+        log.info("Drop Milvus collection ...");
+
+        MilvusClientV2 client = getMilvusClient(domain);
+        String collectionName = getCollectionName(domain);
+        DropCollectionReq dropQuickSetupParam = DropCollectionReq.builder()
+                .collectionName(collectionName)
+                .build();
+
+        try {
+            client.dropCollection(dropQuickSetupParam);
+        } finally {
+            client.close();
+        }
+
     }
 
     /**
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) {;
-        log.error("Create Milvus collection ...");
+        log.info("Create Milvus collection ...");
         domain.setMilvusBaseUrl(getHost(null));
 
         MilvusClientV2 client = getMilvusClient(domain);
 
-        // INFO: Create schema
-        CreateCollectionReq.CollectionSchema schema = client.createSchema();
-        schema.addField(AddFieldReq.builder()
-                .fieldName("my_id")
-                .dataType(DataType.Int64)
-                .isPrimaryKey(true)
-                .autoID(false)
-                .build());
-        schema.addField(AddFieldReq.builder()
-                .fieldName("my_vector")
-                .dataType(DataType.FloatVector)
-                .dimension(5)
-                .build());
-        schema.addField(AddFieldReq.builder()
-                .fieldName("my_varchar")
-                .dataType(DataType.VarChar)
-                .maxLength(512)
-                .build());
+        try {
+            // INFO: Create schema
+            CreateCollectionReq.CollectionSchema schema = client.createSchema();
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("my_id")
+                    .dataType(DataType.Int64)
+                    .isPrimaryKey(true)
+                    .autoID(false)
+                    .build());
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("my_vector")
+                    .dataType(DataType.FloatVector)
+                    .dimension(5)
+                    .build());
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("my_varchar")
+                    .dataType(DataType.VarChar)
+                    .maxLength(512)
+                    .build());
 
-        // INFO: Set index parameters
-        IndexParam indexParamForIdField = IndexParam.builder()
-                .fieldName("my_id")
-                .indexType(IndexParam.IndexType.AUTOINDEX)
-                .build();
+            // INFO: Set index parameters
+            IndexParam indexParamForIdField = IndexParam.builder()
+                    .fieldName("my_id")
+                    .indexType(IndexParam.IndexType.AUTOINDEX)
+                    .build();
 
-        IndexParam indexParamForVectorField = IndexParam.builder()
-                .fieldName("my_vector")
-                .indexType(IndexParam.IndexType.AUTOINDEX)
-                //.metricType(IndexParam.MetricType.COSINE)
-                .metricType(IndexParam.MetricType.L2)
-                .build();
+            IndexParam indexParamForVectorField = IndexParam.builder()
+                    .fieldName("my_vector")
+                    .indexType(IndexParam.IndexType.AUTOINDEX)
+                    //.metricType(IndexParam.MetricType.COSINE)
+                    .metricType(IndexParam.MetricType.L2)
+                    .build();
 
-        List<IndexParam> indexParams = new ArrayList<>();
-        //indexParams.add(indexParamForIdField);
-        indexParams.add(indexParamForVectorField);
+            List<IndexParam> indexParams = new ArrayList<>();
+            //indexParams.add(indexParamForIdField);
+            indexParams.add(indexParamForVectorField);
 
-        String collectionName = getCollectionName(domain);
+            String collectionName = getCollectionName(domain);
 
-        // INFO: Create collection
-        CreateCollectionReq customizedSetupReq1 = CreateCollectionReq.builder()
-                .collectionName(collectionName)
-                .collectionSchema(schema)
-                .indexParams(indexParams)
-                .build();
-        client.createCollection(customizedSetupReq1);
+            // INFO: Create collection
+            CreateCollectionReq customizedSetupReq1 = CreateCollectionReq.builder()
+                    .collectionName(collectionName)
+                    .collectionSchema(schema)
+                    .indexParams(indexParams)
+                    .build();
+            client.createCollection(customizedSetupReq1);
 
-        // INFO: Check loading status
-        GetLoadStateReq customSetupLoadStateReq1 = GetLoadStateReq.builder()
-                .collectionName(collectionName)
-                .build();
-        Boolean loaded = client.getLoadState(customSetupLoadStateReq1);
-        log.warn("Load status of Milvus collection '" + collectionName + "': " + loaded);
+            // INFO: Check loading status
+            GetLoadStateReq customSetupLoadStateReq1 = GetLoadStateReq.builder()
+                    .collectionName(collectionName)
+                    .build();
+            Boolean loaded = client.getLoadState(customSetupLoadStateReq1);
+            log.warn("Load status of Milvus collection '" + collectionName + "': " + loaded);
+        } finally {
+            client.close();
+        }
 
         return domain.getMilvusBaseUrl();
     }
