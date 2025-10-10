@@ -14,7 +14,10 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetLoadStateReq;
 import io.milvus.v2.service.vector.request.InsertReq;
+import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
+import io.milvus.v2.service.vector.response.SearchResp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
@@ -140,7 +143,7 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Implement method train()!");
+        log.error("TODO: Finish implementation of method train()!");
 
         MilvusClientV2 client = getMilvusClient(domain);
         String collectionName = getCollectionName(domain);
@@ -216,6 +219,51 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
         log.error("TODO: Implement method getAnswers()!");
 
         List<Hit> answers = new ArrayList<Hit>();
+
+        int k = 100;
+        //if (limit > 0) {
+        if (false) {
+            // INFO: The same QnA UUID can be indexed at least three times: question, alternative question, answer
+            // Whereas there could be an arbitrary number of alternative questions, so we might want to set the multiplier even greater than 3
+            int multiplier = 3;
+            k = multiplier * limit;
+            log.info("External limit set to " + limit + ", therefore get " + k + " (" + multiplier + " times " + limit + ") nearest neighbours ...");
+        } else {
+            log.info("No external limit set, therefore get " + k + " nearest neighbours ...");
+        }
+
+        MilvusClientV2 client = getMilvusClient(domain);
+        String collectionName = getCollectionName(domain);
+        try {
+            FloatVec queryVector = new FloatVec(new float[]{0.3580376395471989f, -0.6023495712049978f, 0.18414012509913835f, -0.26286205330961354f, 0.9029438446296592f});
+            SearchReq searchReq = SearchReq.builder()
+                    .collectionName(collectionName)
+                    .data(Collections.singletonList(queryVector))
+                    .topK(k)
+                    .build();
+
+            SearchResp searchResp = client.search(searchReq);
+
+            List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+            for (List<SearchResp.SearchResult> results : searchResults) {
+                log.info("Milvus TopK results:");
+                for (SearchResp.SearchResult result : results) {
+                    log.info("Result: " + result);
+                    String uuid = result.getId().toString();
+                    float score = result.getScore();
+                    log.info("Vector found with UUID '" + uuid + "' and confidence score '" + score + "'.");
+                    //log.info("Vector found with UUID '" + path + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + score + "'.");
+                    String originalQuestionOfAnswer = null;
+                    Date dateAnswered = null;
+                    Date dateAnswerModified = null;
+                    Date dateOriginalQuestionSubmitted = null;
+                    String answer = Answer.AK_UUID_COLON + uuid;
+                    answers.add(new Hit(new Answer(question, answer, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, originalQuestionOfAnswer, dateOriginalQuestionSubmitted, true, null, true, null), score));
+                }
+            }
+        } finally {
+            client.close();
+        }
 
         return answers.toArray(new Hit[0]);
     }
