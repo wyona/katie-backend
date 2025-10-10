@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.wyona.katie.models.*;
 
@@ -80,11 +81,12 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
         log.info("Create Milvus collection ...");
         domain.setMilvusBaseUrl(getHost(null));
 
-        int VECTOR_DIMENSION = 5;
-
         MilvusClientV2 client = getMilvusClient(domain);
 
         try {
+            Vector dummyVector = getEmbedding("dummy", domain);
+            int VECTOR_DIMENSION = dummyVector.getDimension();
+
             // INFO: Create schema
             CreateCollectionReq.CollectionSchema schema = client.createSchema();
             schema.addField(AddFieldReq.builder()
@@ -138,6 +140,8 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
                     .build();
             Boolean loaded = client.getLoadState(customSetupLoadStateReq1);
             log.warn("Load status of Milvus collection '" + collectionName + "': " + loaded);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
         } finally {
             client.close();
         }
@@ -158,12 +162,21 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
             String classification = "TODO";
 
             // TODO: Also index question, whereas see Lucene implementation ...
-            Vector embedding = getEmbedding(qna.getAnswer(), domain);
+            float[] embedding = ((FloatVector) getEmbedding(qna.getAnswer(), domain)).getValues();
 
-            Gson gson = new Gson();
-            List<JsonObject> data = Arrays.asList(
-                    gson.fromJson("{\"" + UUID_FIELD + "\": \"" + qna.getUuid() + "\", \"" + VECTOR_FIELD + "\": [0.3580376395471989, -0.6023495712049978, 0.18414012509913835, -0.26286205330961354, 0.9029438446296592], \"" + CLASSIFICATION_FIELD + "\": \"" + classification + "\"}", JsonObject.class)
-            );
+            JsonObject obj = new JsonObject();
+            obj.addProperty(UUID_FIELD, qna.getUuid());
+            JsonArray vectorArray = new JsonArray();
+            for (float f : embedding) {
+                vectorArray.add(f);
+            }
+            obj.add(VECTOR_FIELD, vectorArray);
+            obj.addProperty(CLASSIFICATION_FIELD, classification);
+
+            List<JsonObject> data = Collections.singletonList(obj);
+            //List<JsonObject> data = new ArrayList<>();
+            //data.add(obj);
+
             InsertReq insertReq = InsertReq.builder()
                     .collectionName(collectionName)
                     .data(data)
@@ -246,7 +259,8 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
         MilvusClientV2 client = getMilvusClient(domain);
         String collectionName = getCollectionName(domain);
         try {
-            FloatVec queryVector = new FloatVec(new float[]{0.3580376395471989f, -0.6023495712049978f, 0.18414012509913835f, -0.26286205330961354f, 0.9029438446296592f});
+            float[] embedding = ((FloatVector) getEmbedding(question, domain)).getValues();
+            FloatVec queryVector = new FloatVec(embedding);
             SearchReq searchReq = SearchReq.builder()
                     .collectionName(collectionName)
                     .data(Collections.singletonList(queryVector))
@@ -272,6 +286,8 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
                     answers.add(new Hit(new Answer(question, answer, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, originalQuestionOfAnswer, dateOriginalQuestionSubmitted, true, null, true, null), score));
                 }
             }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         } finally {
             client.close();
         }
