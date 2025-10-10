@@ -7,6 +7,7 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.QuestionAnsweringService;
 import com.wyona.katie.services.RememberMeService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,14 +64,7 @@ public class AskControllerV2 {
      * REST interface to get answer(s) for a particular question
      */
     @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getAnswer(
             //public ResponseEntity<Answer, AnswerError> getAnswer(
             @Parameter(name = "question", description = "Question, e.g. 'What is the highest mountain of the world?'", required = true)
@@ -121,14 +115,7 @@ public class AskControllerV2 {
      * REST interface to get answer(s) for a particular question
      */
     @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get answer(s) for a previously asked and answered question. If no answer is available, then an empty array will be returned.", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> postQuestion(
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,

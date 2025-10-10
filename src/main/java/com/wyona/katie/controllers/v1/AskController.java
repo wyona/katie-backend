@@ -510,14 +510,7 @@ public class AskController {
      */
     @RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
-    @Operation(summary="Classify a text")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Classify a text", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> predictTaxonomyEntries(
             @Parameter(name = "asynchronous", description = "When set to true, then prediction will be done asynchronous", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "asynchronous", required = false) Boolean asynchronous,
@@ -631,14 +624,7 @@ public class AskController {
      * REST interface to chat with a LLM
      */
     @RequestMapping(value = "/chat/completions/{domain-id}", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary="Chat with a LLM")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Chat with a LLM", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> chatCompletions(
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
             @PathVariable(value = "domain-id", required = true) String _domainId,
