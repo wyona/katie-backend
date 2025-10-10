@@ -1379,7 +1379,7 @@ public class ContextService {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
         }
 
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
 
         User user = iamService.getUserByUsername(new Username(username), false, false);
         if (user != null) {
@@ -2517,7 +2517,7 @@ public class ContextService {
      * @return true when user is signed in and is member of domain or administrator, and false otherwise
      */
     public boolean isMemberOrAdmin(String domainId) {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null) {
             return isMemberOrAdmin(domainId, signedInUser);
         } else {
@@ -2564,7 +2564,7 @@ public class ContextService {
     public boolean hasRole(Role role) {
         log.info("Check whether user is signed in and has role " + role + " ...");
 
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null) {
             log.debug("Signed in user: " + signedInUser.getUsername());
 
@@ -3049,7 +3049,7 @@ public class ContextService {
      * @return rated answer
      */
     public Answer rateAnswer(Context domain, Rating rating) throws Exception {
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null) {
             log.debug("Signed in user: " + signedInUser.getUsername());
             rating.setEmail(signedInUser.getEmail());
@@ -4668,7 +4668,7 @@ public class ContextService {
             User[] users = getMembers(sourceQnA.getDomainid(), false, null);
             // TODO: Also get users from other domains, where this information is shared with
 
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
 
             String firstLastName = signedInUser.getUsername();
             if (signedInUser.getFirstname() != null || signedInUser.getLastname() != null) {
@@ -4701,7 +4701,7 @@ public class ContextService {
     private void notifyOtherUserAboutSharedInformation(User user, Answer qna, Context domain) throws Exception {
         String fromAddress = null; // INFO: Default from address of Katie will be used
 
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         String firstLastName = signedInUser.getUsername();
         if (signedInUser.getFirstname() != null || signedInUser.getLastname() != null) {
             firstLastName = getFirstLastName(signedInUser);
@@ -4758,7 +4758,7 @@ public class ContextService {
     private void notifyOtherUserContainingSharedInformation(String email, Answer qna, Context domain) throws Exception {
         String fromAddress = null; // INFO: Default from address of Katie will be used
 
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         String firstLastName = signedInUser.getUsername();
         if (signedInUser.getFirstname() != null || signedInUser.getLastname() != null) {
             firstLastName = getFirstLastName(signedInUser);

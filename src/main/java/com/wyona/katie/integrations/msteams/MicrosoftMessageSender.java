@@ -691,7 +691,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
         Locale locale = Utils.getLocale(lang);
 
         //User user = iamService.getUserByUsername(new Username(message.getFrom().getId()), false, false);
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         if (action.equals(ChannelAction.IMPROVE_CORRECT_ANSWER)) {
             /* TODO: Consider question UUID instead of answer UUID and question
             String questionUuid = "TODO";

@@ -365,6 +365,9 @@ public class IAMService {
      */
     public User getUser(boolean includingPassword, boolean includingJWT) {
         String username = getUsername();
+        if (username == null) {
+            return null;
+        }
         return getUserByUsername(new Username(username), includingPassword, includingJWT);
     }
 

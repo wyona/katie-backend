@@ -224,7 +224,7 @@ public class ConfigurationController {
     public ResponseEntity<?> getApplicationProperties(
             HttpServletRequest request) {
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         if (!(user != null && user.getRole().equals(Role.ADMIN))) {
             log.warn("User either not signed in or does not have system role '" + Role.ADMIN + "'!");
             return new ResponseEntity<>(new Error("Access denied", "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
@@ -288,7 +288,7 @@ public class ConfigurationController {
 
         rememberMeService.tryAutoLogin(request, response);
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         if (user != null) {
             log.info("Get list of domains which signed in user '" + user.getUsername() + "'  has access to.");
         } else {
@@ -376,7 +376,7 @@ public class ConfigurationController {
 
         rememberMeService.tryAutoLogin(request, response);
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         if (user != null) {
             log.info("Get MyKatie domain of signed in user '" + user.getUsername() + "' ...");
         } else {
@@ -513,7 +513,7 @@ public class ConfigurationController {
         Context domain = null;
         try {
             authService.tryJWTLogin(request);
-            User user = authService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user != null && user.getRole() == Role.ADMIN) {
                 // TODO: Check input parameters, for example domain name must not be empty
                 if (name == null || name.trim().length() == 0) {

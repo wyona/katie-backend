@@ -156,7 +156,7 @@ public class SlackMessageSender extends CommonMessageSender  {
             log.error(e.getMessage(), e);
         }
 
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         log.info("Signed in as Katie user '" + user.getId() + "'.");
 
         if (!contextService.isUserMemberOfDomain(user.getId(), domainId)) {
@@ -331,7 +331,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         Date dateAnswerModified = dateAnswered;
         Date dateOriginalQuestionSubmitted = dateAnswered;
         boolean isPublic = false;
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         Answer newQnA = new Answer(null, answer, ContentType.TEXT_PLAIN, relevantUrl, classifications, QnAType.DEFAULT, null, dateAnswered, dateAnswerModified, null, domain.getId(), null, askedQuestion, dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
         contextService.addQuestionAnswer(newQnA, domain);
         contextService.train(new QnA(newQnA), domain, true);
