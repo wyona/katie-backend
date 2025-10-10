@@ -15,6 +15,7 @@ import com.wyona.katie.models.KnowledgeSourceMeta;
 import com.wyona.katie.models.msteams.MSTeamsDomainMapping;
 import com.wyona.katie.models.msteams.MicrosoftBotMessage;
 import com.wyona.katie.services.ContextService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -227,14 +228,7 @@ public class MicrosoftBotController {
   POST /api/v1/micrososft/message HTTP/1.1..Host: 127.0.0.1:6060..Authorization: Bearer ew0KIC...qaoZW_DDw-FxbC1Q..User-Agent: BF-DirectLine (Microsoft-BotFramework/3.2 +https://botframework.com/ua)..x-ms-conversation-id: 5fXxxuMPf5gnSy2OnSl67-h..Content-Type: application/json; charset=utf-8..Request-Id: |6954d980-47f8d9d78d8a0d35.14.1...X-Forwarded-For: 13.94.244.42..X-Forwarded-Host: ukatie.com..X-Forwarded-Server: ukatie.com..Connection: Keep-Alive..Content-Length: 504....{"type":"message","id":"5fXxxuMPf5gnSy2OnSl67-h|0000001","timestamp":"2020-08-30T07:09:43.3133668Z","serviceUrl":"https://webchat.botframework.com/","channelId":"webchat","from":{"id":"97b40934-6f23-4705-83dd-a60b8451f784","name":"You"},"conversation":{"id":"5fXxxuMPf5gnSy2OnSl67-h"},"recipient":{"id":"askkatie@BwUXs4nRsbg","name":"Katie"},"textFormat":"plain","locale":"de-CH","text":"Test 2","channelData":{"clientActivityID":"15987713832991mh8krcwc1xj","clientTimestamp":"2020-08-30T07:09:43.299Z"}}
 */
     @RequestMapping(value = "/message", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="MICROSOFT: Handle Microsoft bot messages")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "MICROSOFT: Handle Microsoft bot messages", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> handleEvents(@RequestBody MicrosoftBotMessage message,
         HttpServletRequest request) {
 

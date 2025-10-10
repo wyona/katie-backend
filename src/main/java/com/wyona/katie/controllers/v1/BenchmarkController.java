@@ -6,6 +6,7 @@ import com.wyona.katie.models.Error;
 import com.wyona.katie.services.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -197,14 +198,7 @@ public class BenchmarkController {
      * https://txt.cohere.ai/what-is-similarity-between-sentences/
      */
     @RequestMapping(value = "/similarity-sentences", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Get confidence score whether two sentences are similar")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get confidence score whether two sentences are similar", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getSentencesSimilarity(
             @Parameter(name = "domainId", description = "Domain Id, for example 'a30b9bfe-0ffb-41eb-a2e2-34b238427a74', which represents a single realm containing its own set of questions/answers.",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -300,14 +294,7 @@ public class BenchmarkController {
      * 
      */
     @RequestMapping(value = "/run-benchmark", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> performBenchmark(
             @Parameter(name = "email", description = "E-Mail to get notification when benchmark is completed",required = false)
             @RequestParam(value = "email", required = false) String email,
@@ -421,14 +408,7 @@ public class BenchmarkController {
      *
      */
     @RequestMapping(value = "/run-classification-benchmark", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Run a classification benchmark")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Run a classification benchmark", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> performClassificationBenchmark(
             @Parameter(name = "domain-id", description = "Domain Id containing preference dataset", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,

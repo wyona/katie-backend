@@ -14,6 +14,7 @@ import com.wyona.katie.integrations.slack.SlackMessageSender;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -477,14 +478,7 @@ public class QuestionsController {
      * REST interface to add a thread message / response to an originally asked question
      */
     @RequestMapping(value = "/asked/thread-message", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Add a thread message / response to an originally asked question")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Add a thread message / response to an originally asked question", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addThreadMessage(
             @Parameter(name = "client-message-id", description = "Client message / thread Id", required = true)
             @RequestParam(value = "client-message-id", required = true) String messageId,
@@ -693,14 +687,7 @@ public class QuestionsController {
      * REST interface to delete all questions asked
      */
     @RequestMapping(value = "/asked", method = RequestMethod.DELETE, produces = "application/json")
-    @Operation(summary="Delete all questions asked by a particular user or by anonymous users when domain public and users not signed in")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Delete all questions asked by a particular user or by anonymous users when domain public and users not signed in", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> deleteQuestionsAsked(
             @Parameter(name = "user-id", description = "User Id (e.g. 'superadmin') or empty string when deleting questions asked by anonymous users", required = false)
             @RequestParam(value = "user-id", required = false) String userId,
@@ -785,14 +772,7 @@ public class QuestionsController {
      * REST interface to get all trained questions/answers of a particular domain
      */
     @RequestMapping(value = "/trained", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Get all trained QnAs of a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get all trained QnAs of a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getTrainedQuestions(
             @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -858,14 +838,7 @@ public class QuestionsController {
      * REST interface to delete all trained questions/answers of a particular domain
      */
     @RequestMapping(value = "/trained", method = RequestMethod.DELETE, produces = "application/json")
-    @Operation(summary="Delete all trained QnAs of a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Delete all trained QnAs of a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> deleteTrainedQnAs(
             @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
@@ -909,14 +882,7 @@ public class QuestionsController {
      * REST interface to delete all questions/answers (trained and not trained) of a particular domain
      */
     @RequestMapping(value = "/all", method = RequestMethod.DELETE, produces = "application/json")
-    @Operation(summary="Delete all QnAs (trained and not trained) of a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Delete all QnAs (trained and not trained) of a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> deleteAllQnAs(
             @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,

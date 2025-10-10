@@ -6,6 +6,7 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.RememberMeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,14 +51,7 @@ public class FeedbackController {
      * REST interface such that user can rate received answer
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rate-answer", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Rate answer to question")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Rate answer to question", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> rateAnswer(
             @Parameter(name = "uuid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String quuid,
@@ -174,14 +168,7 @@ public class FeedbackController {
      * REST interface such that user can rate predicted labels
      */
     @RequestMapping(value = "/rate-predicted-labels", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Rate predicted labels")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Rate predicted labels", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> ratePredictedLabels(
             @Parameter(name = "rating", description = "Rating of predicted labels", required = true)
             @RequestBody RatingPredictedLabels rating,

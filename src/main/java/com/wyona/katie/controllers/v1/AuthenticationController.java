@@ -3,6 +3,7 @@ package com.wyona.katie.controllers.v1;
 import com.wyona.katie.models.Error;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,14 +206,7 @@ public class AuthenticationController {
      * Login with username/password or JWT token
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Login with username/password or JWT token")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Login with username/password or JWT token", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
         @Parameter(name = "rememberMe", description = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, schema = @Schema(defaultValue = "false"))
         @RequestParam(value = "rememberMe", required = false) Boolean rememberMe,

@@ -6,6 +6,7 @@ import com.wyona.katie.mail.EmailSenderConfig;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -403,14 +404,7 @@ public class ConfigurationController {
      * REST interface to get a particular domain configuration
      */
     @RequestMapping(value = "/configuration/context/{id}", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Get domain configuration")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get domain configuration", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getContextConfiguration(
         @Parameter(name = "id", description = "Id of domain (e.g. 'ROOT' or 'jmeter')",required = true)
         @PathVariable("id") String id,
@@ -493,14 +487,7 @@ public class ConfigurationController {
      * REST interface to create a new domain
      */
     @RequestMapping(value = "/configuration/domain", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Create a new domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Create a new domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> createDomain(
         @Parameter(name = "name", description = "Name of domain (e.g. 'Wyona Research & Development')",required = true)
         @RequestParam("name") String name,

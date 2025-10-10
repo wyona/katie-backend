@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,14 +53,7 @@ public class TokenizerController {
      * REST interface to get bert-base-cased tokenization
      */
     @RequestMapping(value = "/bert-base-cased", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Get bert-base-cased tokenization of text")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get bert-base-cased tokenization of text", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getBertBaseCasedTokenization(
         @Parameter(name = "domainId", description = "Domain, for example 'wyona', which represents a single realm containing its own summary.",required = true)
         @RequestParam(value = "domainId", required = true) String domainId,

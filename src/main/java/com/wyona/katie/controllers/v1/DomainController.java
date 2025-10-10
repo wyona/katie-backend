@@ -15,6 +15,7 @@ import com.wyona.katie.models.insights.NgxChartsSeries;
 import com.wyona.katie.services.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,14 +173,7 @@ public class DomainController {
      * Import QnAs from JSON text into a particular domain
      */
     @RequestMapping(value = "/{id}/import/qnas-from-text", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Import QnAs from JSON text into a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Import QnAs from JSON text into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importQnAsFromText(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -225,14 +219,7 @@ public class DomainController {
      * Import QnAs from JSON file into a particular domain
      */
     @RequestMapping(value = "/{id}/import/qnas-from-file", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Import QnAs from JSON file into a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Import QnAs from JSON file into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importQnAsFromFile(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -281,14 +268,7 @@ public class DomainController {
      * Import PDF
      */
     @RequestMapping(value = "/{id}/import/pdf", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Import PDF into a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Import PDF into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importPDF(
             @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -341,14 +321,7 @@ public class DomainController {
      * Import HTML web page
      */
     @RequestMapping(value = "/{id}/import/html-web-page", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Import HTML web page into a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Import HTML web page into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importHTMLWebPage(
             @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -944,14 +917,7 @@ public class DomainController {
      * Trigger a particular Supabase based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-supabase", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Supabase based knowledge source by a webhook")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Trigger a particular Supabase based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceSupabase(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1244,14 +1210,7 @@ public class DomainController {
      * Import Classification dataset from JSON file into a particular domain
      */
     @RequestMapping(value = "/{id}/classification/import-dataset", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Import classification dataset from JSON file into a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Import classification dataset from JSON file into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importClassificationDatasetFromFile(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1338,14 +1297,7 @@ public class DomainController {
      * Get classification labels of a particular domain
      */
     @RequestMapping(value = "/{id}/classification/labels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary="Get classification labels")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get classification labels", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getClassificationLabels(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1821,14 +1773,7 @@ public class DomainController {
      * Reindex all QnAs of a particular domain
      */
     @RequestMapping(value = "/{id}/reindex", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Reindex all QnAs of a particular domain")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Reindex all QnAs of a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> reindex(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,

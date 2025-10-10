@@ -10,6 +10,7 @@ import com.wyona.katie.integrations.msteams.MicrosoftMessageSender;
 import com.wyona.katie.integrations.slack.SlackMessageSender;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -114,14 +115,7 @@ public class QuestionController {
      * REST interface to add/train a new QnA
      */
     @RequestMapping(value = "/trained/{domainid}", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Add a new QnA to domain and train QnA once added")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Add a new QnA to domain and train QnA once added", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addQuestionAndAnswer(
             @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -157,14 +151,7 @@ public class QuestionController {
      * REST interface to get a trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Get a particular trained QnA")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get a particular trained QnA", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getTrainedQnA(
         @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
         @PathVariable("domainid") String domainid,
@@ -208,14 +195,7 @@ public class QuestionController {
      * REST interface to get only answer of a trained QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/answer", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Get only answer of a particular trained QnA")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get only answer of a particular trained QnA", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getTrainedAnswer(
             @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -343,14 +323,7 @@ public class QuestionController {
      * REST interface to extract auto-suggest terms from QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/autocompletion-terms", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Exract auto-suggest terms from QnA")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Exract auto-suggest terms from QnA", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getExtractedSuggestions(
             @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -1017,14 +990,7 @@ public class QuestionController {
      * TODO: See for example git@github.com:wyona/katie-4-faq.git
      */
     @RequestMapping(value = "/{domainid}/{uuid}/rateAnswer", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Rate answer to question")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Rate answer to question", security = { @SecurityRequirement(name = "bearerAuth") })
     @Deprecated
     public ResponseEntity<?> rateAnswer(
             @Parameter(name = "uuid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
@@ -1097,14 +1063,7 @@ public class QuestionController {
      * REST interface such that user can rate a QnA
      */
     @RequestMapping(value = "/resubmitted/{domainid}/{uuid}/rateQnA", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Rate QnA")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Rate QnA", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> rateQnA(
             @Parameter(name = "uuid", description = "UUID of QnA (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("uuid") String uuid,

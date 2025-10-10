@@ -8,6 +8,7 @@ import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.IAMService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,14 +48,7 @@ public class BackgroundProcessController {
      * REST interface to get status of a particular background process (running or completed)
      */
     @RequestMapping(value = "/{process-id}/status", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Get status of a particular background process (running or completed)")
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer JWT",
-            required = false,
-            in = ParameterIn.HEADER,
-            schema = @Schema(type = "string")
-    )
+    @Operation(summary = "Get status of a particular background process (running or completed)", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getStatusOfRunningProcess(
         @Parameter(name = "process-id", description = "Process Id",required = true)
         @PathVariable(value = "process-id", required = true) String processId,
