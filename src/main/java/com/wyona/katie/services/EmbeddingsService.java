@@ -39,8 +39,8 @@ public class EmbeddingsService {
     /**
      * Get embedding for a text
      * @param domain Katie Domain associated with text
-     * @param embeddingType TODO
-     * @param valueType TODO
+     * @param embeddingType Embedding type, e.g. Search Document, Search Query, Classification, ...
+     * @param valueType Value type, e.g. float32 or int8
      * @return embedding vector
      */
     public Vector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
