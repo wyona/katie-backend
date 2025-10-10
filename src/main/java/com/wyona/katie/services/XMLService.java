@@ -1525,7 +1525,7 @@ public class XMLService {
             milvusEl.setAttribute(CONTEXT_MILVUS_BASE_URL_ATTR, context.getMilvusBaseUrl());
 
             // TODO: Make configurable ....
-            milvusEl.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR, "SBERT");
+            milvusEl.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR, EmbeddingsImpl.SBERT.toString());
             // TODO: Also set model, etc.
 
             doc.getDocumentElement().appendChild(milvusEl);
@@ -2018,17 +2018,11 @@ public class XMLService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH);
             domain.setKnowledgeGraphQueryUrl(knowledgeGraphQueryUrl);
         }
+
         if (luceneVectorSearch) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-            domain.setEmbeddingsImpl(embeddingsImpl);
-            domain.setEmbeddingsModel(embeddingsModel);
-            domain.setEmbeddingValueType(embeddingValueType);
-            domain.setEmbeddingsEndpoint(embeddingsEndpoint);
-            domain.setEmbeddingsApiToken(embeddingsApiToken);
-            if (similarityMetricStr != null) {
-                domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(similarityMetricStr));
-            }
         }
+
         if (sentenceBERTCorpusId != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.SENTENCE_BERT);
             domain.setSentenceBERTCorpusId(sentenceBERTCorpusId);
@@ -2042,6 +2036,17 @@ public class XMLService {
         // INFO: Set NER implementation
         if (nerImpl != null) {
             domain.setNerImpl(NerImpl.valueOf(nerImpl));
+        }
+
+        if (embeddingsImpl != EmbeddingsImpl.UNSET) {
+            domain.setEmbeddingsImpl(embeddingsImpl);
+            domain.setEmbeddingsModel(embeddingsModel);
+            domain.setEmbeddingValueType(embeddingValueType);
+            domain.setEmbeddingsEndpoint(embeddingsEndpoint);
+            domain.setEmbeddingsApiToken(embeddingsApiToken);
+        }
+        if (similarityMetricStr != null) {
+            domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(similarityMetricStr));
         }
 
         return domain;
