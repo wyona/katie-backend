@@ -5,8 +5,7 @@ import com.wyona.katie.models.Role;
 import com.wyona.katie.models.User;
 import com.wyona.katie.models.msteams.MSTeamsDomainMapping;
 import com.wyona.katie.models.slack.JWTClaims;
-import com.wyona.katie.services.AuthenticationService;
-import com.wyona.katie.services.JwtService;
+import com.wyona.katie.services.*;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.msteams.MSTeamsDomainMapping;
 import com.wyona.katie.models.slack.JWTClaims;
@@ -16,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.wyona.katie.models.Context;
-import com.wyona.katie.services.ContextService;
-import com.wyona.katie.services.DataRepositoryService;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
@@ -37,6 +34,9 @@ public class MicrosoftDomainService {
 
     @Autowired
     private AuthenticationService authService;
+
+    @Autowired
+    private IAMService iamService;
 
     @Autowired
     private JwtService jwtService;
@@ -128,7 +128,7 @@ public class MicrosoftDomainService {
     private boolean isAdmin() {
         log.info("Check whether user is signed in and has role " + Role.ADMIN + " ...");
 
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null) {
             log.info("Signed in user: " + signedInUser.getUsername());
 

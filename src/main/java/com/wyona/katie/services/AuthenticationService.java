@@ -239,7 +239,7 @@ public class AuthenticationService {
      * Get user object of signed in user or user associated with valid bearer token (JWT)
      * @return user when user has a valid session or request contains a valid bearer token (JWT), otherwise return null
      */
-    public User getUser(boolean includingPassword, boolean includingJWT) {
+    private User getUser(boolean includingPassword, boolean includingJWT) {
         String username = getUsername();
         return getUserByUsername(username, includingPassword, includingJWT);
     }

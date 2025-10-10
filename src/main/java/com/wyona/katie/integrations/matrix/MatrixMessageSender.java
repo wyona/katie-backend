@@ -35,6 +35,9 @@ public class MatrixMessageSender {
     private AuthenticationService authService;
 
     @Autowired
+    private IAMService iamService;
+
+    @Autowired
     private QuestionAnalyzerService questionAnalyzerService;
 
     @Autowired
@@ -209,7 +212,7 @@ public class MatrixMessageSender {
             return contextService.getContext(domainID);
         } else {
             String name = "Matrix " + roomId;
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             Context domain = contextService.createDomain(true,name, "Katie / Matrix", false, signedInUser);
             dataRepoService.addDomainIdMatrixMapping(domain.getId(), roomId);
             return domain;
@@ -246,7 +249,7 @@ public class MatrixMessageSender {
      */
     private boolean isAdmin() {
         log.info("Check whether user is signed in and has role ADMIN ...");
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null && (signedInUser.getRole() == Role.ADMIN)) {
             return true;
         } else {

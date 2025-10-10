@@ -28,6 +28,9 @@ public class RememberMeService {
     @Autowired
     private AuthenticationService authService;
 
+    @Autowired
+    private IAMService iamService;
+
     private static final String EMAIL_COOKIE_NAME = "KATIEEMAIL";
     private static final String AUTO_LOGIN_COOKIE_NAME = "KATIEAUTOLOGIN";
     private static final String SEP = "___";
@@ -184,7 +187,7 @@ Means: if the session timeout is 4h and you configure here 30min, the cookie tok
      */
     public User tryAutoLogin(HttpServletRequest request, HttpServletResponse response) {
         log.info("Try to auto login user ...");
-        User signedInUser = authService.getUser(false, false);
+        User signedInUser = iamService.getUser(false, false);
         if (signedInUser != null) {
             log.info("Auto login not necessary, because user '" + signedInUser.getUsername() + "' is already signed in.");
             return signedInUser;
@@ -210,7 +213,7 @@ Means: if the session timeout is 4h and you configure here 30min, the cookie tok
                                 saveToken(username, newToken);
                                 log.debug("Token was expired and has been renewed now.");
 */
-                        return authService.getUser(false, false);
+                        return iamService.getUser(false, false);
                     } else {
                         log.warn("Autologin cookie '" + username + "' / '" + token + "' is invalid!");
                         disableAutoLogin(request, response);

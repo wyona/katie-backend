@@ -1,14 +1,11 @@
 package com.wyona.katie.controllers.v2;
 
 import com.wyona.katie.models.Error;
-import com.wyona.katie.services.AuthenticationService;
-import com.wyona.katie.services.ImportService;
-import com.wyona.katie.services.Utils;
+import com.wyona.katie.services.*;
 import com.wyona.katie.models.Context;
 import com.wyona.katie.models.ExtractQnAsArgs;
 import com.wyona.katie.models.User;
 import com.wyona.katie.models.faq.FAQ;
-import com.wyona.katie.services.ContextService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,6 +49,9 @@ public class FAQControllerV2 {
 
     @Autowired
     private AuthenticationService authService;
+
+    @Autowired
+    private IAMService iamService;
 
     /**
      * REST interface to get status / progress of import
@@ -213,7 +213,7 @@ public class FAQControllerV2 {
         try {
             boolean isPublic = true; // TODO: Consider isPublic as request parameter
             String importProcessId = UUID.randomUUID().toString();
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             boolean indexAlternativeQuestions = true; // TODO: Make configurable
             importService.batchImportJSON(domain, language, faq, isPublic, signedInUser, importProcessId, indexAlternativeQuestions);
             return new ResponseEntity<>("{\"import-process-id\":\"" + importProcessId + "\"}", HttpStatus.OK);
@@ -267,7 +267,7 @@ public class FAQControllerV2 {
             log.info("Save uploaded SQuAD to temporary file: " + tmpFile.getAbsolutePath());
             FileUtils.copyInputStreamToFile(file.getInputStream(), tmpFile);
 
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             boolean indexAlternativeQuestions = true; // TODO: Make configurable
             importService.batchImportSQuAD(domain, language, isPublic, importProcessId, signedInUser, indexAlternativeQuestions);
 
@@ -306,7 +306,7 @@ public class FAQControllerV2 {
             //log.debug("Parsed FAQ XML: " + newFAQs);
 
             boolean isPublic = true; // TODO: Consider isPublic as request parameter
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             boolean indexAlternativeQuestions = true; // TODO: Make configurable
             FAQ importedFAQ = contextService.importFAQ(domain, language, newFAQs, isPublic, signedInUser, indexAlternativeQuestions);
             return new ResponseEntity<>(importedFAQ.getTopics(), HttpStatus.OK);

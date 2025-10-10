@@ -6,6 +6,7 @@ import com.wyona.katie.models.Context;
 import com.wyona.katie.models.User;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.ContextService;
+import com.wyona.katie.services.IAMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,9 @@ public class EmailController {
 
     @Autowired
     private AuthenticationService authService;
+
+    @Autowired
+    private IAMService iamService;
 
     /**
      * REST interface to trigger processing new emails
@@ -88,7 +92,7 @@ public class EmailController {
         }
 
         String processId = UUID.randomUUID().toString();
-        User user = authService.getUser(false, false);
+        User user = iamService.getUser(false, false);
         emailService.processEmailsUnread(domain, trustAllSSLCertificates, _includeFeedbackLinks, user, processId);
 
         return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);

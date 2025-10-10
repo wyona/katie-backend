@@ -6,6 +6,7 @@ import com.wyona.katie.models.Role;
 import com.wyona.katie.models.User;
 import com.wyona.katie.services.AuthenticationService;
 import com.wyona.katie.services.BackgroundProcessService;
+import com.wyona.katie.services.IAMService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,9 @@ public class BackgroundProcessController {
     private AuthenticationService authenticationService;
 
     @Autowired
+    private IAMService iamService;
+
+    @Autowired
     private BackgroundProcessService backgroundProcessService;
 
     /**
@@ -63,7 +67,7 @@ public class BackgroundProcessController {
         }
 
         try {
-            User signedInUser = authenticationService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             if (signedInUser == null) {
                 log.warn("User is not signed in!");
                 return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);

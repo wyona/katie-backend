@@ -66,6 +66,9 @@ public class BenchmarkController {
     private AuthenticationService authService;
 
     @Autowired
+    private IAMService iamService;
+
+    @Autowired
     private AIService aiService;
     
     @Autowired
@@ -357,7 +360,7 @@ public class BenchmarkController {
             in.close();
 
             String processId = UUID.randomUUID().toString();
-            User user = authService.getUser(false, false);
+            User user = iamService.getUser(false, false);
 
             // INFO: List of search implementations to be benchmarked
             List<RetrievalConfiguration> systemsToBenchmark = new ArrayList<>();
@@ -453,7 +456,7 @@ public class BenchmarkController {
             }
 
             String processId = UUID.randomUUID().toString();
-            User user = authService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             bmService.runClassificationBenchmark(domainId, throttleTimeInMillis, email, user, processId);
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
