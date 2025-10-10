@@ -364,7 +364,7 @@ public class IAMController {
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             if (!(signedInUser.getId().equals(id) || signedInUser.getRole() == Role.ADMIN)) {
                 return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
             }
@@ -393,7 +393,7 @@ public class IAMController {
             @PathVariable(value = "id", required = true) String id,
             HttpServletRequest request) {
         try {
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
             if (!(signedInUser.getId().equals(id) || signedInUser.getRole() == Role.ADMIN)) {
                 return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
             }
@@ -429,7 +429,7 @@ public class IAMController {
         try {
             authService.tryJWTLogin(request);
 
-            User signedInUser = authService.getUser(false, false);
+            User signedInUser = iamService.getUser(false, false);
 
             if (signedInUser == null || !(signedInUser.getId().equals(id) || signedInUser.getRole() == Role.ADMIN)) {
                 log.warn("Access denied.");

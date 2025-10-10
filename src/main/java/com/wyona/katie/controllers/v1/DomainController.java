@@ -88,7 +88,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -140,7 +140,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -198,7 +198,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -250,7 +250,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -308,7 +308,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -371,7 +371,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
@@ -1269,7 +1269,7 @@ public class DomainController {
         }
 
         try {
-            User user = authenticationService.getUser(false, false);
+            User user = iamService.getUser(false, false);
             if (user == null) {
                 throw new AccessDeniedException("User is not signed in!");
             }
