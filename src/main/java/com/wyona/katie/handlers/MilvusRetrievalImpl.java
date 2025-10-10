@@ -216,7 +216,7 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
      */
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
-        log.error("TODO: Implement method getAnswers()!");
+        log.error("TODO: Finish implementation of method getAnswers()!");
 
         List<Hit> answers = new ArrayList<Hit>();
 
