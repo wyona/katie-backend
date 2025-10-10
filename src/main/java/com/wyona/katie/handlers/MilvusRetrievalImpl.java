@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.wyona.katie.models.*;
 
+import com.wyona.katie.models.Vector;
+import com.wyona.katie.services.EmbeddingsService;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.DataType;
@@ -18,6 +20,7 @@ import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,9 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
 
     @Value("${milvus.host}")
     private String milvusHostDefault;
+
+    @Autowired
+    private EmbeddingsService embeddingsService;
 
     private static final String UUID_FIELD = "uuid";
     private static final String VECTOR_FIELD = "vector";
@@ -150,7 +156,10 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
         try {
             qna.getClassifications();
             String classification = "TODO";
-            String[] embedding = null; // TODO
+
+            // TODO: Also index question, whereas see Lucene implementation ...
+            Vector embedding = getEmbedding(qna.getAnswer(), domain);
+
             Gson gson = new Gson();
             List<JsonObject> data = Arrays.asList(
                     gson.fromJson("{\"" + UUID_FIELD + "\": \"" + qna.getUuid() + "\", \"" + VECTOR_FIELD + "\": [0.3580376395471989, -0.6023495712049978, 0.18414012509913835, -0.26286205330961354, 0.9029438446296592], \"" + CLASSIFICATION_FIELD + "\": \"" + classification + "\"}", JsonObject.class)
@@ -162,6 +171,8 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
 
             InsertResp insertResp = client.insert(insertReq);
             log.info("Milvus insert response: " + insertResp);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         } finally {
             client.close();
         }
@@ -297,5 +308,23 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
     private String getCollectionName(Context domain) {
         // INFO: The first character of a collection name must be an underscore or letter. Also, collection name can only contain numbers, letters and underscores.
         return "katie_" + domain.getId().replaceAll("-", "_");
+    }
+
+    /**
+     * Get vector / text embedding
+     */
+    private Vector getEmbedding(String text, Context domain) throws Exception {
+        try {
+            if (text.trim().length() == 0) {
+                // TODO: Do we really want to index an empty string!?
+                log.warn("Text is empty!");
+            }
+            Vector vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
+            log.info("Vector: " + vector);
+            return vector;
+        } catch (Exception e) {
+            log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Milvus vector index of domain '" + domain.getId() + "'.");
+            throw e;
+        }
     }
 }
