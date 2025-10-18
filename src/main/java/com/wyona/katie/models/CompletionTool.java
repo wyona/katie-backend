@@ -43,13 +43,14 @@ public class CompletionTool {
 
     /**
      * Tmp
+     * @param functionArgument Function argument, e.g. "file_path"
      */
     public void setFunctionArgument(String functionArgument) {
         this.functionArgument = functionArgument;
     }
 
     /**
-     *
+     * @return function argument, e.g. "file_path"
      */
     public String getFunctionArgument() {
         return functionArgument;
