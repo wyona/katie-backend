@@ -30,6 +30,8 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
     @Autowired
     private XMLService xmlService;
 
+    private static final String NONE = "None";
+
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
@@ -213,8 +215,9 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         PromptMessage promptMessage = new PromptMessage();
         promptMessage.setRole(PromptMessageRole.USER);
-        promptMessage.setContent("Which document from the attached list of documents is relevant in connection with the following question \"" + question + "\"\n\nIf the attached list of documents does not contain any relevant document, then answer with N/A, otherwise make sure to return the file path of the relevant document.");
+        promptMessage.setContent("Which document from the attached list of documents is relevant in connection with the following question \"" + question + "\"\n\nIf the attached list of documents does not contain any relevant document, then answer with " + NONE + ", otherwise make sure to return the file path of the relevant document.");
 
+        // INFO: "documents.json" contains a document index, which means a list of candidate documents and some meta information about each document, such as title and description of document, relevant concepts and keywords, table of contents
         File documentsIndex = new File(domain.getContextDirectory(), "documents.json");
         if (!documentsIndex.isFile()) {
             throw new Exception("Domain '" + domain + "' has no documents index yet!");
@@ -238,10 +241,10 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
-        if (filePath != null) {
+        if (filePath != null && !filePath.toLowerCase().equals(NONE.toLowerCase())) {
             relevantDocs.add(new File(baseDiretory, filePath));
         } else {
-            log.warn("No relevant document(s) found!");
+            log.warn("LLM '" + completionImpl + "' (Model: " + domain.getCompletionConfig().getModel() + ") did not find any relevant document(s) inside documents index '" + documentsIndex.getAbsolutePath() + "'!");
         }
 
         return relevantDocs.toArray(new File[0]);
