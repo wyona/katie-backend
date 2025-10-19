@@ -134,15 +134,23 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
         // INFO: MCP servers configuration: src/main/resources/mcp-servers-config.json
         List<ToolCallback> tools = Arrays.stream(toolCallbackProvider.getToolCallbacks()).toList();
         log.info("Available tool callbacks: " + tools.size());
+        List<ToolCallback> selectedTools = new ArrayList<>();
         for (ToolCallback toolCallback : tools) {
-            log.info("Tool Callback: " + toolCallback.getToolDefinition().name() + ": " + toolCallback.getToolDefinition().description());
+            //log.info("Tool Callback: " + toolCallback.getToolDefinition().name() + ": " + toolCallback.getToolDefinition().description());
+            if (toolCallback.getToolDefinition().name().equals("milvus_vector_search") || toolCallback.getToolDefinition().name().equals("milvus_list_collections")) {
+                selectedTools.add(toolCallback);
+            }
+        }
+        for (ToolCallback toolCallback : selectedTools) {
+            log.info("Selected Tool Callback: " + toolCallback.getToolDefinition().name() + ": " + toolCallback.getToolDefinition().description());
         }
 
         if (true) {
             ChatClient chatClient = chatClientBuilder.build();
             return chatClient.prompt()
                     .user(question)
-                    .toolCallbacks(tools)
+                    .toolCallbacks(selectedTools)
+                    //.toolCallbacks(tools)
                     .call()
                     .chatResponse()
                     .getResult()
