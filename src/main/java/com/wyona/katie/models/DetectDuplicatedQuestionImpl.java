@@ -15,5 +15,6 @@ public enum DetectDuplicatedQuestionImpl {
     QUERY_SERVICE,
     KATIE,
     AZURE_AI_SEARCH,
-    LLM
+    LLM,
+    MCP
 }

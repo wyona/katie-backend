@@ -139,6 +139,7 @@ public class XMLService {
     private static final String CONTEXT_AZURE_AI_SEARCH_ADMIN_KEY_ATTR = "admin-key";
     private static final String CONTEXT_AZURE_AI_SEARCH_INDEX_NAME_ATTR = "index-name";
     private static final String CONTEXT_QUERY_SERVICE_TAG = "query-service";
+    private static final String CONTEXT_MCP_TAG = "mcp";
     private static final String CONTEXT_LLM_SEARCH_TAG = "llm-search";
     private static final String CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR = "assistant-id";
     private static final String CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR = "assistant-name";
@@ -1479,6 +1480,11 @@ public class XMLService {
 
         DetectDuplicatedQuestionImpl ddqi = context.getDetectDuplicatedQuestionImpl();
 
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.MCP)) {
+            log.info("Add element " + CONTEXT_MCP_TAG);
+            Element mcpElement = doc.createElement(CONTEXT_MCP_TAG);
+        }
+
         if (ddqi.equals(DetectDuplicatedQuestionImpl.LLM)) {
             log.info("Add element " + CONTEXT_LLM_SEARCH_TAG);
             Element llmSearchElement = doc.createElement(CONTEXT_LLM_SEARCH_TAG);
@@ -1706,6 +1712,7 @@ public class XMLService {
 
         String nerImpl = getAttributeStringValue(doc, CONTEXT_NER_TAG, CONTEXT_NER_IMPL_ATTR, null);
 
+        Element mcpEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_MCP_TAG);
         Element llmSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_LLM_SEARCH_TAG);
         Element katieSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_SEARCH_TAG);
         Element azureAISearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_AZURE_AI_SEARCH_TAG);
@@ -1980,6 +1987,11 @@ public class XMLService {
 
         // INFO: Set answer question implementation
         domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT); // INFO: Set LUCENE_DEFAULT implementation by default
+
+        if (mcpEl != null) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.MCP);
+        }
+
         if (llmSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
             if (llmSearchEl.hasAttribute(CONTEXT_LLM_SEARCH_ASSISTANT_ID_ATTR)) {

@@ -2028,6 +2028,8 @@ public class ContextService {
             domain.setSentenceBERTDistanceThreshold(distanceThreshold);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LLM)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LLM);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.MCP)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.MCP);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
             domain.setEmbeddingsImpl(embeddingImpl);

@@ -49,6 +49,8 @@ public class AIService {
     private AzureAISearchImpl azureAISearchImpl;
     @Autowired
     private LLMQuestionAnswerImpl llmQuestionAnswerImpl;
+    @Autowired
+    private MCPQuestionAnswerImpl mcpQuestionAnswerImpl;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -625,6 +627,8 @@ public class AIService {
             return azureAISearchImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.LLM)) {
             return llmQuestionAnswerImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.MCP)) {
+            return mcpQuestionAnswerImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
             return luceneImpl;
         } else {
