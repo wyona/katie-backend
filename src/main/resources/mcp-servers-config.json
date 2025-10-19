@@ -9,6 +9,17 @@
       "env": {
         "BRAVE_API_KEY": "BRAVE_API_KEY"
       }
+    },
+    "milvus": {
+      "command": "/Users/michaelwechner/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/michaelwechner/src/mcp-server-milvus/src/mcp_server_milvus",
+        "run",
+        "server.py",
+        "--milvus-uri",
+        "http://localhost:19530"
+      ]
     }
   }
 }
