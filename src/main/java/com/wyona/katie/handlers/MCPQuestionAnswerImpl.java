@@ -1,6 +1,8 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +27,8 @@ import java.util.List;
 @Component
 public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
-    //@Autowired
-    //private ChatClient.Builder chatClientBuilder;
+    @Autowired
+    private ChatClient.Builder chatClientBuilder;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -129,8 +131,6 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      */
     private String getAnswer(String question) {
         //List<ToolCallback> tools = null;
-        return "TODO";
-        /*
         ChatClient chatClient = chatClientBuilder.build();
         return chatClient.prompt()
                 .user(question)
@@ -139,7 +139,5 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
                 .getResult()
                 .getOutput()
                 .getText();
-
-         */
     }
 }
