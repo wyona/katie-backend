@@ -1,15 +1,10 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
-import com.wyona.katie.services.GenerativeAIService;
-import com.wyona.katie.services.KnowledgeSourceXMLFileService;
-import com.wyona.katie.services.XMLService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,27 +16,23 @@ import java.util.List;
  * 3) The LLM decides which tools to use and the argument values
  * 4) The MCP client is querying the MCP servers based on the selected tools
  * 5) The LLM generates an answer based on the retrieved context from the MCP servers
+ *
+ * https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html
+ * https://github.com/spring-projects/spring-ai-examples/tree/main/model-context-protocol/web-search
+ * https://modelcontextprotocol.io/sdk/java/mcp-client
  */
 @Slf4j
 @Component
 public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
-    @Autowired
-    private GenerativeAIService generativeAIService;
-
-    @Autowired
-    private KnowledgeSourceXMLFileService knowledgeSourceXMLFileService;
-
-    @Autowired
-    private XMLService xmlService;
-
-    private static final String NONE = "None";
+    //@Autowired
+    //private ChatClient.Builder chatClientBuilder;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
     public void deleteTenant(Context domain) {
-        log.info("TODO: LLM search implementation of deleting tenant ...");
+        log.info("TODO: MCP implementation of deleting tenant ...");
         // TODO
     }
 
@@ -49,7 +40,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) {
-        log.info("TODO: LLM search implementation of creating tenant ...");
+        log.info("TODO: MCP implementation of creating tenant ...");
         // TODO
         return null;
     }
@@ -58,7 +49,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#delete(String, Context)
      */
     public boolean delete(String uuid, Context domain) {
-        log.info("TODO: Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from LLM search implementation ...");
+        log.info("TODO: Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from MCP implementation ...");
         // TODO
         return false;
     }
@@ -79,7 +70,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context context, boolean indexAlternativeQuestions) {
-        log.info("TODO: Index QnA '" + qna.getUuid() + "' with LLM search implementation ...");
+        log.info("TODO: Index QnA '" + qna.getUuid() + "' with MCP implementation ...");
         // TODO
     }
 
@@ -110,11 +101,13 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         List<Hit> hits = new ArrayList<Hit>();
 
-        log.info("Get answer from LLM search implementation ...");
+        log.info("Get answer from MCP implementation ...");
 
         String _answer = null;
-        if (true) {
+        if (false) {
             _answer = "Mock answer";
+        } else {
+            _answer = getAnswer(question);
         }
 
         String uuid = null;
@@ -129,5 +122,24 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
         hits.add(new Hit(answer, score));
 
         return hits.toArray(new Hit[0]);
+    }
+
+    /**
+     *
+     */
+    private String getAnswer(String question) {
+        //List<ToolCallback> tools = null;
+        return "TODO";
+        /*
+        ChatClient chatClient = chatClientBuilder.build();
+        return chatClient.prompt()
+                .user(question)
+                .call()
+                .chatResponse()
+                .getResult()
+                .getOutput()
+                .getText();
+
+         */
     }
 }
