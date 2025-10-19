@@ -15,7 +15,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * LLM based search implementation
+ * 1) The LLM selects a relevant document (based on a document index provided to the LLM)
+ * 2) The relevant document is read
+ * 3) The LLM generates an answer based on the contect of the relevant document
  */
 @Slf4j
 @Component
