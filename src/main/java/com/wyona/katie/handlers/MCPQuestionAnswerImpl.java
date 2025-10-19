@@ -156,6 +156,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
                 Context domain = xmlService.parseContextConfig("5c5f7efe-a9c0-4fdc-a55f-6175f56f16d8");
                 float[] queryVector = ((FloatVector) getEmbedding(question, domain)).getValues();
 
+                // https://github.com/zilliztech/mcp-server-milvus?tab=readme-ov-file#available-tools
                 Map<String, Object> args = Map.of(
                         "collection_name", "katie_5c5f7efe_a9c0_4fdc_a55f_6175f56f16d8",
                         "vector", queryVector,
