@@ -1,6 +1,8 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.EmbeddingsService;
+import com.wyona.katie.services.XMLService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
@@ -35,6 +37,12 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Autowired
     private SyncMcpToolCallbackProvider toolCallbackProvider;
+
+    @Autowired
+    private EmbeddingsService embeddingsService;
+
+    @Autowired
+    XMLService xmlService;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -146,18 +154,45 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
         }
 
         if (true) {
-            ChatClient chatClient = chatClientBuilder.build();
-            return chatClient.prompt()
-                    .user(question)
-                    .toolCallbacks(selectedTools)
-                    //.toolCallbacks(tools)
-                    .call()
-                    .chatResponse()
-                    .getResult()
-                    .getOutput()
-                    .getText();
+            try {
+                Context domain = xmlService.parseContextConfig("5c5f7efe-a9c0-4fdc-a55f-6175f56f16d8");
+                float[] queryVector = ((FloatVector) getEmbedding(question, domain)).getValues();
+
+                ChatClient chatClient = chatClientBuilder.build();
+                return chatClient.prompt()
+                        //.user(question)
+                        .user("Find 3 similar items in the Milvus collection 'katie_5c5f7efe_a9c0_4fdc_a55f_6175f56f16d8' for this vector: " + queryVector)
+                        .toolCallbacks(selectedTools)
+                        //.toolCallbacks(tools)
+                        .call()
+                        .chatResponse()
+                        .getResult()
+                        .getOutput()
+                        .getText();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return e.getMessage();
+            }
         } else {
             return "Mock answer";
+        }
+    }
+
+    /**
+     * Get vector / text embedding
+     */
+    private Vector getEmbedding(String text, Context domain) throws Exception {
+        try {
+            if (text.trim().length() == 0) {
+                // TODO: Do we really want to index an empty string!?
+                log.warn("Text is empty!");
+            }
+            Vector vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
+            log.info("Vector: " + vector);
+            return vector;
+        } catch (Exception e) {
+            log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Milvus vector index of domain '" + domain.getId() + "'.");
+            throw e;
         }
     }
 }
