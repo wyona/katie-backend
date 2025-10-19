@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +32,9 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Autowired
     private ChatClient.Builder chatClientBuilder;
+
+    @Autowired
+    private SyncMcpToolCallbackProvider toolCallbackProvider;
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -132,15 +137,21 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      */
     private String getAnswer(String question) {
         // TODO: Add MCP Server, such tools can be retrieved from MCP Server and sent to LLM
-        List<ToolCallback> tools = null;
+        List<ToolCallback> tools = Arrays.stream(toolCallbackProvider.getToolCallbacks()).toList();
+        log.info("Available tool callbacks: " + tools.size());
 
-        ChatClient chatClient = chatClientBuilder.build();
-        return chatClient.prompt()
-                .user(question)
-                .call()
-                .chatResponse()
-                .getResult()
-                .getOutput()
-                .getText();
+        if (true) {
+            ChatClient chatClient = chatClientBuilder.build();
+            return chatClient.prompt()
+                    .user(question)
+                    .toolCallbacks(tools)
+                    .call()
+                    .chatResponse()
+                    .getResult()
+                    .getOutput()
+                    .getText();
+        } else {
+            return "TODO";
+        }
     }
 }
