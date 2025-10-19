@@ -722,7 +722,7 @@ public class AskController {
     }
 
     /**
-     * REST interface to chat with a LLM using SSE
+     * REST interface to chat with a LLM using SSE (Server Sent Events)
      * @return
      */
     @PostMapping(path ="/chat/completions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -742,40 +742,45 @@ public class AskController {
         rememberMeService.tryAutoLogin(request, response);
 
         // INFO: Use an array instead a string only, in order to workaround "Variable used in lambda expression should be final or effectively final"
-        String[] mockResponse = new String[1];
-        //mockResponse[0] = "Hi, this is a SSE mock response from Katie :-)";
+        String[] responseMsg = new String[1];
+        if (false) {
+            responseMsg[0] = "Hi, this is a SSE (Server-Sent Events) mock response from Katie :-)";
+            return sendSSE(responseMsg[0]);
+        }
 
         Context domain = null;
         try {
+            log.warn("Use hard coded domain Id '" + yulupDomainId + "' ...");
             domain = contextService.getContext(yulupDomainId);
         } catch (Exception e) {
             String content = getNoSuchDomainMessage(yulupDomainId);
             log.error(content);
-            mockResponse[0] = content;
-            return sendSSE(mockResponse[0]);
+            responseMsg[0] = content;
+            return sendSSE(responseMsg[0]);
             //return Flux.error(e);
         }
 
         if (!authService.userIsSignedInBySession(request)) {
             log.info("User is not signed in!");
-            mockResponse[0] = getLoginSignUpMessage();
-            return sendSSE(mockResponse[0]);
+            responseMsg[0] = getLoginSignUpMessage();
+            return sendSSE(responseMsg[0]);
         }
 
         try {
             chatCompletionsRequest.setConversation_id("TODO_CREATE_CONVERSATION_ID");
             User user = iamService.getUser(false, false);
-            mockResponse[0] = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
+            responseMsg[0] = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
         } catch (Exception e) {
-            mockResponse[0] = e.getMessage();
+            responseMsg[0] = e.getMessage();
             log.error(e.getMessage(), e);
         }
 
-        return sendSSE(mockResponse[0]);
+        return sendSSE(responseMsg[0]);
     }
 
     /**
-     *
+     * Convert message into a stream of Server-Sent Events
+     * @param message Message, e.g. "Hi, this is a SSE (Server-Sent Events) mock response from Katie :-)"
      */
     private Flux<ServerSentEvent<String>> sendSSE(String message) {
         counter = 0;
