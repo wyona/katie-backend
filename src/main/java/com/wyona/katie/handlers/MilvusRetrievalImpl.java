@@ -258,8 +258,8 @@ public class MilvusRetrievalImpl implements QuestionAnswerHandler {
         MilvusClientV2 client = getMilvusClient(domain);
         String collectionName = getCollectionName(domain);
         try {
-            float[] embedding = ((FloatVector) getEmbedding(question, domain)).getValues();
-            FloatVec queryVector = new FloatVec(embedding);
+            float[] queryEmbedding = ((FloatVector) getEmbedding(question, domain)).getValues();
+            FloatVec queryVector = new FloatVec(queryEmbedding);
             SearchReq searchReq = SearchReq.builder()
                     .collectionName(collectionName)
                     .data(Collections.singletonList(queryVector))
