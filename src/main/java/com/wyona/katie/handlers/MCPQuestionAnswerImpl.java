@@ -111,12 +111,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
         log.info("Get answer from MCP implementation ...");
 
-        String _answer = null;
-        if (false) {
-            _answer = "Mock answer";
-        } else {
-            _answer = getAnswer(question);
-        }
+        String _answer = getAnswer(question);
 
         String uuid = null;
         ContentType answerContentType = ContentType.TEXT_PLAIN;
@@ -136,9 +131,12 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      *
      */
     private String getAnswer(String question) {
-        // TODO: Add MCP Server, such tools can be retrieved from MCP Server and sent to LLM
+        // INFO: MCP servers configuration: src/main/resources/mcp-servers-config.json
         List<ToolCallback> tools = Arrays.stream(toolCallbackProvider.getToolCallbacks()).toList();
         log.info("Available tool callbacks: " + tools.size());
+        for (ToolCallback toolCallback : tools) {
+            log.info("Tool Callback: " + toolCallback.getToolDefinition().name() + ": " + toolCallback.getToolDefinition().description());
+        }
 
         if (true) {
             ChatClient chatClient = chatClientBuilder.build();
@@ -151,7 +149,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
                     .getOutput()
                     .getText();
         } else {
-            return "TODO";
+            return "Mock answer";
         }
     }
 }
