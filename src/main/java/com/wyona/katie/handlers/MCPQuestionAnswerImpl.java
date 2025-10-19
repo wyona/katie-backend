@@ -1,6 +1,7 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
+import com.wyona.katie.models.Vector;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.XMLService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -11,10 +12,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * MCP (Model Context Protocol) based search implementation
@@ -157,6 +155,15 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
             try {
                 Context domain = xmlService.parseContextConfig("5c5f7efe-a9c0-4fdc-a55f-6175f56f16d8");
                 float[] queryVector = ((FloatVector) getEmbedding(question, domain)).getValues();
+
+                Map<String, Object> args = Map.of(
+                        "collection_name", "katie_5c5f7efe_a9c0_4fdc_a55f_6175f56f16d8",
+                        "vector", queryVector,
+                        "vector_field", "vector",
+                        "limit", 3,
+                        "output_fields", List.of("uuid"),
+                        "metric_type", "L2"
+                );
 
                 ChatClient chatClient = chatClientBuilder.build();
                 return chatClient.prompt()
