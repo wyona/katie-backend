@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -130,7 +131,9 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      *
      */
     private String getAnswer(String question) {
-        //List<ToolCallback> tools = null;
+        // TODO: Add MCP Server, such tools can be retrieved from MCP Server and sent to LLM
+        List<ToolCallback> tools = null;
+
         ChatClient chatClient = chatClientBuilder.build();
         return chatClient.prompt()
                 .user(question)
