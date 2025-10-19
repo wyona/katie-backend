@@ -1,0 +1,133 @@
+package com.wyona.katie.handlers;
+
+import com.wyona.katie.models.*;
+import com.wyona.katie.services.GenerativeAIService;
+import com.wyona.katie.services.KnowledgeSourceXMLFileService;
+import com.wyona.katie.services.XMLService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * MCP (Model Context Protocol) based search implementation
+ * 1) The MCP client retrieves a list of tools from the configured MCP servers
+ * 2) The MCP client sends the user query together with the tools to the LLM
+ * 3) The LLM decides which tools to use and the argument values
+ * 4) The MCP client is querying the MCP servers based on the selected tools
+ * 5) The LLM generates an answer based on the retrieved context from the MCP servers
+ */
+@Slf4j
+@Component
+public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
+
+    @Autowired
+    private GenerativeAIService generativeAIService;
+
+    @Autowired
+    private KnowledgeSourceXMLFileService knowledgeSourceXMLFileService;
+
+    @Autowired
+    private XMLService xmlService;
+
+    private static final String NONE = "None";
+
+    /**
+     * @see QuestionAnswerHandler#deleteTenant(Context)
+     */
+    public void deleteTenant(Context domain) {
+        log.info("TODO: LLM search implementation of deleting tenant ...");
+        // TODO
+    }
+
+    /**
+     * @see QuestionAnswerHandler#createTenant(Context)
+     */
+    public String createTenant(Context domain) {
+        log.info("TODO: LLM search implementation of creating tenant ...");
+        // TODO
+        return null;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#delete(String, Context)
+     */
+    public boolean delete(String uuid, Context domain) {
+        log.info("TODO: Delete Q&A with UUID '" + uuid + "' of domain '" + domain.getId() + "' from LLM search implementation ...");
+        // TODO
+        return false;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#retrain(QnA, Context, boolean)
+     */
+    public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
+        log.warn("TODO: Delete/train is just a workaround, implement retrain by itself");
+        if (delete(qna.getUuid(), domain)) {
+            train(qna, domain, indexAlternativeQuestions);
+        } else {
+            log.warn("QnA with UUID '" + qna.getUuid() + "' was not deleted and therefore was not retrained!");
+        }
+    }
+
+    /**
+     * @see QuestionAnswerHandler#train(QnA, Context, boolean)
+     */
+    public void train(QnA qna, Context context, boolean indexAlternativeQuestions) {
+        log.info("TODO: Index QnA '" + qna.getUuid() + "' with LLM search implementation ...");
+        // TODO
+    }
+
+    /**
+     * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
+     */
+    public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
+        log.info("TODO: Implement batch training.");
+        for (QnA qna: qnas) {
+            train(qna, domain, indexAlternativeQuestions);
+        }
+
+        // TODO: Only return QnAs which got trained successfully
+        return qnas;
+    }
+
+    /**
+     * @see QuestionAnswerHandler#getAnswers(Sentence, Context, int)
+     */
+    public Hit[] getAnswers(Sentence question, Context context, int limit) {
+        log.info("TODO: Consider using entities!");
+        return getAnswers(question.getSentence(), question.getClassifications(), context, limit);
+    }
+
+    /**
+     * @see QuestionAnswerHandler#getAnswers(String, List, Context, int)
+     */
+    public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
+        List<Hit> hits = new ArrayList<Hit>();
+
+        log.info("Get answer from LLM search implementation ...");
+
+        String _answer = null;
+        if (true) {
+            _answer = "Mock answer";
+        }
+
+        String uuid = null;
+        ContentType answerContentType = ContentType.TEXT_PLAIN;
+        String orgQuestion = null;
+        Date dateAnswered = null;
+        Date dateAnswerModified = null;
+        Date dateOriginalQuestionSubmitted = null;
+        Answer answer = new Answer(question, _answer, answerContentType,null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, orgQuestion, dateOriginalQuestionSubmitted, true, null, true, null);
+
+        double score = -1; // TODO: Get score
+        hits.add(new Hit(answer, score));
+
+        return hits.toArray(new Hit[0]);
+    }
+}
