@@ -2066,6 +2066,7 @@ public class XMLService {
 
     /**
      * Get GenAI model
+     * @param completionImpl Completion implementation, e.g. OpenAI, Mistral or DeepSeek
      * @return GenAI model, e.g. "deepseek-r1"
      */
     private String getCompletionModel(CompletionImpl completionImpl) {
@@ -2078,6 +2079,9 @@ public class XMLService {
             model = mistralAIModel;
         } else if (completionImpl.equals(CompletionImpl.OLLAMA)) {
             model = ollamaModel;
+        } else if (completionImpl.equals(CompletionImpl.UNSET)) {
+            log.info("No completion implementation configured.");
+            model = null;
         } else {
             log.error("No such completion implemention supported yet: " + completionImpl);
             model = null;
