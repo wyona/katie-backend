@@ -16,7 +16,7 @@ public class MCPRetrievalService {
     public List<String> findAll() {
         log.info("Finding relevant content ...");
         List<String> relevantContent = new ArrayList<>();
-        relevantContent.add("TODO TODO TODO TODO");
+        relevantContent.add("Katharina was born October 18, 1896");
         relevantContent.add("Michael was born February 16, 1969");
         return relevantContent;
     }
