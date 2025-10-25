@@ -15,13 +15,9 @@ import java.util.List;
 @Slf4j
 public class MCPServerConfig {
 
-    /*
-    @Bean
-    public List<ToolCallback> retrievalTools(MCPRetrievalService retrievalService) {
-        return List.of(ToolCallbacks.from(retrievalService));
-    }
-    */
-
+    /**
+     * See Listing 5: Registering Tools https://jaxlondon.com/blog/data-machine-learning/mastering-mcp-server-with-spring-boot-and-ai/
+     */
     @Bean
     ToolCallbackProvider retrievalTools(MCPRetrievalService retrievalService) {
         log.info("Get all MCP retrieval tools ...");
