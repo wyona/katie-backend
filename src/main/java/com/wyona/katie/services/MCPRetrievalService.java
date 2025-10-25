@@ -16,15 +16,16 @@ public class MCPRetrievalService {
             description = "Find relevant content by natural language query"
     )
     public List<String> findRelevantContent(
-            @ToolParam(description = "The question search for", required = true) String query,
-            @ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
+            @ToolParam(description = "The question to search for", required = true) String question
+            //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) {
-        log.info("Finding relevant content for query '" + query + "' inside domain '" + domainId + "' ...");
+        String domainId = "TODO";
+        log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
 
         return List.of(
                 "Katharina was born October 18, 1896",
                 "Michael was born February 16, 1969",
-                "Result for query: " + query
+                "Result for question: " + question
         );
     }
 }
