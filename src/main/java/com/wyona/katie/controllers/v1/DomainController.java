@@ -987,7 +987,7 @@ public class DomainController {
      * Trigger a particular Discourse based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Supabase based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Discourse based knowledge source by a webhook")
     public ResponseEntity<?> triggerKnowledgeSourceDiscourse(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
