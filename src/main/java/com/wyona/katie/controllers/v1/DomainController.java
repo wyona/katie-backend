@@ -669,7 +669,7 @@ public class DomainController {
      * Add Filesystem directory as knowledge source
      */
     @RequestMapping(value = "/{id}/knowledge-source/filesystem", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Add Filesystem directory as knowledge source")
+    @Operation(summary="Add Filesystem directory as knowledge source (NOTE: For security reasons one cannot set a filesystem base path)")
     public ResponseEntity<?> addKnowledgeSourceFilesystem(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
