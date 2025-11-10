@@ -1,4 +1,4 @@
-FROM openjdk:21
+FROM eclipse-temurin:21-jdk
 LABEL maintainer="Michael Wechner <contact@wyona.com>"
 VOLUME /tmp
 COPY target/askkatie-webapp-*.war app.war
