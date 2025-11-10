@@ -1,11 +1,13 @@
 package com.wyona.katie.models;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Webhook Payload sent by Discourse
  * 
  */
+@Slf4j
 public class WebhookPayloadDiscourse extends WebhookPayload {
 
     // INFO: Discourse Payload examples
@@ -90,9 +92,15 @@ public class WebhookPayloadDiscourse extends WebhookPayload {
     @Override
     public String toString() {
         if (getPost() != null) {
-            return "Discourse Post Id: " + getPost().get("id").asText();
+            if (getPost().has("id")) {
+                return "Discourse Post Id: " + getPost().get("id").asText();
+            } else {
+                log.error("Payload does not have a Discourse Post Id!");
+                return "Payload does not have a Discourse Post Id!";
+            }
         } else {
-            return "TODO: Discourse Payload";
+            log.error("No Discourse payload available!");
+            return "No Discourse payload available!";
         }
     }
 }
