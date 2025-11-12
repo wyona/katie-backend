@@ -455,13 +455,13 @@
        <dependency>
          <groupId>ai.djl</groupId>
          <artifactId>api</artifactId>
-         <version>0.22.1</version>
+         <version>0.35.0</version>
        </dependency>
        <!-- https://github.com/deepjavalibrary/djl/tree/master/extensions/tokenizers#installation -->
        <dependency>
          <groupId>ai.djl.huggingface</groupId>
          <artifactId>tokenizers</artifactId>
-         <version>0.22.1</version>
+         <version>0.35.0</version>
        </dependency>
 
 
@@ -634,8 +634,8 @@
     </dependencies>
 
     <properties>
-      <!--<java.version>1.8</java.version>-->
-      <h2.version>1.4.197</h2.version>
+      <!--<h2.version>1.4.197</h2.version>-->
+      <h2.version>2.4.240</h2.version>
       <jackson.version>2.19.4</jackson.version>
       <springai.version>1.1.0-M3</springai.version>
       <lucene.version>10.2.2</lucene.version> <!-- IMPORTANT: Also update subclass of default Lucene Codec inside com/wyona/katie/services/LuceneCodecFactory.java ... -->
