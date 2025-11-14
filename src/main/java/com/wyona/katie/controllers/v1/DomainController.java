@@ -884,7 +884,7 @@ public class DomainController {
      * Trigger a particular Directus based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-directus", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Directus based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Directus based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDirectus(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -894,11 +894,15 @@ public class DomainController {
             @RequestBody WebhookPayloadDirectus payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
-
-        // TODO: Check security token
 
         try {
             // TODO: connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.DIRECTUS, id, ksId, payload, processId, userId);
@@ -934,10 +938,10 @@ public class DomainController {
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
 
-
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
+
         try {
             // INFO: Check whether user is authorized
             domainService.getDomain(id);
@@ -960,7 +964,7 @@ public class DomainController {
      * Trigger a particular TOPdesk based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular TOPdesk based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular TOPdesk based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceTOPdesk(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -970,11 +974,15 @@ public class DomainController {
             @RequestBody WebhookPayloadTOPdesk payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
@@ -987,7 +995,7 @@ public class DomainController {
      * Trigger a particular Discourse based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Discourse based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Discourse based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDiscourse(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -997,11 +1005,15 @@ public class DomainController {
             @RequestBody WebhookPayloadDiscourse payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
@@ -1027,11 +1039,15 @@ public class DomainController {
             @RequestBody WebhookPayloadConfluence payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
-
-        // TODO: Check security token
 
         try {
             // TODO: connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.CONFLUENCE, id, ksId, payload, processId, userId);
@@ -1060,6 +1076,12 @@ public class DomainController {
             @RequestBody WebhookPayloadWebsite payload,
             HttpServletRequest request) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
@@ -1069,8 +1091,6 @@ public class DomainController {
             log.warn(msg);
             return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
@@ -1083,7 +1103,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-outlook", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Outlook based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Outlook based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOutlook(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1092,6 +1112,12 @@ public class DomainController {
             @Parameter(name = "webhook-payload", description = "Webhook payload sent by Outlook", required = true)
             @RequestBody WebhookPayload payload,
             HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
@@ -1102,8 +1128,6 @@ public class DomainController {
             log.warn(msg);
             return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
@@ -1117,7 +1141,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-onenote", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular OneNote based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular OneNote based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOneNote(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1126,6 +1150,12 @@ public class DomainController {
             @Parameter(name = "webhook-payload", description = "Webhook payload sent by OneNote", required = true)
             @RequestBody WebhookPayloadOneNote payload,
             HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
@@ -1136,8 +1166,6 @@ public class DomainController {
             log.warn(msg);
             return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
@@ -1151,7 +1179,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Sharepoint based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceSharepoint(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1160,6 +1188,12 @@ public class DomainController {
             @Parameter(name = "webhook-payload", description = "Webhook payload sent by Sharepoint", required = true)
             @RequestBody WebhookPayload payload,
             HttpServletRequest request) {
+
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
@@ -1170,8 +1204,6 @@ public class DomainController {
             log.warn(msg);
             return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
-
-        // TODO: Check security token
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
