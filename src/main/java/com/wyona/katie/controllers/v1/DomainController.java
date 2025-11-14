@@ -884,7 +884,7 @@ public class DomainController {
      * Trigger a particular Directus based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-directus", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Directus based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Directus based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDirectus(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -960,7 +960,7 @@ public class DomainController {
      * Trigger a particular TOPdesk based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular TOPdesk based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular TOPdesk based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceTOPdesk(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -987,7 +987,7 @@ public class DomainController {
      * Trigger a particular Discourse based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Discourse based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Discourse based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDiscourse(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1017,7 +1017,7 @@ public class DomainController {
      * Get configured Webhooks: GET https://wyona.atlassian.net/wiki/rest/webhooks/1.0/webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-confluence", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Confluence based knowledge source by a webhook")
+    @Operation(summary = "Trigger a particular Confluence based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceConfluence(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1050,7 +1050,7 @@ public class DomainController {
      * Trigger a particular Website based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-website", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Website based knowledge source by a webhook")
+    @Operation(summary = "Trigger a particular Website based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceWebsite(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1083,7 +1083,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-outlook", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Outlook based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Outlook based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOutlook(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1117,7 +1117,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-onenote", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular OneNote based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular OneNote based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOneNote(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1151,7 +1151,7 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary="Trigger a particular Sharepoint based knowledge source by a webhook")
+    @Operation(summary="Trigger a particular Sharepoint based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceSharepoint(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
