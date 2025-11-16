@@ -210,6 +210,9 @@ When you encounter an error like "Migration checksum mismatch for migration vers
 If this modification is not relevant, then you can fix the database by replacing the previous checksum (Applied to database) by the new checksum (Resolved locally)
 
 * select * from "flyway_schema_history";
+* update "flyway_schema_history" set "checksum" = '392673978' where "version" = '19.4';
+* update "flyway_schema_history" set "checksum" = '-2012601311' where "version" = '20.3';
+* update "flyway_schema_history" set "checksum" = '951373641' where "version" = '26.1';
 * update "flyway_schema_history" set "checksum" = '-1714955084' where "version" = '28.3';
 
 and the startup should work again.
