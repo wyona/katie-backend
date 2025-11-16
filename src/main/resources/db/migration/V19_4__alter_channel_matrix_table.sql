@@ -1,3 +1,4 @@
 -- rename column UUID_RESUBMITTED_QUESTION to CHANNEL_REQUEST_UUID and add column MATRIX_EVENT_ID
-alter table CHANNEL_MATRIX change UUID_RESUBMITTED_QUESTION CHANNEL_REQUEST_UUID varchar(100) not null;
+alter table CHANNEL_MATRIX alter column UUID_RESUBMITTED_QUESTION rename to CHANNEL_REQUEST_UUID;
+alter table CHANNEL_MATRIX alter column CHANNEL_REQUEST_UUID varchar(100) not null;
 alter table CHANNEL_MATRIX add MATRIX_EVENT_ID varchar(100);
