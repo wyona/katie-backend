@@ -174,13 +174,14 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED          S
 Create / migrate Database on startup of Katie web app
 
 * pom.xml (flyway dependency)
-* src/main/resources/application.properties (flyway and h2 configuration, volume/askkatie-h2.mv.db)
+* src/main/resources/application.properties (flyway and h2 configuration, volume/askkatie-h2-v2.mv.db)
 * src/main/java/com/wyona/katie/config/DataSourceConfig.java
 * SQL Scripts: src/main/resources/db/migration
+* Migration script from v1 to v2: migrate-h2database-to-version2.sql
 
 When running Katie as Docker
 
-* Mount volume to access h2 database (volume/askkatie-h2.mv.db) from outside of docker container: -v /Users/michaelwechner/src/katie-backend/volume:/ask-katie
+* Mount volume to access h2 database (volume/askkatie-h2-v2.mv.db) from outside of docker container: -v /Users/michaelwechner/src/katie-backend/volume:/ask-katie
 
 Documentation
 
@@ -194,9 +195,9 @@ Backup and restore h2 database:
 
 Access database from command line (WARN: Might not work properly when database is already in use by server, either stop server or make a copy and connect with copy)
 
-* Run: java -cp /Users/michaelwechner/.m2/repository/com/h2database/h2/1.4.199/h2-1.4.199.jar org.h2.tools.Shell
+* Run: java -cp /Users/michaelwechner/.m2/repository/com/h2database/h2/2.4.240/h2-2.4.240.jar org.h2.tools.Shell
 * Enter:
-    * jdbc:h2:file:/Users/michaelwechner/src/katie-backend/volume/askkatie-h2
+    * jdbc:h2:file:/Users/michaelwechner/src/katie-backend/volume/askkatie-h2-v2
     * org.h2.Driver
     * Username and Password see secret-keys.properties (db.username, db.password)
     * show tables;
