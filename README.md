@@ -178,6 +178,7 @@ Create / migrate Database on startup of Katie web app
 * src/main/java/com/wyona/katie/config/DataSourceConfig.java
 * SQL Scripts: src/main/resources/db/migration
 * Migration script from v1 to v2: migrate-h2database-to-version2.sql
+  * IMPORTANT: Make sure to also update the flyway_schema_history as described below
 
 When running Katie as Docker
 
