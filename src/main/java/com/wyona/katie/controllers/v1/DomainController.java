@@ -1066,7 +1066,12 @@ public class DomainController {
      * Trigger a particular Website based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-website", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Website based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Website based knowledge source by a webhook",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Webhook payload sent by Website",
+                    required = false
+            ),
+            security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceWebsite(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1074,8 +1079,7 @@ public class DomainController {
             @PathVariable(value = "ks-id", required = true) String ksId,
             @Parameter(name = "validationtoken", description = "Microsoft Graph Validation Token", required = false)
             @RequestParam(value = "validationtoken", required = false) String validationToken,
-            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Website", required = true)
-            @RequestBody WebhookPayloadWebsite payload,
+            @RequestBody(required = false) WebhookPayloadWebsite payload,
             HttpServletRequest request) {
 
         if (validationToken != null) {
