@@ -1,7 +1,7 @@
 services:
   katie:
-    image: wyona/katie:1.373.3
-    #image: wyona/katie-mac-m:1.373.1
+    image: wyona/katie:1.374.1
+    #image: wyona/katie-mac-m:1.374.1
     #image: wyona/katie-with-prefix:1.366.0
     #image: 4d047c16cdb9
     #image: ${DOCKER_IMAGE_TAG}
