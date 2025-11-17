@@ -53,21 +53,30 @@ public class WebsiteConnector implements Connector {
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         WebhookPayloadWebsite payloadWebsite = (WebhookPayloadWebsite) payload;
-        log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' respectively '" + payloadWebsite.getPageUrl() + "' ...");
+        if (payloadWebsite.getPageUrl() != null) {
+            log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' for page URL '" + payloadWebsite.getPageUrl() + "' ...");
+        } else {
+            log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
+        }
         try {
             List<Answer> qnas = new ArrayList<Answer>();
 
-            backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
-            List<String> urls = dumpWebpages(domain, ksMeta, payload);
-            for (String url : urls) {
-                backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
-                File dumpFile = domain.getUrlDumpFile(new URI(url));
-                String cssSelector = null; // TODO: Allow CSS selector, e.g. div[id="content"] resp. [id="content"], because id is supposed to be unique
-                String body = domainService.extractText(dumpFile, cssSelector);
-                String title = domainService.extractTitle(dumpFile, body);
-                String[] chunks = generateSegments(body, ksMeta, url, processId);
-                for (String chunk : chunks) {
-                    qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
+            if (payloadWebsite.getPageUrl() != null) {
+                backgroundProcessService.updateProcessStatus(processId, "TODO: Dump page " + payloadWebsite.getPageUrl() + " ...");
+                // TODO: Implement dumping and ingesting of one particular page
+            } else {
+                backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
+                List<String> urls = dumpWebpages(domain, ksMeta, payload);
+                for (String url : urls) {
+                    backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
+                    File dumpFile = domain.getUrlDumpFile(new URI(url));
+                    String cssSelector = null; // TODO: Allow CSS selector, e.g. div[id="content"] resp. [id="content"], because id is supposed to be unique
+                    String body = domainService.extractText(dumpFile, cssSelector);
+                    String title = domainService.extractTitle(dumpFile, body);
+                    String[] chunks = generateSegments(body, ksMeta, url, processId);
+                    for (String chunk : chunks) {
+                        qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
+                    }
                 }
             }
 
