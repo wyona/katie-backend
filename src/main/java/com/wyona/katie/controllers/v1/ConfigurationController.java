@@ -258,7 +258,7 @@ public class ConfigurationController {
         properties.put("sbert.hostname", sbert_hostname);
         properties.put("sbert.port", sbert_port);
         properties.put("sbert.basic.auth.username", sbert_basic_auth_username);
-        properties.put("sbert.basic.auth.password", sbert_basic_auth_password);
+        properties.put("sbert.basic.auth.password", Utils.obfuscateSecret(sbert_basic_auth_password));
 
         properties.put("http.proxy.enabled", httpProxyEnabled.toString());
         properties.put("http.proxy.host", httpProxyHost);
