@@ -1082,6 +1082,7 @@ public class DomainController {
             @RequestBody(required = false) WebhookPayloadWebsite payload,
             HttpServletRequest request) {
 
+        // TODO: Remove validationToken, implement it into Sharepoint Webhook instead
         if (validationToken != null) {
             log.info("Return Microsoft Graph Validation Token as plain text.");
             return new ResponseEntity<>(validationToken, HttpStatus.OK);
@@ -1190,15 +1191,26 @@ public class DomainController {
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Webhook payload sent by Sharepoint",
+                    required = false
+            ),
+            security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceSharepoint(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @Parameter(name = "webhook-payload", description = "Webhook payload sent by Sharepoint", required = true)
-            @RequestBody WebhookPayload payload,
+            @Parameter(name = "validationtoken", description = "Microsoft Graph Validation Token", required = false)
+            @RequestParam(value = "validationtoken", required = false) String validationToken,
+            @RequestBody(required = false) WebhookPayloadSharepoint payload,
             HttpServletRequest request) {
+
+        if (validationToken != null) {
+            log.info("Return Microsoft Graph Validation Token '"+ validationToken +"' as plain text.");
+            return new ResponseEntity<>(validationToken, HttpStatus.OK);
+        }
 
         try {
             authenticationService.tryJWTLogin(request);
