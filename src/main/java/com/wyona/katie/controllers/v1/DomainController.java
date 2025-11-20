@@ -1077,16 +1077,8 @@ public class DomainController {
             @PathVariable(value = "id", required = true) String id,
             @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @Parameter(name = "validationtoken", description = "Microsoft Graph Validation Token", required = false)
-            @RequestParam(value = "validationtoken", required = false) String validationToken,
             @RequestBody(required = false) WebhookPayloadWebsite payload,
             HttpServletRequest request) {
-
-        // TODO: Remove validationToken, implement it into Sharepoint Webhook instead
-        if (validationToken != null) {
-            log.info("Return Microsoft Graph Validation Token as plain text.");
-            return new ResponseEntity<>(validationToken, HttpStatus.OK);
-        }
 
         try {
             authenticationService.tryJWTLogin(request);
@@ -1210,6 +1202,10 @@ public class DomainController {
         if (validationToken != null) {
             log.info("Return Microsoft Graph Validation Token '"+ validationToken +"' as plain text.");
             return new ResponseEntity<>(validationToken, HttpStatus.OK);
+        }
+
+        if (payload != null) {
+            log.info("TODO: Retrieve provided resource ...");
         }
 
         try {
