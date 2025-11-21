@@ -1,22 +1,6 @@
 package com.wyona.katie.models;
 
-/*
-https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
-
-{
-"value":[
-                {
-                "subscriptionId":"213e9e3c-59bc-4443-ad60-02c5041d228d",
-                "clientState":"secretClientValue",
-                "expirationDateTime":"2025-12-12T23:59:00.0000000Z",
-                "resource":"0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd",
-                "tenantId":"c5dce9b8-8095-444d-9730-5ccb69b43413",
-                "siteUrl":"/sites/KatieTest",
-                "webId":"8bf0d69c-dace-4f0a-9f56-f249450bf2ac"
-                }
-]
-}
- */
+import com.wyona.katie.models.MicrosoftChangeNotification;
 
 /**
  * Webhook Payload sent by Sharepoint, e.g. https://wyona.sharepoint.com/sites/KatieTest/Lists/Test%20List/AllItems.aspx
@@ -24,7 +8,7 @@ https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?t
  */
 public class WebhookPayloadSharepoint extends WebhookPayload {
 
-    private String value;
+    private MicrosoftChangeNotification[] value;
 
     /**
      *
@@ -34,16 +18,16 @@ public class WebhookPayloadSharepoint extends WebhookPayload {
     }
 
     /**
-     * @param value TODO
+     * @param value Array of change notifications
      */
-    public void setValue(String value) {
+    public void setValue(MicrosoftChangeNotification[] value) {
         this.value = value;
     }
 
     /**
      * @return value
      */
-    public String getValue() {
+    public MicrosoftChangeNotification[] getValue() {
         return value;
     }
 
@@ -53,7 +37,9 @@ public class WebhookPayloadSharepoint extends WebhookPayload {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Value: " + value);
+        for (MicrosoftChangeNotification changeNotification : value) {
+            sb.append("Change notification: " + changeNotification);
+        }
         return sb.toString();
     }
 }
