@@ -77,7 +77,11 @@ public class ConnectorService {
         }
 
         log.info("Trigger " + connector.getClass().getName() + " based knowledge source '" + ksId + "' of domain '" + domainId + "' ...");
-        log.info("Payload received from " + connector.getClass().getName() + ": " + payload);
+        if (payload != null) {
+            log.info("Payload received for " + connector.getClass().getName() + ": " + payload);
+        } else {
+            log.warn("No payload received for " + connector.getClass().getName());
+        }
 
         backgroundProcessService.startProcess(processId, "Synchronize Knowledge Source '" + ksId + "' connected with domain '" + domainId + "'.", userId);
 
