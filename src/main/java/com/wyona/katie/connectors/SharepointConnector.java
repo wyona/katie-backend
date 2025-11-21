@@ -120,6 +120,13 @@ public class SharepointConnector implements Connector {
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         List<Answer> qnas = new ArrayList<Answer>();
 
+        if (payload != null) {
+            WebhookPayloadSharepoint payloadSharepoint = (WebhookPayloadSharepoint) payload;
+            backgroundProcessService.updateProcessStatus(processId, "Sharepoint resource " + payloadSharepoint + " was modified.");
+            log.info("Sharepoint resource " + payloadSharepoint.getValue()[0] + " was modified");
+            //Analyze payload and if a sharepoint list is referenced, then GET https://graph.microsoft.com/v1.0/sites/43c98e69-7d22-4dc1-af38-4498240516e0/lists/0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd/items/delta
+            return qnas;
+        }
         String siteId = ksMeta.getSharepointSiteId();
         String webBaseUrl = ksMeta.getSharepointWebBaseUrl();
 
