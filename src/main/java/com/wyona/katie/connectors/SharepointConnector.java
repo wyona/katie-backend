@@ -628,6 +628,7 @@ public class SharepointConnector implements Connector {
     private String getAPIToken(KnowledgeSourceMeta ksMeta) {
         String token = ksMeta.getMicrosoftGraphApiToken();
         if (token != null) {
+            log.info("TODO: Check whether token is still valid!");
             log.info("Use Microsoft Graph API token '" + Utils.obfuscateSecret(token) + "' configured for knowledge source '" + ksMeta.getId() + "' of domain '" + ksMeta.getDomainId() + "' ...");
         } else {
             log.warn("No Microsoft Graph API token configured for knowledge source '" + ksMeta.getId() + "' of domain '" +ksMeta.getDomainId() + "', try to get token using OAuth ...");
@@ -646,6 +647,9 @@ public class SharepointConnector implements Connector {
             String scope = MS_GRAPH_BASE_URL + "/.default";
 
             token = microsoftAuthorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, scope);
+            if (token != null) {
+                log.info("TODO: Cache token!");
+            }
         }
 
         // INFO: https://jwt.ms/ or https://jwt.io/
