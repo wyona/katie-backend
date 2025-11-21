@@ -33,6 +33,7 @@ import com.wyona.katie.models.msteams.MicrosoftBotMessage;
 import com.wyona.katie.integrations.msteams.MicrosoftMessageSender;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,7 +81,7 @@ public class MicrosoftBotController {
     private RestProxyTemplate restProxyTemplate;
 
     @Value("${ms.client.id}")
-    private String clientId;
+    private String msClientId;
 
     @Value("${ms.public_keys.url}")
     private String publicKeysUrl;
@@ -110,6 +111,20 @@ public class MicrosoftBotController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
+        String[] domainIdKnowledgesourceId = state.split(",");
+        KnowledgeSourceMeta ksMeta = null;
+
+        try {
+            ksMeta = domainService.getKnowledgeSource(domainIdKnowledgesourceId[0], domainIdKnowledgesourceId[1]);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String tenantId = ksMeta.getMsTenant();
+        String clientId = ksMeta.getMsClientId();
+        String clientSecret = ksMeta.getMsClientSecret();
+
         try {
             // INFO: https://learn.microsoft.com/en-us/graph/auth-v2-user?tabs=http#authorization-response
             log.info("Session state: " + sessionState);
@@ -118,12 +133,6 @@ public class MicrosoftBotController {
 
             // INFO: See App Registrations: https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
             // https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/046d7c6c-c3c0-40f0-93a1-abcd73ce5cbe/isMSAApp~/false
-
-            String[] domainIdKnowledgesourceId = state.split(",");
-            KnowledgeSourceMeta ksMeta = domainService.getKnowledgeSource(domainIdKnowledgesourceId[0], domainIdKnowledgesourceId[1]);
-            String tenantId = ksMeta.getMsTenant();
-            String clientId = ksMeta.getMsClientId();
-            String clientSecret = ksMeta.getMsClientSecret();
 
             String scope = ksMeta.getMsScope();
 
@@ -141,6 +150,16 @@ public class MicrosoftBotController {
 
             return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
              */
+        } catch(HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                String errorMsg = "Please make sure, that your Client Secret of your Microsoft App '" + clientId + "' (Tenant Id: " + tenantId + ") is valid resp. not expired!";
+                log.warn(errorMsg);
+                log.error(e.getMessage(), e);
+                return new ResponseEntity<>(new Error(errorMsg, "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
+            } else {
+                log.error(e.getMessage(), e);
+                return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -251,7 +270,7 @@ public class MicrosoftBotController {
                     // TODO Also check that issuer is "https://api.botframework.com"
                     String issuer = jwtService.getPayloadValue(jwtToken, "iss");
                     String audience = jwtService.getPayloadValue(jwtToken, "aud");
-                    if (audience.equals(clientId)) {
+                    if (audience.equals(msClientId)) {
                         log.info("Token is valid.");
                     } else {
                         log.error("Token does not not contain correct Microsoft App ID: " + audience);
@@ -346,48 +365,48 @@ public class MicrosoftBotController {
 
     /**
      * Get bearer token, which allows to query SharePoint
+     * @param tenantId Microsoft tenant Id, e.g. "c5dce9b8-8095-444d-9730-5ccb69b43413"
+     * @param clientId Microsoft app Id, e.g. "046d7c6c-c3c0-40f0-93a1-abcd73ce5cbe"
+     * @return access token
      */
-    private String getAccessToken(String code, String tenantId, String clientId, String clientSecret, String redirectUri, String scope) {
-        try {
-            StringBuilder body = new StringBuilder();
-            body.append("code=" + code);
-            body.append("&");
-            body.append("client_id=" + clientId);
-            body.append("&");
-            body.append("client_secret=" + clientSecret);
-            body.append("&");
-            body.append("redirect_uri=" + redirectUri);
-            body.append("&");
-            body.append("grant_type=" + "authorization_code");
-            body.append("&");
-            body.append("scope=" + scope);
+    private String getAccessToken(String code, String tenantId, String clientId, String clientSecret, String redirectUri, String scope) throws Exception {
+        StringBuilder body = new StringBuilder();
+        body.append("code=" + code);
+        body.append("&");
+        body.append("client_id=" + clientId);
+        body.append("&");
+        body.append("client_secret=" + clientSecret);
+        body.append("&");
+        body.append("redirect_uri=" + redirectUri);
+        body.append("&");
+        body.append("grant_type=" + "authorization_code");
+        body.append("&");
+        body.append("scope=" + scope);
 
-            // TODO: Consider using property "ms.oauth.url"
-            String requestUrl = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
-            log.info("Get Access token from '" + requestUrl + "' ...");
+        // TODO: Consider using property "ms.oauth.url"
+        String requestUrl = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
+        log.info("Get Access token from '" + requestUrl + "' ...");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", "application/json");
-            headers.set("Accept-Charset", "UTF-8");
-            //headers.set("Content-Type", "application/x-www-form-urlencoded");
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
-            //HttpEntity<String> request = new HttpEntity<String>(headers);
-            HttpEntity<String> request = new HttpEntity<String>(body.toString(), headers);
+        //log.debug("Request body: " + body);
 
-            RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Accept-Charset", "UTF-8");
+        //headers.set("Content-Type", "application/x-www-form-urlencoded");
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+        //HttpEntity<String> request = new HttpEntity<String>(headers);
+        HttpEntity<String> request = new HttpEntity<String>(body.toString(), headers);
 
-            ResponseEntity<JsonNode> response = restTemplate.postForEntity(requestUrl, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("Response JSON: " + bodyNode);
+        RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
 
-            String _scope = bodyNode.get("scope").asText();
-            log.info("Scope: " + _scope);
-            String accessToken = bodyNode.get("access_token").asText();
+        ResponseEntity<JsonNode> response = restTemplate.postForEntity(requestUrl, request, JsonNode.class);
+        JsonNode bodyNode = response.getBody();
+        log.info("Response JSON: " + bodyNode);
 
-            return accessToken;
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return null;
-        }
+        String _scope = bodyNode.get("scope").asText();
+        log.info("Scope: " + _scope);
+        String accessToken = bodyNode.get("access_token").asText();
+
+        return accessToken;
     }
 }
