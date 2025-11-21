@@ -38,11 +38,13 @@ public class BackgroundProcessService {
     private IAMService iamService;
 
     private static final String NAMESPACE_1_0_0 = "http://katie.qa/background-process/1.0.0";
+    private static final String USER_ID = "user-id";
+    private static final String PROCESS_DESCRIPTION = "description";
 
     /**
      * @param id Process Id
      * @param description Process description
-     * @param userId User Id who started process
+     * @param userId User Id who started process or null, when user is not signed in
      */
     public void startProcess(String id, String description, String userId) {
         if (id == null) {
@@ -53,8 +55,12 @@ public class BackgroundProcessService {
         Document doc = xmlService.createDocument(NAMESPACE_1_0_0, "process");
         Element rootEl = doc.getDocumentElement();
         rootEl.setAttribute("id", id);
-        rootEl.setAttribute("user-id", userId);
-        rootEl.setAttribute("description", description);
+        if (userId != null) {
+            rootEl.setAttribute(USER_ID, userId);
+        } else {
+            rootEl.setAttribute(USER_ID, "null");
+        }
+        rootEl.setAttribute(PROCESS_DESCRIPTION, description);
         xmlService.save(doc, processStatusFile);
     }
 
@@ -223,8 +229,8 @@ public class BackgroundProcessService {
         Document doc = xmlService.read(processStatusFile);
         BackgroundProcess process = new BackgroundProcess(id);
         Element rootEl = doc.getDocumentElement();
-        process.setUserId(rootEl.getAttribute("user-id"));
-        process.setDescription(rootEl.getAttribute("description"));
+        process.setUserId(rootEl.getAttribute(USER_ID));
+        process.setDescription(rootEl.getAttribute(PROCESS_DESCRIPTION));
         NodeList statusList = rootEl.getElementsByTagName("status");
         for (int i = 0; i < statusList.getLength(); i++) {
             Element statusEl = (Element) statusList.item(i);
