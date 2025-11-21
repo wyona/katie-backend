@@ -60,7 +60,7 @@ public class MicrosoftAuthorizationService {
             JsonNode bodyNode = response.getBody();
             //log.debug("JSON: " + bodyNode);
             String accessToken = bodyNode.get("access_token").asText();
-            log.info("Token received :-) TODO: Cache token!");
+            log.info("Token received :-)");
             return accessToken;
         } catch(Exception e) {
             log.error(e.getMessage(), e);
