@@ -141,7 +141,7 @@ public class BackgroundProcessService {
             String subject = mailSubjectTag + " WARNING: Error(s) occurred during the execution of a background process";
             StringBuilder body = new StringBuilder("Error(s) occurred during the execution of the background process " + id + "");
             body.append("\n\n");
-            body.append(katieHost + "/swagger-ui/#/background-process-controller/getStatusOfCompletedProcessUsingGET");
+            body.append(katieHost + "/swagger-ui/index.html#/background-process-controller/getStatusOfRunningProcess");
 
             if (domainId != null) {
                 boolean motificationSent = false;
