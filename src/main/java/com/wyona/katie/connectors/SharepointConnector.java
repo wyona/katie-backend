@@ -129,11 +129,10 @@ public class SharepointConnector implements Connector {
             log.info("Sharepoint resource " + payloadSharepoint.getValue()[0] + " was modified");
 
             if (ksMeta.getMsTenant().equals(payloadSharepoint.getValue()[0].getTenantId())) {
-                String requestUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/lists";
                 String apiToken = getAPIToken(ksMeta);
                 // TODO: Check whether API access token is available
-                List<JsonNode> siteItems = new ArrayList<JsonNode>();
-                siteItems = getSiteItems(siteItems, requestUrl, siteId, ksMeta, apiToken, processId);
+                // TODO: Check whether resource is a list
+                getList(siteId, payloadSharepoint.getValue()[0].getResource(), apiToken, processId);
             } else {
                 log.warn("Tenant IDs do not match!");
             }
@@ -162,28 +161,28 @@ public class SharepointConnector implements Connector {
 
             // INFO: Get list of all sub-sites (https://learn.microsoft.com/en-us/graph/api/site-list-subsites)
             if (retrieveSubSites) {
-                String requestUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/sites";
-                siteItems = getSiteItems(siteItems, requestUrl, siteId, ksMeta, apiToken, processId);
+                String requestUrl = "/v1.0/sites/" + siteId + "/sites";
+                siteItems = getSiteItems(siteItems, requestUrl, apiToken, processId);
             }
 
             // INFO: Get list of all pages
             if (retrievePages) {
                 // WARN: Pages with contentType="Wiki Page" do not get listed, page with contentType="Site Page"! (see https://learn.microsoft.com/en-us/answers/questions/629474/get-wiki-page-content-from-sharepoint-using-graph)
-                String requestUrl = MS_GRAPH_BASE_URL + "/beta/sites/" + siteId + "/pages";
-                siteItems = getSiteItems(siteItems, requestUrl, siteId, ksMeta, apiToken, processId);
+                String requestUrl = "/beta/sites/" + siteId + "/pages";
+                siteItems = getSiteItems(siteItems, requestUrl, apiToken, processId);
             }
 
             // INFO: Get list of all lists
             if (retrieveLists) {
-                String requestUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/lists";
-                siteItems = getSiteItems(siteItems, requestUrl, siteId, ksMeta, apiToken, processId);
+                String requestUrl = "/v1.0/sites/" + siteId + "/lists";
+                siteItems = getSiteItems(siteItems, requestUrl, apiToken, processId);
             }
 
             // INFO: Get list of all folders and documents
             if (retrieveFoldersAndDocuments) {
                 // INFO: https://learn.microsoft.com/en-us/graph/api/driveitem-list-children?view=graph-rest-1.0&tabs=http#examples
-                String requestUrl = MS_GRAPH_BASE_URL + "/beta/sites/" + siteId + "/drive/root/children";
-                siteItems = getSiteItems(siteItems, requestUrl, siteId, ksMeta, apiToken, processId);
+                String requestUrl = "/beta/sites/" + siteId + "/drive/root/children";
+                siteItems = getSiteItems(siteItems, requestUrl, apiToken, processId);
             }
 
             if (siteItems.size() > 0) {
@@ -236,7 +235,7 @@ public class SharepointConnector implements Connector {
                         counterItems.increase();
                         String listName = itemNode.get("name").asText();
                         log.info("List: " + listName + ", " + itemId);
-                        Answer qna = getList(siteId, itemId, apiToken, webUrl, domain, processId);
+                        Answer qna = getList(siteId, itemId, apiToken, processId);
                         if (qna != null) {
                             qnas.add(qna);
                         } else {
@@ -271,14 +270,17 @@ public class SharepointConnector implements Connector {
     }
 
     /**
-     *
+     * Get items (sub-sites, lists, folders, documents, pages) from a Sharepoint site
+     * @param url Item specific request URL, e.g. "/v1.0/sites/{site-id}/lists" or "/v1.0/sites/{site-id}/sites"
      */
-    private List<JsonNode> getSiteItems(List<JsonNode> items, String requestUrl, String siteIdX, KnowledgeSourceMeta ksMeta, String apiToken, String processId) {
+    private List<JsonNode> getSiteItems(List<JsonNode> items, String url, String apiToken, String processId) {
 
         HttpHeaders headers = getHttpHeaders(apiToken);
         headers.set("Content-Type", "application/json; charset=UTF-8");
         headers.set("Accept", "application/json");
         HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        String requestUrl = MS_GRAPH_BASE_URL + url;
 
         RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
         try {
@@ -311,9 +313,10 @@ public class SharepointConnector implements Connector {
     }
 
     /**
-     *
+     * Get Sharepoint list
+     * @param listId List Id, e.g. "0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd"
      */
-    private Answer getList(String siteId, String listId, String apiToken, String webUrl, Context domain, String processId) {
+    private Answer getList(String siteId, String listId, String apiToken, String processId) {
         String contentUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/lists/" + listId + "/items?expand=fields";
         log.info("Dump and process list content: " + contentUrl);
         backgroundProcessService.updateProcessStatus(processId, "Dump and process list " + contentUrl);
