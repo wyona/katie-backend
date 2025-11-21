@@ -327,26 +327,22 @@ public class SharepointConnector implements Connector {
                 JsonNode bodyNode = response.getBody();
                 log.info("JSON response: " + bodyNode);
 
-                /*
                 JsonNode valueNode = bodyNode.get("value");
                 if (valueNode.isArray() && valueNode.size() > 0) {
-                    backgroundProcessService.updateProcessStatus(processId, "Total number of list items: " + valueNode.size());
-                    backgroundProcessService.updateProcessStatus(processId, "Process list items ...");
+                    backgroundProcessService.updateProcessStatus(processId, "Analyze list changes ...");
                     for (int i = 0; i < valueNode.size(); i++) {
-                        JsonNode itemNode = valueNode.get(i);
-                        JsonNode fieldsNode = itemNode.get("fields");
+                        JsonNode changeNode = valueNode.get(i);
+                        JsonNode fieldsNode = changeNode.get("fields");
 
-                        // TODO: "Anfrage" is a custom field!
-                        if (fieldsNode.has("Anfrage")) {
-                            String question = fieldsNode.get("Anfrage").asText();
-                            backgroundProcessService.updateProcessStatus(processId, question);
+                        // TODO: "url" is a custom field!
+                        if (fieldsNode.has("url")) {
+                            String url = fieldsNode.get("url").asText();
+                            backgroundProcessService.updateProcessStatus(processId, "Update URL " + url + " ...");
                         }
                     }
                 } else {
-                    backgroundProcessService.updateProcessStatus(processId, "No list items available", BackgroundProcessStatusType.WARN);
+                    backgroundProcessService.updateProcessStatus(processId, "No list changes available", BackgroundProcessStatusType.WARN);
                 }
-
-                 */
             } catch(HttpClientErrorException e) {
                 if (e.getRawStatusCode() == 403) {
                     log.error("Not authorized to access '" + contentUrl + "'!");
