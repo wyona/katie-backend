@@ -10,10 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.wyona.katie.models.*;
-import com.wyona.katie.services.BackgroundProcessService;
-import com.wyona.katie.services.ContextService;
-import com.wyona.katie.services.SegmentationService;
-import com.wyona.katie.services.UtilsService;
+import com.wyona.katie.services.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -631,9 +628,9 @@ public class SharepointConnector implements Connector {
     private String getAPIToken(KnowledgeSourceMeta ksMeta) {
         String token = ksMeta.getMicrosoftGraphApiToken();
         if (token != null) {
-            log.info("Use configured API token ...");
+            log.info("Use Microsoft Graph API token '" + Utils.obfuscateSecret(token) + "' configured for knowledge source '" + ksMeta.getId() + "' of domain '" + ksMeta.getDomainId() + "' ...");
         } else {
-            log.warn("No API token available, try to get token using OAuth ...");
+            log.warn("No Microsoft Graph API token configured for knowledge source '" + ksMeta.getId() + "' of domain '" +ksMeta.getDomainId() + "', try to get token using OAuth ...");
 
             String tenant = ksMeta.getMsTenant();
             // INFO: Azure Portal -> Azure Active Directory -> App registrations
