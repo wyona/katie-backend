@@ -21,6 +21,7 @@ public class Utils {
         if (secret != null && secret.length() > 0) {
             return secret.charAt(0) + "***" + secret.charAt(secret.length() - 1);
         } else {
+            log.warn("Secret is either null or an empty string!");
             return secret;
         }
     }
