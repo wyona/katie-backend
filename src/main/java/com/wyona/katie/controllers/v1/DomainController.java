@@ -1218,14 +1218,20 @@ public class DomainController {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
 
+        // TODO: Microsoft does not provide a way to set an access token
+        /*
         if (!domainService.isMemberOrAdmin(id)) {
             String msg = "User is neither member of domain '" + id + "', nor has role " + Role.ADMIN + "!";
             log.warn(msg);
             return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
+        */
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
+        if (userId == null) {
+            log.warn("User is not signed in.");
+        }
         connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
 
         return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
