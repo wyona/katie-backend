@@ -123,21 +123,25 @@ public class SharepointConnector implements Connector {
         String siteId = ksMeta.getSharepointSiteId();
         String webBaseUrl = ksMeta.getSharepointWebBaseUrl();
 
+        String apiToken = getAPIToken(ksMeta);
+        if (apiToken == null) {
+            String errMsg = "Microsoft Graph API token could not be retrieved, therefore Sharepoint knowledge source '" + ksMeta.getId() + "' of domain '" + domain.getId() + "' cannot be updated!";
+            log.error(errMsg);
+            backgroundProcessService.updateProcessStatus(processId, errMsg, BackgroundProcessStatusType.ERROR);
+            return qnas;
+        }
+
         if (payload != null) {
             WebhookPayloadSharepoint payloadSharepoint = (WebhookPayloadSharepoint) payload;
             backgroundProcessService.updateProcessStatus(processId, "Sharepoint resource " + payloadSharepoint + " was modified.");
             log.info("Sharepoint resource " + payloadSharepoint.getValue()[0] + " was modified");
 
             if (ksMeta.getMsTenant().equals(payloadSharepoint.getValue()[0].getTenantId())) {
-                String apiToken = getAPIToken(ksMeta);
-                // TODO: Check whether API access token is available
                 // TODO: Check whether resource is a list
-                getList(siteId, payloadSharepoint.getValue()[0].getResource(), apiToken, processId);
+                getListDelta(siteId, payloadSharepoint.getValue()[0].getResource(), apiToken, processId);
             } else {
                 log.warn("Tenant IDs do not match!");
             }
-
-            //Analyze payload and if a sharepoint list is referenced, then GET https://graph.microsoft.com/v1.0/sites/43c98e69-7d22-4dc1-af38-4498240516e0/lists/0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd/items/delta
             return qnas;
         }
 
@@ -149,12 +153,6 @@ public class SharepointConnector implements Connector {
         boolean retrieveFoldersAndDocuments = true;
         boolean retrieveLists = true;
         int MAX_ITEMS = ksMeta.getMaxItems();
-
-        String apiToken = getAPIToken(ksMeta);
-        if (apiToken == null) {
-            log.error("API token could not be retrieved, therefore Sharepoint items cannot be updated!");
-            return qnas;
-        }
 
         try {
             List<JsonNode> siteItems = new ArrayList<JsonNode>();
@@ -310,6 +308,58 @@ public class SharepointConnector implements Connector {
         }
 
         return items;
+    }
+
+    /**
+     * Get Sharepoint list delta / changes
+     */
+    private void getListDelta(String siteId, String listId, String apiToken, String processId) {
+        String contentUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
+        log.info("Get Sharepoint list delta / changes: " + contentUrl);
+        backgroundProcessService.updateProcessStatus(processId, "Get Sharepoint list delta / changes: " + contentUrl);
+        try {
+
+            HttpHeaders headers = getHttpHeaders(apiToken);
+            headers.set("Content-Type", "application/json; charset=UTF-8");
+            headers.set("Accept", "application/json");
+            HttpEntity<String> request = new HttpEntity<String>(headers);
+
+            RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
+            try {
+                ResponseEntity<JsonNode> response = restTemplate.exchange(contentUrl, HttpMethod.GET, request, JsonNode.class);
+                JsonNode bodyNode = response.getBody();
+                log.info("JSON response: " + bodyNode);
+
+                /*
+                JsonNode valueNode = bodyNode.get("value");
+                if (valueNode.isArray() && valueNode.size() > 0) {
+                    backgroundProcessService.updateProcessStatus(processId, "Total number of list items: " + valueNode.size());
+                    backgroundProcessService.updateProcessStatus(processId, "Process list items ...");
+                    for (int i = 0; i < valueNode.size(); i++) {
+                        JsonNode itemNode = valueNode.get(i);
+                        JsonNode fieldsNode = itemNode.get("fields");
+
+                        // TODO: "Anfrage" is a custom field!
+                        if (fieldsNode.has("Anfrage")) {
+                            String question = fieldsNode.get("Anfrage").asText();
+                            backgroundProcessService.updateProcessStatus(processId, question);
+                        }
+                    }
+                } else {
+                    backgroundProcessService.updateProcessStatus(processId, "No list items available", BackgroundProcessStatusType.WARN);
+                }
+
+                 */
+            } catch(HttpClientErrorException e) {
+                if (e.getRawStatusCode() == 403) {
+                    log.error("Not authorized to access '" + contentUrl + "'!");
+                } else {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
