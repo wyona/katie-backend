@@ -49,6 +49,7 @@ public class ConnectorService {
 
     /**
      * Trigger third-party knowledge source synchronization in background
+     * @param userId Id of user triggering background process or null, when user is not signed in
      */
     @Async
     public void triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector ksc, String domainId, String ksId, WebhookPayload payload, String processId, String userId) {
