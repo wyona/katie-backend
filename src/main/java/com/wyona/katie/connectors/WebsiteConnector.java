@@ -52,17 +52,24 @@ public class WebsiteConnector implements Connector {
      * @see Connector#update(Context, KnowledgeSourceMeta, WebhookPayload, String)
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
-        WebhookPayloadWebsite payloadWebsite = (WebhookPayloadWebsite) payload;
-        if (payloadWebsite.getPageUrl() != null) {
-            log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' for page URL '" + payloadWebsite.getPageUrl() + "' ...");
+        String pageUrl = null;
+        if (payload != null) {
+            WebhookPayloadWebsite payloadWebsite = (WebhookPayloadWebsite) payload;
+            if (payloadWebsite.getPageUrl() != null) {
+                pageUrl = payloadWebsite.getPageUrl();
+            }
+        }
+        
+        if (pageUrl != null) {
+            log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' for page URL '" + pageUrl + "' ...");
         } else {
             log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
         }
         try {
             List<Answer> qnas = new ArrayList<Answer>();
 
-            if (payloadWebsite.getPageUrl() != null) {
-                backgroundProcessService.updateProcessStatus(processId, "TODO: Dump page " + payloadWebsite.getPageUrl() + " ...");
+            if (pageUrl != null) {
+                backgroundProcessService.updateProcessStatus(processId, "TODO: Dump page " + pageUrl + " ...");
                 // TODO: Implement dumping and ingesting of one particular page
             } else {
                 backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
