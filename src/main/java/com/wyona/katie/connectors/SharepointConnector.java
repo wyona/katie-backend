@@ -309,6 +309,7 @@ public class SharepointConnector implements Connector {
 
     /**
      * Get Sharepoint list delta / changes
+     * Also see https://learn.microsoft.com/en-us/graph/api/listitem-delta?view=graph-rest-1.0&tabs=http
      */
     private void getListDelta(String siteId, String listId, String apiToken, String processId) {
         String contentUrl = MS_GRAPH_BASE_URL + "/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
@@ -348,6 +349,8 @@ public class SharepointConnector implements Connector {
                             backgroundProcessService.updateProcessStatus(processId, logMsg);
                         }
                     }
+
+                    // TODO: Sort changes (including deleted items) by last modified, or consider a different query.
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "No list changes available", BackgroundProcessStatusType.WARN);
                 }
