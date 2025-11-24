@@ -332,12 +332,20 @@ public class SharepointConnector implements Connector {
                     backgroundProcessService.updateProcessStatus(processId, "Analyze list changes ...");
                     for (int i = 0; i < valueNode.size(); i++) {
                         JsonNode changeNode = valueNode.get(i);
+
+                        String lastModifiedDateTime = changeNode.get("lastModifiedDateTime").asText();
+
                         JsonNode fieldsNode = changeNode.get("fields");
 
                         // TODO: "url" is a custom field!
                         if (fieldsNode.has("url")) {
-                            String url = fieldsNode.get("url").asText();
-                            backgroundProcessService.updateProcessStatus(processId, "Update URL " + url + " ...");
+                            String[] urlAndAltText = fieldsNode.get("url").asText().split(",");
+                            String url = urlAndAltText[0].trim();
+                            String altText = urlAndAltText[1].trim();
+
+                            String logMsg = "Update URL " + url + " (Alternative text: " + altText + ", Modified: " + lastModifiedDateTime + ") ...";
+                            log.info(logMsg);
+                            backgroundProcessService.updateProcessStatus(processId, logMsg);
                         }
                     }
                 } else {
