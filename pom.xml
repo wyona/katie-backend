@@ -114,6 +114,11 @@
             <artifactId>spring-ai-starter-model-openai</artifactId>
             <version>${springai.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
+            <version>${springai.version}</version>
+        </dependency>
 <!--
 <dependency>
     <groupId>org.springframework.ai</groupId>
