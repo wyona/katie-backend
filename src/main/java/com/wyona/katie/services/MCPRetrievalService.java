@@ -23,7 +23,7 @@ public class MCPRetrievalService {
         log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
 
         return List.of(
-                "Katharina was born October 18, 1896",
+                "Katherina was born October 18, 1896",
                 "Michael was born February 16, 1969",
                 "Result for question: " + question
         );
