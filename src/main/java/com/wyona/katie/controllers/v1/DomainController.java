@@ -447,6 +447,32 @@ public class DomainController {
     }
 
     /**
+     * REST interface to update the score threshold of retrieval implementation used by domain, e.g. replace "0.73" by "0.78"
+     */
+    @RequestMapping(value = "/{id}/score-threshold", method = RequestMethod.PATCH, produces = "application/json")
+    @Operation(summary = "Update score threshold of retrieval implementation used by domain")
+    public ResponseEntity<?> updateScoreThreshold(
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @PathVariable("id") String domainid,
+            @Parameter(name = "threshold", description = "Updated score threshold, e.g. 0.73", required = true)
+            @RequestParam(value = "threshold", required = true) Double threshold
+    ) {
+        try {
+            log.info("Update score threshold of retrieval implementation used by domain '" + domainid + "': " + threshold);
+            domainService.updateScoreThreshold(domainid, threshold);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            // TODO: Consider returning a body
+            //return new ResponseEntity<>(body, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * REST interface to update the domain tag name, e.g. replace "apachelucene" by "apache-lucene"
      */
     @RequestMapping(value = "/{id}/tag-name", method = RequestMethod.PATCH, produces = "application/json")
