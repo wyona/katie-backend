@@ -41,6 +41,7 @@ public class Context {
     private List<PromptMessage> promptMessages;
 
     private ClassificationImpl classifierImpl;
+    private EmbeddingsImpl clasificationEmbeddingsImpl;
 
     private NerImpl nerImpl;
 
@@ -1044,6 +1045,14 @@ public class Context {
         } else {
             return ClassificationImpl.CENTROID_MATCHING;
         }
+    }
+
+    /**
+     * Get embeddings implementation for classification
+     */
+    public EmbeddingsImpl getClassificationEmbeddingsImpl() {
+        // TODO: Get from configuration
+        return EmbeddingsImpl.SBERT;
     }
 
     /**
