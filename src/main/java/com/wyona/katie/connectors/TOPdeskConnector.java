@@ -366,6 +366,8 @@ public class TOPdeskConnector implements Connector {
     /**
      * Add comment to TOPdesk incident, which is invisible for caller
      * @param incidentId TOPdesk incident Id, e.g. "I-240606-0510"
+     * @param processId Background process Id
+     * @param ksMeta Knowledge source meta containing TOPdesk hostname and credentials
      * @param text Comment text
      * @return true when comment was added successfully and false otherwise
      */
