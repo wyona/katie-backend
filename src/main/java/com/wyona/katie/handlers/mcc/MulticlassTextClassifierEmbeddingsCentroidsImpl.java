@@ -40,7 +40,6 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     @Autowired
     private BackgroundProcessService backgroundProcessService;
 
-    private static final EmbeddingsImpl EMBEDDINGS_IMPL = EmbeddingsImpl.SBERT;
     private static final EmbeddingValueType VECTOR_VALUE_TYPE = EmbeddingValueType.float32;
 
     private static final String UUID_FIELD = "uuid";
@@ -54,7 +53,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
      */
     public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
-        Vector queryVector = embeddingsService.getEmbedding(text, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null, null);
+        Vector queryVector = embeddingsService.getEmbedding(text, domain.getClassificationEmbeddingsImpl(), null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null, null);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
@@ -183,7 +182,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         String classId = sample.getClassification().getKatieId();
 
-        Vector sampleVector = embeddingsService.getEmbedding(sample.getText(), EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null, null);
+        Vector sampleVector = embeddingsService.getEmbedding(sample.getText(), domain.getClassificationEmbeddingsImpl(), null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null, null);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);
 
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());
