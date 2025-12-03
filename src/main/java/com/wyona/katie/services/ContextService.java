@@ -549,7 +549,6 @@ public class ContextService {
             if (labels.getPredictedLabels().length > 0) {
                 log.info("Predicted labels as TOPdesk HTML: " + labels.getPredictedLabelsAsTopDeskHtml());
 
-                // TODO: Make "Webhook" configurable
                 boolean added = addClassificationResultAsIncidentCommentToTOPdesk(domainId, clientMessageId, labels, processId);
                 if (added) {
                     backgroundProcessService.updateProcessStatus(processId, "Predicted labels to incident '" + clientMessageId + "' as invisible comment added.");
