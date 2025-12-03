@@ -964,13 +964,17 @@ public class DomainController {
      * Trigger a particular TOPdesk based knowledge source by a webhook
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular TOPdesk based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Trigger a particular TOPdesk based knowledge source by a webhook",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents",
+                    required = true
+            ),
+            security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceTOPdesk(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @Parameter(name = "webhook-payload", description = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents", required = true)
             @RequestBody WebhookPayloadTOPdesk payload,
             HttpServletRequest request) {
 
