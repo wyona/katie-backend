@@ -2150,6 +2150,25 @@ public class ContextService {
     }
 
     /**
+     * Update score threshold of retrieval implementation used by domain
+     * @param domainId Domain Id
+     * @param threshold Score threshold, e.g. 0.73
+     */
+    public void updateScoreThreshold(String domainId, Double threshold) throws Exception {
+        if (!existsContext(domainId)) {
+            throw new Exception("Domain '" + domainId + "' does not exist!");
+        }
+        if (!isMemberOrAdmin(domainId)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+        log.info("Update score threshold ...");
+
+        Context domain = getContext(domainId);
+        domain.setScoreThreshold(threshold);
+        saveDomainConfig(domain);
+    }
+
+    /**
      * Update domain tag name
      * @param domainId Domain Id
      * @param tagName New tag name, e.g. "apache-lucene"
