@@ -3,6 +3,7 @@ services:
     image: wyona/katie:1.374.1
     #image: wyona/katie-mac-m:1.374.1
     #image: wyona/katie-with-prefix:1.366.0
+    #image: katie:latest
     #image: 4d047c16cdb9
     #image: ${DOCKER_IMAGE_TAG}
     container_name: katie
@@ -27,6 +28,9 @@ services:
       - MAIL_DEFAULT_ADMIN_EMAIL_ADDRESS=contact@wyona.com
       - MAIL_DEFAULT_SENDER_EMAIL_ADDRESS=Katie <contact@wyona.com>
       # Sentence BERT configuration
+      #- SBERT_SCHEME=http
+      #- SBERT_HOSTNAME=host.docker.internal
+      #- SBERT_PORT=5002
       - SBERT_SCHEME=https
       - SBERT_HOSTNAME=sbert.katie.qa
       - SBERT_PORT=443
