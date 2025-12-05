@@ -6,6 +6,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.models.EmbeddingValueType;
 import com.wyona.katie.models.FloatVector;
 import com.wyona.katie.models.Vector;
+/*
+import org.springframework.ai.azure.openai.AzureOpenAiEmbeddingModel;
+import org.springframework.ai.azure.openai.AzureOpenAiEmbeddingOptions;
+import org.springframework.ai.embedding.Embedding;
+import org.springframework.ai.embedding.EmbeddingRequest;
+import org.springframework.ai.embedding.EmbeddingResponse;
+import org.springframework.ai.ollama.api.OllamaEmbeddingOptions;
+import org.springframework.beans.factory.annotation.Autowired;
+ */
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -19,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
+
 /**
  *
  */
@@ -29,15 +40,35 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     @Value("${openai.azure.host}")
     private String openAIAzureHost;
     @Value("${openai.azure.deployment.id}")
-    private String openAIAzureDeplyomentId;
+    private String openAIAzureDeploymentId;
     @Value("${openai.azure.api.version}")
     private String openAIAzureApiVersion;
+
+    //@Autowired
+    //AzureOpenAiEmbeddingModel azureOpenAiEmbeddingModel;
 
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
     public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
         log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
+
+        /*
+        EmbeddingResponse embeddingResponse = azureOpenAiEmbeddingModel.call(
+                new EmbeddingRequest(
+                        List.of(sentence),
+                        AzureOpenAiEmbeddingOptions.builder()
+                                .deploymentName(openAIAzureDeploymentId)
+                                .build()
+                )
+        );
+
+        Embedding embedding = embeddingResponse.getResult();
+
+        FloatVector floatVector = new FloatVector(embedding.getOutput());
+        log.info("Embedding: " + floatVector);
+
+         */
 
         FloatVector vector = null;
         try {
@@ -49,7 +80,7 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
             HttpHeaders headers = getHttpHeaders(openAIKey);
             HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
 
-            String requestUrl = openAIAzureHost + "/openai/deployments/" + openAIAzureDeplyomentId + "/embeddings?api-version=" + openAIAzureApiVersion;
+            String requestUrl = openAIAzureHost + "/openai/deployments/" + openAIAzureDeploymentId + "/embeddings?api-version=" + openAIAzureApiVersion;
 
             log.info("Get embedding: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
