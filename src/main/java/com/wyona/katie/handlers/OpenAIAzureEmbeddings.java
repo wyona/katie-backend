@@ -37,11 +37,11 @@ import java.util.List;
 @Component
 public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
 
-    @Value("${openai.azure.host}")
+    @Value("${spring.ai.azure.openai.endpoint}")
     private String openAIAzureHost;
-    @Value("${openai.azure.deployment.id}")
+    @Value("${spring.ai.azure.openai.deployment}")
     private String openAIAzureDeploymentId;
-    @Value("${openai.azure.api.version}")
+    @Value("${spring.ai.azure.openai.api-version}")
     private String openAIAzureApiVersion;
 
     //@Autowired
@@ -50,8 +50,8 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     /**
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
-    public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
-        log.info("Get embedding from OpenAI for sentence '" + sentence + "' ...");
+    public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiKey) throws Exception {
+        log.info("Get embedding from Azure OpenAI for sentence '" + sentence + "' ...");
 
         /*
         EmbeddingResponse embeddingResponse = azureOpenAiEmbeddingModel.call(
@@ -77,7 +77,7 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
             inputNode.put("input", sentence);
 
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = getHttpHeaders(openAIKey);
+            HttpHeaders headers = getHttpHeaders(apiKey);
             HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
 
             String requestUrl = openAIAzureHost + "/openai/deployments/" + openAIAzureDeploymentId + "/embeddings?api-version=" + openAIAzureApiVersion;
@@ -114,13 +114,13 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     /**
      *
      */
-    private HttpHeaders getHttpHeaders(String openAIKey) {
+    private HttpHeaders getHttpHeaders(String apiKey) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json; charset=UTF-8");
 
         // OpenAI Azure, https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#authentication
-        headers.set("api-key", openAIKey);
+        headers.set("api-key", apiKey);
 
         return headers;
     }
