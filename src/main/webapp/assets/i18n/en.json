@@ -116,7 +116,7 @@
         "trained_false": "not trained",
         "close": "Close",
         "more_information": "More information",
-        "select_search_implementation": "Please select a search implementation to reindex all QnAs of this domain",
+        "select_search_implementation": "To reindex all content of this domain, please select a retrieval implementation.",
         "reindex": "Reindex",
         "iam_actions": "Options",
         "domain_role": "Role",

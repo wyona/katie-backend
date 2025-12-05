@@ -116,7 +116,7 @@
         "trained_false": "nicht trainiert",
         "close": "Schliessen",
         "more_information": "Mehr Informationen",
-        "select_search_implementation": "Bitte wählen Sie eine Suchimplementierung, um alle QnAs dieser Domain neu zu indizieren",
+        "select_search_implementation": "Bitte wählen Sie eine Retrieval-Implementierung, um alle Inhalte dieser Domain neu zu indizieren",
         "reindex": "Neu indexieren",
         "iam_actions": "Optionen",
         "domain_role": "Rolle",

@@ -116,7 +116,7 @@
         "trained_false": "pas formé",
         "close": "Fermer",
         "more_information": "Plus d'informations",
-        "select_search_implementation": "Veuillez sélectionner une implémentation de recherche pour réindexer tous les QA de ce domaine",
+        "select_search_implementation": "Veuillez sélectionner une implémentation de recherche pour réindexer tout le contenu de ce domaine",
         "reindex": "Réindexer",
         "iam_actions": "Actions",
         "domain_role": "Rôle",

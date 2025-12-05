@@ -116,7 +116,7 @@
         "trained_false": "não treinado",
         "close": "Fechar",
         "more_information": "Mais informações",
-        "select_search_implementation": "Favor selecionar uma implementação de busca para reindexar todos os QnAs deste domínio",
+        "select_search_implementation": "Favor selecionar uma implementação de busca para reindexar todo o conteúdo deste domínio",
         "reindex": "Reindex",
         "iam_actions": "Ações",
         "domain_role": "Papel",
