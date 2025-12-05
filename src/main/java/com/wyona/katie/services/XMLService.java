@@ -47,6 +47,9 @@ import java.util.UUID;
 @Component
 public class XMLService {
 
+    @Value("${spring.ai.azure.openai.endpoint}")
+    private String openAIAzureHost;
+
     @Value("${mistral.ai.completion.model}")
     private String mistralAIModel;
 
@@ -1789,9 +1792,15 @@ public class XMLService {
             } else {
                 embeddingValueType = EmbeddingValueType.float32;
             }
+
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
                 embeddingsEndpoint = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
             }
+            if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
+                // TODO: Get from domain / context
+                embeddingsEndpoint = openAIAzureHost;
+            }
+
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR)) {
                 embeddingsApiToken = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR);
             }
