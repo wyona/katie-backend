@@ -1413,7 +1413,7 @@ public class DomainController {
             Classification[] classifications = dataset.getLabels();
             List<Classification> labels = new ArrayList<>();
             for (Classification classification : classifications) {
-                if (withDescriptionsOnly) {
+                if (withDescriptionsOnly != null && withDescriptionsOnly) {
                     if (classification.getDescription() != null) {
                         labels.add(classification);
                     }
