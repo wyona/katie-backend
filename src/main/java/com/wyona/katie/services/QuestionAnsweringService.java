@@ -514,7 +514,7 @@ public class QuestionAnsweringService {
             log.info("Consider human feedback disabled.");
         }
 
-        if (domain.getGenerateCompleteAnswers() && !domain.getCompletionConfig().getCompletionImpl().equals(CompletionImpl.UNSET)) {
+        if (domain.getGenerateCompleteAnswers() && !domain.getCompletionConfig(false).getCompletionImpl().equals(CompletionImpl.UNSET)) {
             hits = generateAnswer(analyzedQuestion, domain, hits);
         } else {
             if (!domain.getGenerateCompleteAnswers()) {
@@ -533,7 +533,7 @@ public class QuestionAnsweringService {
      * @return hits, whereas top hit contains generated answer by LLM based on retrieval results
      */
     private List<Hit> generateAnswer(Sentence question, Context domain, List<Hit> hits) {
-        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig(false).getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
             log.warn("No such completion implementation '" + completionImpl + "'!");
@@ -557,10 +557,10 @@ public class QuestionAnsweringService {
                 }
                 List<PromptMessage> promptMessages = getPromptMessages(domain, question, context, url); // TODO: When there are no retrieval results, then use different prompt
 
-                log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + domain.getCompletionConfig().getModel() + " ...");
+                log.warn("Send prompt '" + promptMessages.get(0).getContent() + "' to " + domain.getCompletionConfig(false).getModel() + " ...");
                 Double temperature = null;
                 // INFO: Get answer from LLM
-                String completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(), temperature).getText();
+                String completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(false), temperature).getText();
 
                 log.info("Completed text: " + completedText);
 

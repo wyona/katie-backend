@@ -58,7 +58,7 @@ public class GenerativeAIService {
      * @return completion message
      */
     public String getCompletion(Context domain, ChatCompletionsRequest chatCompletionsRequest, User user) throws Exception {
-        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig(false).getCompletionImpl();
         if (completionImpl == CompletionImpl.UNSET) {
             String warnMsg = "Domain '" + domain.getId() + "' has no completion implementation configured!";
             log.warn(warnMsg);
@@ -106,7 +106,7 @@ public class GenerativeAIService {
             }
 
             GenerateProvider generateProvider = getGenAIImplementation(completionImpl);
-            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(), temperature).getText();
+            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(false), temperature).getText();
         }
 
         appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.assistant, completedText);
