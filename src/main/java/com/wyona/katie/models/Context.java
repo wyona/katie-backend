@@ -1,5 +1,6 @@
 package com.wyona.katie.models;
   
+import com.wyona.katie.services.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.VectorSimilarityFunction;
 
@@ -1008,17 +1009,22 @@ public class Context {
     }
 
     /**
-     *
+     * Used by REST interfaces returning a Context object
      */
-    @Deprecated
-    public CompletionImpl getCompletionImpl() {
-        return generateConfig.getCompletionImpl();
+    public CompletionConfig getCompletionConfig() {
+        return generateConfig;
     }
 
     /**
-     *
+     * API keys should only be accessible to users with the appropriate authorisation
+     * @param obfuscateApiKey When true, then obfuscate Api key
      */
-    public CompletionConfig getCompletionConfig() {
+    public CompletionConfig getCompletionConfig(Boolean obfuscateApiKey) {
+        if (obfuscateApiKey && generateConfig != null && generateConfig.getApiKey() != null && generateConfig.getApiKey().length() > 0) {
+            CompletionConfig completionConfig = new CompletionConfig(generateConfig);
+            completionConfig.setApiKey(Utils.obfuscateSecret(generateConfig.getApiKey()));
+            return completionConfig;
+        }
         return generateConfig;
     }
 
