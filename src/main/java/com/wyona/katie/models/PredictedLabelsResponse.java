@@ -14,6 +14,7 @@ public class PredictedLabelsResponse {
     private String uuid;
     private List<HitLabel> predictedLabels = new ArrayList<>();
     private ClassificationImpl classificationImpl;
+    private CompletionConfig completionConfig;
 
     private String topDeskHtml;
 
@@ -50,6 +51,20 @@ public class PredictedLabelsResponse {
      */
     public ClassificationImpl getClassificationImpl() {
         return classificationImpl;
+    }
+
+    /**
+     *
+     */
+    public void setCompletionConfig(CompletionConfig completionConfig) {
+        this.completionConfig = completionConfig;
+    }
+
+    /**
+     *
+     */
+    public CompletionConfig getCompletionConfig() {
+        return this.completionConfig;
     }
 
     /**
