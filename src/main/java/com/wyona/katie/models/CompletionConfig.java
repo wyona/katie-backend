@@ -17,6 +17,16 @@ public class CompletionConfig {
     }
 
     /**
+     * Copy constructor
+     */
+    public CompletionConfig(CompletionConfig other) {
+        this.completionImpl = other.completionImpl;
+        this.model = other.model;
+        this.apiKey = other.apiKey;
+        this.host = other.host;
+    }
+
+    /**
      * @param model Completion model, e.g. "deepseek-r1" or OpenAI's "gpt-3.5-turbo"
      * @param host Custom host, e.g. "http://localhost:11434/" or "https://ollama.katie.qa/"
      */
