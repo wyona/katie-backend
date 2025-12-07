@@ -178,7 +178,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
      *
      */
     private CompletionAssistant getAssistant(Context domain, List<CompletionTool> tools) throws Exception {
-        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig(false).getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
@@ -198,7 +198,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         } else {
             domain.setLlmSearchAssistantInstructions(instructions);
         }
-        CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, domain.getCompletionConfig());
+        CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, domain.getCompletionConfig(false));
         
         if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
             domain.setLlmSearchAssistantId(assistant.getId());
@@ -232,7 +232,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
-        CompletionImpl completionImpl = domain.getCompletionConfig().getCompletionImpl();
+        CompletionImpl completionImpl = domain.getCompletionConfig(false).getCompletionImpl();
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
         if (generateProvider == null) {
             throw new Exception("Domain '" + domain + "' has no LLM configured!");
@@ -241,13 +241,13 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
 
         List<File> relevantDocs = new ArrayList<>();
 
-        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature);
+        CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(false), temperature);
         log.info("Answer getRelevantDocuments(): " + completionResponse.getText());
         String filePath = completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
         if (filePath != null && !filePath.toLowerCase().equals(NONE.toLowerCase())) {
             relevantDocs.add(new File(baseDiretory, filePath));
         } else {
-            log.warn("LLM '" + completionImpl + "' (Model: " + domain.getCompletionConfig().getModel() + ") did not find any relevant document(s) inside documents index '" + documentsIndex.getAbsolutePath() + "'!");
+            log.warn("LLM '" + completionImpl + "' (Model: " + domain.getCompletionConfig(false).getModel() + ") did not find any relevant document(s) inside documents index '" + documentsIndex.getAbsolutePath() + "'!");
         }
 
         return relevantDocs.toArray(new File[0]);
@@ -296,14 +296,12 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         List<PromptMessage> promptMessages = new ArrayList<>();
         promptMessages.add(promptMessage);
 
-        CompletionConfig completionConfig = domain.getCompletionConfig();
+        CompletionConfig completionConfig = domain.getCompletionConfig(false);
         GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionConfig.getCompletionImpl());
-        String model = domain.getCompletionConfig().getModel();
-        String apiToken = domain.getCompletionConfig().getApiKey();
         Double temperature = null;
 
         try {
-            String answer = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(), temperature).getText();
+            String answer = generateProvider.getCompletion(promptMessages, assistant, completionConfig, temperature).getText();
             return answer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
