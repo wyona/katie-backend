@@ -1446,14 +1446,15 @@ public class XMLService {
         } else {
             indexSearchPipelineEl.setAttribute(CONTEXT_RE_RANK_IMPLEMENTATION_ATTR, "" + context.getReRankImpl());
         }
-        if (context.getCompletionConfig() == null) {
+        if (context.getCompletionConfig(false) == null) {
             indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + completionDefaultImpl);
         } else {
-            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + context.getCompletionConfig().getCompletionImpl());
-            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR, context.getCompletionConfig().getModel());
-            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR, context.getCompletionConfig().getApiKey());
-            if (context.getCompletionConfig().getHost() != null) {
-                indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR, context.getCompletionConfig().getHost());
+            CompletionConfig completionConfig = context.getCompletionConfig(false);
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR, "" + completionConfig.getCompletionImpl());
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_MODEL_ATTR, completionConfig.getModel());
+            indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_API_KEY_ATTR, completionConfig.getApiKey());
+            if (completionConfig.getHost() != null) {
+                indexSearchPipelineEl.setAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR, completionConfig.getHost());
             } else {
                 // Use default host set globally
             }
