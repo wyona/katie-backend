@@ -320,7 +320,7 @@ public class ConfigurationController {
         for (int i = 0; i < domainIDs.length; i++) {
             try {
                 Context domainConfig = contextService.getDomain(domainIDs[i]);
-                domainConfig.setCompletionConfig(obfuscateApiKey(domainConfig.getCompletionConfig()));
+                domainConfig.setCompletionConfig(domainConfig.getCompletionConfig(true));
                 configs.add(domainConfig);
             } catch(Exception e) {
                 log.error(e.getMessage(), e);
@@ -419,7 +419,7 @@ public class ConfigurationController {
             }
             Context domain = contextService.getDomain(id);
 
-            domain.setCompletionConfig(obfuscateApiKey(domain.getCompletionConfig()));
+            domain.setCompletionConfig(domain.getCompletionConfig(true));
 
             return new ResponseEntity<>(domain, HttpStatus.OK);
         } catch(AccessDeniedException e) {
@@ -428,16 +428,6 @@ public class ConfigurationController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    /**
-     * API keys should only be accessible to users with the appropriate authorisation
-     */
-    private CompletionConfig obfuscateApiKey(CompletionConfig completionConfig) {
-        if (completionConfig != null && completionConfig.getApiKey() != null && completionConfig.getApiKey().length() > 0) {
-            completionConfig.setApiKey(Utils.obfuscateSecret(completionConfig.getApiKey()));
-        }
-        return completionConfig;
     }
 
     /**
