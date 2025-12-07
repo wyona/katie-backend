@@ -115,7 +115,7 @@ public class QuestionClassifierOpenNLPImpl implements QuestionClassifier {
             Double temperature = null;
             String completedText = null;
             GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
-            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(), temperature).getText();
+            completedText = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(false), temperature).getText();
 
             log.info("Completed text: " + completedText);
                 /*
