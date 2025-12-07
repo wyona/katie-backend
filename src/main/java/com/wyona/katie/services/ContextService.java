@@ -611,6 +611,9 @@ public class ContextService {
         response.setRequestUuid(uuid);
         response.setPredictedLabels(labels);
         response.setClassificationImpl(domain.getClassifierImpl());
+        if (domain.getClassifierImpl().equals(ClassificationImpl.LLM)) {
+            response.setCompletionConfig(domain.getCompletionConfig(true));
+        }
         response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain, uuid, language));
 
         return response;
