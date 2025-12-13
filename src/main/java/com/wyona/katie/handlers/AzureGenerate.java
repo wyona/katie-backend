@@ -25,6 +25,8 @@ public class AzureGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
-        return null;
+        CompletionResponse response = new CompletionResponse("TODO");
+        log.warn("Implementation not finished yet!");
+        return response;
     }
 }
