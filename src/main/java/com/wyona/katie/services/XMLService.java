@@ -2085,6 +2085,9 @@ public class XMLService {
             model = "luminous-base"; // TODO: Make configurable
         } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
             model = openAIModel;
+        } else if (completionImpl.equals(CompletionImpl.AZURE)) {
+            // TODO: Offer alternative?!
+            model = openAIModel;
         } else if (completionImpl.equals(CompletionImpl.MISTRAL_AI)) {
             model = mistralAIModel;
         } else if (completionImpl.equals(CompletionImpl.OLLAMA)) {
