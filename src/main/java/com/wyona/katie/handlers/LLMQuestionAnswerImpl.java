@@ -200,7 +200,7 @@ public class LLMQuestionAnswerImpl implements QuestionAnswerHandler {
         }
         CompletionAssistant assistant = generateProvider.getAssistant(domain.getLlmSearchAssistantId(), name, instructions, tools, domain.getCompletionConfig(false));
         
-        if (assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
+        if (assistant != null && assistant.getId() != null && (assistant.getId() != domain.getLlmSearchAssistantId())) {
             domain.setLlmSearchAssistantId(assistant.getId());
             log.warn("Save new assistant Id '" + assistant.getId() + "'!");
             xmlService.saveContextConfig(domain); // TODO: Make sure to be thread safe
