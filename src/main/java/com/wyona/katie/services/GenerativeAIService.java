@@ -24,6 +24,8 @@ public class GenerativeAIService {
     @Autowired
     private OpenAIGenerate openAIGenerate;
     @Autowired
+    private AzureGenerate azureGenerate;
+    @Autowired
     private AlephAlphaGenerate alephAlphaGenerate;
     @Autowired
     private MistralAIGenerate mistralAIGenerate;
@@ -40,6 +42,8 @@ public class GenerativeAIService {
             return alephAlphaGenerate;
         } else if (impl.equals(CompletionImpl.OPENAI)) {
             return openAIGenerate;
+        } else if (impl.equals(CompletionImpl.AZURE)) {
+            return azureGenerate;
         } else if (impl.equals(CompletionImpl.MISTRAL_AI)) {
             return mistralAIGenerate;
         } else if (impl.equals(CompletionImpl.OLLAMA)) {
