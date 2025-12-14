@@ -245,6 +245,11 @@ Update the version in the following files:
 * env/docker/run/docker-compose.yml
 * README.md
 
+and tag the main branch as follows
+
+* git tag -a v1.375.1 -m "Release v1.375.1"
+* git push origin v1.375.1
+
 ## Elasticsearch 6.6.1
 
 Basic configuration: src/main/resources/application.properties
