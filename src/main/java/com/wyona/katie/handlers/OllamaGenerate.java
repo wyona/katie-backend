@@ -3,13 +3,10 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.*;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
-import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.chat.OllamaChatResult;
-import io.github.ollama4j.models.response.OllamaResult;
-import io.github.ollama4j.types.OllamaModelType;
 import io.github.ollama4j.utils.Options;
 import io.github.ollama4j.utils.OptionsBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.http.HttpTimeoutException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,6 +64,24 @@ public class OllamaGenerate implements GenerateProvider {
      * @see GenerateProvider#getCompletion(List, CompletionAssistant, CompletionConfig, Double)
      */
     public CompletionResponse getCompletion(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
+        if (true) {
+            return getCompletionUsingOllama4j(promptMessages, assistant, completionConfig, temperature);
+        } else {
+            return getCompletionUsingSpringAI(promptMessages, assistant, completionConfig, temperature);
+        }
+    }
+
+    /**
+     * Get completion using Spring AI implementation https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html
+     */
+    private CompletionResponse getCompletionUsingSpringAI(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
+        return null;
+    }
+
+    /**
+     * Get completion using Ollama4J implementation https://github.com/ollama4j/ollama4j
+     */
+    private CompletionResponse getCompletionUsingOllama4j(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         log.info("Complete prompt using Ollama completion API (Ollama host: " + getHost(completionConfig) + ") ...");
 
         String completedText = null;
