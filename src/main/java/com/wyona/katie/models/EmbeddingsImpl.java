@@ -11,6 +11,7 @@ public enum EmbeddingsImpl {
     OPENAI_COMPATIBLE,
     COHERE,
     ALEPH_ALPHA,
+    OLLAMA,
     NUMENTA,
     GOOGLE
 }
