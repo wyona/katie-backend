@@ -514,6 +514,33 @@ public class DomainController {
     }
 
     /**
+     * REST interface to update the classification implementation used by domain
+     */
+    @RequestMapping(value = "/{id}/classification-implementation", method = RequestMethod.PATCH, produces = "application/json")
+    @Operation(summary = "Update classification implementation used by domain")
+    public ResponseEntity<?> updateClassificationImplementation(
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @PathVariable("id") String domainid,
+            @Parameter(name = "classification-impl", description = "Classification implementation", required = true)
+            @RequestParam(value = "classification-impl", required = true) ClassificationImpl classificationImpl
+    ) {
+        try {
+            log.info("Update classification implementation used by domain '" + domainid + "': " + classificationImpl);
+
+            domainService.updateClassificationImplementation(domainid, classificationImpl);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            // TODO: Consider returning a body
+            //return new ResponseEntity<>(body, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * REST interface to update the domain tag name, e.g. replace "apachelucene" by "apache-lucene"
      */
     @RequestMapping(value = "/{id}/tag-name", method = RequestMethod.PATCH, produces = "application/json")
