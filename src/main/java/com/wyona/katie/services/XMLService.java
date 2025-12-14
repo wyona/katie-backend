@@ -59,6 +59,9 @@ public class XMLService {
     @Value("${ollama.completion.model}")
     private String ollamaModel;
 
+    @Value("${ollama.host}")
+    private String ollamaDefaultHost;
+
     @Value("${iam.data_path}")
     private String iamDataPath;
 
@@ -1942,6 +1945,12 @@ public class XMLService {
                 }
                 if (indexSearchPipelineEl.hasAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR)) {
                     genAIConfig.setHost(indexSearchPipelineEl.getAttribute(CONTEXT_GENERATIVE_AI_HOST_ATTR));
+                } else {
+                    if (genAIConfig.getCompletionImpl().equals(CompletionImpl.OLLAMA)) {
+                        genAIConfig.setHost(ollamaDefaultHost);
+                    } else {
+                        log.warn("TODO: Set default host for completion implementation " + genAIConfig.getCompletionImpl());
+                    }
                 }
             }
 
