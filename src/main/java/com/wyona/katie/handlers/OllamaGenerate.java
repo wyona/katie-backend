@@ -31,7 +31,7 @@ import java.util.List;
 @Component
 public class OllamaGenerate implements GenerateProvider {
 
-    @Value("${ollama.host}")
+    @Value("${spring.ai.ollama.base-url}")
     private String ollamaHost;
 
     @Value("${ollama.timeout.in.seconds}")

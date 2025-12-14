@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnEnabledHealthIndicator("ollama")
 public class OllamaHealthIndicator extends AbstractHealthIndicator {
 
-    @Value("${ollama.host}")
+    @Value("${spring.ai.ollama.base-url}")
     private String ollamaHost;
 
     @Autowired

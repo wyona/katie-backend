@@ -59,7 +59,7 @@ public class XMLService {
     @Value("${ollama.completion.model}")
     private String ollamaModel;
 
-    @Value("${ollama.host}")
+    @Value("${spring.ai.ollama.base-url}")
     private String ollamaDefaultHost;
 
     @Value("${iam.data_path}")
