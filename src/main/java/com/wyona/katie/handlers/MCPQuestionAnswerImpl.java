@@ -8,6 +8,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +31,8 @@ import java.util.*;
 @Component
 public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
-    @Autowired
-    private ChatClient.Builder chatClientBuilder;
+    private ChatClient ollamaChat;
+    private ChatClient azureChat;
 
     @Autowired
     private SyncMcpToolCallbackProvider toolCallbackProvider;
@@ -41,6 +42,11 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
 
     @Autowired
     XMLService xmlService;
+
+    public MCPQuestionAnswerImpl(@Qualifier("ollamaChatClient") ChatClient ollamaChat, @Qualifier("azureChatClient") ChatClient azureChat) {
+        this.ollamaChat = ollamaChat;
+        this.azureChat = azureChat;
+    }
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -166,7 +172,10 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
                         "metric_type", "L2"
                 );
 
-                ChatClient chatClient = chatClientBuilder.build();
+                ChatClient chatClient = ollamaChat;
+                if (false) {
+                    chatClient = azureChat;
+                }
                 return chatClient.prompt()
                         //.user(question)
                         .user("Find 3 similar items in the Milvus collection 'katie_5c5f7efe_a9c0_4fdc_a55f_6175f56f16d8' for this vector: " + queryVector)
