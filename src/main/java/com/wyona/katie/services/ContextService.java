@@ -2189,6 +2189,26 @@ public class ContextService {
     }
 
     /**
+     * Update classification implementation used by domain
+     */
+    public void updateClassificationImplementation(String domainId, ClassificationImpl classificationImpl) throws Exception {
+        if (!existsContext(domainId)) {
+            throw new Exception("Domain '" + domainId + "' does not exist!");
+        }
+        if (!isMemberOrAdmin(domainId)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        Context domain = getContext(domainId);
+        domain.setClassifierImpl(classificationImpl);
+        saveDomainConfig(domain);
+
+        if (classificationImpl.equals(ClassificationImpl.CENTROID_MATCHING)) {
+            // TODO: Generate embeddings / centroids
+        }
+    }
+
+    /**
      * Update domain tag name
      * @param domainId Domain Id
      * @param tagName New tag name, e.g. "apache-lucene"
