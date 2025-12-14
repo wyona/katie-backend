@@ -22,7 +22,7 @@ public class OllamaConfig {
     public OllamaEmbeddingModel ollamaEmbeddingModel(OllamaApi api) {
         return new OllamaEmbeddingModel(
                 api,
-                OllamaEmbeddingOptions.builder().model("mistral").build(),
+                OllamaEmbeddingOptions.builder().model("nomic-embed-text").build(),
                 ObservationRegistry.NOOP,
                 ModelManagementOptions.builder().build()
         );
