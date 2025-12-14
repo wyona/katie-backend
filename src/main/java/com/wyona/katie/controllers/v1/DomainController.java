@@ -473,6 +473,47 @@ public class DomainController {
     }
 
     /**
+     * REST interface to update the completion / chat configuration used by domain
+     */
+    @RequestMapping(value = "/{id}/completion-config", method = RequestMethod.PATCH, produces = "application/json")
+    @Operation(summary = "Update comletion / chat configuration used by domain")
+    public ResponseEntity<?> updateCompletionConfiguration(
+            @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @PathVariable("id") String domainid,
+            @Parameter(name = "completion-impl", description = "Completion implementation", required = true)
+            @RequestParam(value = "completion-impl", required = true) CompletionImpl completionImpl,
+            @Parameter(name = "completion-model", description = "Completion model", required = true)
+            @RequestParam(value = "completion-model", required = true) String completionModel,
+            @Parameter(name = "completion-api-key", description = "Completion API key", required = true)
+            @RequestParam(value = "completion-api-key", required = true) String completionApiKey,
+            @Parameter(name = "completion-host", description = "Completion host, e.g. https://openai-katie.openai.azure.com", required = false)
+            @RequestParam(value = "completion-host", required = false) String completionHost
+    ) {
+        try {
+            log.info("Update completion implementation used by domain '" + domainid + "': " + completionImpl);
+
+            CompletionConfig completionConfig = new CompletionConfig();
+            completionConfig.setCompletionImpl(completionImpl);
+            completionConfig.setModel(completionModel);
+            completionConfig.setApiKey(completionApiKey);
+            if (completionHost != null && completionHost.trim().length() > 0) {
+                completionConfig.setHost(completionHost);
+            }
+
+            domainService.updateCompletionConfig(domainid, completionConfig);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            // TODO: Consider returning a body
+            //return new ResponseEntity<>(body, HttpStatus.OK);
+        } catch(AccessDeniedException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(new Error(e.getMessage(), "FORBIDDEN"), HttpStatus.FORBIDDEN);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * REST interface to update the domain tag name, e.g. replace "apachelucene" by "apache-lucene"
      */
     @RequestMapping(value = "/{id}/tag-name", method = RequestMethod.PATCH, produces = "application/json")
