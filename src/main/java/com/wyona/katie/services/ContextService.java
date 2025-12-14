@@ -58,6 +58,7 @@ public class ContextService {
     @Value("${openai.key}")
     private String openAIKey;
 
+    // TODO: Replace by spring.ai.azure.openai.api-key
     @Value("${openai.azure.key}")
     private String openAIAzureKey;
 
@@ -2168,6 +2169,22 @@ public class ContextService {
 
         Context domain = getContext(domainId);
         domain.setScoreThreshold(threshold);
+        saveDomainConfig(domain);
+    }
+
+    /**
+     * Update completion / chat configuration used by domain
+     */
+    public void updateCompletionConfig(String domainId, CompletionConfig completionConfig) throws Exception {
+        if (!existsContext(domainId)) {
+            throw new Exception("Domain '" + domainId + "' does not exist!");
+        }
+        if (!isMemberOrAdmin(domainId)) {
+            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        }
+
+        Context domain = getContext(domainId);
+        domain.setCompletionConfig(completionConfig);
         saveDomainConfig(domain);
     }
 
