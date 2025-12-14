@@ -30,6 +30,9 @@ public class EmbeddingsService {
     private AlephAlphaEmbeddings alephAlphaEmbeddingsImpl;
 
     @Autowired
+    private OllamaEmbeddings ollamaEmbeddings;
+
+    @Autowired
     //private NumentaEmbeddingsWithPreTokenization numentaEmbeddings; // INFO: With pre tokenization
     private NumentaEmbeddingsWithoutPreTokenization numentaEmbeddings;
 
@@ -102,6 +105,8 @@ public class EmbeddingsService {
             vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.ALEPH_ALPHA)) {
             vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
+        } else if (impl.equals(EmbeddingsImpl.OLLAMA)) {
+            vector = ollamaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.NUMENTA)) {
             vector = numentaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, apiToken);
         } else if (impl.equals(EmbeddingsImpl.GOOGLE)) {
