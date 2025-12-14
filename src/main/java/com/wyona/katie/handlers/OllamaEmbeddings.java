@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class SpringAIEmbeddings implements EmbeddingsProvider {
+public class OllamaEmbeddings implements EmbeddingsProvider {
 
     @Autowired
     private OllamaEmbeddingModel embeddingModel;
@@ -31,22 +31,24 @@ public class SpringAIEmbeddings implements EmbeddingsProvider {
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
      */
     public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
-        log.info("Get embedding for text '" + sentence + "' using SpringAI ...");
+        OllamaEmbeddingOptions options = OllamaEmbeddingOptions.builder()
+                .model(model)
+                .truncate(false)
+                .build();
+
+        log.info("Get embedding for text '" + sentence + "' using SpringAI Ollama (" + options.getModel() + ") ...");
 
         EmbeddingResponse embeddingResponse = embeddingModel.call(
                 new EmbeddingRequest(
                         List.of(sentence),
-                        OllamaEmbeddingOptions.builder()
-                                .model("chroma/all-minilm-l6-v2-f32")
-                                .truncate(false)
-                                .build()
+                        options
                 )
         );
 
         Embedding embedding = embeddingResponse.getResult();
 
         FloatVector floatVector = new FloatVector(embedding.getOutput());
-        log.info("Embedding: " + floatVector);
+        log.info("Embedding received from Ollama (" + embeddingResponse.getMetadata().getModel() + "): " + floatVector);
 
         /*
         FloatVector floatVector = new FloatVector(3);
