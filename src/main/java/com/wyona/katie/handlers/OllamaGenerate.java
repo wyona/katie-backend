@@ -9,6 +9,12 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 import io.github.ollama4j.utils.Options;
 import io.github.ollama4j.utils.OptionsBuilder;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.ai.ollama.api.OllamaModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -39,6 +45,9 @@ public class OllamaGenerate implements GenerateProvider {
 
     @Value("${ollama.bearer.token:#{null}}")
     private String ollamaBearerToken;
+
+    @Autowired
+    OllamaChatModel ollamaChatModel;
 
     /**
      *
@@ -75,13 +84,35 @@ public class OllamaGenerate implements GenerateProvider {
      * Get completion using Spring AI implementation https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html
      */
     private CompletionResponse getCompletionUsingSpringAI(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
-        return null;
+        log.info("Spring AI Ollama implementation ...");
+        PromptMessage firstMessage = promptMessages.get(0);
+
+        OllamaModel model = null;
+        if (completionConfig.getModel().equals("mistral")) {
+            model = OllamaModel.MISTRAL;
+        } else if (completionConfig.getModel().equals("llama2")) {
+            model = OllamaModel.LLAMA2;
+        } else {
+            throw new Exception("Spring AI Ollama implementation does not support model '" + completionConfig.getModel() + "'");
+        }
+
+        ChatResponse response = ollamaChatModel.call(
+                new Prompt(
+                        firstMessage.getContent(),
+                        OllamaChatOptions.builder()
+                                .model(model)
+                                .temperature(temperature)
+                                .build()
+                )
+        );
+        return new CompletionResponse(response.getResult().toString());
     }
 
     /**
      * Get completion using Ollama4J implementation https://github.com/ollama4j/ollama4j
      */
     private CompletionResponse getCompletionUsingOllama4j(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
+        log.info("Ollama4j implementation ...");
         log.info("Complete prompt using Ollama completion API (Ollama host: " + getHost(completionConfig) + ") ...");
 
         String completedText = null;
