@@ -19,8 +19,8 @@
 
     <groupId>com.wyona</groupId>
     <artifactId>askkatie-webapp</artifactId>
-    <!--<version>1.375.0</version>-->
-    <version>1.375.0-SNAPSHOT</version>
+    <!--<version>1.375.1</version>-->
+    <version>1.375.1-SNAPSHOT</version>
 
     <repositories>
       <!-- INFO: Contains spring-ai-starter-mcp-server-webmvc 1.1.0-SNAPSHOT  -->

@@ -1,6 +1,6 @@
 services:
   katie:
-    image: wyona/katie:1.374.1
+    image: wyona/katie:1.375.1
     #image: wyona/katie-mac-m:1.374.1
     #image: wyona/katie-with-prefix:1.366.0
     #image: katie:latest
