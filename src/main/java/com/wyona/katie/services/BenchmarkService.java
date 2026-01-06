@@ -112,7 +112,8 @@ public class BenchmarkService {
 
                 indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                queryCorpus(domain.getId(), processId, queriesFile, throttleTimeInMillis);
+                BenchmarkResult result = queryCorpus(domain.getId(), processId, queriesFile, throttleTimeInMillis);
+                backgroundProcessService.updateProcessStatus(processId, "Recall: " + result.getRecall());
 
                 // INFO: Delete the created benchmark domain
                 if (false) {
@@ -130,7 +131,7 @@ public class BenchmarkService {
     /**
      *
      */
-    private void queryCorpus(String domainId, String processId, File queriesFile, int throttleTimeInMillis) throws Exception {
+    private BenchmarkResult queryCorpus(String domainId, String processId, File queriesFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
 
         ObjectMapper mapper = new ObjectMapper();
@@ -141,6 +142,7 @@ public class BenchmarkService {
         while ((line = reader.readLine()) != null) {
             numberOfQueries++;
             if (numberOfQueries > 2) {
+                log.error("TODO: Run all queries!");
                 break;
             }
             java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
@@ -153,20 +155,6 @@ public class BenchmarkService {
             question.addRelevantUuid("Geneva Durben");
             question.addRelevantUuid("Dorathea Bastress");
             benchmarkQuestions.add(question);
-
-            /*
-            Context domain = contextService.getDomain(domainId);
-            String messageId = null;
-            String channelRequestId = null;
-            boolean includeFeedbackLinks = false;
-            ContentType answerContentType = null;
-            int offset = 0;
-            int limit = 10;
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(query, null, false, null, messageId, domain, null, null, ChannelType.UNDEFINED, channelRequestId, limit, offset, true, answerContentType, includeFeedbackLinks, false, false);
-            for (ResponseAnswer answer : responseAnswers) {
-                log.info("Answer to query '" + query+ "': " + answer.getAnswer());
-            }
-             */
         }
 
         double accuracy = -1;
@@ -176,6 +164,7 @@ public class BenchmarkService {
         double recall = -1;
 
         // INFO: Benchmark accuracy, precision and recall
+        LocalDateTime benchmarkStartTime = LocalDateTime.now();
         long startTime = System.currentTimeMillis();
         try {
             BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId);
@@ -192,6 +181,11 @@ public class BenchmarkService {
 
         double timeToRunBenchnarkInSeconds = timeInMilliseconds / 1000.0;
         log.info("Number of seconds to run benchmark: " + timeToRunBenchnarkInSeconds);
+
+        Context domain = contextService.getContext(domainId);
+        DetectDuplicatedQuestionImpl retrievalImpl = DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH;
+        int timeToIndex = 0; // TODO
+        return new BenchmarkResult(retrievalImpl, getSearchImplementationVersion(retrievalImpl, domain), getSearchImplementationMeta(domain), accuracy, totalNumQuestions, failedQuestions, precision, recall, timeToIndex, timeToRunBenchnarkInSeconds, benchmarkStartTime);
     }
 
     /**
