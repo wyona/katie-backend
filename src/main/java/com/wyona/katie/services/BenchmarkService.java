@@ -126,7 +126,8 @@ public class BenchmarkService {
                 double timeToIndex = -1;
                 timeToIndex = new Date().getTime();
                 RetrievalConfiguration rConfig = new RetrievalConfiguration();
-                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.SENTENCE_BERT);
+                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
                 contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
                 timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
 
