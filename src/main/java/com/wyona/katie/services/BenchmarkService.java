@@ -78,6 +78,9 @@ public class BenchmarkService {
     @Value("${benchmarks.data_path}")
     private String benchmarksDataPath;
 
+    @Value("${datasets.data_path}")
+    private String datasetsDataPath;
+
     @Value("${mail.subject.tag}")
     private String mailSubjectTag;
 
@@ -87,7 +90,35 @@ public class BenchmarkService {
     @Async
     public void runMtebEvaluation(int throttleTimeInMillis, String task, User user, String processId) {
         backgroundProcessService.startProcess(processId, "Run MTEB evaluation for task '" + task + "' ...", user.getId());
-        backgroundProcessService.updateProcessStatus(processId, "Indexing corpus...");
+
+        File corpusFile = null;
+        if (task == null) {
+            corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
+        } else {
+            // TODO: Get corpus referenced by task
+            corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
+        }
+
+        if (corpusFile.isFile()) {
+            backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
+                int numberOfLines = 0;
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    numberOfLines++;
+                    java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
+                    String id = (String) obj.get("_id");
+                    String text = (String) obj.get("text");
+                    log.info("Id: " + id + " | Text: " + text);
+                }
+                backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
         backgroundProcessService.stopProcess(processId, null);
     }
 
