@@ -93,13 +93,16 @@ public class BenchmarkService {
 
         File corpusFile = null;
         File queriesFile = null;
+        File qrelsFile = null;
         if (task == null) {
             corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
             queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
+            qrelsFile = new File(datasetsDataPath, "mteb/limit-small/qrels.jsonl");
         } else {
-            // TODO: Get corpus, queries referenced by task
+            // TODO: Get corpus, queries and qrels referenced by task
             corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
             queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
+            qrelsFile = new File(datasetsDataPath, "mteb/limit-small/qrels.jsonl");
         }
 
         if (corpusFile.isFile()) {
@@ -112,7 +115,9 @@ public class BenchmarkService {
 
                 indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                BenchmarkResult result = queryCorpus(domain.getId(), processId, queriesFile, throttleTimeInMillis);
+                List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile, qrelsFile);
+
+                BenchmarkResult result = queryCorpus(domain.getId(), processId, benchmarkQuestions, throttleTimeInMillis);
                 backgroundProcessService.updateProcessStatus(processId, "Recall: " + result.getRecall());
 
                 // INFO: Delete the created benchmark domain
@@ -131,10 +136,8 @@ public class BenchmarkService {
     /**
      *
      */
-    private BenchmarkResult queryCorpus(String domainId, String processId, File queriesFile, int throttleTimeInMillis) throws Exception {
-        backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
-
-        List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile);
+    private BenchmarkResult queryCorpus(String domainId, String processId, List<BenchmarkQuestion> benchmarkQuestions, int throttleTimeInMillis) throws Exception {
+        backgroundProcessService.updateProcessStatus(processId, "Query corpus ...");
 
         double accuracy = -1;
         String[] failedQuestions = null;
@@ -170,13 +173,24 @@ public class BenchmarkService {
     /**
      *
      */
-    private List<BenchmarkQuestion> getBenchmarkQuestions(File queriesFile) throws Exception {
+    private List<BenchmarkQuestion> getBenchmarkQuestions(File queriesFile, File qrelsFile) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        java.io.BufferedReader reader = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
-        int numberOfQueries = 0;
+
+        java.io.BufferedReader readerQrels = Files.newBufferedReader(Path.of(qrelsFile.getAbsolutePath()));
         String line;
+        while ((line = readerQrels.readLine()) != null) {
+            java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
+            String queryId = (String) obj.get("query-id");
+            String corpusId = (String) obj.get("corpus-id");
+            log.info("Query Id: " + queryId + " | Corpus Id: " + corpusId);
+        }
+        readerQrels.close();
+
+        java.io.BufferedReader readerQueries = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
+        int numberOfQueries = 0;
+        //String line;
         List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<>();
-        while ((line = reader.readLine()) != null) {
+        while ((line = readerQueries.readLine()) != null) {
             numberOfQueries++;
             if (numberOfQueries > 2) {
                 log.error("TODO: Run all queries!");
@@ -194,6 +208,7 @@ public class BenchmarkService {
             }
             benchmarkQuestions.add(question);
         }
+        readerQueries.close();
         return benchmarkQuestions;
     }
 
@@ -202,6 +217,7 @@ public class BenchmarkService {
      */
     private String[] getRelevantUids(String queryId) {
         List<String> relevantUids = new ArrayList<>();
+        // TODO: Get relevant UUIDs from qrels.jsonl
         relevantUids.add("Geneva Durben");
         relevantUids.add("Dorathea Bastress");
         return relevantUids.toArray(new String[0]);
@@ -225,7 +241,9 @@ public class BenchmarkService {
 
             Answer answer = new Answer(null, text, ContentType.TEXT_PLAIN, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
             answer = contextService.addQuestionAnswer(answer, domain);
+            log.info("Answer Id: " + answer.getUuid());
         }
+        reader.close();
 
         double timeToIndex = -1;
         timeToIndex = new Date().getTime();
@@ -236,6 +254,8 @@ public class BenchmarkService {
         timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
 
         backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
+
+        // TODO: Return hash map of corpus id and answer UUID
     }
 
     /**
