@@ -112,7 +112,7 @@ public class BenchmarkService {
 
                 indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                queryCorpus(domain.getId(), processId, queriesFile);
+                queryCorpus(domain.getId(), processId, queriesFile, throttleTimeInMillis);
 
                 // INFO: Delete the created benchmark domain
                 if (false) {
@@ -130,13 +130,14 @@ public class BenchmarkService {
     /**
      *
      */
-    private void queryCorpus(String domainId, String processId, File queriesFile) throws Exception {
+    private void queryCorpus(String domainId, String processId, File queriesFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
 
         ObjectMapper mapper = new ObjectMapper();
         java.io.BufferedReader reader = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
         int numberOfQueries = 0;
         String line;
+        List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
             numberOfQueries++;
             if (numberOfQueries > 2) {
@@ -146,7 +147,14 @@ public class BenchmarkService {
             String id = (String) obj.get("_id");
             String query = (String) obj.get("text");
             log.info("Id: " + id + " | Query: " + query);
+            BenchmarkQuestion question = new BenchmarkQuestion();
+            question.setQuestion(query);
+            // TODO: Connect text snippet Ids with expected answers based on qrels.jsonl
+            question.addRelevantUuid("Geneva Durben");
+            question.addRelevantUuid("Dorathea Bastress");
+            benchmarkQuestions.add(question);
 
+            /*
             Context domain = contextService.getDomain(domainId);
             String messageId = null;
             String channelRequestId = null;
@@ -158,7 +166,32 @@ public class BenchmarkService {
             for (ResponseAnswer answer : responseAnswers) {
                 log.info("Answer to query '" + query+ "': " + answer.getAnswer());
             }
+             */
         }
+
+        double accuracy = -1;
+        String[] failedQuestions = null;
+        int totalNumQuestions = -1;
+        double precision = -1;
+        double recall = -1;
+
+        // INFO: Benchmark accuracy, precision and recall
+        long startTime = System.currentTimeMillis();
+        try {
+            BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId);
+            accuracy = precisionAndRecall.getAccuracy();
+            failedQuestions = precisionAndRecall.getFailedQuestions();
+            totalNumQuestions = precisionAndRecall.getTotalNumQuestions();
+            precision = precisionAndRecall.getPrecision();
+            recall = precisionAndRecall.getRecall();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        long timeInMilliseconds = System.currentTimeMillis() - startTime;
+        log.info("Number of milliseconds to run benchmark: " + timeInMilliseconds);
+
+        double timeToRunBenchnarkInSeconds = timeInMilliseconds / 1000.0;
+        log.info("Number of seconds to run benchmark: " + timeToRunBenchnarkInSeconds);
     }
 
     /**
