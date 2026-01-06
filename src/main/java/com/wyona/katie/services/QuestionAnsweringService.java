@@ -948,7 +948,7 @@ public class QuestionAnsweringService {
      * @return precision and recall benchmark
      */
     public BenchmarkPrecision getAccuracyAndPrecisionAndRecallBenchmark(String domainId, BenchmarkQuestion[] questions, int throttleTimeInMillis, String processId) throws Exception {
-        String msg = "Ask questions in order to measure accuracy, precision and recall ...";
+        String msg = "Ask " + questions.length + " questions, in order to measure accuracy, precision and recall ...";
         log.info(msg);
         backgroundProcessService.updateProcessStatus(processId, msg);
 
