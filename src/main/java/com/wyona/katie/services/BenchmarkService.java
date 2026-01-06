@@ -110,9 +110,9 @@ public class BenchmarkService {
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
 
-                HashMap corpusIds = indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
+                HashMap corpusAnswerIds = indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile, qrelsFile, corpusIds);
+                List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile, qrelsFile, corpusAnswerIds);
 
                 BenchmarkResult result = queryCorpus(domain.getId(), processId, benchmarkQuestions, throttleTimeInMillis);
                 backgroundProcessService.updateProcessStatus(processId, "Recall: " + result.getRecall());
@@ -170,7 +170,7 @@ public class BenchmarkService {
     /**
      *
      */
-    private List<BenchmarkQuestion> getBenchmarkQuestions(File queriesFile, File qrelsFile, HashMap corpusIds) throws Exception {
+    private List<BenchmarkQuestion> getBenchmarkQuestions(File queriesFile, File qrelsFile, HashMap corpusAnswerIds) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
 
         java.io.BufferedReader readerQrels = Files.newBufferedReader(Path.of(qrelsFile.getAbsolutePath()));
@@ -181,7 +181,7 @@ public class BenchmarkService {
             String queryId = (String) obj.get("query-id");
             String corpusId = (String) obj.get("corpus-id");
             log.info("Query Id: " + queryId + " | Corpus Id: " + corpusId);
-            String answerId = getAnswerId(corpusId, corpusIds);
+            String answerId = getAnswerId(corpusId, corpusAnswerIds);
             if (answerId != null) {
                 qrels.add(new StringTuple(queryId, answerId));
             } else {
@@ -220,9 +220,8 @@ public class BenchmarkService {
     /**
      *
      */
-    private String getAnswerId(String corpusId, HashMap<String, String> corpusIds) {
-        return corpusIds.get(corpusId);
-        //return corpusId;
+    private String getAnswerId(String corpusId, HashMap<String, String> corpusAnsserIds) {
+        return corpusAnsserIds.get(corpusId);
     }
 
     /**
@@ -247,7 +246,7 @@ public class BenchmarkService {
         java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
         int numberOfLines = 0;
         String line;
-        HashMap corpusIds = new HashMap<>();
+        HashMap corpusAnswerIds = new HashMap<>();
         while ((line = reader.readLine()) != null) {
             numberOfLines++;
             java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
@@ -258,7 +257,7 @@ public class BenchmarkService {
             Answer answer = new Answer(null, text, ContentType.TEXT_PLAIN, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
             answer = contextService.addQuestionAnswer(answer, domain);
             log.info("Answer Id: " + answer.getUuid());
-            corpusIds.put(id, answer.getUuid());
+            corpusAnswerIds.put(id, answer.getUuid());
         }
         reader.close();
 
@@ -272,7 +271,7 @@ public class BenchmarkService {
 
         backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
 
-        return corpusIds;
+        return corpusAnswerIds;
     }
 
     /**
