@@ -112,7 +112,7 @@ public class BenchmarkService {
 
                 indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                queryCorpus(domain, processId, queriesFile);
+                queryCorpus(domain.getId(), processId, queriesFile);
 
                 // INFO: Delete the created benchmark domain
                 if (false) {
@@ -130,7 +130,7 @@ public class BenchmarkService {
     /**
      *
      */
-    private void queryCorpus(Context domain, String processId, File queriesFile) throws Exception {
+    private void queryCorpus(String domainId, String processId, File queriesFile) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
 
         ObjectMapper mapper = new ObjectMapper();
@@ -139,10 +139,25 @@ public class BenchmarkService {
         String line;
         while ((line = reader.readLine()) != null) {
             numberOfQueries++;
+            if (numberOfQueries > 2) {
+                break;
+            }
             java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
             String id = (String) obj.get("_id");
             String query = (String) obj.get("text");
             log.info("Id: " + id + " | Query: " + query);
+
+            Context domain = contextService.getDomain(domainId);
+            String messageId = null;
+            String channelRequestId = null;
+            boolean includeFeedbackLinks = false;
+            ContentType answerContentType = null;
+            int offset = 0;
+            int limit = 10;
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(query, null, false, null, messageId, domain, null, null, ChannelType.UNDEFINED, channelRequestId, limit, offset, true, answerContentType, includeFeedbackLinks, false, false);
+            for (ResponseAnswer answer : responseAnswers) {
+                log.info("Answer to query '" + query+ "': " + answer.getAnswer());
+            }
         }
     }
 
