@@ -92,16 +92,17 @@ public class BenchmarkService {
         backgroundProcessService.startProcess(processId, "Run MTEB evaluation for task '" + task + "' ...", user.getId());
 
         File corpusFile = null;
+        File queriesFile = null;
         if (task == null) {
             corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
+            queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
         } else {
-            // TODO: Get corpus referenced by task
+            // TODO: Get corpus, queries referenced by task
             corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
+            queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
         }
 
         if (corpusFile.isFile()) {
-            backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
-            ObjectMapper mapper = new ObjectMapper();
             try {
                 LocalDateTime currentDateTime = LocalDateTime.now();
                 String benchmarkId = getBenchmarkId(currentDateTime);
@@ -109,29 +110,9 @@ public class BenchmarkService {
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
 
-                java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
-                int numberOfLines = 0;
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    numberOfLines++;
-                    java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
-                    String id = (String) obj.get("_id");
-                    String text = (String) obj.get("text");
-                    log.info("Id: " + id + " | Text: " + text);
+                indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
 
-                    Answer answer = new Answer(null, text, ContentType.TEXT_PLAIN, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
-                    answer = contextService.addQuestionAnswer(answer, domain);
-                }
-
-                double timeToIndex = -1;
-                timeToIndex = new Date().getTime();
-                RetrievalConfiguration rConfig = new RetrievalConfiguration();
-                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
-                contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
-                timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
-
-                backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
+                queryCorpus(domain, processId, queriesFile);
 
                 // INFO: Delete the created benchmark domain
                 if (false) {
@@ -144,6 +125,56 @@ public class BenchmarkService {
         }
 
         backgroundProcessService.stopProcess(processId, null);
+    }
+
+    /**
+     *
+     */
+    private void queryCorpus(Context domain, String processId, File queriesFile) throws Exception {
+        backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
+
+        ObjectMapper mapper = new ObjectMapper();
+        java.io.BufferedReader reader = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
+        int numberOfQueries = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            numberOfQueries++;
+            java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
+            String id = (String) obj.get("_id");
+            String query = (String) obj.get("text");
+            log.info("Id: " + id + " | Query: " + query);
+        }
+    }
+
+    /**
+     *
+     */
+    private void indexCorpus(Context domain, String processId, File corpusFile, int throttleTimeInMillis) throws Exception {
+        backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
+        ObjectMapper mapper = new ObjectMapper();
+        java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
+        int numberOfLines = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            numberOfLines++;
+            java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
+            String id = (String) obj.get("_id");
+            String text = (String) obj.get("text");
+            log.info("Id: " + id + " | Text: " + text);
+
+            Answer answer = new Answer(null, text, ContentType.TEXT_PLAIN, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
+            answer = contextService.addQuestionAnswer(answer, domain);
+        }
+
+        double timeToIndex = -1;
+        timeToIndex = new Date().getTime();
+        RetrievalConfiguration rConfig = new RetrievalConfiguration();
+        rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+        rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+        contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
+        timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
+
+        backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
     }
 
     /**
