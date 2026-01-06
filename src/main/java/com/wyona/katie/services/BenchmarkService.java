@@ -82,6 +82,16 @@ public class BenchmarkService {
     private String mailSubjectTag;
 
     /**
+     * Run MTEB evaluation
+     */
+    @Async
+    public void runMtebEvaluation(int throttleTimeInMillis, String task, User user, String processId) {
+        backgroundProcessService.startProcess(processId, "Run MTEB evaluation for task '" + task + "' ...", user.getId());
+        backgroundProcessService.updateProcessStatus(processId, "Indexing corpus...");
+        backgroundProcessService.stopProcess(processId, null);
+    }
+
+    /**
      * @param searchImplementations List of search / retrieval implementations
      * @param indexAlternativeQuestions When true, then index alternative questions, when false, then do not index alternative questions
      * @param reRankAnswers When true, then re-rank results

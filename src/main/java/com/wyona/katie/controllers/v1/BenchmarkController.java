@@ -404,6 +404,43 @@ public class BenchmarkController {
     }
 
     /**
+     * REST interface to run a MTEB evaluation (https://embeddings-benchmark.github.io/mteb/)
+     *
+     */
+    @RequestMapping(value = "/mteb-evaluation", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Run a MTEB evaluation", security = { @SecurityRequirement(name = "bearerAuth") })
+    public ResponseEntity<?> runMtebEvaluation(
+            @Parameter(name = "task", description = "Task name, e.g. 'LIMITSmallRetrieval'", required = false)
+            @RequestParam(value = "task", required = false) String task,
+            HttpServletRequest request) {
+
+        try {
+            authService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        try {
+            if (!contextService.isAdmin() && !contextService.hasRole(Role.BENCHMARK)) {
+                log.error("Access denied, because user has neither role " + Role.ADMIN + " nor role " + Role.BENCHMARK + "!");
+                return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            }
+
+            int throttleTimeInMillis = -1; // INFO: No throttling
+
+            String processId = UUID.randomUUID().toString();
+            User user = iamService.getUser(false, false);
+
+            bmService.runMtebEvaluation(throttleTimeInMillis, task, user, processId);
+
+            return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * REST interface to run a classification benchmark
      *
      */
