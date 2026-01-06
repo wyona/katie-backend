@@ -134,28 +134,7 @@ public class BenchmarkService {
     private BenchmarkResult queryCorpus(String domainId, String processId, File queriesFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus '" + queriesFile.getAbsolutePath() + "'...");
 
-        ObjectMapper mapper = new ObjectMapper();
-        java.io.BufferedReader reader = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
-        int numberOfQueries = 0;
-        String line;
-        List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<>();
-        while ((line = reader.readLine()) != null) {
-            numberOfQueries++;
-            if (numberOfQueries > 2) {
-                log.error("TODO: Run all queries!");
-                break;
-            }
-            java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
-            String id = (String) obj.get("_id");
-            String query = (String) obj.get("text");
-            log.info("Id: " + id + " | Query: " + query);
-            BenchmarkQuestion question = new BenchmarkQuestion();
-            question.setQuestion(query);
-            // TODO: Connect text snippet Ids with expected answers based on qrels.jsonl
-            question.addRelevantUuid("Geneva Durben");
-            question.addRelevantUuid("Dorathea Bastress");
-            benchmarkQuestions.add(question);
-        }
+        List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile);
 
         double accuracy = -1;
         String[] failedQuestions = null;
@@ -186,6 +165,46 @@ public class BenchmarkService {
         DetectDuplicatedQuestionImpl retrievalImpl = DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH;
         int timeToIndex = 0; // TODO
         return new BenchmarkResult(retrievalImpl, getSearchImplementationVersion(retrievalImpl, domain), getSearchImplementationMeta(domain), accuracy, totalNumQuestions, failedQuestions, precision, recall, timeToIndex, timeToRunBenchnarkInSeconds, benchmarkStartTime);
+    }
+
+    /**
+     *
+     */
+    private List<BenchmarkQuestion> getBenchmarkQuestions(File queriesFile) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        java.io.BufferedReader reader = Files.newBufferedReader(Path.of(queriesFile.getAbsolutePath()));
+        int numberOfQueries = 0;
+        String line;
+        List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<>();
+        while ((line = reader.readLine()) != null) {
+            numberOfQueries++;
+            if (numberOfQueries > 2) {
+                log.error("TODO: Run all queries!");
+                break;
+            }
+            java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
+            String id = (String) obj.get("_id");
+            String query = (String) obj.get("text");
+            log.info("Id: " + id + " | Query: " + query);
+            BenchmarkQuestion question = new BenchmarkQuestion();
+            question.setQuestion(query);
+            String[] relevantUids = getRelevantUids(id);
+            for (String uuid : relevantUids) {
+                question.addRelevantUuid(uuid);
+            }
+            benchmarkQuestions.add(question);
+        }
+        return benchmarkQuestions;
+    }
+
+    /**
+     * @param queryId Query Id, e.g. "query_989"
+     */
+    private String[] getRelevantUids(String queryId) {
+        List<String> relevantUids = new ArrayList<>();
+        relevantUids.add("Geneva Durben");
+        relevantUids.add("Dorathea Bastress");
+        return relevantUids.toArray(new String[0]);
     }
 
     /**
