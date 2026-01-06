@@ -103,6 +103,12 @@ public class BenchmarkService {
             backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
             ObjectMapper mapper = new ObjectMapper();
             try {
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                String benchmarkId = getBenchmarkId(currentDateTime);
+                String domainName = "MTEB Evaluation " + benchmarkId;
+                backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
+                Context domain = contextService.createDomain(false, domainName, domainName, false, user);
+
                 java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
                 int numberOfLines = 0;
                 String line;
@@ -112,8 +118,25 @@ public class BenchmarkService {
                     String id = (String) obj.get("_id");
                     String text = (String) obj.get("text");
                     log.info("Id: " + id + " | Text: " + text);
+
+                    Answer answer = new Answer(null, text, ContentType.TEXT_PLAIN, null, null, null, null, null, null, null, domain.getId(), null, null, null, false, null, false, null);
+                    answer = contextService.addQuestionAnswer(answer, domain);
                 }
+
+                double timeToIndex = -1;
+                timeToIndex = new Date().getTime();
+                RetrievalConfiguration rConfig = new RetrievalConfiguration();
+                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.SENTENCE_BERT);
+                contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
+                timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
+
                 backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
+
+                // INFO: Delete the created benchmark domain
+                if (false) {
+                    backgroundProcessService.updateProcessStatus(processId, "Delete domain '" + domain.getId() + "' ...");
+                    contextService.deleteDomain(domain.getId(), user.getId());
+                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
