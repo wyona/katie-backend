@@ -178,11 +178,13 @@ public class BenchmarkService {
 
         java.io.BufferedReader readerQrels = Files.newBufferedReader(Path.of(qrelsFile.getAbsolutePath()));
         String line;
+        List<StringTuple> qrels = new ArrayList<>();
         while ((line = readerQrels.readLine()) != null) {
             java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
             String queryId = (String) obj.get("query-id");
             String corpusId = (String) obj.get("corpus-id");
             log.info("Query Id: " + queryId + " | Corpus Id: " + corpusId);
+            qrels.add(new StringTuple(queryId, corpusId));
         }
         readerQrels.close();
 
@@ -202,7 +204,7 @@ public class BenchmarkService {
             log.info("Id: " + id + " | Query: " + query);
             BenchmarkQuestion question = new BenchmarkQuestion();
             question.setQuestion(query);
-            String[] relevantUids = getRelevantUids(id);
+            String[] relevantUids = getRelevantUids(id, qrels);
             for (String uuid : relevantUids) {
                 question.addRelevantUuid(uuid);
             }
@@ -215,11 +217,13 @@ public class BenchmarkService {
     /**
      * @param queryId Query Id, e.g. "query_989"
      */
-    private String[] getRelevantUids(String queryId) {
+    private String[] getRelevantUids(String queryId, List<StringTuple> qrels) {
         List<String> relevantUids = new ArrayList<>();
-        // TODO: Get relevant UUIDs from qrels.jsonl
-        relevantUids.add("Geneva Durben");
-        relevantUids.add("Dorathea Bastress");
+        for (StringTuple tuple : qrels) {
+            if (tuple.first().equals(queryId)) {
+                relevantUids.add(tuple.second());
+            }
+        }
         return relevantUids.toArray(new String[0]);
     }
 
@@ -823,3 +827,5 @@ public class BenchmarkService {
          */
     }
 }
+
+record StringTuple(String first, String second) {}
