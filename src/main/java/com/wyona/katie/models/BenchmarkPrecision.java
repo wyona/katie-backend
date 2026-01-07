@@ -42,7 +42,7 @@ public class BenchmarkPrecision {
     }
 
     /**
-     * Add test result to report
+     * Add evaluation result to benchmark report
      */
     public void addResult(BenchmarkPrecisionResult result) {
         results.add(result);
