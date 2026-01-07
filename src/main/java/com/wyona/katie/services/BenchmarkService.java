@@ -197,10 +197,12 @@ public class BenchmarkService {
         List<BenchmarkQuestion> benchmarkQuestions = new ArrayList<>();
         while ((line = readerQueries.readLine()) != null) {
             numberOfQueries++;
+            /*
             if (numberOfQueries > 2) {
                 log.error("TODO: Run all queries!");
                 break;
             }
+            */
             java.util.Map<String, Object> obj = mapper.readValue(line, java.util.Map.class);
             String id = (String) obj.get("_id");
             String query = (String) obj.get("text");
