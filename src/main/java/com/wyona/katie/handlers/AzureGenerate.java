@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
+
 /**
  *
  */
@@ -18,8 +21,9 @@ import java.util.List;
 @Component
 public class AzureGenerate implements GenerateProvider {
 
-    @Autowired
-    AzureOpenAiChatModel azureOpenAiChatModel;
+    // Uses spring.ai.azure.openai.endpoint and spring.ai.azure.openai.api-key
+    //@Autowired
+    //AzureOpenAiChatModel azureOpenAiChatModel;
 
     /**
      * @see GenerateProvider#getAssistant(String, String, String, List, CompletionConfig)
@@ -43,13 +47,20 @@ public class AzureGenerate implements GenerateProvider {
         log.info("Spring AI Azure OpenAI implementation (Deployment / Model: " + completionConfig.getModel() + ") ...");
         PromptMessage firstMessage = promptMessages.get(0);
 
-        // TODO: Set host and API key from domain config, because otherwise spring.ai.azure.openai.endpoint and spring.ai.azure.openai.api-key will be used
-        completionConfig.getHost();
-        completionConfig.getApiKey();
         AzureOpenAiChatOptions options = AzureOpenAiChatOptions.builder()
                 .deploymentName(completionConfig.getModel())
                 .temperature(temperature)
                 .build();
+
+        OpenAIClientBuilder openAIClientBuilder = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(completionConfig.getApiKey()))
+                .endpoint(completionConfig.getHost());
+        log.info("Endpoint: " + completionConfig.getHost());
+
+        AzureOpenAiChatModel azureOpenAiChatModel =
+                AzureOpenAiChatModel.builder()
+                        .openAIClientBuilder(openAIClientBuilder)
+                        .build();
 
         ChatResponse response = azureOpenAiChatModel.call(
                 new Prompt(
