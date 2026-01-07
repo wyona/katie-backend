@@ -40,9 +40,12 @@ public class AzureGenerate implements GenerateProvider {
      * Get completion using Spring AI implementation
      */
     private CompletionResponse getCompletionUsingSpringAI(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
-        log.info("Spring AI Azure OpenAI implementation ...");
+        log.info("Spring AI Azure OpenAI implementation (Deployment / Model: " + completionConfig.getModel() + ") ...");
         PromptMessage firstMessage = promptMessages.get(0);
 
+        // TODO: Set host and API key from domain config, because otherwise spring.ai.azure.openai.endpoint and spring.ai.azure.openai.api-key will be used
+        completionConfig.getHost();
+        completionConfig.getApiKey();
         AzureOpenAiChatOptions options = AzureOpenAiChatOptions.builder()
                 .deploymentName(completionConfig.getModel())
                 .temperature(temperature)
