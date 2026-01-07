@@ -961,9 +961,10 @@ public class QuestionAnsweringService {
 
         int counter = 0;
         final int BATCH_SIZE = 100;
+        int recall = 2; // recall@2
         for (BenchmarkQuestion question : questions) {
-            log.info("Ask question: " + question.getQuestion());
-            benchmark.addResult(getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), domain, throttleTimeInMillis));
+            log.info("Evaluate question: " + question.getQuestion());
+            benchmark.addResult(getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), recall, domain, throttleTimeInMillis));
             counter++;
 
             if (counter % BATCH_SIZE == 0) {
@@ -1040,13 +1041,14 @@ public class QuestionAnsweringService {
     }
 
     /**
-     * Accuracy and Precision (Number of retrieved correct resp. relevant answers divided by total number of retrieved answers) and Recall (Number of retrieved correct resp. relevant answers divided by total number of relevant answers)
-     * @param question Question
-     * @param relevantUuids UUIDs of relevant answers to question
-     * @param domain Domain associated with question and QnAs
+     * Determine for one particular query the Accuracy and Precision (Number of retrieved correct resp. relevant answers divided by total number of retrieved answers) and Recall (Number of retrieved correct resp. relevant answers divided by total number of relevant answers)
+     * @param question Question, e.g. "Who likes apples?"
+     * @param relevantUuids UUIDs of relevant answers to question, contained by indexed corpus
+     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @param domain Domain containing indexed corpus
      * @param throttleTimeInMillis Throttle time in milliseconds in order to avoid rate limits of third-party services (e.g. Cohere re-ranking)
      */
-    private BenchmarkPrecisionResult getAccuracyAndPrecisionAndRecall(String question, String[] relevantUuids, Context domain, int throttleTimeInMillis) {
+    private BenchmarkPrecisionResult getAccuracyAndPrecisionAndRecall(String question, String[] relevantUuids, int recall_top_k, Context domain, int throttleTimeInMillis) {
 
         if (throttleTimeInMillis > 0) {
             try {
@@ -1086,24 +1088,29 @@ public class QuestionAnsweringService {
                     //new TestResult(question, false, uuid, topAnswer.getUuid(), answers[0].getScore());
                 }
 
-                int numberRetrievedRelevantAnswers = getNumberRetrievedRelevantAnswers(answers, relevantUuids);
+                log.info("Check how many of the top-" + recall_top_k + " retrieved " + answers.length + " answer(s) match with provided " + relevantUuids.length + " relevant / expected answer(s) ...");
+                int numberRetrievedRelevantAnswers = getNumberOfRetrievedRelevantAnswers(answers, relevantUuids, recall_top_k);
 
                 // Precision (Number of retrieved correct resp. relevant answers divided by total number of retrieved answers)
                 // https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision
+                // TODO: Should precision be calculated independently of recall_top_k ?!
                 double precision = (double)numberRetrievedRelevantAnswers / (double)answers.length;
 
                 // Recall (Number of retrieved correct resp. relevant answers divided by total number of relevant answers)
                 // https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall
-                double recall = (double)numberRetrievedRelevantAnswers / (double)relevantUuids.length;
+                if (relevantUuids.length > recall_top_k) {
+                    log.warn("Number of provided relevant answers (" + relevantUuids.length + ") is larger than recall@" + recall_top_k);
+                }
+                double recallValue = (double)numberRetrievedRelevantAnswers / (double)relevantUuids.length;
 
                 List<String> retrievedUuids = new ArrayList<String>();
                 for (Hit answer: answers) {
                     retrievedUuids.add(answer.getAnswer().getUuid());
                 }
 
-                return new BenchmarkPrecisionResult(question, expectedUuid, accuracy, precision, recall, relevantUuids, retrievedUuids.toArray(new String[0]));
+                return new BenchmarkPrecisionResult(question, expectedUuid, accuracy, precision, recallValue, relevantUuids, retrievedUuids.toArray(new String[0]));
             } else {
-                log.warn("No answer available");
+                log.warn("No answer available for question '" + question + "'");
                 return new BenchmarkPrecisionResult(question, expectedUuid,false,0, 0, relevantUuids, null);
             }
         } catch(Exception e) {
@@ -1113,19 +1120,27 @@ public class QuestionAnsweringService {
     }
 
     /**
-     * @param answers Retrieved answers
+     * Get number of retrieved answers, which are actually relevant
+     * @param answers All retrieved answers
      * @param relevantUuids UUIDs of relevant answers
-     * @return number of retrieved relevant answers
+     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @return number of retrieved relevant answers in the top-k
      */
-    private int getNumberRetrievedRelevantAnswers(Hit[] answers, String[] relevantUuids) {
+    private int getNumberOfRetrievedRelevantAnswers(Hit[] answers, String[] relevantUuids, int recall_top_k) {
         int numberRetrievedRelevantAnswers = 0;
+        int top_k = 0;
         for (Hit answer : answers) {
+            top_k++;
+            if (top_k > recall_top_k) {
+                break;
+            }
             for (String uuid : relevantUuids) {
                 if (answer.getAnswer().getUuid().equals(uuid)) {
                     numberRetrievedRelevantAnswers++;
                 }
             }
         }
+        log.info(numberRetrievedRelevantAnswers + " relevant answer(s) retrieved in the top " + (top_k - 1));
         return numberRetrievedRelevantAnswers;
     }
 
