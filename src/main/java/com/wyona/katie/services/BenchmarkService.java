@@ -110,7 +110,13 @@ public class BenchmarkService {
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
 
-                HashMap corpusAnswerIds = indexCorpus(domain, processId, corpusFile, throttleTimeInMillis);
+                // TODO: Make retrieval implementation configurable
+                RetrievalConfiguration rConfig = new RetrievalConfiguration();
+                //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
+                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
+                HashMap corpusAnswerIds = indexCorpus(domain, rConfig, processId, corpusFile, throttleTimeInMillis);
 
                 List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile, qrelsFile, corpusAnswerIds);
 
@@ -118,7 +124,7 @@ public class BenchmarkService {
                 backgroundProcessService.updateProcessStatus(processId, "Recall: " + result.getRecall());
 
                 // INFO: Delete the created benchmark domain
-                if (false) {
+                if (false) { // TODO: Make deleting domain configurable
                     backgroundProcessService.updateProcessStatus(processId, "Delete domain '" + domain.getId() + "' ...");
                     contextService.deleteDomain(domain.getId(), user.getId());
                 }
@@ -162,7 +168,7 @@ public class BenchmarkService {
         log.info("Number of seconds to run benchmark: " + timeToRunBenchnarkInSeconds);
 
         Context domain = contextService.getContext(domainId);
-        DetectDuplicatedQuestionImpl retrievalImpl = DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH;
+        DetectDuplicatedQuestionImpl retrievalImpl = domain.getDetectDuplicatedQuestionImpl();
         int timeToIndex = 0; // TODO
         return new BenchmarkResult(retrievalImpl, getSearchImplementationVersion(retrievalImpl, domain), getSearchImplementationMeta(domain), accuracy, totalNumQuestions, failedQuestions, precision, recall, timeToIndex, timeToRunBenchnarkInSeconds, benchmarkStartTime);
     }
@@ -199,7 +205,7 @@ public class BenchmarkService {
             numberOfQueries++;
             /*
             if (numberOfQueries > 2) {
-                log.error("TODO: Run all queries!");
+                log.error("TODO: Use all queries!");
                 break;
             }
             */
@@ -240,9 +246,9 @@ public class BenchmarkService {
     }
 
     /**
-     *
+     * Index corpus
      */
-    private HashMap indexCorpus(Context domain, String processId, File corpusFile, int throttleTimeInMillis) throws Exception {
+    private HashMap indexCorpus(Context domain, RetrievalConfiguration rConfig, String processId, File corpusFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
         ObjectMapper mapper = new ObjectMapper();
         java.io.BufferedReader reader = Files.newBufferedReader(Path.of(corpusFile.getAbsolutePath()));
@@ -265,9 +271,7 @@ public class BenchmarkService {
 
         double timeToIndex = -1;
         timeToIndex = new Date().getTime();
-        RetrievalConfiguration rConfig = new RetrievalConfiguration();
-        rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-        rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
         contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
         timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
 
