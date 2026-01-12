@@ -1282,65 +1282,6 @@ public class DomainController {
      * Trigger a particular Sharepoint based knowledge source by a webhook
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint-v0", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
-    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Webhook payload sent by Sharepoint",
-                    required = false
-            ),
-            security = { @SecurityRequirement(name = "bearerAuth") })
-    public ResponseEntity<?> triggerKnowledgeSourceSharepoint(
-            @Parameter(name = "id", description = "Domain Id",required = true)
-            @PathVariable(value = "id", required = true) String id,
-            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
-            @PathVariable(value = "ks-id", required = true) String ksId,
-            @Parameter(name = "validationToken", description = "Microsoft Graph Validation Token", required = false)
-            @RequestParam(value = "validationToken", required = false) String validationToken,
-            @RequestBody(required = false) WebhookPayloadSharepoint payload,
-            HttpServletRequest request) {
-
-        if (validationToken != null) {
-            log.info("Return Microsoft Graph Validation Token '"+ validationToken +"' as plain text.");
-            return new ResponseEntity<>(validationToken, HttpStatus.OK);
-        }
-
-        if (payload != null) {
-            log.info("TODO: Retrieve provided resource ...");
-        }
-
-        try {
-            authenticationService.tryJWTLogin(request);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        if (!domainService.existsContext(id)) {
-            return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
-        }
-
-        // TODO: Microsoft does not provide a way to set an access token
-        /*
-        if (!domainService.isMemberOrAdmin(id)) {
-            String msg = "User is neither member of domain '" + id + "', nor has role " + Role.ADMIN + "!";
-            log.warn(msg);
-            return new ResponseEntity<>(new Error(msg, "FORBIDDEN"), HttpStatus.FORBIDDEN);
-        }
-        */
-
-        String processId = UUID.randomUUID().toString();
-        String userId = authenticationService.getUserId();
-        if (userId == null) {
-            log.warn("User is not signed in.");
-        }
-        connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
-
-        return new ResponseEntity<>(processId, HttpStatus.ACCEPTED);
-    }
-
-    /**
-     * Trigger a particular Sharepoint based knowledge source by a webhook
-     * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
-     */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook")
     public ResponseEntity<String> triggerKnowledgeSourceSharepointV2(
