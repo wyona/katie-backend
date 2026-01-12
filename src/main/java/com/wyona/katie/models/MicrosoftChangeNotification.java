@@ -18,6 +18,24 @@ import lombok.extern.slf4j.Slf4j;
 }
  */
 
+/*
+{
+   "value":[
+      {
+         "subscriptionId":"3612f6ac-4bf6-4873-9b7a-2db238c3152b",
+         "clientState":"secretClientValue",
+         "resource":"/sites/5ad177f3-5385-4040-9545-370c658bb2d1/lists/e6db5fd8-0875-4211-8adf-efb98b3b6f9e",
+         "tenantId":"c7e438db-e462-4c22-a90a-c358b16980b3",
+         "resourceData":{
+            "@odata.type":"#Microsoft.Graph.ListItem"
+         },
+         "subscriptionExpirationDateTime":"2026-01-13T19:37:20.909035+00:00",
+         "changeType":"updated"
+      }
+   ]
+}
+*/
+
 /**
  * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#change-notification-example
  */
@@ -82,17 +100,19 @@ public class MicrosoftChangeNotification {
     }
 
     /**
-     * @param resource Resource Id, e.g. ID of modified sharepoint list "0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd"
+     * @param resource Resource URI, e.g., ID of modified sharepoint list "/sites/5ad177f3-5385-4040-9545-370c658bb2d1/lists/e6db5fd8-0875-4211-8adf-efb98b3b6f9e"
      */
     public void setResource(String resource) {
         this.resource = resource;
     }
 
     /**
-     *
+     * @return resource URI, e.g., "/sites/5ad177f3-5385-4040-9545-370c658bb2d1/lists/e6db5fd8-0875-4211-8adf-efb98b3b6f9e"
      */
     public String getResource() {
-        return resource;
+        log.info("Resource URI: " + resource);
+        return "e6db5fd8-0875-4211-8adf-efb98b3b6f9e";
+        //return resource;
     }
 
     /**
