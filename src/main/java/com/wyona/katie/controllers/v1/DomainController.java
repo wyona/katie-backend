@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
@@ -1280,8 +1281,7 @@ public class DomainController {
      * Trigger a particular Sharepoint based knowledge source by a webhook
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "text/plain")
-    //@RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint-v0", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Webhook payload sent by Sharepoint",
@@ -1333,8 +1333,57 @@ public class DomainController {
         }
         connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
 
-        //return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
-        return new ResponseEntity<>(processId, HttpStatus.OK);
+        return new ResponseEntity<>(processId, HttpStatus.ACCEPTED);
+    }
+
+    /**
+     * Trigger a particular Sharepoint based knowledge source by a webhook
+     * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
+    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook")
+    public ResponseEntity<String> triggerKnowledgeSourceSharepointV2(
+            @Parameter(name = "id", description = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
+            @PathVariable(value = "ks-id", required = true) String ksId,
+            @Parameter(name = "validationToken", description = "Microsoft Graph Validation Token", required = false)
+            @RequestParam(value = "validationToken", required = false) String validationToken,
+            HttpServletRequest request
+    ) throws IOException  {
+
+        // Handle SharePoint validation first
+        if (validationToken != null) {
+            log.info("Return Microsoft Graph Validation Token '{}'", validationToken);
+            return ResponseEntity.ok(validationToken);
+        }
+
+        // Handle actual notification
+        String payloadBody = request.getReader().lines()
+                .reduce("", (acc, line) -> acc + line);
+
+        WebhookPayloadSharepoint payload = null;
+        if (!payloadBody.isBlank()) {
+            payload = new ObjectMapper().readValue(payloadBody, WebhookPayloadSharepoint.class);
+            log.info("Received SharePoint notification: {}", payload);
+        }
+
+        if (!domainService.existsContext(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Domain '" + id + "' does not exist!");
+        }
+
+        String processId = UUID.randomUUID().toString();
+        String userId = authenticationService.getUserId();
+        if (userId == null) {
+            log.warn("User is not signed in.");
+        }
+        connectorService.triggerKnowledgeSourceConnectorInBackground(
+                KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
+
+        // Return 202 Accepted for normal notifications
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(processId);
     }
 
     /**
