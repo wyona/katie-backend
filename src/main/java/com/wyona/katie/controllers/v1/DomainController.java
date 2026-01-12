@@ -1292,8 +1292,8 @@ public class DomainController {
             @PathVariable(value = "id", required = true) String id,
             @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
             @PathVariable(value = "ks-id", required = true) String ksId,
-            @Parameter(name = "validationtoken", description = "Microsoft Graph Validation Token", required = false)
-            @RequestParam(value = "validationtoken", required = false) String validationToken,
+            @Parameter(name = "validationToken", description = "Microsoft Graph Validation Token", required = false)
+            @RequestParam(value = "validationToken", required = false) String validationToken,
             @RequestBody(required = false) WebhookPayloadSharepoint payload,
             HttpServletRequest request) {
 
