@@ -1284,7 +1284,7 @@ public class DomainController {
      */
     @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook")
-    public ResponseEntity<String> triggerKnowledgeSourceSharepointV2(
+    public ResponseEntity<String> triggerKnowledgeSourceSharepoint(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
             @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
