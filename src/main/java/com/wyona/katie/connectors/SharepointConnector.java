@@ -135,7 +135,9 @@ public class SharepointConnector implements Connector {
 
             if (ksMeta.getMsTenant().equals(payloadSharepoint.getValue()[0].getTenantId())) {
                 // TODO: Check whether resource is a list
-                getListDelta(siteId, payloadSharepoint.getValue()[0].getResource(), apiToken, processId);
+                String resourceURI = payloadSharepoint.getValue()[0].getResource();
+                String listId = extractListId(resourceURI);
+                getListDelta(siteId, listId, apiToken, processId);
             } else {
                 log.warn("Tenant IDs do not match!");
             }
@@ -262,6 +264,24 @@ public class SharepointConnector implements Connector {
         }
 
         return qnas;
+    }
+
+    /**
+     * Extract list Id from resource URI
+     * @param resource Resource URI, e.g., "/sites/5ad177f3-5385-4040-9545-370c658bb2d1/lists/e6db5fd8-0875-4211-8adf-efb98b3b6f9e"
+     * @return list Id, e.g., "e6db5fd8-0875-4211-8adf-efb98b3b6f9e"
+     */
+    private String extractListId(String resource) {
+        if (resource == null) {
+            return null;
+        }
+
+        int idx = resource.indexOf("/lists/");
+        if (idx == -1) {
+            return null;
+        }
+
+        return resource.substring(idx + "/lists/".length());
     }
 
     /**
