@@ -111,8 +111,7 @@ public class MicrosoftChangeNotification {
      */
     public String getResource() {
         log.info("Resource URI: " + resource);
-        return "e6db5fd8-0875-4211-8adf-efb98b3b6f9e";
-        //return resource;
+        return resource;
     }
 
     /**
@@ -128,7 +127,7 @@ public class MicrosoftChangeNotification {
     }
 
     /**
-     * @param siteUrl, e.g. ""/sites/KatieTest""
+     * @param siteUrl, e.g. "/sites/KatieTest"
      */
     public void setSiteUrl(String siteUrl) {
         this.siteUrl = siteUrl;
@@ -160,7 +159,7 @@ public class MicrosoftChangeNotification {
      */
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("Subscription Id: " + subscriptionId + ", Resource Id: " + resource + ", Tenant Id: " + tenantId + ", Site URL: " + siteUrl);
+        StringBuilder s = new StringBuilder("Subscription Id: " + subscriptionId + ", Resource URI: " + resource + ", Tenant Id: " + tenantId + ", Site URL: " + siteUrl);
         return s.toString();
     }
 }
