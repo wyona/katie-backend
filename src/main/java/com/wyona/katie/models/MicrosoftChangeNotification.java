@@ -54,6 +54,34 @@ public class MicrosoftChangeNotification {
     }
 
     /**
+     *
+     */
+    public void setClientState(String clientState) {
+        this.clientState = clientState;
+    }
+
+    /**
+     *
+     */
+    public String getClientState() {
+        return clientState;
+    }
+
+    /**
+     *
+     */
+    public void setExpirationDateTime(String expirationDateTime) {
+        this.expirationDateTime = expirationDateTime;
+    }
+
+    /**
+     *
+     */
+    public String getExpirationDateTime() {
+        return expirationDateTime;
+    }
+
+    /**
      * @param resource Resource Id, e.g. ID of modified sharepoint list "0b0db340-f8b0-4ad6-8ebd-3e165f78a2cd"
      */
     public void setResource(String resource) {
@@ -91,6 +119,20 @@ public class MicrosoftChangeNotification {
      */
     public String getSiteUrl() {
         return siteUrl;
+    }
+
+    /**
+     *
+     */
+    public void setWebId(String webId) {
+        this.webId = webId;
+    }
+
+    /**
+     *
+     */
+    public String getWebId() {
+        return webId;
     }
 
     /**
