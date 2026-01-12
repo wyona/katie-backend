@@ -1280,7 +1280,8 @@ public class DomainController {
      * Trigger a particular Sharepoint based knowledge source by a webhook
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "text/plain")
+    //@RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Webhook payload sent by Sharepoint",
@@ -1332,7 +1333,8 @@ public class DomainController {
         }
         connectorService.triggerKnowledgeSourceConnectorInBackground(KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
 
-        return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        //return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
+        return new ResponseEntity<>(processId, HttpStatus.OK);
     }
 
     /**
