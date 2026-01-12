@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.wyona.katie.exceptions.UserAlreadyMemberException;
 import com.wyona.katie.models.Error;
 import com.wyona.katie.models.Username;
@@ -1364,7 +1365,9 @@ public class DomainController {
 
         WebhookPayloadSharepoint payload = null;
         if (!payloadBody.isBlank()) {
-            payload = new ObjectMapper().readValue(payloadBody, WebhookPayloadSharepoint.class);
+            ObjectMapper mapper = new ObjectMapper()
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            payload = mapper.readValue(payloadBody, WebhookPayloadSharepoint.class);
             log.info("Received SharePoint notification: {}", payload);
         }
 
