@@ -1,6 +1,6 @@
 package com.wyona.katie.models;
 
-import com.wyona.katie.models.MicrosoftChangeNotification;
+//import com.wyona.katie.models.MicrosoftChangeNotification;
 
 /**
  * Webhook Payload sent by Sharepoint, e.g. https://wyona.sharepoint.com/sites/KatieTest/Lists/Test%20List/AllItems.aspx
