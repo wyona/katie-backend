@@ -83,6 +83,7 @@ public class BenchmarkService {
 
     /**
      * Run MTEB evaluation
+     * @param task Task name, e.g., "LIMITSmallRetrieval"
      */
     @Async
     public void runMtebEvaluation(int throttleTimeInMillis, String task, User user, String processId) {
@@ -91,15 +92,23 @@ public class BenchmarkService {
         File corpusFile = null;
         File queriesFile = null;
         File qrelsFile = null;
+        String datasetPath = "orionweller/LIMIT-small";
+        String datasetRevision = "ff4a8f2476ae77476c1912f1f3cb5bb5f2d766d4";
         if (task == null) {
-            corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
-            queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
-            qrelsFile = new File(datasetsDataPath, "mteb/limit-small/qrels.jsonl");
+            corpusFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/corpus.jsonl");
+            queriesFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/queries.jsonl");
+            qrelsFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/qrels.jsonl");
         } else {
-            // TODO: Get corpus, queries and qrels referenced by task
-            corpusFile = new File(datasetsDataPath, "mteb/limit-small/corpus.jsonl");
-            queriesFile = new File(datasetsDataPath, "mteb/limit-small/queries.jsonl");
-            qrelsFile = new File(datasetsDataPath, "mteb/limit-small/qrels.jsonl");
+            // TODO: Get corpus, queries and qrels referenced by task from Hugging Face, e.g. https://huggingface.co/datasets/orionweller/LIMIT-small
+            if (task.equals("LIMITSmallRetrieval")) { // See mapping between task name and dataset at https://github.com/embeddings-benchmark/mteb/blob/main/mteb/tasks/retrieval/eng/limit_retrieval.py
+                corpusFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/corpus.jsonl");
+                queriesFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/queries.jsonl");
+                qrelsFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/qrels.jsonl");
+            } else {
+                backgroundProcessService.updateProcessStatus(processId, "No such task '" + task + "' configured!", BackgroundProcessStatusType.ERROR);
+                backgroundProcessService.stopProcess(processId, null);
+                return;
+            }
         }
 
         if (corpusFile.isFile()) {
@@ -129,9 +138,14 @@ public class BenchmarkService {
                     backgroundProcessService.updateProcessStatus(processId, "Delete domain '" + domain.getId() + "' ...");
                     contextService.deleteDomain(domain.getId(), user.getId());
                 }
+                backgroundProcessService.stopProcess(processId, domain.getId());
+                return;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                backgroundProcessService.updateProcessStatus(processId, e.getLocalizedMessage(), BackgroundProcessStatusType.ERROR);
             }
+        } else {
+            backgroundProcessService.updateProcessStatus(processId, "No such corpus file '" + corpusFile.getAbsolutePath() + "'!", BackgroundProcessStatusType.WARN);
         }
 
         backgroundProcessService.stopProcess(processId, null);
