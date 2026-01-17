@@ -945,7 +945,7 @@ public class QuestionAnsweringService {
     /**
      * Generate Accuracy, Precision and Recall Benchmark
      * @param questions Questions and associated relevant UUIDs to measure precision and recall
-     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @param recall_top_k Recall top-k value, e.g. "2" means, check how many query relevant document(s) appear in the top-2 retrieved results (divided by the total number of query relevant document(s) in the corpus)
      * @return precision and recall benchmark
      */
     public BenchmarkPrecision getAccuracyAndPrecisionAndRecallBenchmark(String domainId, BenchmarkQuestion[] questions, int recall_top_k, int throttleTimeInMillis, String processId) throws Exception {
@@ -1044,7 +1044,7 @@ public class QuestionAnsweringService {
      * Determine for one particular query the Accuracy and Precision (Number of retrieved correct resp. relevant answers divided by total number of retrieved answers) and Recall (Number of retrieved correct resp. relevant answers divided by total number of relevant answers)
      * @param question Question, e.g. "Who likes apples?"
      * @param relevantUuids UUIDs of relevant answers to question, contained by indexed corpus
-     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @param recall_top_k Recall top-k value, e.g. "2" means, check how many query relevant document(s) appear in the top-2 retrieved results (divided by the total number of query relevant document(s) in the corpus)
      * @param domain Domain containing indexed corpus
      * @param throttleTimeInMillis Throttle time in milliseconds in order to avoid rate limits of third-party services (e.g. Cohere re-ranking)
      */
@@ -1123,7 +1123,7 @@ public class QuestionAnsweringService {
      * Get number of retrieved answers, which are actually relevant
      * @param answers All retrieved answers
      * @param relevantUuids UUIDs of relevant answers
-     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @param recall_top_k Recall top-k value, e.g. "2" means, check how many query relevant document(s) appear in the top-2 retrieved results (divided by the total number of query relevant document(s) in the corpus)
      * @return number of retrieved relevant answers in the top-k
      */
     private int getNumberOfRetrievedRelevantAnswers(Hit[] answers, String[] relevantUuids, int recall_top_k) {

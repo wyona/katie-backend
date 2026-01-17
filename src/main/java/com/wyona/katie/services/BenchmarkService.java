@@ -138,7 +138,7 @@ public class BenchmarkService {
     }
 
     /**
-     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
+     * @param recall_top_k Recall top-k value, e.g. "2" means, check how many query relevant document(s) appear in the top-2 retrieved results (divided by the total number of query relevant document(s) in the corpus)
      */
     private BenchmarkResult queryCorpus(String domainId, String processId, List<BenchmarkQuestion> benchmarkQuestions, int recall_top_k, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus ...");
