@@ -184,7 +184,7 @@ public class BenchmarkController {
                 }
             }
 
-            BenchmarkPrecision report = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domain.getId(), questionsAndRelevantUuids.toArray(new BenchmarkQuestion[0]), -1, null);
+            BenchmarkPrecision report = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domain.getId(), questionsAndRelevantUuids.toArray(new BenchmarkQuestion[0]), 2, -1, null);
 
             return new ResponseEntity<>(report, HttpStatus.OK);
         } catch(Exception e) {

@@ -120,8 +120,9 @@ public class BenchmarkService {
 
                 List<BenchmarkQuestion> benchmarkQuestions = getBenchmarkQuestions(queriesFile, qrelsFile, corpusAnswerIds);
 
-                BenchmarkResult result = queryCorpus(domain.getId(), processId, benchmarkQuestions, throttleTimeInMillis);
-                backgroundProcessService.updateProcessStatus(processId, "Recall: " + result.getRecall());
+                int recall_top_k = 2;
+                BenchmarkResult result = queryCorpus(domain.getId(), processId, benchmarkQuestions, recall_top_k, throttleTimeInMillis);
+                backgroundProcessService.updateProcessStatus(processId, "recall@" + recall_top_k+ ": " + result.getRecall());
 
                 // INFO: Delete the created benchmark domain
                 if (false) { // TODO: Make deleting domain configurable
@@ -137,9 +138,9 @@ public class BenchmarkService {
     }
 
     /**
-     *
+     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
      */
-    private BenchmarkResult queryCorpus(String domainId, String processId, List<BenchmarkQuestion> benchmarkQuestions, int throttleTimeInMillis) throws Exception {
+    private BenchmarkResult queryCorpus(String domainId, String processId, List<BenchmarkQuestion> benchmarkQuestions, int recall_top_k, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Query corpus ...");
 
         double accuracy = -1;
@@ -152,7 +153,7 @@ public class BenchmarkService {
         LocalDateTime benchmarkStartTime = LocalDateTime.now();
         long startTime = System.currentTimeMillis();
         try {
-            BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), throttleTimeInMillis, processId);
+            BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions.toArray(new BenchmarkQuestion[0]), recall_top_k, throttleTimeInMillis, processId);
             accuracy = precisionAndRecall.getAccuracy();
             failedQuestions = precisionAndRecall.getFailedQuestions();
             totalNumQuestions = precisionAndRecall.getTotalNumQuestions();
@@ -706,7 +707,7 @@ public class BenchmarkService {
         // INFO: Benchmark accuracy, precision and recall
         long startTime = System.currentTimeMillis();
         try {
-            BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions, throttleTimeInMillis, processId);
+            BenchmarkPrecision precisionAndRecall = qaService.getAccuracyAndPrecisionAndRecallBenchmark(domainId, benchmarkQuestions, 2, throttleTimeInMillis, processId);
             accuracy = precisionAndRecall.getAccuracy();
             failedQuestions = precisionAndRecall.getFailedQuestions();
             totalNumQuestions = precisionAndRecall.getTotalNumQuestions();

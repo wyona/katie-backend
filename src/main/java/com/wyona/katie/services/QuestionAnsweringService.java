@@ -945,10 +945,11 @@ public class QuestionAnsweringService {
     /**
      * Generate Accuracy, Precision and Recall Benchmark
      * @param questions Questions and associated relevant UUIDs to measure precision and recall
+     * @param recall_top_k Recall top-k value, e.g. "2" which means check whether at least one relevant document appears in the top-2 retrieved results
      * @return precision and recall benchmark
      */
-    public BenchmarkPrecision getAccuracyAndPrecisionAndRecallBenchmark(String domainId, BenchmarkQuestion[] questions, int throttleTimeInMillis, String processId) throws Exception {
-        String msg = "Ask " + questions.length + " questions, in order to measure accuracy, precision and recall ...";
+    public BenchmarkPrecision getAccuracyAndPrecisionAndRecallBenchmark(String domainId, BenchmarkQuestion[] questions, int recall_top_k, int throttleTimeInMillis, String processId) throws Exception {
+        String msg = "Ask " + questions.length + " questions, in order to measure accuracy, precision and recall@" + recall_top_k + " ...";
         log.info(msg);
         backgroundProcessService.updateProcessStatus(processId, msg);
 
@@ -961,10 +962,9 @@ public class QuestionAnsweringService {
 
         int counter = 0;
         final int BATCH_SIZE = 100;
-        int recall = 2; // recall@2
         for (BenchmarkQuestion question : questions) {
             log.info("Evaluate question: " + question.getQuestion());
-            benchmark.addResult(getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), recall, domain, throttleTimeInMillis));
+            benchmark.addResult(getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), recall_top_k, domain, throttleTimeInMillis));
             counter++;
 
             if (counter % BATCH_SIZE == 0) {
