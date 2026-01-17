@@ -3,6 +3,10 @@ package com.wyona.katie.services;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,6 +99,16 @@ public class BenchmarkService {
         String datasetPath = "orionweller/LIMIT-small";
         String datasetRevision = "ff4a8f2476ae77476c1912f1f3cb5bb5f2d766d4";
         if (task == null) {
+            String[] datasetFiles = {"corpus.jsonl", "queries.jsonl", "qrels.jsonl"};
+            try {
+                for (String datasetFile : datasetFiles) {
+                    String corpusUrl = "https://huggingface.co/datasets/" + datasetPath + "/resolve/main/" + datasetFile;
+                    backgroundProcessService.updateProcessStatus(processId, "Download dataset file '" + corpusUrl + "' ...");
+                    download(corpusUrl, Path.of(datasetsDataPath + "/mteb/" + datasetPath + "/" + datasetFile));
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
             corpusFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/corpus.jsonl");
             queriesFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/queries.jsonl");
             qrelsFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/qrels.jsonl");
@@ -149,6 +163,26 @@ public class BenchmarkService {
         }
 
         backgroundProcessService.stopProcess(processId, null);
+    }
+
+    /**
+     * @param url Download URL, e.g. "https://huggingface.co/datasets/orionweller/LIMIT-small/resolve/main/corpus.jsonl"
+     */
+    private void download(String url, Path target) throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS) // <--- follow redirects
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        HttpResponse<byte[]> response =
+                client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+        Files.createDirectories(target.getParent());
+        Files.write(target, response.body());
     }
 
     /**
