@@ -410,7 +410,7 @@ public class BenchmarkController {
     @RequestMapping(value = "/mteb-evaluation", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Run a MTEB evaluation", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> runMtebEvaluation(
-            @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
+            @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'Wyona/LIMIT-very-small' (https://huggingface.co/datasets/Wyona/LIMIT-very-small) or 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
             @RequestParam(value = "dataset-path", required = true) String datasetPath,
             HttpServletRequest request) {
 
