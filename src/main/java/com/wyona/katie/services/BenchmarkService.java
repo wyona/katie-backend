@@ -87,18 +87,20 @@ public class BenchmarkService {
 
     /**
      * Run MTEB evaluation
-     * @param task Task name, e.g., "LIMITSmallRetrieval"
+     * @param datasetPath, Dataset path, e.g., "orionweller/LIMIT-small"
      */
     @Async
-    public void runMtebEvaluation(int throttleTimeInMillis, String task, User user, String processId) {
-        backgroundProcessService.startProcess(processId, "Run MTEB evaluation for task '" + task + "' ...", user.getId());
+    public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, User user, String processId) {
+        backgroundProcessService.startProcess(processId, "Run MTEB evaluation for datatset '" + datasetPath + "' ...", user.getId());
 
         File corpusFile = null;
         File queriesFile = null;
         File qrelsFile = null;
-        String datasetPath = "orionweller/LIMIT-small";
+
+        // Also see mapping between task name and dataset at https://github.com/embeddings-benchmark/mteb/blob/main/mteb/tasks/retrieval/eng/limit_retrieval.py
         String datasetRevision = "ff4a8f2476ae77476c1912f1f3cb5bb5f2d766d4";
-        if (task == null) {
+
+        if (datasetPath != null) {
             String[] datasetFiles = {"corpus.jsonl", "queries.jsonl", "qrels.jsonl"};
             try {
                 for (String datasetFile : datasetFiles) {
@@ -113,16 +115,9 @@ public class BenchmarkService {
             queriesFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/queries.jsonl");
             qrelsFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/qrels.jsonl");
         } else {
-            // TODO: Get corpus, queries and qrels referenced by task from Hugging Face, e.g. https://huggingface.co/datasets/orionweller/LIMIT-small
-            if (task.equals("LIMITSmallRetrieval")) { // See mapping between task name and dataset at https://github.com/embeddings-benchmark/mteb/blob/main/mteb/tasks/retrieval/eng/limit_retrieval.py
-                corpusFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/corpus.jsonl");
-                queriesFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/queries.jsonl");
-                qrelsFile = new File(datasetsDataPath, "mteb/" + datasetPath + "/qrels.jsonl");
-            } else {
-                backgroundProcessService.updateProcessStatus(processId, "No such task '" + task + "' configured!", BackgroundProcessStatusType.ERROR);
-                backgroundProcessService.stopProcess(processId, null);
-                return;
-            }
+            backgroundProcessService.updateProcessStatus(processId, "Dataset path (e.g. 'orionweller/LIMIT-small') is mandatory!", BackgroundProcessStatusType.ERROR);
+            backgroundProcessService.stopProcess(processId, null);
+            return;
         }
 
         if (corpusFile.isFile()) {

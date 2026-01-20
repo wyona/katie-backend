@@ -410,8 +410,8 @@ public class BenchmarkController {
     @RequestMapping(value = "/mteb-evaluation", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Run a MTEB evaluation", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> runMtebEvaluation(
-            @Parameter(name = "task", description = "Task name, e.g. 'LIMITSmallRetrieval'", required = false)
-            @RequestParam(value = "task", required = false) String task,
+            @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
+            @RequestParam(value = "dataset-path", required = true) String datasetPath,
             HttpServletRequest request) {
 
         try {
@@ -431,7 +431,7 @@ public class BenchmarkController {
             String processId = UUID.randomUUID().toString();
             User user = iamService.getUser(false, false);
 
-            bmService.runMtebEvaluation(throttleTimeInMillis, task, user, processId);
+            bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, user, processId);
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(Exception e) {
