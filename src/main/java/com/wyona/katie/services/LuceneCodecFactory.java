@@ -5,7 +5,7 @@ import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.KnnVectorsFormat;
 import org.apache.lucene.codecs.KnnVectorsReader;
 import org.apache.lucene.codecs.KnnVectorsWriter;
-import org.apache.lucene.codecs.lucene101.Lucene101Codec;
+import org.apache.lucene.codecs.lucene103.Lucene103Codec;
 import org.apache.lucene.codecs.lucene102.Lucene102HnswBinaryQuantizedVectorsFormat;
 import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
@@ -25,12 +25,12 @@ public class LuceneCodecFactory {
      * @param valueType Value type, "float32" or "int8"
      */
     public Codec getCodec(EmbeddingValueType valueType) {
-        //return Lucene101Codec.getDefault();
+        //return Lucene103Codec.getDefault();
 
         log.info("Get codec ...");
 
         if (valueType == EmbeddingValueType.int8) {
-            Codec codecInt8 = new Lucene101Codec() {
+            Codec codecInt8 = new Lucene103Codec() {
                 @Override
                 public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
                     var delegate = new Lucene102HnswBinaryQuantizedVectorsFormat();
@@ -40,7 +40,7 @@ public class LuceneCodecFactory {
             };
             return codecInt8;
         } else {
-            Codec codecFloat32 = new Lucene101Codec() {
+            Codec codecFloat32 = new Lucene103Codec() {
                 @Override
                 public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
                     // TODO: Shouldn't there be a non quantized format version, similar to https://lucene.apache.org/core/9_12_0/core/org/apache/lucene/codecs/lucene99/Lucene99HnswVectorsFormat.html
