@@ -21,6 +21,11 @@ public class DateOfBirth {
      * @return age, e.g. '54'
      */
     public String getAgeByPersonName(String name) throws Exception {
+        if (name == null) {
+            String msg = "No name of person provided, therefore no age available!";
+            log.warn(msg);
+            throw new Exception(msg);
+        }
         log.info("Name of person: " + name);
         String nameLC = name.toLowerCase();
         if ((nameLC.indexOf("michael") >= 0 && nameLC.indexOf("wechner") >= 0) || nameLC.equals("wechner")) {
