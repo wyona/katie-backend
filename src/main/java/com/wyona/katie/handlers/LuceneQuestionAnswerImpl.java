@@ -339,11 +339,12 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
                 // We currently concatenate question, alternative questions and answer, therefore the multiplier is 1. Also consider that there could be an arbitrary number of alternative questions, so we might want to set the multiplier even greater than 3 if we do not concatenate anymore
                 int multiplier = 1;
                 top_n_hits = multiplier * limit;
-                log.info("External limit set, therefore get top " + top_n_hits + " hits ...");
+                log.info("External limit set to " + limit + ", therefore get top " + top_n_hits + " hits (multiplier is " + multiplier + ") ...");
             } else {
                 log.info("No external limit set, therefore get top " + top_n_hits + " hits ...");
             }
 
+            log.info("Get results for query '" + query + "' and return top " + top_n_hits + " hits ...");
             TopDocs results = searcher.search(query, top_n_hits);
 
             // INFO: Init Hightlighter to highlight keywords within returned answer
@@ -414,7 +415,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
             log.info("Term expansion query: " + termExpansionQuery);
             return termExpansionQuery;
         } else {
-            log.info("Regular query: " + questionQuery);
+            log.info("Regular query (no term expansion using additional features): " + questionQuery);
             return questionQuery;
         }
     }
