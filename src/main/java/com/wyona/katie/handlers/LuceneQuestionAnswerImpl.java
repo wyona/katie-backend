@@ -122,13 +122,14 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
         String akUuid = Answer.AK_UUID_COLON + qna.getUuid();
 
         Analyzer analyzer = initAnalyzer();
-        String content = null;
+        String indexedContent = null;
         try {
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             IndexWriter writer = new IndexWriter(getIndexDirectory(domain), iwc);
 
-            content = indexQnA(writer, qna.getQuestion(), qna.getAlternativeQuestions(), indexAlternativeQuestions, qna.getAnswer(), akUuid, qna.getAnswerClientSideEncryptionAlgorithm() != null);
+            indexedContent = indexQnA(writer, qna.getQuestion(), qna.getAlternativeQuestions(), indexAlternativeQuestions, qna.getAnswer(), akUuid, qna.getAnswerClientSideEncryptionAlgorithm() != null);
+            log.info("Indexed content: " + indexedContent);
 
             // writer.forceMerge(1);
             writer.close();
@@ -139,8 +140,8 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
         try {
             log.info("TODO: Vectorize keywords / terms with word2vec or GloVe or fastText and add to vector index ...");
             if (false) {
-                log.info("Get terms of document ...");
-                TokenStream stream = TokenSources.getTokenStream(null, null, content, analyzer, -1);
+                log.info("Get terms of document '" + akUuid + "' ...");
+                TokenStream stream = TokenSources.getTokenStream(null, null, indexedContent, analyzer, -1);
                 stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
                 while (stream.incrementToken()) {
                     log.info("Token: " + stream.getAttribute(CharTermAttribute.class));
@@ -151,7 +152,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
 
             if (false) {
                 IndexReader reader = DirectoryReader.open(getIndexDirectory(domain));
-                log.info("Get all terms of index ...");
+                log.info("Get all terms of index '" + getIndexDirectory(domain) + "' ...");
                 List<LeafReaderContext> list = reader.leaves();
                 for (LeafReaderContext lrc : list) {
                     Terms terms = lrc.reader().terms(CONTENTS_FIELD);
@@ -193,9 +194,26 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
      * @return content which got indexed
      */
     private String indexQnA(IndexWriter writer, String question, String[] alternativeQuestions, boolean indexAlternativeQuestions, String answer, String akUuid, boolean answerEncrypted) throws Exception {
-        Document doc = new Document();
-
         log.info("Index QnA with question '" + question + "' and with uuid '" + akUuid + "' ...");
+
+        Document doc = buildDocument(question, alternativeQuestions, indexAlternativeQuestions, answer, akUuid, answerEncrypted);
+
+        if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
+            log.info("Add document with Id '" + akUuid + "' to Lucene index ...");
+            writer.addDocument(doc);
+        } else {
+            log.info("Update document inside Lucene index with Id '" + akUuid + "' ...");
+            writer.updateDocument(new Term(PATH_FIELD, akUuid), doc);
+        }
+
+        return doc.get(CONTENTS_FIELD).toString();
+    }
+
+    /**
+     * Build Lucene document
+     */
+    private Document buildDocument(String question, String[] alternativeQuestions, boolean indexAlternativeQuestions, String answer, String akUuid, boolean answerEncrypted) {
+        Document doc = new Document();
 
         Field pathField = new StringField(PATH_FIELD, akUuid, Field.Store.YES);
         doc.add(pathField);
@@ -247,15 +265,7 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
             log.warn("No question available, therefore no features can be extracted.");
         }
 
-        if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
-            log.info("Add document with Id '" + akUuid + "' to Lucene index ...");
-            writer.addDocument(doc);
-        } else {
-            log.info("Update document inside Lucene index with Id '" + akUuid + "' ...");
-            writer.updateDocument(new Term(PATH_FIELD, akUuid), doc);
-        }
-
-        return content.toString();
+        return doc;
     }
 
     /**
