@@ -90,7 +90,7 @@ public class BenchmarkService {
      * @param datasetPath, Dataset path, e.g., "orionweller/LIMIT-small"
      */
     @Async
-    public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, User user, String processId) {
+    public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, RetrievalConfiguration rConfig, User user, String processId) {
         backgroundProcessService.startProcess(processId, "Run MTEB evaluation for datatset '" + datasetPath + "' ...", user.getId());
 
         File corpusFile = null;
@@ -127,12 +127,6 @@ public class BenchmarkService {
                 String domainName = "MTEB Evaluation " + benchmarkId;
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
-
-                // TODO: Make retrieval implementation configurable
-                RetrievalConfiguration rConfig = new RetrievalConfiguration();
-                //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
-                rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
 
                 HashMap corpusAnswerIds = indexCorpus(domain, rConfig, processId, corpusFile, throttleTimeInMillis);
 

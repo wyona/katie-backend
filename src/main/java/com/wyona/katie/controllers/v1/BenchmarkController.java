@@ -431,7 +431,13 @@ public class BenchmarkController {
             String processId = UUID.randomUUID().toString();
             User user = iamService.getUser(false, false);
 
-            bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, user, processId);
+            // TODO: Make retrieval implementation configurable
+            RetrievalConfiguration rConfig = new RetrievalConfiguration();
+            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
+            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+            rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
+            bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, user, processId);
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(Exception e) {
