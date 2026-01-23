@@ -1,10 +1,13 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.answers.OpenERZ;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -39,16 +42,18 @@ public class MCPRetrievalService {
             description = "Get the dates for the city of Zurich’s paper and cardboard collection."
     )
     public List<String> getPapierKartonSammlungDatesCityOfZurich(
-            @ToolParam(description = "Swiss ZIP code within the city of Zurich (e.g. 8044, 8003, 8032).", required = true) Integer zipCode
-
+            @ToolParam(description = "Swiss ZIP code within the city of Zurich (e.g. 8044, 8003, 8032).", required = true) Integer zipCode,
+            @ToolParam(description = "Type of waste, either 'cardboard' or 'paper'", required = true) String wasteType
     ) {
         log.info("Get the paper and cardboard collection dates for ZIP code " + zipCode + " in the city of Zurich.");
+        OpenERZ openERZ = new OpenERZ();
+        List<Date> dates = openERZ.getDates(zipCode.toString(), wasteType);
+        List<String> datesAsString = new ArrayList<>();
+        for (Date date : dates) {
+            datesAsString.add(date.toString());
+        }
 
-        return List.of(
-                "26. Januar 2026",
-                "09. Februar 2026",
-                "23. Februar 2026"
-        );
+        return datesAsString;
     }
 }
 
