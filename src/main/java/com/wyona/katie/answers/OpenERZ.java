@@ -88,17 +88,18 @@ public class OpenERZ {
     }
 
     /**
-     * @param zip ZIP code, e.g. "8044"
-     * @param type Waste type, e.g. "paper" or "cardboard"
+     * @param zipCode ZIP code, e.g. "8044"
+     * @param wasteType Waste type, e.g. "paper" or "cardboard"
+     * @return list of dates
      */
-    private List<Date> getDates(String zip, String type) {
+    public List<Date> getDates(String zipCode, String wasteType) {
         List<Date> dates = new ArrayList<Date>();
 
         java.text.DateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
         // INFO: See https://openerz.metaodi.ch/documentation
         Date current = new Date();
-        String requestUrl = baseUrl + "/api/calendar.json?types=" + type + "&zip=" + zip + "&start=" + dateFormat.format(current) + "&sort=date&offset=0&limit=500";
+        String requestUrl = baseUrl + "/api/calendar.json?types=" + wasteType + "&zip=" + zipCode + "&start=" + dateFormat.format(current) + "&sort=date&offset=0&limit=500";
         log.info("Get dates from '" + requestUrl + "' ...");
 
         RestTemplate restTemplate = new RestTemplate();
