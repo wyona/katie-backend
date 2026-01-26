@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -62,8 +63,8 @@ public class EmbeddingsService {
      * Get sparse embedding for a text (https://opensearch.org/blog/improving-document-retrieval-with-sparse-semantic-encoders/)
      * @param text Text like for example "When was Michael born?"
      */
-    public void getSparseEmbedding(String text) {
-        sbertImpl.getSparseEmbedding(text);
+    public Map<Integer, Float> getSparseEmbedding(String text) {
+        return sbertImpl.getSparseEmbedding(text);
     }
 
     /**
