@@ -40,7 +40,8 @@ public class EmbeddingsService {
     private GoogleEmbeddings googleEmbeddings;
 
     /**
-     * Get embedding for a text
+     * Get dense embedding for a text
+     * @param text Text like for example "When was Michael born?"
      * @param domain Katie Domain associated with text
      * @param embeddingType Embedding type, e.g. Search Document, Search Query, Classification, ...
      * @param valueType Value type, e.g. float32 or int8
@@ -55,6 +56,14 @@ public class EmbeddingsService {
             // INFO: Increase count only when embedding generation was successful
             increaseEmbeddingCount(domain);
         }
+    }
+
+    /**
+     * Get sparse embedding for a text
+     * @param text Text like for example "When was Michael born?"
+     */
+    public void getSparseEmbedding(String text) {
+        sbertImpl.getSparseEmbedding(text);
     }
 
     /**
