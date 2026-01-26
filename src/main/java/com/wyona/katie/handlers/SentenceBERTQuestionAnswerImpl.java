@@ -168,7 +168,20 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
      * TODO
      */
     public void getSparseEmbedding(String text) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode requestBodyNode = mapper.createObjectNode();
+        requestBodyNode.put("sentence", text);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = getHttpHeaders();
+        headers.set("Content-Type", "application/json; charset=UTF-8");
+        HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
+
         String requestUrl = getHttpHost() + "/api/v1/sentence/sparse-embedding";
+        log.info("Get sparse embedding: " + requestUrl + " (Request body: " + requestBodyNode.toString() + ")");
+        ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+        JsonNode responseBodyNode = response.getBody();
+        log.debug("JSON: " + responseBodyNode);
     }
 
     /**
