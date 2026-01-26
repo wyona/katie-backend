@@ -165,6 +165,13 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     }
 
     /**
+     * TODO
+     */
+    public void getSparseEmbedding(String text) {
+        String requestUrl = getHttpHost() + "/api/v1/sentence/sparse-embedding";
+    }
+
+    /**
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context domain, boolean indexAlternativeQuestions) {
@@ -407,7 +414,8 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     }
 
     /**
-     * Get SentenceBERT host, e.g. 'https://similar.ukatie.com:443'
+     * Get SentenceBERT (Sentence Transformers) host
+     * @return host, e.g., "https://sbert.katie.qa:443"
      */
     public HttpHost getHttpHost() {
         return new HttpHost(sbertHostname, Integer.parseInt(sbertPort), sbertScheme);
