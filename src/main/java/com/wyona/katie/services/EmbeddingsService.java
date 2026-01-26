@@ -59,7 +59,7 @@ public class EmbeddingsService {
     }
 
     /**
-     * Get sparse embedding for a text
+     * Get sparse embedding for a text (https://opensearch.org/blog/improving-document-retrieval-with-sparse-semantic-encoders/)
      * @param text Text like for example "When was Michael born?"
      */
     public void getSparseEmbedding(String text) {
