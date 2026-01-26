@@ -216,6 +216,11 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             }
             vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
             //log.debug("Vector: " + vector);
+
+            // TODO
+            if (true) {
+                embeddingsService.getSparseEmbedding(text);
+            }
         } catch (Exception e) {
             log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
             throw e;
