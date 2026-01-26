@@ -23,6 +23,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Index and retrieve questions and answers using Lucene Vector Search
@@ -42,6 +43,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
     private static final String PATH_FIELD = "qna_uuid";
     private static final String VECTOR_FIELD = "vector";
+    private static final String SPARSE_EMBEDDING_FIELD = "s_embed";
     private static final String CLASSIFICATION_FIELD = "classification";
 
     /**
@@ -216,11 +218,6 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             }
             vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
             //log.debug("Vector: " + vector);
-
-            // TODO
-            if (true) {
-                embeddingsService.getSparseEmbedding(text);
-            }
         } catch (Exception e) {
             log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
             throw e;
@@ -239,6 +236,14 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
         }
         doc.add(vectorField);
+
+        // TODO
+        if (true) {
+            Map<Integer, Float> sparseEmbedding = embeddingsService.getSparseEmbedding(text);
+            for (Map.Entry<Integer, Float> token: sparseEmbedding.entrySet()) {
+                doc.add(new FeatureField(SPARSE_EMBEDDING_FIELD, Integer.toString(token.getKey()), token.getValue()));
+            }
+        }
 
         if (classifications != null && classifications.size() > 0) {
             // TODO: Consider using FacetField instead of StringField or KeywordField: https://lists.apache.org/thread/ygp9x7nws6vkod9bdlhcgsj1gnhq7x8n
@@ -389,7 +394,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private Hit[] getAnswersFromVectorIndex(String question, List<String> classifications, BooleanClause.Occur occur, Context domain, int limit) throws Exception {
         List<Hit> answers = new ArrayList<Hit>();
 
-        log.info("Get embedding for question ...");
+        log.info("Get dense embedding for question ...");
         Vector queryVector = null;
         try {
             queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
@@ -457,7 +462,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = storedFields.document(scoreDoc.doc);
                 String path = doc.get(PATH_FIELD);
-                log.info("Vector found with UUID '" + path + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
+                log.info("Dense embedding found with UUID '" + path + "' and confidence score (" + domain.getVectorSimilarityMetric() + ") '" + scoreDoc.score + "'.");
                 String _question = null; // doc.get(CONTENTS_FIELD);
                 Date dateAnswered = null;
                 Date dateAnswerModified = null;
@@ -475,6 +480,45 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             indexReader.close();
         } catch(Exception e) {
             log.error(e.getMessage(), e);
+        }
+
+        if (true) {
+            log.info("Get sparse embedding for query ...");
+            Map<Integer, Float> sparseQueryEmbedding = embeddingsService.getSparseEmbedding(question);
+
+            BooleanQuery.Builder bq = new BooleanQuery.Builder();
+
+            for (Map.Entry<Integer, Float> q : sparseQueryEmbedding.entrySet()) {
+                bq.add(
+                        FeatureField.newLinearQuery(
+                                SPARSE_EMBEDDING_FIELD,
+                                Integer.toString(q.getKey()),
+                                q.getValue()
+                        ),
+                        BooleanClause.Occur.SHOULD
+                );
+            }
+
+            Query query = bq.build();
+            IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+            StoredFields storedFields = indexReader.storedFields();
+            IndexSearcher searcher = new IndexSearcher(indexReader);
+            TopDocs topDocs = searcher.search(query, k);
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document doc = storedFields.document(scoreDoc.doc);
+                String path = doc.get(PATH_FIELD);
+                log.info("Sparse embedding found with UUID '" + path + "' and confidence score '" + scoreDoc.score + "'.");
+                String _question = null; // doc.get(CONTENTS_FIELD);
+                Date dateAnswered = null;
+                Date dateAnswerModified = null;
+                Date dateOriginalQuestionSubmitted = null;
+                String uuid = Answer.removePrefix(path);
+                
+                // TODO
+                log.info("Answer UUID: " + path);
+                //answers.add(new Hit(new Answer(question, path, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, _question, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
+            }
+            indexReader.close();
         }
 
         return answers.toArray(new Hit[0]);
