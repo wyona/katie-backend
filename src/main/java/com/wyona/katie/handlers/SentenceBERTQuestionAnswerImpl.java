@@ -167,7 +167,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     /**
      * TODO
      */
-    public void getSparseEmbedding(String text) {
+    public Map<Integer, Float> getSparseEmbedding(String text) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode requestBodyNode = mapper.createObjectNode();
         requestBodyNode.put("sentence", text);
@@ -182,6 +182,12 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
         ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
         JsonNode responseBodyNode = response.getBody();
         log.debug("JSON: " + responseBodyNode);
+
+        Map<Integer, Float> sparseEmbedding = new HashMap<>();
+        sparseEmbedding.put(12, 0.83f);
+        sparseEmbedding.put(144, 0.12f);
+        sparseEmbedding.put(9821, 0.44f);
+        return sparseEmbedding;
     }
 
     /**
