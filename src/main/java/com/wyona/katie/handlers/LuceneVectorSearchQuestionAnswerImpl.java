@@ -46,6 +46,8 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private static final String SPARSE_EMBEDDING_FIELD = "s_embed";
     private static final String CLASSIFICATION_FIELD = "classification";
 
+    private static final Boolean USE_DENSE_EMBEDDING = false;
+
     /**
      * Get file system directory path containing Lucene vector index
      * @param domain Domain associated with Lucene index
@@ -127,7 +129,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             if (qna.getQuestion() != null) {
                 log.info("Index question ...");
                 Vector vector = indexTextAsVector(writer, qna.getQuestion(), qna.getClassifications(), akUuid, domain);
-                saveEmbedding(vector, qna.getUuid(), qna.getQuestion(), domain,"question");
+                saveEmbedding(vector, qna.getUuid(), qna.getQuestion(), domain, "question");
             } else {
                 log.info("QnA '" + qna.getUuid() + "' has no question yet associated with.");
             }
@@ -181,6 +183,11 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             log.info("Do not save embedding");
             return;
         }
+        if (vector == null) {
+            log.warn("Embedding vector is null!");
+            return;
+        }
+
         log.info("Save embedding ...");
 
         File embeddingDir = domain.getQnAEmbeddingsPath(uuid);
@@ -207,38 +214,37 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         Field pathField = new StringField(PATH_FIELD, akUuid, Field.Store.YES);
         doc.add(pathField);
 
-        // TODO: Check input sequence length and log warning when text is too long:
-        // https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
-        // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
         Vector vector = null;
-        try {
-            if (text.trim().length() == 0) {
-                // TODO: Do we really want to index an empty string!?
-                log.warn("Text is empty!");
+        if (USE_DENSE_EMBEDDING) {
+            // TODO: Check input sequence length and log warning when text is too long:
+            // https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
+            // https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
+            try {
+                if (text.trim().length() == 0) {
+                    // TODO: Do we really want to index an empty string!?
+                    log.warn("Text is empty!");
+                }
+                vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
+                //log.debug("Vector: " + vector);
+            } catch (Exception e) {
+                log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
+                throw e;
             }
-            vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
-            //log.debug("Vector: " + vector);
-        } catch (Exception e) {
-            log.error("Get embedding failed for text '" + text + "', therefore do not add embedding to Lucene vector index of domain '" + domain.getId() + "'.");
-            throw e;
-        }
 
-        log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene index ...");
+            log.info("Add vector with " + vector.getDimension() + " dimensions to Lucene index ...");
 
-        // TODO: Lucene 9.8.0 does not support anymore overriding the vector length with a custom field type
-        // See "workaround" desribed by Uwe Schindler https://lists.apache.org/thread/kckbdqj4g1g9k2tl19x1y1ocndpzd0td
-        Field vectorField = null;
-        if (domain.getEmbeddingValueType() == EmbeddingValueType.int8) {
-            FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.BYTE);
-            vectorField = new KnnByteVectorField(VECTOR_FIELD, ((ByteVector)vector).getValues(), vectorFieldType);
+            // TODO: Lucene 9.8.0 does not support anymore overriding the vector length with a custom field type
+            // See "workaround" desribed by Uwe Schindler https://lists.apache.org/thread/kckbdqj4g1g9k2tl19x1y1ocndpzd0td
+            Field vectorField = null;
+            if (domain.getEmbeddingValueType() == EmbeddingValueType.int8) {
+                FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.BYTE);
+                vectorField = new KnnByteVectorField(VECTOR_FIELD, ((ByteVector) vector).getValues(), vectorFieldType);
+            } else {
+                FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.FLOAT32);
+                vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector) vector).getValues(), vectorFieldType);
+            }
+            doc.add(vectorField);
         } else {
-            FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), domain.getVectorSimilarityMetric(), VectorEncoding.FLOAT32);
-            vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
-        }
-        doc.add(vectorField);
-
-        // TODO
-        if (true) {
             Map<Integer, Float> sparseEmbedding = embeddingsService.getSparseEmbedding(text);
             for (Map.Entry<Integer, Float> token: sparseEmbedding.entrySet()) {
                 doc.add(new FeatureField(SPARSE_EMBEDDING_FIELD, Integer.toString(token.getKey()), token.getValue()));
@@ -375,9 +381,13 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         log.info("Get answer using Lucene Vector Search (Lucene version: " + Version.LATEST + ") implementation for question '" + question + "' ...");
 
         try {
-            // TODO: Make BooleanClause.Occur configurable (see https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/BooleanClause.Occur.html)
-            return getAnswersFromVectorIndex(question, classifications, BooleanClause.Occur.MUST, domain, limit);
-            //return getAnswersFromVectorIndex(question, classifications, BooleanClause.Occur.SHOULD, domain, limit);
+            if (USE_DENSE_EMBEDDING) {
+                // TODO: Make BooleanClause.Occur configurable (see https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/BooleanClause.Occur.html)
+                return getAnswersFromVectorIndex(question, classifications, BooleanClause.Occur.MUST, domain, limit);
+                //return getAnswersFromVectorIndex(question, classifications, BooleanClause.Occur.SHOULD, domain, limit);
+            } else {
+                return getAnswersFromSparseEmbeddingIndex(question, classifications, BooleanClause.Occur.MUST, domain, limit);
+            }
         } catch (Exception e) {
             //log.error(e.getMessage(), e);
             //return null;
@@ -386,7 +396,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     }
 
     /**
-     * Get answers from vector index
+     * Get answers from dense vector index
      * @param question Questiom, resp. search query
      * @param classifications Classification, e.g. "num", "date", "count", "hum", "instruction"
      * @param occur See https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/BooleanClause.Occur.html (SHOULD corresponds with OR and MUST corresponds with AND)
@@ -482,44 +492,66 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             log.error(e.getMessage(), e);
         }
 
-        if (true) {
-            log.info("Get sparse embedding for query ...");
-            Map<Integer, Float> sparseQueryEmbedding = embeddingsService.getSparseEmbedding(question);
+        return answers.toArray(new Hit[0]);
+    }
 
-            BooleanQuery.Builder bq = new BooleanQuery.Builder();
+    /**
+     * Get answers from sparse embeddings index
+     * @param question Questiom, resp. search query
+     * @param classifications Classification, e.g. "num", "date", "count", "hum", "instruction"
+     * @param occur See https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/BooleanClause.Occur.html (SHOULD corresponds with OR and MUST corresponds with AND)
+     */
+    private Hit[] getAnswersFromSparseEmbeddingIndex(String question, List<String> classifications, BooleanClause.Occur occur, Context domain, int limit) throws Exception {
+        List<Hit> answers = new ArrayList<Hit>();
 
-            for (Map.Entry<Integer, Float> q : sparseQueryEmbedding.entrySet()) {
-                bq.add(
-                        FeatureField.newLinearQuery(
-                                SPARSE_EMBEDDING_FIELD,
-                                Integer.toString(q.getKey()),
-                                q.getValue()
-                        ),
-                        BooleanClause.Occur.SHOULD
-                );
-            }
-
-            Query query = bq.build();
-            IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
-            StoredFields storedFields = indexReader.storedFields();
-            IndexSearcher searcher = new IndexSearcher(indexReader);
-            TopDocs topDocs = searcher.search(query, k);
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document doc = storedFields.document(scoreDoc.doc);
-                String path = doc.get(PATH_FIELD);
-                log.info("Sparse embedding found with UUID '" + path + "' and confidence score '" + scoreDoc.score + "'.");
-                String _question = null; // doc.get(CONTENTS_FIELD);
-                Date dateAnswered = null;
-                Date dateAnswerModified = null;
-                Date dateOriginalQuestionSubmitted = null;
-                String uuid = Answer.removePrefix(path);
-                
-                // TODO
-                log.info("Answer UUID: " + path);
-                //answers.add(new Hit(new Answer(question, path, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, _question, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
-            }
-            indexReader.close();
+        // WARN: https://lists.apache.org/thread/cjxr03p74onb6fc2rb0hgjogtj74fncx
+        //int k = 30; // INFO: The default number of documents to find
+        int k = 100;
+        //if (limit > 0) {
+        if (false) {
+            // INFO: The same QnA UUID can be indexed at least three times: question, alternative question, answer
+            // Whereas there could be an arbitrary number of alternative questions, so we might want to set the multiplier even greater than 3
+            int multiplier = 3;
+            k = multiplier * limit;
+            log.info("External limit set to " + limit + ", therefore get " + k + " (" + multiplier + " times " + limit + ") nearest neighbours ...");
+        } else {
+            log.info("No external limit set, therefore get " + k + " nearest neighbours ...");
         }
+
+        log.info("Get sparse embedding for query ...");
+        Map<Integer, Float> sparseQueryEmbedding = embeddingsService.getSparseEmbedding(question);
+
+        BooleanQuery.Builder bq = new BooleanQuery.Builder();
+
+        for (Map.Entry<Integer, Float> q : sparseQueryEmbedding.entrySet()) {
+            bq.add(
+                    FeatureField.newLinearQuery(
+                            SPARSE_EMBEDDING_FIELD,
+                            Integer.toString(q.getKey()),
+                            q.getValue()
+                    ),
+                    BooleanClause.Occur.SHOULD
+            );
+        }
+
+        Query query = bq.build();
+        IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+        StoredFields storedFields = indexReader.storedFields();
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        TopDocs topDocs = searcher.search(query, k);
+        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+            Document doc = storedFields.document(scoreDoc.doc);
+            String path = doc.get(PATH_FIELD);
+            log.info("Sparse embedding found with UUID '" + path + "' and confidence score '" + scoreDoc.score + "'.");
+            String _question = null; // doc.get(CONTENTS_FIELD);
+            Date dateAnswered = null;
+            Date dateAnswerModified = null;
+            Date dateOriginalQuestionSubmitted = null;
+            String uuid = Answer.removePrefix(path);
+
+            answers.add(new Hit(new Answer(question, path, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, _question, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
+        }
+        indexReader.close();
 
         return answers.toArray(new Hit[0]);
     }
