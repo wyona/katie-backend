@@ -194,6 +194,8 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
             for (int i = 0; i < mapNode.size(); i++) {
                 if (mapNode.get(i).asInt() == 0) { // INFO: Only get the first sparse embedding
                     sparseEmbedding.put(keysNode.get(i).asInt(), Float.parseFloat(valuesNode.get(i).asText()));
+                } else {
+                    log.info("Ignore sparse embedding key: " + keysNode.get(i).asInt());
                 }
             }
         }
