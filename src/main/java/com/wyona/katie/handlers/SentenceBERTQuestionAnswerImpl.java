@@ -181,12 +181,23 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
         log.info("Get sparse embedding: " + requestUrl + " (Request body: " + requestBodyNode.toString() + ")");
         ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
         JsonNode responseBodyNode = response.getBody();
-        log.debug("JSON: " + responseBodyNode);
+        log.info("JSON: " + responseBodyNode);
 
         Map<Integer, Float> sparseEmbedding = new HashMap<>();
-        sparseEmbedding.put(12, 0.83f);
-        sparseEmbedding.put(144, 0.12f);
-        sparseEmbedding.put(9821, 0.44f);
+
+        JsonNode embeddingNode = responseBodyNode.get("embeddings");
+        JsonNode indicesNode = embeddingNode.get("indices");
+        JsonNode mapNode = indicesNode.get(0);
+        JsonNode keysNode = indicesNode.get(1);
+        JsonNode valuesNode = embeddingNode.get("values");
+        if (mapNode.isArray()) {
+            for (int i = 0; i < mapNode.size(); i++) {
+                if (mapNode.get(i).asInt() == 0) { // INFO: Only get the first sparse embedding
+                    sparseEmbedding.put(keysNode.get(i).asInt(), Float.parseFloat(valuesNode.get(i).asText()));
+                }
+            }
+        }
+
         return sparseEmbedding;
     }
 
