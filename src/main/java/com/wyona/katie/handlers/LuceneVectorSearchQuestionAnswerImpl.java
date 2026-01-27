@@ -46,7 +46,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
     private static final String SPARSE_EMBEDDING_FIELD = "s_embed";
     private static final String CLASSIFICATION_FIELD = "classification";
 
-    private static final Boolean USE_DENSE_EMBEDDING = false;
+    private static final Boolean USE_DENSE_EMBEDDING = true; // TODO: Create separate implementation for sparse embeddings
 
     /**
      * Get file system directory path containing Lucene vector index
@@ -524,6 +524,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         for (Map.Entry<Integer, Float> q : sparseQueryEmbedding.entrySet()) {
+            log.info("Add sparse embedding field to query builder: " + q.getKey() + " | " + q.getValue());
             bq.add(
                     FeatureField.newLinearQuery(
                             SPARSE_EMBEDDING_FIELD,
