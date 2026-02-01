@@ -38,6 +38,8 @@ public class AIService {
     @Autowired
     private LuceneVectorSearchQuestionAnswerImpl luceneVectorSearchImpl;
     @Autowired
+    private LuceneSparseVectorEmbeddingsRetrievalImpl luceneSparseVectorEmbeddingsRetrievalImpl;
+    @Autowired
     private WeaviateQuestionAnswerImpl weaviateImpl;
     @Autowired
     private MilvusRetrievalImpl milvusImpl;
@@ -613,6 +615,8 @@ public class AIService {
             return sbertImpl;
         } else if(impl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             return luceneVectorSearchImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            return luceneSparseVectorEmbeddingsRetrievalImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH)) {
             return knowledgeGraphImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
