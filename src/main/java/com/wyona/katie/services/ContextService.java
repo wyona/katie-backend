@@ -2080,6 +2080,8 @@ public class ContextService {
             }
 
             domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(vectorSimilarityMetric));
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
         } else {
             log.error("No setter for retrieval implementation " + questionAnswerImplementation + " exists yet!");
         }
