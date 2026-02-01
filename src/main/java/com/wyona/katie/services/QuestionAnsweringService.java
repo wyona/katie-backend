@@ -934,6 +934,10 @@ public class QuestionAnsweringService {
             report.setLuceneVectorSearchMetric("" + domain.getVectorSimilarityMetric());
         }
 
+        if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            // TODO: Set sparse vector embeddings model
+        }
+
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
             report.setSentenceBERTDistanceThreshold(domain.getSentenceBERTDistanceThreshold());
             report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
