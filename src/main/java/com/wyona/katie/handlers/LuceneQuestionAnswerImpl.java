@@ -138,13 +138,16 @@ public class LuceneQuestionAnswerImpl implements QuestionAnswerHandler {
         }
 
         try {
-            log.info("TODO: Vectorize keywords / terms with word2vec or GloVe or fastText and add to vector index ...");
+            log.info("TODO: Consider using sparse embeddings, whereas see LuceneSparseVectorEmbeddingsRetrievalImpl ...");
             if (false) {
                 log.info("Get terms of document '" + akUuid + "' ...");
+                List<String> tokens = new ArrayList<>();
                 TokenStream stream = TokenSources.getTokenStream(null, null, indexedContent, analyzer, -1);
                 stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
                 while (stream.incrementToken()) {
-                    log.info("Token: " + stream.getAttribute(CharTermAttribute.class));
+                    String token = stream.getAttribute(CharTermAttribute.class).toString();
+                    log.info("Token: " + token);
+                    tokens.add(token);
                 }
                 stream.end();
                 stream.close();
