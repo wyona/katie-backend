@@ -158,6 +158,8 @@ public class XMLService {
 
     private static final String CONTEXT_LUCENE_VECTOR_SEARCH_TAG = "sbert-lucene";
 
+    private static final String CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG = "lucene-sparse-embeddings";
+
     private static final String CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
     private static final String CONTEXT_VECTOR_SEARCH_MODEL_ATTR = "model";
     private static final String CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR = "value-type";
@@ -1585,6 +1587,11 @@ public class XMLService {
             doc.getDocumentElement().appendChild(luceneVectorSearchElement);
         }
 
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            Element luceneSparseVectorEmbeddingsRetrievalElement = doc.createElement(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
+            doc.getDocumentElement().appendChild(luceneSparseVectorEmbeddingsRetrievalElement);
+        }
+
         // INFO: Sentence-BERT
         if (ddqi.equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT) && context.getSentenceBERTCorpusId() != null) {
             Element sbertElement = doc.createElement(CONTEXT_SENTENCE_BERT_TAG);
@@ -1811,6 +1818,13 @@ public class XMLService {
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR)) {
                 similarityMetricStr = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR);
             }
+        }
+
+        // INFO: Lucene sparse vector embeddings configuration
+        boolean luceneSparseVectorEmbeddingsRetrieval = false;
+        NodeList luceneSparseVectorEmbeddingsRetrievalNL = doc.getElementsByTagName(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
+        if (luceneSparseVectorEmbeddingsRetrievalNL.getLength() > 0) {
+            luceneSparseVectorEmbeddingsRetrieval = true;
         }
 
         // INFO: SentenceBERT
@@ -2052,6 +2066,10 @@ public class XMLService {
 
         if (luceneVectorSearch) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+        }
+
+        if (luceneSparseVectorEmbeddingsRetrieval) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
         }
 
         if (sentenceBERTCorpusId != null) {
