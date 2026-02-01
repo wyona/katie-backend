@@ -1943,10 +1943,10 @@ public class DomainController {
             @RequestParam(value = "embedding-endpoint", required = false) String embeddingEndpoint,
             @Parameter(name = "api-token", description = "Embedding implementation API token",required = false)
             @RequestParam(value = "api-token", required = false) String apiToken,
-            @Parameter(name = "index-alternative-questions", description = "Default is true, but when set to false, then alternative questions will not be indexed",required = false)
-            @RequestParam(value = "index-alternative-questions", required = false) Boolean indexAlternativeQuestions,
-            @Parameter(name = "index-all-qnas", description = "Default is false, but when set to true, then also index QnAs which were not indexed yet",required = false)
-            @RequestParam(value = "index-all-qnas", required = false) Boolean indexAllQnAs,
+            @Parameter(name = "index-alternative-questions", description = "Default is true, but when set to false, then alternative questions will not be indexed", required = false)
+            @RequestParam(value = "index-alternative-questions", required = false, defaultValue = "true") Boolean indexAlternativeQuestions,
+            @Parameter(name = "index-all-qnas", description = "Default is false, but when set to true, then also index QnAs which were not indexed yet", required = false)
+            @RequestParam(value = "index-all-qnas", required = false, defaultValue = "false") Boolean indexAllQnAs,
             @Parameter(name = "throttle-time", description = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
             HttpServletRequest request) {
