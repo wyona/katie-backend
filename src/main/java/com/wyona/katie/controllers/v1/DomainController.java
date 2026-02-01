@@ -928,8 +928,8 @@ public class DomainController {
             @RequestParam(value = "question-field-names", required = true) String questionFieldNames,
             @Parameter(name = "url", description = "Base URL, e.g. 'https://repid.ch'", required = true)
             @RequestParam(value = "url", required = true) String url,
-            @Parameter(name = "chunk-size", description = "Chunk size, e.g. 1000", required = false, schema = @Schema(defaultValue = "1000"))
-            @RequestParam(value = "chunk-size", required = false) Integer chunkSize,
+            @Parameter(name = "chunk-size", description = "Chunk size, e.g. 1000", required = false)
+            @RequestParam(value = "chunk-size", required = false, defaultValue = "1000") Integer chunkSize,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
@@ -1413,8 +1413,8 @@ public class DomainController {
     public ResponseEntity<?> getClassificationDataset(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @Parameter(name = "labels-only", description = "When set to true, then only labels are returned", required = false, schema = @Schema(defaultValue = "false"))
-            @RequestParam(value = "labels-only", required = false) Boolean labelsOnly,
+            @Parameter(name = "labels-only", description = "When set to true, then only labels are returned", required = false)
+            @RequestParam(value = "labels-only", required = false, defaultValue = "false") Boolean labelsOnly,
             HttpServletRequest request) {
 
         if (!domainService.existsContext(id)) {
@@ -1451,8 +1451,8 @@ public class DomainController {
     public ResponseEntity<?> getClassificationLabels(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @Parameter(name = "with-descriptions-only", description = "When set to true, then only labels are returned which contain a description", required = false, schema = @Schema(defaultValue = "false"))
-            @RequestParam(value = "with-descriptions-only", required = false) Boolean withDescriptionsOnly,
+            @Parameter(name = "with-descriptions-only", description = "When set to true, then only labels are returned which contain a description", required = false)
+            @RequestParam(value = "with-descriptions-only", required = false, defaultValue = "false") Boolean withDescriptionsOnly,
             HttpServletRequest request) {
 
         if (!domainService.isAuthorized(id, request, "/" + id + "/classification/labels", JwtService.SCOPE_READ_LABELS)) {
