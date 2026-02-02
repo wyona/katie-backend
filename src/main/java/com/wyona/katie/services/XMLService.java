@@ -1412,6 +1412,7 @@ public class XMLService {
     }
 
     /**
+     * Save domain configuration
      * @param context Domain object
      */
     public void saveContextConfig(Context context) {
@@ -1589,6 +1590,9 @@ public class XMLService {
 
         if (ddqi.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
             Element luceneSparseVectorEmbeddingsRetrievalElement = doc.createElement(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
+            if (context.getEmbeddingsImpl() != null && !context.getEmbeddingsImpl().equals(EmbeddingsImpl.UNSET)) {
+                luceneSparseVectorEmbeddingsRetrievalElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR, context.getEmbeddingsImpl().toString());
+            }
             doc.getDocumentElement().appendChild(luceneSparseVectorEmbeddingsRetrievalElement);
         }
 
@@ -1825,6 +1829,10 @@ public class XMLService {
         NodeList luceneSparseVectorEmbeddingsRetrievalNL = doc.getElementsByTagName(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
         if (luceneSparseVectorEmbeddingsRetrievalNL.getLength() > 0) {
             luceneSparseVectorEmbeddingsRetrieval = true;
+            Element luceneSparseVectorEmbeddingsRetrievalEl = (Element) luceneSparseVectorEmbeddingsRetrievalNL.item(0);
+            if (luceneSparseVectorEmbeddingsRetrievalEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
+                embeddingsImpl = EmbeddingsImpl.valueOf(luceneSparseVectorEmbeddingsRetrievalEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR));
+            }
         }
 
         // INFO: SentenceBERT
