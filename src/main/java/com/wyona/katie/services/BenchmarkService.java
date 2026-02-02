@@ -88,6 +88,7 @@ public class BenchmarkService {
     /**
      * Run MTEB evaluation
      * @param datasetPath, Dataset path, e.g., "orionweller/LIMIT-small"
+     * @param rConfig Retrieval configuration
      */
     @Async
     public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, RetrievalConfiguration rConfig, User user, String processId) {
@@ -127,6 +128,7 @@ public class BenchmarkService {
                 String domainName = "MTEB Evaluation " + benchmarkId;
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
+                backgroundProcessService.updateProcessStatus(processId, "New domain created: " + domain.getId());
 
                 HashMap corpusAnswerIds = indexCorpus(domain, rConfig, processId, corpusFile, throttleTimeInMillis);
 
@@ -285,6 +287,7 @@ public class BenchmarkService {
 
     /**
      * Index corpus
+     * @param rConfig Retrieval configuration
      */
     private HashMap indexCorpus(Context domain, RetrievalConfiguration rConfig, String processId, File corpusFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
@@ -775,7 +778,7 @@ public class BenchmarkService {
      */
     private String getSearchImplementationVersion(DetectDuplicatedQuestionImpl impl, Context domain) {
         String version = null;
-        if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || impl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
+        if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || impl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || impl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
             version = luceneImpl.getVersion();
         } else if (impl.equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
             version = sbertImpl.getVersionAndModel().get(sbertImpl.VERSION);
@@ -793,14 +796,20 @@ public class BenchmarkService {
     private String getSearchImplementationMeta(Context domain) {
         StringBuilder meta = new StringBuilder("Search Impl: " + domain.getDetectDuplicatedQuestionImpl());
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
-            meta.append(", Embeddings Impl: " + domain.getEmbeddingsImpl());
-            meta.append(", Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
+            meta.append(", Dense Embeddings Impl: " + domain.getEmbeddingsImpl());
+            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
-                meta.append(", Embedding URL: " + sbertImpl.getHttpHost());
+                meta.append(", Dense Embedding URL: " + sbertImpl.getHttpHost());
             } else {
-                meta.append(", Embedding URL: " + domain.getEmbeddingsEndpoint());
+                meta.append(", Dense Embedding URL: " + domain.getEmbeddingsEndpoint());
             }
             meta.append(", Similarity metric: " + domain.getVectorSimilarityMetric());
+        } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
+                meta.append(", Sparse Embedding URL: " + sbertImpl.getHttpHost());
+            } else {
+                meta.append(", Sparse Embedding URL: " + domain.getEmbeddingsEndpoint());
+            }
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
             meta.append(", Embeddings Model: " + sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
             meta.append(", Query URL: " + sbertImpl.getHttpHost());
