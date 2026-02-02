@@ -1,7 +1,7 @@
 package com.wyona.katie.models;
 
 /**
- *
+ * Embeddings provider
  */
 public enum EmbeddingsImpl {
     UNSET,
