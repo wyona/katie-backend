@@ -206,7 +206,7 @@ public class BenchmarkController {
             @RequestParam(value = "sentence-one", required = true) String sentenceOne,
             @Parameter(name = "sentence-two", description = "Sentence Two, e.g. 'What is your age'",required = true)
             @RequestParam(value = "sentence-two", required = true) String sentenceTwo,
-            @Parameter(name = "embeddings-impl", description = "Embeddings implementation / provider",required = true)
+            @Parameter(name = "embeddings-impl", description = "Embeddings implementation / provider", required = true)
             @RequestParam(value = "embeddings-impl", required = true) EmbeddingsImpl embeddingsImpl,
             @Parameter(name = "get-embeddings", description = "When set to true, then embeddings will be returned as well", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
@@ -362,6 +362,10 @@ public class BenchmarkController {
                     retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
                     retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
                     retrievalConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                } else if (retrievalConfig.getRetrievalImpl() == DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL) {
+                    retrievalConfig.setEmbeddingImpl(embeddingsDefaultImpl);
+                    retrievalConfig.setEmbeddingEndpoint(null); // INFO: The default implementations have their endpoints configured already
+                    retrievalConfig.setEmbeddingAPIToken(contextService.getApiToken(embeddingsDefaultImpl));
                 } else {
                     retrievalConfig.setEmbeddingImpl(null);
                     retrievalConfig.setEmbeddingEndpoint(null);
@@ -433,8 +437,13 @@ public class BenchmarkController {
 
             // TODO: Make retrieval implementation configurable
             RetrievalConfiguration rConfig = new RetrievalConfiguration();
+
             //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
-            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+
+            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
+            //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
+            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
             rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
 
             bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, user, processId);
