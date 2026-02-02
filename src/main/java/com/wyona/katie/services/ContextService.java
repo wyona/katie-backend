@@ -1651,7 +1651,7 @@ public class ContextService {
 
         String logMsg = "Set new retrieval implementation '" + retrievalImpl;
         if (embeddingImpl != null) {
-            logMsg = logMsg + "' (Embedding Service: " + embeddingImpl + ", Embedding Model: " + embeddingModel + ", Embedding Value Type: " + embeddingValueType + ")";
+            logMsg = logMsg + "' (Embedding Provider: " + embeddingImpl + ", Embedding Model: " + embeddingModel + ", Embedding Value Type: " + embeddingValueType + ")";
         }
         logMsg = logMsg + " ...";
         backgroundProcessService.updateProcessStatus(processId, logMsg);
