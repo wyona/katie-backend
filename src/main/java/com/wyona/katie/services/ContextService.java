@@ -1674,7 +1674,7 @@ public class ContextService {
             }
         }
 
-        // INFO: Milvus sets the vector dimension when the collection is being created when executing createTenant()
+        // INFO: Milvus sets the vector dimension when the collection is being created when executing createTenant(), therefore the embedding provider must be set here already
         if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
             // TODO: Replace hard coded SBERT implementation
             domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
@@ -2001,6 +2001,7 @@ public class ContextService {
      * @param domain Domain for which retrieval implementation will be set
      * @param questionAnswerImplementation Retrieval implementation
      * @param aiServiceBaseUrl Retrieval base URL or index or corpus Id, e.g. "http://localhost:19530/" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
+     * @param embeddingImpl Embedding provider, e.g., "OpenAI", "Cohere", ...
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
@@ -2016,6 +2017,8 @@ public class ContextService {
             domain.setWeaviateCertaintyThreshold(certaintyThreshold);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.MILVUS)) {
             domain.setMilvusBaseUrl(aiServiceBaseUrl);
+            // TODO: Replace hard coded SBERT implementation
+            domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.QUERY_SERVICE)) {
             // INFO: Might be already set before
             domain.setQueryServiceUrl(aiServiceBaseUrl);
@@ -2082,6 +2085,8 @@ public class ContextService {
             domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(vectorSimilarityMetric));
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
+            // TODO: Replace hard coded SBERT implementation
+            domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
         } else {
             log.error("No setter for retrieval implementation " + questionAnswerImplementation + " exists yet!");
         }
