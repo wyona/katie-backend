@@ -235,14 +235,16 @@ public class Context {
     }
 
     /**
-     *
+     * Set embeddings provider
+     * @param embeddingsImpl Embedding provider, e.g., "OpenAI", "Cohere", ...
      */
     public void setEmbeddingsImpl(EmbeddingsImpl embeddingsImpl) {
         this.embeddingsImpl = embeddingsImpl;
     }
 
     /**
-     *
+     * Get embeddings provider
+     * @return embeddings provider, e.g., "OpenAI", "Cohere", ...
      */
     public EmbeddingsImpl getEmbeddingsImpl() {
         return embeddingsImpl;
