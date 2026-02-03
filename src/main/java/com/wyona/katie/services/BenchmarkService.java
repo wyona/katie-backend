@@ -137,6 +137,7 @@ public class BenchmarkService {
                 int recall_top_k = 2;
                 BenchmarkResult result = queryCorpus(domain.getId(), processId, benchmarkQuestions, recall_top_k, throttleTimeInMillis);
                 backgroundProcessService.updateProcessStatus(processId, "recall@" + recall_top_k+ ": " + result.getRecall());
+                backgroundProcessService.updateProcessStatus(processId, "Meta information: " + result.getSystemMeta());
 
                 // INFO: Delete the created benchmark domain
                 if (false) { // TODO: Make deleting domain configurable
@@ -791,7 +792,7 @@ public class BenchmarkService {
     }
 
     /**
-     *
+     * Get retrieval algorithm meta information, e.g., embedding model
      */
     private String getSearchImplementationMeta(Context domain) {
         StringBuilder meta = new StringBuilder("Search Impl: " + domain.getDetectDuplicatedQuestionImpl());
