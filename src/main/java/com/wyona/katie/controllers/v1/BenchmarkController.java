@@ -416,7 +416,13 @@ public class BenchmarkController {
     public ResponseEntity<?> runMtebEvaluation(
             @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'Wyona/LIMIT-very-small' (https://huggingface.co/datasets/Wyona/LIMIT-very-small) or 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
             @RequestParam(value = "dataset-path", required = true) String datasetPath,
+            @Parameter(name = "retrieval-algorithm", description = "Retrieval implementation", required = true)
+            @RequestParam(value = "retrieval-algorithm", required = true, defaultValue = "LUCENE_DEFAULT") DetectDuplicatedQuestionImpl retrievalImpl,
             HttpServletRequest request) {
+
+        if (!(retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL))) {
+            return new ResponseEntity<>("{\"message\":\"Retrieval algorithm " + retrievalImpl + " not supported yet. Currently only the Lucene based algorithms are supported.\"}", HttpStatus.NOT_IMPLEMENTED);
+        }
 
         try {
             authService.tryJWTLogin(request);
@@ -435,16 +441,13 @@ public class BenchmarkController {
             String processId = UUID.randomUUID().toString();
             User user = iamService.getUser(false, false);
 
-            // TODO: Make retrieval implementation configurable
             RetrievalConfiguration rConfig = new RetrievalConfiguration();
+            rConfig.setRetrievalImpl(retrievalImpl);
+            if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+            }
 
-            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
-
-            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-            rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
-
-            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
-            //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+            // TODO: Only allow Lucene algorithms
 
             bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, user, processId);
 
