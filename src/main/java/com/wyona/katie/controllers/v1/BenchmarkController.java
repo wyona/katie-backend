@@ -440,11 +440,11 @@ public class BenchmarkController {
 
             //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
 
-            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-            //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
-
-            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
+            rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
             rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
+            //rConfig.setRetrievalImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
+            //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
 
             bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, user, processId);
 
