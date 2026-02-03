@@ -795,24 +795,27 @@ public class BenchmarkService {
      * Get retrieval algorithm meta information, e.g., embedding model
      */
     private String getSearchImplementationMeta(Context domain) {
-        StringBuilder meta = new StringBuilder("Search Impl: " + domain.getDetectDuplicatedQuestionImpl());
+        StringBuilder meta = new StringBuilder("Retrieval Implementation: " + domain.getDetectDuplicatedQuestionImpl());
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             meta.append(", Dense Embeddings Impl: " + domain.getEmbeddingsImpl());
             meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
-                meta.append(", Dense Embedding URL: " + sbertImpl.getHttpHost());
+                meta.append(", Dense Embeddings Provider URL: " + sbertImpl.getHttpHost());
             } else {
-                meta.append(", Dense Embedding URL: " + domain.getEmbeddingsEndpoint());
+                meta.append(", Dense Embeddings URL: " + domain.getEmbeddingsEndpoint());
             }
             meta.append(", Similarity metric: " + domain.getVectorSimilarityMetric());
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            meta.append(", Sparse Embeddings Provider: " + domain.getEmbeddingsImpl());
+            meta.append(", Sparse Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
-                meta.append(", Sparse Embedding URL: " + sbertImpl.getHttpHost());
+                meta.append(", Sparse Embeddings Provider URL: " + sbertImpl.getHttpHost());
             } else {
-                meta.append(", Sparse Embedding URL: " + domain.getEmbeddingsEndpoint());
+                meta.append(", Sparse Embeddings URL: " + domain.getEmbeddingsEndpoint());
             }
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
-            meta.append(", Dense Embeddings Model: " + sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
+            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(EmbeddingsImpl.SBERT));
+            //meta.append(", Dense Embeddings Model: " + sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
             meta.append(", Query URL: " + sbertImpl.getHttpHost());
             meta.append(", Distance threshold: " + domain.getSentenceBERTDistanceThreshold());
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.WEAVIATE)) {
