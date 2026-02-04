@@ -2054,7 +2054,7 @@ public class ContextService {
                         domain.setEmbeddingsModel(embeddingModel);
                     } else {
                         // INFO: Get default embedding model for embedding implementation
-                        domain.setEmbeddingsModel(aiService.getEmbeddingModel(embeddingImpl));
+                        domain.setEmbeddingsModel(aiService.getEmbeddingModel(embeddingImpl, true));
                     }
                 }
 

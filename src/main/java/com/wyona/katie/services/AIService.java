@@ -330,7 +330,7 @@ public class AIService {
      */
     public Distances getDistancesBetweenSentences(String sentenceOne, String sentenceTwo, EmbeddingsImpl embeddingsImpl, String apiToken, boolean getEmbeddings) throws Exception {
 
-        String model = getEmbeddingModel(embeddingsImpl);
+        String model = getEmbeddingModel(embeddingsImpl, true);
 
         Vector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
         Vector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
@@ -418,13 +418,18 @@ public class AIService {
     }
 
     /**
+     * @param dense When true, then return dense model, otherwise return sparse model
      * @return embeddings model, e.g. "all-mpnet-base-v2"
      */
-    protected String getEmbeddingModel(EmbeddingsImpl embeddingsImpl) {
+    protected String getEmbeddingModel(EmbeddingsImpl embeddingsImpl, boolean dense) {
         String model = null;
 
         if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {
-            model = sbertImpl.getVersionAndModel().get(sbertImpl.MODEL);
+            if (dense) {
+                model = sbertImpl.getVersionAndModel().get(sbertImpl.DENSE_MODEL);
+            } else {
+                model = sbertImpl.getVersionAndModel().get(sbertImpl.SPARSE_MODEL);
+            }
         } else if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI) || embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
             model = openAIModel; // TODO: Make model configurable
         } else if (embeddingsImpl.equals(EmbeddingsImpl.COHERE)) {

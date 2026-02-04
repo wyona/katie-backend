@@ -927,7 +927,7 @@ public class QuestionAnsweringService {
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             report.setEmbeddingsImpl(domain.getEmbeddingsImpl());
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
-                report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
+                report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.DENSE_MODEL));
             } else {
                 report.setEmbeddingsImplModel(domain.getEmbeddingsModel());
             }
@@ -935,12 +935,12 @@ public class QuestionAnsweringService {
         }
 
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
-            // TODO: Set sparse vector embeddings model
+            report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.SPARSE_MODEL));
         }
 
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
             report.setSentenceBERTDistanceThreshold(domain.getSentenceBERTDistanceThreshold());
-            report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
+            report.setEmbeddingsImplModel(sbertImpl.getVersionAndModel().get(sbertImpl.DENSE_MODEL));
         }
         
         return report;

@@ -33,7 +33,8 @@ import org.apache.commons.codec.binary.Base64;
 @Component
 public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, EmbeddingsProvider {
 
-    public static final String MODEL = "model";
+    public static final String DENSE_MODEL = "dense_model";
+    public static final String SPARSE_MODEL = "sparse_model";
     public static final String VERSION = "version";
 
     @Value("${sbert.hostname}")
@@ -80,7 +81,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     }
 
     /**
-     * @return version of SentenceBERT REST service (e.g. "1.11.0") and name of embeddings model used by SentenceBERT (e.g. "all-mpnet-base-v2")
+     * @return version of SentenceBERT REST service (e.g. "1.11.0") and name of dense embeddings model used by SentenceBERT (e.g. "all-mpnet-base-v2")
      */
     public Map<String, String> getVersionAndModel() {
         RestTemplate restTemplate = new RestTemplate();
@@ -89,14 +90,19 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
 
         try {
             String requestUrl = getHttpHost() + "/api/v1/model";
-            log.info("Check whether Sentence-BERT is alive: " + requestUrl);
+            log.info("Check whether Sentence-BERT is alive and get configured model names and version of Sentence-BERT: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
             log.info("JSON: " + bodyNode);
 
             Map<String, String> map = new HashMap<String, String>();
             map.put(VERSION, bodyNode.get("version").asText());
-            map.put(MODEL, bodyNode.get("model-name").asText());
+            map.put(DENSE_MODEL, bodyNode.get("model-name").asText());
+            if (bodyNode.has("sparse-model-name")) {
+                map.put(SPARSE_MODEL, bodyNode.get("sparse-model-name").asText());
+            } else {
+                map.put(SPARSE_MODEL, "info_not_available");
+            }
 
             return map;
         } catch(Exception e) {

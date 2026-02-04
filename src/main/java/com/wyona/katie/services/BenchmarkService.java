@@ -798,7 +798,7 @@ public class BenchmarkService {
         StringBuilder meta = new StringBuilder("Retrieval Implementation: " + domain.getDetectDuplicatedQuestionImpl());
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             meta.append(", Dense Embeddings Impl: " + domain.getEmbeddingsImpl());
-            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
+            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl(), true));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
                 meta.append(", Dense Embeddings Provider URL: " + sbertImpl.getHttpHost());
             } else {
@@ -807,14 +807,14 @@ public class BenchmarkService {
             meta.append(", Similarity metric: " + domain.getVectorSimilarityMetric());
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
             meta.append(", Sparse Embeddings Provider: " + domain.getEmbeddingsImpl());
-            meta.append(", Sparse Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl()));
+            meta.append(", Sparse Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl(), false));
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
                 meta.append(", Sparse Embeddings Provider URL: " + sbertImpl.getHttpHost());
             } else {
                 meta.append(", Sparse Embeddings URL: " + domain.getEmbeddingsEndpoint());
             }
         } else if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.SENTENCE_BERT)) {
-            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(EmbeddingsImpl.SBERT));
+            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(EmbeddingsImpl.SBERT, true));
             //meta.append(", Dense Embeddings Model: " + sbertImpl.getVersionAndModel().get(sbertImpl.MODEL));
             meta.append(", Query URL: " + sbertImpl.getHttpHost());
             meta.append(", Distance threshold: " + domain.getSentenceBERTDistanceThreshold());
