@@ -186,7 +186,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
         String prompt = getPromptFromConfig(domain);
         prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_LABELS + "\\}\\}", listOfLabels.toString());
-        prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_TEXT + "\\}\\}", text);
+        String safeText = Matcher.quoteReplacement(text); // INFO: Escapes $ and \
+        log.info("Replace placeholder '" + PLACEHOLDER_TEXT + "' by the sanitized input text: \"" + safeText + "\"");
+        prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_TEXT + "\\}\\}", safeText);
         prompt = prompt.replaceAll("\\{\\{" + PLACEHOLDER_LIMIT + "\\}\\}", "" + limit);
 
         return prompt;
