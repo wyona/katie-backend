@@ -445,6 +445,9 @@ public class BenchmarkController {
             rConfig.setRetrievalImpl(retrievalImpl);
             if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
                 rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+
+                //rConfig.setEmbeddingImpl(EmbeddingsImpl.OLLAMA);
+                //rConfig.setEmbeddingModel("qwen3-embedding:0.6b");
             }
 
             // TODO: Only allow Lucene algorithms
