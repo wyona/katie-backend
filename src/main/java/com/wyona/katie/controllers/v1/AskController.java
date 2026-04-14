@@ -516,7 +516,7 @@ public class AskController {
             @RequestParam(value = "asynchronous", required = false) Boolean asynchronous,
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "limit", description = "Maximum number of labels returned", required = false, schema = @Schema(defaultValue = "3"))
+            @Parameter(name = "limit", description = "Maximum number of labels returned (default is 3)", required = false, schema = @Schema(defaultValue = "3"))
             @RequestParam(value = "limit", required = false) Integer limit,
             @Parameter(name = "text", description = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
             @RequestBody Message text,
