@@ -269,7 +269,7 @@ public class IAMController {
     @RequestMapping(value = "/user", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Add user, whereas username, email, role (ADMIN, USER) and password are required. Username and email can be the same.")
     public ResponseEntity<?> addUser(
-            @Parameter(name = "mykatie", description = "When set to true, then a personal MyKatie domain will be created", required = false, schema = @Schema(defaultValue = "true"))
+            @Parameter(name = "mykatie", description = "When set to true, then a personal MyKatie domain will be created", required = false, schema = @Schema(type = "boolean", defaultValue = "true"))
             @RequestParam(value = "mykatie", required = false) Boolean createPersonalDomain,
             @RequestBody User user,
             HttpServletRequest request) {
