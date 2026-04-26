@@ -208,7 +208,7 @@ public class BenchmarkController {
             @RequestParam(value = "sentence-two", required = true) String sentenceTwo,
             @Parameter(name = "embeddings-impl", description = "Embeddings implementation / provider", required = true)
             @RequestParam(value = "embeddings-impl", required = true) EmbeddingsImpl embeddingsImpl,
-            @Parameter(name = "get-embeddings", description = "When set to true, then embeddings will be returned as well", required = false, schema = @Schema(defaultValue = "false"))
+            @Parameter(name = "get-embeddings", description = "When set to true, then embeddings will be returned as well", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
@@ -298,13 +298,13 @@ public class BenchmarkController {
     public ResponseEntity<?> performBenchmark(
             @Parameter(name = "email", description = "E-Mail to get notification when benchmark is completed",required = false)
             @RequestParam(value = "email", required = false) String email,
-            @Parameter(name = "index-alternative-questions", description = "Also index alternative questions when set to true", required = true, schema = @Schema(defaultValue = "false"))
+            @Parameter(name = "index-alternative-questions", description = "Also index alternative questions when set to true", required = true, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "index-alternative-questions", required = true) Boolean indexAlternativeQuestions,
             @Parameter(name = "re-rank-answers", description = "Re-rank answers when set to true", required = false, schema = @Schema(defaultValue = "false"))
             @RequestParam(value = "re-rank-answers", required = false) Boolean reRankAnswers,
             @Parameter(name = "throttle-time", description = "Throttle time in milliseconds",required = false)
             @RequestParam(value = "throttle-time", required = false) Integer customThrottleTimeInMilis,
-            @Parameter(name = "delete-domain", description = "When set to true, then delete domain which was created to run benchmark", required = false , schema = @Schema(defaultValue = "false"))
+            @Parameter(name = "delete-domain", description = "When set to true, then delete domain which was created to run benchmark", required = false , schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "delete-domain", required = false) Boolean deleteDomain,
             // TODO: Add description for file, e.g. "Test Dataset" and if not provided, then a default test dataset is being used
             @RequestPart(name = "file", required = false) MultipartFile file, // INFO: When no dataset is provided, then a default set is used
