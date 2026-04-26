@@ -166,7 +166,7 @@ public class AskController {
      */
     @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
     @Operation(
-            summary = "Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.",
+            summary = "Ask question and get answer. If no answer is available, then the uuid and answer field of the response body will be null.",
             security = { @SecurityRequirement(name = "bearerAuth") }
     )
     public ResponseEntity<?> getAnswer(
