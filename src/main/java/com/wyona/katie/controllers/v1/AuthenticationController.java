@@ -102,9 +102,9 @@ public class AuthenticationController {
         @RequestParam(value = "username", required = true) String username,
         @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
-        @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(defaultValue = "false"))
+        @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(type = "boolean", defaultValue = "false"))
         @RequestParam(value = "addProfile", required = true) boolean addProfile,
-        @Parameter(name = "linkAccount", description = "When true, then add JWT to user account",required = true)
+        @Parameter(name = "linkAccount", description = "When true, then add JWT to user account", required = true, schema = @Schema(type = "boolean", defaultValue = "true"))
         @RequestParam(value = "linkAccount", required = true) boolean linkWithUserAccount,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -148,7 +148,7 @@ public class AuthenticationController {
     public ResponseEntity<?> generateJWTForMyself(
             @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
             @RequestParam(value = "seconds", required = true) long seconds,
-            @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(defaultValue = "false"))
+            @Parameter(name = "addProfile", description = "When true, then user profile information is added to the token, like for example date of birth or selfie as Base64", required = true, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "addProfile", required = true) boolean addProfile,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -208,7 +208,7 @@ public class AuthenticationController {
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
     @Operation(summary = "Login with username/password or JWT token", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
-        @Parameter(name = "rememberMe", description = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, schema = @Schema(defaultValue = "false"))
+        @Parameter(name = "rememberMe", description = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
         @RequestParam(value = "rememberMe", required = false) Boolean rememberMe,
         HttpServletRequest request,
         HttpServletResponse response) {
