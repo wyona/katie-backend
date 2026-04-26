@@ -293,7 +293,8 @@ public class AskController {
     }
 
     /**
-     *
+     * Generate answer to question
+     * @param question Question, e.g., "Can you explain the softmax function"
      */
     private ResponseEntity<?> answerByKatie(String question, List<String> classifications, Context domain, Date dateSubmitted, String remoteAddress) {
         try {
