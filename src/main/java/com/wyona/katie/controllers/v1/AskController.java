@@ -512,11 +512,11 @@ public class AskController {
     //@RequestMapping(value = "/ask/{domain-id}/taxonomy/inference", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_HTML_VALUE})
     @Operation(summary = "Classify a text", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> predictTaxonomyEntries(
-            @Parameter(name = "asynchronous", description = "When set to true, then prediction will be done asynchronous", required = false, schema = @Schema(defaultValue = "false"))
+            @Parameter(name = "asynchronous", description = "When set to true, then prediction will be done asynchronous", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "asynchronous", required = false) Boolean asynchronous,
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers", required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "limit", description = "Maximum number of labels returned (default is 3)", required = false, schema = @Schema(defaultValue = "3"))
+            @Parameter(name = "limit", description = "Maximum number of labels returned (default is 3)", required = false, schema = @Schema(type = "integer", defaultValue = "3"))
             @RequestParam(value = "limit", required = false) Integer limit,
             @Parameter(name = "text", description = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
             @RequestBody Message text,
