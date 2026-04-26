@@ -198,6 +198,21 @@ public class JwtService {
     }
 
     /**
+     * Get public key as RSA public key object
+     */
+    public RSAPublicKey getPublicKeyAsRSA() throws Exception {
+        String key = new String(Files.readAllBytes(Paths.get(configDataPath + "/jwt/" + PUBLIC_KEY_AS_PEM)))
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replaceAll("\\s", "");
+
+        byte[] decode = Base64.getDecoder().decode(key);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decode);
+        return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+    }
+
+    /**
      * Get private key as PEM
      */
     public String getPrivateKeyAsPem() throws Exception {
