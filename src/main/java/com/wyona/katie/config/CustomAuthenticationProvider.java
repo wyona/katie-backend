@@ -2,15 +2,14 @@ package com.wyona.katie.config;
 
 import com.wyona.katie.models.Username;
 import com.wyona.katie.models.User;
-import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +39,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        if (authentication instanceof BearerTokenAuthenticationToken) {
+            log.info("Verify bearer token ...");
+            return authentication;
+        }
+        if (authentication instanceof JwtAuthenticationToken) {
+            log.info("TODO: Implement verification of JwtAuthenticationToken");
+            throw new AuthenticationServiceException("JwtAuthenticationToken not implemented yet.");
+        }
+        if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
+            throw new AuthenticationServiceException(authentication + " not implemented yet.");
+        }
+
+        // Verify UsernamePasswordAuthenticationToken
         log.info("Try to authenticate: " + authentication);
 
         log.info("Username: " + authentication.getName());
@@ -116,7 +128,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public boolean supports(Class<?> authentication) {
-        log.info("Supports authentication object: " + authentication);
-        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+        log.info("Checking support for: " + authentication.getName());
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication)
+                || org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken.class.isAssignableFrom(authentication)
+                || org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
