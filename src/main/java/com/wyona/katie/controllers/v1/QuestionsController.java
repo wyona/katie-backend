@@ -642,9 +642,9 @@ public class QuestionsController {
     public ResponseEntity<?> getQuestionsAsked(
         @Parameter(name = "contextId", description = "Domain Id of asked questions (e.g. 'wyona' or 'ROOT')",required = false)
         @RequestParam(value = "contextId", required = false) String contextId,
-        @Parameter(name = "limit", description = "Pagination: Limit the number of returned questions",required = true, schema = @Schema(defaultValue = "10"))
+        @Parameter(name = "limit", description = "Pagination: Limit the number of returned questions",required = true, schema = @Schema(type = "integer", defaultValue = "10"))
         @RequestParam(value = "limit", required = true) int limit,
-        @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned questions",required = true, schema = @Schema(defaultValue = "0"))
+        @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned questions",required = true, schema = @Schema(type = "integer", defaultValue = "0"))
         @RequestParam(value = "offset", required = true) int offset,
         @Parameter(name = "unanswered", description = "When set to true, then only return unanswered questions",required = false)
         @RequestParam(value = "unanswered", required = false) Boolean unanswered,
