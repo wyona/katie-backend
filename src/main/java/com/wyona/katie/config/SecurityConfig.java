@@ -1,13 +1,17 @@
 package com.wyona.katie.config;
 
+import com.wyona.katie.services.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.SessionManagementFilter;
 
@@ -18,6 +22,9 @@ import static org.springframework.http.HttpMethod.*;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Autowired
+    JwtService jwtService;
 
     private static final String ADMIN_ROLE = "ADMIN";
     //private static final String USER_ROLE = "USER";
@@ -51,12 +58,13 @@ public class SecurityConfig {
 
         // Authorization configuration, also see for example https://www.baeldung.com/spring-security-expressions
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(POST, "/tmp-test/push-notification/topic").hasRole(ADMIN_ROLE)
-                        .requestMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
-                        .requestMatchers(POST, "/tmp-test/push-notification/data").hasRole(ADMIN_ROLE)
-                        .requestMatchers(GET, "/tmp-test/push-notification/sample").hasRole(ADMIN_ROLE)
+                .requestMatchers(POST, "/tmp-test/push-notification/topic").hasRole(ADMIN_ROLE)
+                .requestMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
+                .requestMatchers(POST, "/tmp-test/push-notification/data").hasRole(ADMIN_ROLE)
+                .requestMatchers(GET, "/tmp-test/push-notification/sample").hasRole(ADMIN_ROLE)
+                //.requestMatchers("/mcp/**").authenticated()
                 .anyRequest().permitAll()
-        );
+        ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));;
 
         // https://www.baeldung.com/spring-security-logout
         http.logout(logout -> logout
@@ -65,5 +73,19 @@ public class SecurityConfig {
         );
 
         return http.build();
+    }
+
+    /**
+     * Get JWT Decoder
+     * @return
+     */
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        try {
+            return NimbusJwtDecoder.withPublicKey(jwtService.getPublicKeyAsRSA()).build();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 }
