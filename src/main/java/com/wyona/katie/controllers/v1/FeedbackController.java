@@ -128,9 +128,9 @@ public class FeedbackController {
     public ResponseEntity<?> getRatingsOfAnswersToAskedQuestions(
             @Parameter(name = "domain-id", description = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(defaultValue = "10"))
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(type = "integer", defaultValue = "10"))
             @RequestParam(value = "limit", required = true) int limit,
-            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(defaultValue = "0"))
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(type = "integer", defaultValue = "0"))
             @RequestParam(value = "offset", required = true) int offset,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -238,13 +238,13 @@ public class FeedbackController {
     public ResponseEntity<?> getRatingsOfPredictedLabels(
             @Parameter(name = "domain-id", description = "Domain Id associated with asked questions (e.g. 'wyona' or 'ROOT')", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "get-chosen", description = "Labels which were predicted correctly", required = false, schema = @Schema(defaultValue = "true"))
+            @Parameter(name = "get-chosen", description = "Labels which were predicted correctly", required = false, schema = @Schema(type = "boolean", defaultValue = "true"))
             @RequestParam(value = "get-chosen", required = false) Boolean getChosen,
-            @Parameter(name = "get-rejected", description = "Labels which were rejected respectively not predicted correctly", required = false, schema = @Schema(defaultValue = "true"))
+            @Parameter(name = "get-rejected", description = "Labels which were rejected respectively not predicted correctly", required = false, schema = @Schema(type = "boolean", defaultValue = "true"))
             @RequestParam(value = "get-rejected", required = false) Boolean getRejected,
-            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(defaultValue = "10"))
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned ratings", required = true, schema = @Schema(type = "integer", defaultValue = "10"))
             @RequestParam(value = "limit", required = true) int limit,
-            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(defaultValue = "0"))
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned ratings", required = true, schema = @Schema(type = "integer", defaultValue = "0"))
             @RequestParam(value = "offset", required = true) int offset,
             HttpServletRequest request, HttpServletResponse response) {
 
