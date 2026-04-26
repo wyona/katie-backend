@@ -30,6 +30,8 @@ public class MCPRetrievalService {
             @ToolParam(description = "The question to search for", required = true) String question
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
+        String domainId = null;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof BearerTokenAuthenticationToken) {
             BearerTokenAuthenticationToken bearerToken = (BearerTokenAuthenticationToken) authentication;
@@ -42,9 +44,11 @@ public class MCPRetrievalService {
             }
         } else if (authentication instanceof JwtAuthenticationToken) {
             JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-            //log.debug("JWT token: " + jwtToken.getToken().getTokenValue());
-            if (jwtService.isJWTValid(jwtToken.getToken().getTokenValue(), null)) {
+            String tokenValue = jwtToken.getToken().getTokenValue();
+            //log.debug("JWT token: " + tokenValue);
+            if (jwtService.isJWTValid(tokenValue, null)) {
                 log.info("JWT Token is valid");
+                domainId = jwtService.getJWTClaimValue(tokenValue, "domain-id");
             } else {
                 log.warn("JWT Token is not valid!");
                 throw new Exception("Access token invalid!");
@@ -56,8 +60,11 @@ public class MCPRetrievalService {
             throw new Exception("Authentication " + authentication + " not implemented!");
         }
 
-        String domainId = "TODO";
-        log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
+        if (domainId != null) {
+            log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
+        } else {
+            log.warn("Access token does not contain a domain Id (domain-id)!");
+        }
 
         return List.of(
                 "Katherina was born October 18, 1896",
