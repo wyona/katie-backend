@@ -2,8 +2,8 @@ package com.wyona.katie.config;
 
 import com.wyona.katie.services.MCPRetrievalService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.support.ToolCallbacks;
-import org.springframework.ai.tool.ToolCallback;
+//import org.springframework.ai.support.ToolCallbacks;
+//import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.context.annotation.Bean;
