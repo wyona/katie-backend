@@ -203,6 +203,20 @@ public class ClassificationService {
     }
 
     /**
+     *
+     */
+    @Async
+    public void importClassificationDataset(ClassificationDataset dataset, Context domain, String processId, String userId) throws Exception {
+        backgroundProcessService.startProcess(processId, "Import classification dataset", userId);
+        backgroundProcessService.updateProcessStatus(processId, "Import classification samples ...");
+        for (TextSample sample : dataset.getSamples()) {
+            importSample(domain, sample);
+        }
+        backgroundProcessService.updateProcessStatus(processId, "Import finished");
+        backgroundProcessService.stopProcess(processId, domain.getId());
+    }
+
+    /**
      * Get preferences / ratings of predicted labels of a particular domain
      * @param domain Domain containing preferences / ratings of predicted labels
      * @param getChosen When true, then return ratings where label was not rejected
