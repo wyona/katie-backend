@@ -1520,7 +1520,7 @@ public class DomainController {
             // INFO: The method retrain(...) is using @Async, therefore we have to read the preference dataset before
             List<HumanPreferenceLabel> preferences = getHumanPreferences(preferenceDataset);
 
-            HumanPreferenceLabel[] localPreferences = domainService.getRatingsOfPredictedLabels(domain.getId(), true, true);
+            HumanPreferenceLabel[] localPreferences = classificationService.getRatingsOfPredictedLabels(domain, true, true);
             for (HumanPreferenceLabel localPreference : localPreferences) {
                 preferences.add(localPreference);
             }
