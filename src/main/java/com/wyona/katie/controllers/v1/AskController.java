@@ -541,8 +541,9 @@ public class AskController {
             if (user == null) {
                 throw new java.nio.file.AccessDeniedException("User is not signed in!");
             }
+            Context domain = null;
             if (!contextService.isMemberOrAdmin(domainId, user)) {
-                Context domain = contextService.getContext(domainId);
+                domain = contextService.getContext(domainId);
                 if (domain.getAnswersGenerallyProtected()) {
                     log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "' and answers of domain '" + domainId + "' are generally protected.");
                     throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
@@ -556,7 +557,7 @@ public class AskController {
                 contextService.classifyTextAsynchronously(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user, processId);
                 return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(contextService.classifyText(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
+                return new ResponseEntity<>(contextService.classifyText(domain, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
             }
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);

@@ -179,7 +179,7 @@ public class QuestionAnsweringService {
             try {
                 int limitPredictedLabels = 3; // TODO: Make configurable
                 String questionLanguage = "en"; // TODO
-                predictedLabels = contextService.classifyText(domain.getId(), question, messageId, limitPredictedLabels, questionLanguage, user).getPredictedLabels();
+                predictedLabels = contextService.classifyText(domain, question, messageId, limitPredictedLabels, questionLanguage, user).getPredictedLabels();
             } catch (Exception e) {
                 // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
                 log.error(e.getMessage(), e);
