@@ -3591,24 +3591,9 @@ public class ContextService {
         saveQuestionAnswer(domain, uuid, qna);
         retrain(new QnA(qna), domain, true);
 
-        trainClassifier(classification, qna, domain);
+        classificationService.trainClassifier(classification, qna, domain);
 
         return qna;
-    }
-
-    /**
-     * TODO: Does this functionality make sense actually?!
-     */
-    public void trainClassifier(Classification classification, Answer qna, Context domain) {
-        if (false) { // TODO: Make configurable
-            TextSample[] samples = new TextSample[1];
-            TextSample sample = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
-            try {
-                classificationService.importSample(domain, sample);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
     }
 
     /**
@@ -3778,7 +3763,7 @@ public class ContextService {
                 // TODO: Get ID of classification
                 //Classification  classification = getClassification(label);
                 Classification classification = new Classification(label, null, null);
-                trainClassifier(classification, qna, domain);
+                classificationService.trainClassifier(classification, qna, domain);
             }
         }
 

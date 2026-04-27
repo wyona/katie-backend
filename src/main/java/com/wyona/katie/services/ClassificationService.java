@@ -217,6 +217,21 @@ public class ClassificationService {
     }
 
     /**
+     * TODO: Does this functionality make sense actually?!
+     */
+    public void trainClassifier(Classification classification, Answer qna, Context domain) {
+        if (false) { // TODO: Make configurable
+            TextSample[] samples = new TextSample[1];
+            TextSample sample = new TextSample(qna.getUuid(), qna.getAnswer(), classification);
+            try {
+                importSample(domain, sample);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
      * Get preferences / ratings of predicted labels of a particular domain
      * @param domain Domain containing preferences / ratings of predicted labels
      * @param getChosen When true, then return ratings where label was not rejected
