@@ -1393,7 +1393,7 @@ public class DomainController {
 
             Context domain = domainService.getContext(id);
             String processId = UUID.randomUUID().toString();
-            domainService.importClassificationDataset(dataset, domain, processId, user.getId());
+            classificationService.importClassificationDataset(dataset, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
