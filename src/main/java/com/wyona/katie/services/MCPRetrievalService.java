@@ -37,39 +37,8 @@ public class MCPRetrievalService {
             @ToolParam(description = "The question to search for", required = true) String question
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
-        String domainId = null;
+        String domainId = getDomainId();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof BearerTokenAuthenticationToken) {
-            BearerTokenAuthenticationToken bearerToken = (BearerTokenAuthenticationToken) authentication;
-            //log.debug("Bearer token: " + bearerToken.getToken());
-            if (jwtService.isJWTValid(bearerToken.getToken(), null)) {
-                log.info("Bearer Token is valid");
-            } else {
-                log.warn("Bearer Token is not valid!");
-                throw new Exception("Bearer token invalid!");
-            }
-        } else if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-            String tokenValue = jwtToken.getToken().getTokenValue();
-            //log.debug("JWT token: " + tokenValue);
-            if (jwtService.isJWTValid(tokenValue, null)) {
-                log.info("JWT Token is valid. Expire date: " + new Date(jwtService.getJWTExpirationTime(tokenValue)));
-                domainId = jwtService.getJWTClaimValue(tokenValue, "domain-id");
-                String username = jwtService.getJWTSubject(tokenValue);
-                authenticationService.login(username, null);
-            } else {
-                log.warn("JWT Token is not valid!");
-                throw new Exception("Access token invalid!");
-            }
-        } else {
-            //Object principal = authentication.getPrincipal();
-            //log.info("Authentication principal : " + principal);
-            log.warn("Authentication " + authentication + " not implemented!");
-            throw new Exception("Authentication " + authentication + " not implemented!");
-        }
-
-        if (domainId != null) {
             log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
             Context domain = xmlService.parseContextConfig(domainId);
 
@@ -96,9 +65,6 @@ public class MCPRetrievalService {
                 log.warn("Getting answers for domain '" + domain.getName() + "' failed!");
                 log.error(e.getMessage(), e);
             }
-        } else {
-            log.warn("Access token does not contain a domain Id (domain-id)!");
-        }
 
         return List.of(
                 "Katherina was born October 18, 1896",
@@ -129,6 +95,46 @@ public class MCPRetrievalService {
         }
 
         return datesAsString;
+    }
+
+    /**
+     *
+     */
+    private String getDomainId() throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof BearerTokenAuthenticationToken) {
+            BearerTokenAuthenticationToken bearerToken = (BearerTokenAuthenticationToken) authentication;
+            //log.debug("Bearer token: " + bearerToken.getToken());
+            if (jwtService.isJWTValid(bearerToken.getToken(), null)) {
+                log.info("Bearer Token is valid");
+                throw new Exception("Bearer Token is valid, but otherwise not implemented");
+            } else {
+                log.warn("Bearer Token is not valid!");
+                throw new Exception("Bearer token invalid!");
+            }
+        } else if (authentication instanceof JwtAuthenticationToken) {
+            JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+            String tokenValue = jwtToken.getToken().getTokenValue();
+            //log.debug("JWT token: " + tokenValue);
+            if (jwtService.isJWTValid(tokenValue, null)) {
+                log.info("JWT Token is valid. Expire date: " + new Date(jwtService.getJWTExpirationTime(tokenValue)));
+                String domainId = jwtService.getJWTClaimValue(tokenValue, "domain-id");
+                if (domainId == null) {
+                    throw new Exception("Access token does not contain a domain Id (domain-id)!");
+                }
+                String username = jwtService.getJWTSubject(tokenValue);
+                authenticationService.login(username, null);
+                return domainId;
+            } else {
+                log.warn("JWT Token is not valid!");
+                throw new Exception("Access token invalid!");
+            }
+        } else {
+            //Object principal = authentication.getPrincipal();
+            //log.info("Authentication principal : " + principal);
+            log.warn("Authentication " + authentication + " not implemented!");
+            throw new Exception("Authentication " + authentication + " not implemented!");
+        }
     }
 }
 
