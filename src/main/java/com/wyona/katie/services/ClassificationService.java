@@ -204,6 +204,7 @@ public class ClassificationService {
 
     /**
      * Get preferences / ratings of predicted labels of a particular domain
+     * @param domain Domain containing preferences / ratings of predicted labels
      * @param getChosen When true, then return ratings where label was not rejected
      * @param getRejected When true, then return ratings where label was rejected
      * @return preferences / ratings of predicted labels
