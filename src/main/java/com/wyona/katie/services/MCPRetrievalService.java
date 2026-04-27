@@ -39,7 +39,9 @@ public class MCPRetrievalService {
     ) throws Exception {
         String domainId = getDomainId();
         String userId = authenticationService.getUserId();
-        // TODO: Check whether user is member of domain
+        if (!xmlService.isUserMemberOfDomain(userId, domainId)) {
+            throw new Exception("User '" + userId + "' is not member of domain '" + domainId + "'!");
+        }
 
         log.info("Finding relevant content for question '" + question + "' of user '" + userId + "' inside domain '" + domainId + "' ...");
 
@@ -65,15 +67,9 @@ public class MCPRetrievalService {
 
             return results;
         } catch (Exception e) {
-            log.warn("Getting answers for domain '" + domain.getName() + "' failed!");
             log.error(e.getMessage(), e);
+            throw new Exception("Getting answers for domain '" + domain.getName() + "' failed!");
         }
-
-        return List.of(
-                "Katherina was born October 18, 1896",
-                "Michael was born February 16, 1969",
-                "Result for question: " + question
-        );
     }
 
     /**
