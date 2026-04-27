@@ -466,7 +466,7 @@ public class BenchmarkService {
             LocalDateTime currentDateTime = LocalDateTime.now();
             String benchmarkId = getBenchmarkId(currentDateTime);
 
-            HumanPreferenceLabel[] preferences = contextService.getRatingsOfPredictedLabels(domainId, true, true);
+            HumanPreferenceLabel[] preferences = classificationService.getRatingsOfPredictedLabels(domain, true, true);
             int total = preferences.length;
 
             if (total == 0) {
