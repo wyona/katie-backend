@@ -38,33 +38,36 @@ public class MCPRetrievalService {
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
         String domainId = getDomainId();
+        String userId = authenticationService.getUserId();
+        // TODO: Check whether user is member of domain
 
-            log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
-            Context domain = xmlService.parseContextConfig(domainId);
+        log.info("Finding relevant content for question '" + question + "' of user '" + userId + "' inside domain '" + domainId + "' ...");
 
-            try {
-                List<String> results = new ArrayList<>();
+        Context domain = xmlService.parseContextConfig(domainId);
 
-                /*
-                List<String> classifications = new ArrayList<String>();
-                String messageId = null; // TODO
-                String channelRequestId = null; // TODO
-                boolean includeFeedbackLinks = false;
-                ContentType answerContentType = null;
-                String remoteAddress = null; // getRemoteAddress(request);
-                java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false, false);
-                for (ResponseAnswer answer : responseAnswers) {
-                    //log.info("Answer: " + answer.getAnswer());
-                    results.add(answer.getAnswer());
-                }
+        try {
+            List<String> results = new ArrayList<>();
 
-                 */
-
-                return results;
-            } catch (Exception e) {
-                log.warn("Getting answers for domain '" + domain.getName() + "' failed!");
-                log.error(e.getMessage(), e);
+            results.add("Dummy answer");
+            /*
+            List<String> classifications = new ArrayList<String>();
+            String messageId = null; // TODO
+            String channelRequestId = null; // TODO
+            boolean includeFeedbackLinks = false;
+            ContentType answerContentType = null;
+            String remoteAddress = null; // getRemoteAddress(request);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false, false);
+            for (ResponseAnswer answer : responseAnswers) {
+                //log.info("Answer: " + answer.getAnswer());
+                results.add(answer.getAnswer());
             }
+            */
+
+            return results;
+        } catch (Exception e) {
+            log.warn("Getting answers for domain '" + domain.getName() + "' failed!");
+            log.error(e.getMessage(), e);
+        }
 
         return List.of(
                 "Katherina was born October 18, 1896",
