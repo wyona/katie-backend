@@ -1,6 +1,7 @@
 package com.wyona.katie.services;
 
 import com.wyona.katie.answers.OpenERZ;
+import com.wyona.katie.models.*;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,13 @@ import java.util.List;
 public class MCPRetrievalService {
 
     @Autowired
-    JwtService jwtService;
+    private JwtService jwtService;
+    @Autowired
+    private XMLService xmlService;
+    //@Autowired
+    //private QuestionAnsweringService qaService;
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @Tool(
             name = "katie_text_search",
@@ -47,8 +54,10 @@ public class MCPRetrievalService {
             String tokenValue = jwtToken.getToken().getTokenValue();
             //log.debug("JWT token: " + tokenValue);
             if (jwtService.isJWTValid(tokenValue, null)) {
-                log.info("JWT Token is valid");
+                log.info("JWT Token is valid. Expire date: " + new Date(jwtService.getJWTExpirationTime(tokenValue)));
                 domainId = jwtService.getJWTClaimValue(tokenValue, "domain-id");
+                String username = jwtService.getJWTSubject(tokenValue);
+                authenticationService.login(username, null);
             } else {
                 log.warn("JWT Token is not valid!");
                 throw new Exception("Access token invalid!");
@@ -62,6 +71,31 @@ public class MCPRetrievalService {
 
         if (domainId != null) {
             log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
+            Context domain = xmlService.parseContextConfig(domainId);
+
+            try {
+                List<String> results = new ArrayList<>();
+
+                /*
+                List<String> classifications = new ArrayList<String>();
+                String messageId = null; // TODO
+                String channelRequestId = null; // TODO
+                boolean includeFeedbackLinks = false;
+                ContentType answerContentType = null;
+                String remoteAddress = null; // getRemoteAddress(request);
+                java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false, false);
+                for (ResponseAnswer answer : responseAnswers) {
+                    //log.info("Answer: " + answer.getAnswer());
+                    results.add(answer.getAnswer());
+                }
+
+                 */
+
+                return results;
+            } catch (Exception e) {
+                log.warn("Getting answers for domain '" + domain.getName() + "' failed!");
+                log.error(e.getMessage(), e);
+            }
         } else {
             log.warn("Access token does not contain a domain Id (domain-id)!");
         }
