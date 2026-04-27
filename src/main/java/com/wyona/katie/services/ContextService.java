@@ -4330,17 +4330,6 @@ public class ContextService {
     }
 
     /**
-     * Get preferences / ratings of predicted labels of a particular domain
-     * @param getChosen When true, then return ratings where label was not rejected
-     * @param getRejected When true, then return ratings where label was rejected
-     * @return preferences / ratings of predicted labels
-     */
-    public HumanPreferenceLabel[] getRatingsOfPredictedLabels(String domainId, boolean getChosen, boolean getRejected) throws Exception {
-        Context domain = getContext(domainId);
-        return classificationService.getRatingsOfPredictedLabels(domain, getChosen, getRejected);
-    }
-
-    /**
      * @param channelRequestId Channel request Id, e.g. "3139c14f-ae63-4fc4-abe2-adceb67988af"
      * @param threadId Thread Id, e.g. "1084254275661725697" in the case of Discord or "C045ZFM7PUH-1678626022.589689" in the case of Slack
      * @param message Thread message, e.g. "Michael has 3 sons"
