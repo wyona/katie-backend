@@ -51,6 +51,9 @@ public class QuestionAnsweringService {
     private ContextService contextService;
 
     @Autowired
+    private ClassificationService classificationService;
+
+    @Autowired
     private DataRepositoryService dataRepoService;
 
     @Autowired
@@ -177,9 +180,20 @@ public class QuestionAnsweringService {
         if (predictClassifications) {
             log.info("Predict labels / classifications ...");
             try {
+                if (user == null) {
+                    throw new java.nio.file.AccessDeniedException("User is not signed in!");
+                }
+                if (!contextService.isMemberOrAdmin(domain.getId(), user)) {
+                    if (domain.getAnswersGenerallyProtected()) {
+                        log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "' and answers of domain '" + domain.getId() + "' are generally protected.");
+                        throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
+                    } else {
+                        log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "', but answers of domain '" + domain.getId() + "' are generally public.");
+                    }
+                }
                 int limitPredictedLabels = 3; // TODO: Make configurable
                 String questionLanguage = "en"; // TODO
-                predictedLabels = contextService.classifyText(domain, question, messageId, limitPredictedLabels, questionLanguage, user).getPredictedLabels();
+                predictedLabels = classificationService.classifyText(domain, question, messageId, limitPredictedLabels, questionLanguage, user).getPredictedLabels();
             } catch (Exception e) {
                 // INFO: If no domain specific labels are configured, then an exception will be thrown, therefore catch it here
                 log.error(e.getMessage(), e);

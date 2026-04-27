@@ -76,6 +76,9 @@ public class AskController {
     GenerativeAIService generativeAIService;
 
     @Autowired
+    ClassificationService classificationService;
+
+    @Autowired
     public AskController(QuestionAnsweringService qaService, IAMService iamService, RememberMeService rememberMeService, AuthenticationService authService, DataRepositoryService dataRepoService, ContextService contextService) {
         this.qaService = qaService;
         this.iamService = iamService;
@@ -557,7 +560,18 @@ public class AskController {
                 contextService.classifyTextAsynchronously(domainId, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user, processId);
                 return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(contextService.classifyText(domain, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
+                if (user == null) {
+                    throw new java.nio.file.AccessDeniedException("User is not signed in!");
+                }
+                if (!contextService.isMemberOrAdmin(domain.getId(), user)) {
+                    if (domain.getAnswersGenerallyProtected()) {
+                        log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "' and answers of domain '" + domain.getId() + "' are generally protected.");
+                        throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
+                    } else {
+                        log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "', but answers of domain '" + domain.getId() + "' are generally public.");
+                    }
+                }
+                return new ResponseEntity<>(classificationService.classifyText(domain, text.getMessage(), text.getMessageId(), _limit, requestedLanguage, user), HttpStatus.OK);
             }
         } catch(AccessDeniedException e) {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);

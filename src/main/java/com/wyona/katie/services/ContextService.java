@@ -542,10 +542,26 @@ public class ContextService {
      */
     @Async
     public void classifyTextAsynchronously(String domainId, String text, String clientMessageId, int limit, String language, User user, String processId) {
-        backgroundProcessService.startProcess(processId, "Classify text (client message Id: " + clientMessageId + ") ...", user.getId());
+        String userId = null;
+        if (user != null) {
+            userId = user.getId();
+        }
+        backgroundProcessService.startProcess(processId, "Classify text (client message Id: " + clientMessageId + ") ...", userId);
         try {
             Context domain = getContext(domainId);
-            PredictedLabelsResponse labels = classifyText(domain, text, clientMessageId, limit, language, user);
+            if (user == null) {
+                throw new java.nio.file.AccessDeniedException("User is not signed in!");
+            }
+            if (!isMemberOrAdmin(domain.getId(), user)) {
+                if (domain.getAnswersGenerallyProtected()) {
+                    log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "' and answers of domain '" + domain.getId() + "' are generally protected.");
+                    throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
+                } else {
+                    log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "', but answers of domain '" + domain.getId() + "' are generally public.");
+                }
+            }
+
+            PredictedLabelsResponse labels = classificationService.classifyText(domain, text, clientMessageId, limit, language, user);
             backgroundProcessService.updateProcessStatus(processId, "Text classified");
 
             if (labels.getPredictedLabels().length > 0) {
@@ -576,111 +592,6 @@ public class ContextService {
         KnowledgeSourceMeta ksMeta = getKnowledgeSource(domainId, KnowledgeSourceConnector.TOP_DESK);
 
         return topDeskConnector.addComment(incidentId, processId, ksMeta, labels.getPredictedLabelsAsTopDeskHtml());
-    }
-
-    /**
-     * Classify a text
-     * @param domain Domain
-     * @param text Text, e.g. "When was Michael born?"
-     * @param clientMessageId Foreign message id, e.g. "TODO"
-     * @param limit Maximum number of labels returned
-     * @param language User / Moderator language
-     * @return array of taxonomy terms (e.g. "birthdate", "michael") or classifications
-     */
-    public PredictedLabelsResponse classifyText(Context domain, String text, String clientMessageId, int limit, String language, User user) throws Exception {
-
-        if (user == null) {
-            throw new java.nio.file.AccessDeniedException("User is not signed in!");
-        }
-
-        if (!isMemberOrAdmin(domain.getId(), user)) {
-            if (domain.getAnswersGenerallyProtected()) {
-                log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "' and answers of domain '" + domain.getId() + "' are generally protected.");
-                throw new java.nio.file.AccessDeniedException("User '" + user.getId() + "' is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
-            } else {
-                log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domain.getId() + "', but answers of domain '" + domain.getId() + "' are generally public.");
-            }
-        }
-
-        HitLabel[] labels = classificationService.predictLabels(domain, text, limit);
-
-        String uuid = dataRepositoryService.logPredictedLabels(domain, text, clientMessageId, labels, domain.getClassifierImpl());
-
-        PredictedLabelsResponse response = new PredictedLabelsResponse();
-
-        response.setRequestUuid(uuid);
-        response.setPredictedLabels(labels);
-        response.setClassificationImpl(domain.getClassifierImpl());
-        if (domain.getClassifierImpl().equals(ClassificationImpl.LLM)) {
-            response.setCompletionConfig(domain.getCompletionConfig(true));
-        }
-        response.setPredictedLabelsAsTopDeskHtml(getPredictedLabelsAsTopDeskHtml(labels, domain, uuid, language));
-
-        return response;
-    }
-
-    /**
-     * @param logEntryUUID Log entry UUID (for feedback URLs)
-     * @param language User / Moderator language
-     */
-    private String getPredictedLabelsAsTopDeskHtml(HitLabel[] predictedLabels, Context domain, String logEntryUUID, String language) {
-        //ContentType.TEXT_TOPDESK_HTML
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul>");
-        for (HitLabel hitLabel : predictedLabels) {
-            sb.append("<li>" + hitLabel.getLabel().getTerm() + " (Score: " + hitLabel.getScore() + ")</li>");
-        }
-        sb.append("</ul>");
-
-        String yes = messageSource.getMessage("feedback.yes", null, new Locale(language));
-        String no = messageSource.getMessage("feedback.no", null, new Locale(language));
-        int tokenValidityInSeconds = 259200; // INFO: 3 days valid, in case of a weekend
-        String jwtToken = generateJWTAccessToken("/" + domain.getId() + "/classification/labels", JwtService.SCOPE_READ_LABELS, tokenValidityInSeconds);
-        sb.append("<p>" + messageSource.getMessage("labels.helpful", null, new Locale(language)) + "</p><p>" + yes + ": <a href=\"" + labelsHelpfulLink(domain, logEntryUUID) + "\">" + labelsHelpfulLink(domain, logEntryUUID) + "</a></p><p>" + no + ": <a href=\"" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "\">" + labelsNotHelpfulLink(domain, logEntryUUID, jwtToken) + "</a></p>");
-
-        return Utils.convertHtmlToTOPdeskHtml(sb.toString());
-    }
-
-    /**
-     * Generate access token for a particular endpoint and scope
-     * @param endpoint Rest interface endpoint, e.g. "/similarity-sentences"
-     * @param scope Scope of access tokem, e.g. "get-sentence-similarity"
-     * @param seconds Token validity in seconds, e.g. 3600 (60 minutes)
-     * @return JWT token
-     */
-    private String generateJWTAccessToken(String endpoint, String scope, long seconds) {
-        JWTPayload jwtPayload = new JWTPayload();
-        jwtPayload.setIss("Katie");
-        HashMap<String, String> claims = new HashMap<String, String>();
-        claims.put(jwtService.JWT_CLAIM_ENDPOINT, endpoint);
-        claims.put(jwtService.JWT_CLAIM_SCOPE, scope);
-
-        jwtPayload.setPrivateClaims(claims);
-
-        try {
-            return jwtService.generateJWT(jwtPayload, seconds, null);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return null;
-        }
-    }
-
-    /**
-     * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
-     */
-    private String labelsHelpfulLink(Context domain, String requestUUID) {
-        return domain.getHost() + "/#/domain/" + domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=true";
-    }
-
-    /**
-     * @param requestUUID Request UUID, e.g. "54c3222e-bffa-491e-bd63-489f2f6cc3e0"
-     */
-    private String labelsNotHelpfulLink(Context domain, String requestUUID, String jwtToken) {
-        String link = domain.getHost() + "/#/domain/" +domain.getId() + "/feedback/predicted-labels/" + requestUUID + "/rate?helpful=false";
-        if (jwtToken != null) {
-            link = link + "&token=" + jwtToken;
-        }
-        return link;
     }
 
     /**
