@@ -3,6 +3,7 @@ package com.wyona.katie.controllers.v1;
 import com.wyona.katie.models.*;
 import com.wyona.katie.models.Error;
 import com.wyona.katie.services.AuthenticationService;
+import com.wyona.katie.services.ClassificationService;
 import com.wyona.katie.services.ContextService;
 import com.wyona.katie.services.RememberMeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,9 @@ public class FeedbackController {
 
     @Autowired
     private ContextService domainService;
+
+    @Autowired
+    private ClassificationService classificationService;
 
     @Autowired
     private AuthenticationService authService;
@@ -267,7 +271,8 @@ public class FeedbackController {
                 }
                  */
 
-                HumanPreferenceLabel[] preferences = domainService.getRatingsOfPredictedLabels(domainId, getChosen, getRejected);
+                Context domain = domainService.getContext(domainId);
+                HumanPreferenceLabel[] preferences = classificationService.getRatingsOfPredictedLabels(domain, getChosen, getRejected);
                 return new ResponseEntity<>(preferences, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new com.wyona.katie.models.Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
