@@ -144,6 +144,7 @@ public class MCPQuestionAnswerImpl implements QuestionAnswerHandler {
      */
     private String getAnswer(String question) {
         // INFO: MCP servers configuration: src/main/resources/mcp-servers-config.json
+        // INFO: Also see spring.ai.mcp.client.stdio.servers-configuration inside src/main/resources/application.properties
         List<ToolCallback> tools = Arrays.stream(toolCallbackProvider.getToolCallbacks()).toList();
         log.info("Available tool callbacks: " + tools.size());
         List<ToolCallback> selectedTools = new ArrayList<>();
