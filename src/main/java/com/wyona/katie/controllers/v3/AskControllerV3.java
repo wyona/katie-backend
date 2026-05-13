@@ -76,7 +76,7 @@ public class AskControllerV3 {
             @RequestParam(value = "offset", required = false) Integer offset,
             @Parameter(name = "question-and-optional-params", description = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndOptionalParams,
-            @Parameter(name = "include-feedback-links", description = "When true, then answer contains feedback links (false by default)", required = false)
+            @Parameter(name = "include-feedback-links", description = "When true, then answer contains feedback links (false by default)", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,
             HttpServletRequest request,
             HttpServletResponse response) {
