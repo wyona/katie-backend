@@ -404,12 +404,17 @@ public class QuestionsController {
      * REST interface to get thread messages of asked question
      */
     @RequestMapping(value = "/asked/{qid}/thread", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary="Get thread messages of asked question")
+    @Operation(summary = "Get thread messages of asked question", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getThreadOfAskedQuestion(
             @Parameter(name = "qid", description = "UUID of asked question (e.g. '194b6cf3-bad2-48e6-a8d2-8c55eb33f027')",required = true)
             @PathVariable("qid") String qid,
             HttpServletRequest request, HttpServletResponse response) {
 
+        try {
+            authenticationService.tryJWTLogin(request);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
 
         log.info("Get thread messages of asked question '" + qid + "' ...");
@@ -493,9 +498,7 @@ public class QuestionsController {
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
-        User signedInUser = rememberMeService.tryAutoLogin(request, response);
-
-        // TODO: Check security / access token
+        rememberMeService.tryAutoLogin(request, response);
 
         log.info("Add a thread message / response to an originally asked question ...");
 
