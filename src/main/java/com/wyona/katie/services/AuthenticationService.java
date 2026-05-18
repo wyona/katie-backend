@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -273,7 +274,17 @@ public class AuthenticationService {
             log.info("User is not signed in.");
             return null;
         }
-        String username = (String)authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String username;
+
+        if (principal instanceof Jwt jwt) {
+            // Use "sub" or "preferred_username" depending on your provider
+            // Claims::getSubject
+            username = jwt.getClaimAsString("sub");
+        } else {
+            username = principal.toString();
+        }
+
         log.info("Username of signed in user: " + username);
         return username;
     }
