@@ -377,6 +377,7 @@ public class IAMService {
      * @return username when user is signed in and null otherwise
      */
     private String getUsername() {
+        // TODO: See com.wyona.katie.services.AuthenticationService#getUsername()
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
