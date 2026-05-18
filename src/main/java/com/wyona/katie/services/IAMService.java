@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -375,14 +376,24 @@ public class IAMService {
      * Get username of signed in user
      * @return username when user is signed in and null otherwise
      */
-    public String getUsername() {
+    private String getUsername() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             log.info("User is not signed in.");
             return null;
         }
-        String username = (String)authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String username;
+
+        if (principal instanceof Jwt jwt) {
+            // Use "sub" or "preferred_username" depending on your provider
+            // Claims::getSubject
+            username = jwt.getClaimAsString("sub");
+        } else {
+            username = principal.toString();
+        }
+
         log.info("Username of signed in user: " + username);
         return username;
     }
