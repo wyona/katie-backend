@@ -26,8 +26,8 @@ public class MCPRetrievalService {
     private XMLService xmlService;
     @Autowired
     private AuthenticationService authenticationService;
-    //@Autowired
-    //private QuestionAnsweringService qaService;
+    @Autowired
+    private QuestionAnsweringService qaService;
 
     @Tool(
             name = "katie_text_search",
@@ -58,9 +58,8 @@ public class MCPRetrievalService {
         try {
             List<String> results = new ArrayList<>();
 
-            results.add("Dummy answer");
-            /*
-            // TODO: Refactor, such that there is no code loop
+            //results.add("Dummy answer");
+
             List<String> classifications = new ArrayList<String>();
             String messageId = null; // TODO
             String channelRequestId = null; // TODO
@@ -72,7 +71,6 @@ public class MCPRetrievalService {
                 //log.info("Answer: " + answer.getAnswer());
                 results.add(answer.getAnswer());
             }
-            */
 
             return results;
         } catch (Exception e) {
