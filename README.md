@@ -171,6 +171,12 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED          S
 * Postman: env/postman/AskKatie.postman_collection.json
 * Private and public keys to generate JWTs: https://github.com/wyona/katie-backend/blob/main/volume/config/jwt/README.md
 
+## Katie as MCP Server
+
+* http://0.0.0.0:8044/mcp or https://app.katie.qa/mcp
+* Generate an access token (See Swagger "authentication-controller") with claim "sub" and username as value (e.g. "superadmin") and claim "domain-id" and domain Id as value (e.g. "ROOT")
+* Use MCP Inspector to test (Streamable HTTP, Bearer Authentication)
+
 ## Database / Flyway
 
 Create / migrate Database on startup of Katie web app
