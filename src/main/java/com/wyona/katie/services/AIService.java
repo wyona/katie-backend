@@ -51,8 +51,8 @@ public class AIService {
     private AzureAISearchImpl azureAISearchImpl;
     @Autowired
     private LLMQuestionAnswerImpl llmQuestionAnswerImpl;
-    @Autowired
-    private MCPQuestionAnswerImpl mcpQuestionAnswerImpl;
+    //@Autowired
+    //private MCPQuestionAnswerImpl mcpQuestionAnswerImpl;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -636,8 +636,10 @@ public class AIService {
             return azureAISearchImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.LLM)) {
             return llmQuestionAnswerImpl;
-        } else if (impl.equals(DetectDuplicatedQuestionImpl.MCP)) {
-            return mcpQuestionAnswerImpl;
+        // WARNING: Enabling this MCP query implementation will create a loop, because it uses the Ollama chat client
+        // CONSIDER: Remvoing this MCP query implementation completely, because a client using Katie could also directly access the referenced MCP endpoint
+        //} else if (impl.equals(DetectDuplicatedQuestionImpl.MCP)) {
+        //    return mcpQuestionAnswerImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
             return luceneImpl;
         } else {
