@@ -48,6 +48,13 @@ public class MCPRetrievalService {
 
         Context domain = xmlService.parseContextConfig(domainId);
 
+        if (question.trim().length() == 0) {
+            log.warn("No question provided!");
+            throw new Exception("Please make sure to provide a question");
+        } else {
+            log.info("Get answers from domain/corpus '" +domain.getName() + "' (" + domainId + ") for query '" + question + "' ...");
+        }
+
         try {
             List<String> results = new ArrayList<>();
 
