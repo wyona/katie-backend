@@ -24,10 +24,10 @@ public class MCPRetrievalService {
     private JwtService jwtService;
     @Autowired
     private XMLService xmlService;
-    //@Autowired
-    //private QuestionAnsweringService qaService;
     @Autowired
     private AuthenticationService authenticationService;
+    //@Autowired
+    //private QuestionAnsweringService qaService;
 
     @Tool(
             name = "katie_text_search",
@@ -37,7 +37,8 @@ public class MCPRetrievalService {
             @ToolParam(description = "The question to search for", required = true) String question
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
-        String domainId = getDomainId();
+        String domainId = getDomainId(SecurityContextHolder.getContext().getAuthentication());
+        // Make sure access token has claim "sub" with username as value (e.g. "superadmin")
         String userId = authenticationService.getUserId();
         if (!xmlService.isUserMemberOfDomain(userId, domainId)) {
             throw new Exception("User '" + userId + "' is not member of domain '" + domainId + "'!");
@@ -52,6 +53,7 @@ public class MCPRetrievalService {
 
             results.add("Dummy answer");
             /*
+            // TODO: Refactor, such that there is no code loop
             List<String> classifications = new ArrayList<String>();
             String messageId = null; // TODO
             String channelRequestId = null; // TODO
@@ -97,10 +99,10 @@ public class MCPRetrievalService {
     }
 
     /**
-     *
+     * Get domain id from access token
+     * @return domain id contained by access token (claim: domain-id)
      */
-    private String getDomainId() throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    private String getDomainId(Authentication authentication) throws Exception {
         if (authentication instanceof BearerTokenAuthenticationToken) {
             BearerTokenAuthenticationToken bearerToken = (BearerTokenAuthenticationToken) authentication;
             //log.debug("Bearer token: " + bearerToken.getToken());
