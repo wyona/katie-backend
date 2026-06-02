@@ -45,6 +45,7 @@ public class JwtService {
     public static final String JWT_CLAIM_SCOPE = "scope";
     public static final String JWT_CLAIM_ENDPOINT = "endpoint";
 
+    public static final String SCOPE_SEARCH = "search";
     public static final String SCOPE_READ_LABELS = "read:labels";
     public static final String SCOPE_CONNECT_WITH_DOMAIN = "connect-with-domain";
     public static final String GET_SENTENCE_SIMILARITY = "get-sentence-similarity";

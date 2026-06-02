@@ -1455,7 +1455,8 @@ public class DomainController {
             @RequestParam(value = "with-descriptions-only", required = false, defaultValue = "false") Boolean withDescriptionsOnly,
             HttpServletRequest request) {
 
-        if (!domainService.isAuthorized(id, request, "/" + id + "/classification/labels", JwtService.SCOPE_READ_LABELS)) {
+        String jwtToken = jwtService.getJWT(request);
+        if (!domainService.isAuthorized(id, jwtToken, "/" + id + "/classification/labels", JwtService.SCOPE_READ_LABELS)) {
             log.warn("Not authorized to get classification labels");
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }

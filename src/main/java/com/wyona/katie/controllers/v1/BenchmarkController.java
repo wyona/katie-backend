@@ -75,6 +75,9 @@ public class BenchmarkController {
     @Autowired
     private BenchmarkService bmService;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Value("${datasets.data_path}")
     private String datasetsDataPath;
 
@@ -212,7 +215,8 @@ public class BenchmarkController {
             @RequestParam(value = "get-embeddings", required = false) Boolean getEmbeddings,
             HttpServletRequest request) {
 
-        if (!contextService.isAuthorized(domainId, request, "/similarity-sentences", JwtService.GET_SENTENCE_SIMILARITY)) {
+        String jwtToken = jwtService.getJWT(request);
+        if (!contextService.isAuthorized(domainId, jwtToken, "/similarity-sentences", JwtService.GET_SENTENCE_SIMILARITY)) {
             log.warn("Not authorized to get similarity of sentences!");
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }

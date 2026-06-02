@@ -28,6 +28,8 @@ public class MCPRetrievalService {
     private AuthenticationService authenticationService;
     @Autowired
     private QuestionAnsweringService qaService;
+    @Autowired
+    private ContextService domainService;
 
     @Tool(
             name = "katie_text_search",
@@ -37,14 +39,24 @@ public class MCPRetrievalService {
             @ToolParam(description = "The question to search for", required = true) String question
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
-        String domainId = getDomainId(SecurityContextHolder.getContext().getAuthentication());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String domainId = getDomainId(authentication);
         // Make sure access token has claim "sub" with username as value (e.g. "superadmin")
-        String userId = authenticationService.getUserId();
-        if (!xmlService.isUserMemberOfDomain(userId, domainId)) {
-            throw new Exception("User '" + userId + "' is not member of domain '" + domainId + "'!");
-        }
+        //String userId = authenticationService.getUserId();
+        //if (!xmlService.isUserMemberOfDomain(userId, domainId)) {
+        //    throw new Exception("User '" + userId + "' is not member of domain '" + domainId + "'!");
+        //}
+        //log.info("Finding relevant content for question '" + question + "' of user '" + userId + "' inside domain '" + domainId + "' ...");
 
-        log.info("Finding relevant content for question '" + question + "' of user '" + userId + "' inside domain '" + domainId + "' ...");
+        log.info("Finding relevant content for question '" + question + "' inside domain '" + domainId + "' ...");
+
+
+        // Make sure access token has claim "scope" and claim "endpoint"
+        String jwtToken = getJwtToken(authentication);
+        if (!domainService.isAuthorized(domainId, jwtToken, "/mcp", jwtService.SCOPE_SEARCH)) {
+            log.warn("Not authorized to search domain '" + domainId + "' using MCP!");
+            throw new Exception("Not authorized to search domain '" + domainId + "' using MCP!");
+        }
 
         Context domain = xmlService.parseContextConfig(domainId);
 
@@ -105,7 +117,7 @@ public class MCPRetrievalService {
 
     /**
      * Get domain id from access token
-     * @return domain id contained by access token (claim: domain-id)
+     * @return domain id contained by access token (claim: did)
      */
     private String getDomainId(Authentication authentication) throws Exception {
         if (authentication instanceof BearerTokenAuthenticationToken) {
@@ -119,17 +131,16 @@ public class MCPRetrievalService {
                 throw new Exception("Bearer token invalid!");
             }
         } else if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-            String tokenValue = jwtToken.getToken().getTokenValue();
+            String tokenValue = getJwtToken(authentication);
             //log.debug("JWT token: " + tokenValue);
             if (jwtService.isJWTValid(tokenValue, null)) {
                 log.info("JWT Token is valid. Expire date: " + new Date(jwtService.getJWTExpirationTime(tokenValue)));
-                String domainId = jwtService.getJWTClaimValue(tokenValue, "domain-id");
+                String domainId = jwtService.getJWTClaimValue(tokenValue, jwtService.JWT_CLAIM_DOMAIN_ID);
                 if (domainId == null) {
-                    throw new Exception("Access token does not contain a domain Id (domain-id)!");
+                    throw new Exception("Access token does not contain a domain Id (" + jwtService.JWT_CLAIM_DOMAIN_ID + ")!");
                 }
-                String username = jwtService.getJWTSubject(tokenValue);
-                authenticationService.login(username, null);
+                //String username = jwtService.getJWTSubject(tokenValue);
+                //authenticationService.login(username, null);
                 return domainId;
             } else {
                 log.warn("JWT Token is not valid!");
@@ -141,6 +152,15 @@ public class MCPRetrievalService {
             log.warn("Authentication " + authentication + " not implemented!");
             throw new Exception("Authentication " + authentication + " not implemented!");
         }
+    }
+
+    /**
+     *
+     */
+    private String getJwtToken(Authentication authentication) {
+        JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+        String tokenValue = jwtToken.getToken().getTokenValue();
+        return tokenValue;
     }
 }
 
