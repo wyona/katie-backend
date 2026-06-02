@@ -9,11 +9,13 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 import io.github.ollama4j.utils.Options;
 import io.github.ollama4j.utils.OptionsBuilder;
+/*
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.ollama.api.OllamaModel;
+*/
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -46,8 +48,8 @@ public class OllamaGenerate implements GenerateProvider {
     @Value("${ollama.bearer.token:#{null}}")
     private String ollamaBearerToken;
 
-    @Autowired
-    OllamaChatModel ollamaChatModel;
+    //@Autowired
+    //OllamaChatModel ollamaChatModel;
 
     /**
      *
@@ -76,13 +78,16 @@ public class OllamaGenerate implements GenerateProvider {
         if (true) {
             return getCompletionUsingOllama4j(promptMessages, assistant, completionConfig, temperature);
         } else {
-            return getCompletionUsingSpringAI(promptMessages, assistant, completionConfig, temperature);
+            // WARNING: Enabling this implementation will create a loop, because it uses the Ollama chat client
+            return null;
+            //return getCompletionUsingSpringAI(promptMessages, assistant, completionConfig, temperature);
         }
     }
 
     /**
      * Get completion using Spring AI implementation https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html
      */
+    /*
     private CompletionResponse getCompletionUsingSpringAI(List<PromptMessage> promptMessages, CompletionAssistant assistant, CompletionConfig completionConfig, Double temperature) throws Exception {
         log.info("Spring AI Ollama implementation ...");
         PromptMessage firstMessage = promptMessages.get(0);
@@ -107,6 +112,7 @@ public class OllamaGenerate implements GenerateProvider {
         );
         return new CompletionResponse(response.getResult().toString());
     }
+     */
 
     /**
      * Get completion using Ollama4J implementation https://github.com/ollama4j/ollama4j
