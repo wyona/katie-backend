@@ -35,7 +35,7 @@ public class MCPRetrievalService {
             name = "katie_text_search",
             description = "Find relevant content by natural language query"
     )
-    public List<String> findRelevantContent(
+    public List<ResponseAnswer> findRelevantContent(
             @ToolParam(description = "The question to search for", required = true) String question
             //@ToolParam(description = "The Katie knowledge base Id", required = false) String domainId
     ) throws Exception {
@@ -68,10 +68,6 @@ public class MCPRetrievalService {
         }
 
         try {
-            List<String> results = new ArrayList<>();
-
-            //results.add("Dummy answer");
-
             List<String> classifications = new ArrayList<String>();
             String messageId = null; // TODO
             String channelRequestId = null; // TODO
@@ -79,12 +75,17 @@ public class MCPRetrievalService {
             ContentType answerContentType = null;
             String remoteAddress = null; // getRemoteAddress(request);
             java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false, false);
+            return responseAnswers;
+
+            /*
+            List<String> results = new ArrayList<>();
+            results.add("Dummy answer");
             for (ResponseAnswer answer : responseAnswers) {
                 //log.info("Answer: " + answer.getAnswer());
                 results.add(answer.getAnswer());
             }
-
             return results;
+            */
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new Exception("Getting answers for domain '" + domain.getName() + "' failed!");
@@ -155,7 +156,7 @@ public class MCPRetrievalService {
     }
 
     /**
-     *
+     * Get JWT token value
      */
     private String getJwtToken(Authentication authentication) {
         JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
