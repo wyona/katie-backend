@@ -160,6 +160,7 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
      * @param labels Possible classifications / labels
      * @param limit Limit of returned labels
      * @param domain Domain associated with classification
+     * @return prompt to classify text
      */
     private String getPrompt(String text, Classification[] labels, int limit, Context domain) {
         boolean labelsWithDescriptionOnly = false; // TODO: Make configurable
@@ -200,9 +201,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
     private String getPromptFromConfig(Context domain) {
         // TODO: Make prompt configurable resp. even configurable per domain
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Please assign the following text (\"Text\") to one of the following possible categories:\n\n{{" + PLACEHOLDER_LABELS+ "}}");
+        prompt.append("Please assign the following text (\"TEXT\") to one of the following possible categories:\n\n{{" + PLACEHOLDER_LABELS+ "}}");
         prompt.append("\nReturn {{" + PLACEHOLDER_LIMIT + "}} categories and its IDs that match best. If none of the listed categories provide a good match, then answer with \"" + NOT_APPLICABLE + "\".");
-        prompt.append("\n\nText: {{" + PLACEHOLDER_TEXT + "}}");
+        prompt.append("\n\nTEXT: {{" + PLACEHOLDER_TEXT + "}}");
         return prompt.toString();
     }
 
