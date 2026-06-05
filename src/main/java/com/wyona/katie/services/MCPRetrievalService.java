@@ -52,6 +52,15 @@ public class MCPRetrievalService {
 
 
         // Make sure access token has claim "scope" and claim "endpoint"
+        /*
+        {
+          "privateClaims": {
+            "did": "26cf31c2-8cb6-4e7e-9552-1c1f9f1ed035",
+            "scope":"search",
+            "endpoint":"/mcp"
+          }
+        }
+        */
         String jwtToken = getJwtToken(authentication);
         if (!domainService.isAuthorized(domainId, jwtToken, "/mcp", jwtService.SCOPE_SEARCH)) {
             log.warn("Not authorized to search domain '" + domainId + "' using MCP!");
