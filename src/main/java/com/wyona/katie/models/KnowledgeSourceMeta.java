@@ -741,14 +741,15 @@ public class KnowledgeSourceMeta {
     }
 
     /**
-     *
+     * Set filesystem base path
+     * @param filesystemBasePath /Users/USERNAME/src/katie-backend/volume/contexts/e58adbf9-8863-4eb7-b1bf-09d47c55902a/documents
      */
     public void setFilesystemBasePath(File filesystemBasePath) {
         this.filesystemBasePath = filesystemBasePath;
     }
 
     /**
-     *
+     * Get filesystem base path
      */
     public String getFilesystemBasePath() {
         if (filesystemBasePath != null) {
