@@ -977,10 +977,10 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Directus based knowledge source by a webhook
+     * Trigger a particular Directus based knowledge source by a webhook and ingest data from Directus into Katie
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-directus", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Directus based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-directus", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Directus based knowledge source by a webhook and ingest data from Directus into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDirectus(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1014,10 +1014,10 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Supabase based knowledge source by a webhook
+     * Trigger a particular Supabase based knowledge source by a webhook and ingest data from Supabase into Katie
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-supabase", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Supabase based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-supabase", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Supabase based knowledge source by a webhook and ingest data from Supabase into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceSupabase(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1057,10 +1057,10 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular TOPdesk based knowledge source by a webhook
+     * Trigger a particular TOPdesk based knowledge source by a webhook and ingest data from TOPdesk into Katie
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-topdesk", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular TOPdesk based knowledge source by a webhook",
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-topdesk", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular TOPdesk based knowledge source by a webhook and ingest data from TOPdesk into Katie",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Webhook payload sent by TOPdesk. Request types: 0) Import batch of incidents, e.g. 1000 incidents 1) Import one particular incident, 2) Get visible replies of a particular incident 3) Sync categories / subcategories (remove obsolete categories / subcategories and add new categories / subcategories) 4) Analytics of batch of incidents, e.g. Analytics of 1000 incidents",
                     required = true
@@ -1092,10 +1092,10 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Discourse based knowledge source by a webhook
+     * Trigger a particular Discourse based knowledge source by a webhook nd ingest data from Discourse into Katie
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-discourse", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Discourse based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-discourse", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Discourse based knowledge source by a webhook and ingest data from Discourse into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceDiscourse(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1123,13 +1123,13 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Confluence based knowledge source by a webhook
+     * Trigger a particular Confluence based knowledge source by a webhook and ingest data from Confluence into Katie
      * https://developer.atlassian.com/cloud/confluence/modules/webhook/
      * https://jira.atlassian.com/browse/CONFCLOUD-36613
      * Get configured Webhooks: GET https://wyona.atlassian.net/wiki/rest/webhooks/1.0/webhook
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-confluence", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Confluence based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-confluence", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Confluence based knowledge source by a webhook and ingest data from Confluence into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceConfluence(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1163,10 +1163,10 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Website based knowledge source by a webhook
+     * Trigger a particular Website based knowledge source by a webhook and ingest data from Website into Katie
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-website", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Website based knowledge source by a webhook",
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-website", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Website based knowledge source by a webhook and ingest data from Website into Katie",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Webhook payload sent by Website",
                     required = false
@@ -1203,11 +1203,11 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Outlook based knowledge source by a webhook
+     * Trigger a particular Outlook based knowledge source by a webhook and ingest data from Outlook into Katie
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-outlook", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular Outlook based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-outlook", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular Outlook based knowledge source by a webhook and ingest data from Outlook into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOutlook(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1241,11 +1241,11 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular OneNote based knowledge source by a webhook
+     * Trigger a particular OneNote based knowledge source by a webhook and ingest data from OneNote into Katie
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-onenote", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Trigger a particular OneNote based knowledge source by a webhook", security = { @SecurityRequirement(name = "bearerAuth") })
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-onenote", method = RequestMethod.POST, produces = "application/json")
+    @Operation(summary = "Trigger a particular OneNote based knowledge source by a webhook and ingest data from OneNote into Katie", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> triggerKnowledgeSourceOneNote(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1279,11 +1279,11 @@ public class DomainController {
     }
 
     /**
-     * Trigger a particular Sharepoint based knowledge source by a webhook
+     * Trigger a particular Sharepoint based knowledge source by a webhook and ingest data from Sharepoint into Katie
      * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
      */
-    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/invoke-by-sharepoint", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
-    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook")
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-sharepoint", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
+    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook and ingest data from Sharepoint into Katie")
     public ResponseEntity<String> triggerKnowledgeSourceSharepoint(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
@@ -1324,6 +1324,38 @@ public class DomainController {
         }
         connectorService.triggerKnowledgeSourceConnectorInBackground(
                 KnowledgeSourceConnector.SHAREPOINT, id, ksId, payload, processId, userId);
+
+        // Return 202 Accepted for normal notifications
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(processId);
+    }
+
+    /**
+     * Trigger a particular Filesystem based knowledge source by a webhook and ingest data from Filesystem into Katie
+     * https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks?tabs=http#receive-notifications
+     */
+    @RequestMapping(value = "/{id}/knowledge-source/{ks-id}/ingest-from-filesystem", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
+    @Operation(summary = "Trigger a particular Sharepoint based knowledge source by a webhook and ingest data from Filesystem into Katie")
+    public ResponseEntity<String> triggerKnowledgeSourceFilesystem(
+            @Parameter(name = "id", description = "Domain Id",required = true)
+            @PathVariable(value = "id", required = true) String id,
+            @Parameter(name = "ks-id", description = "Knowledge Source Id",required = true)
+            @PathVariable(value = "ks-id", required = true) String ksId,
+            HttpServletRequest request
+    ) throws IOException  {
+
+        if (!domainService.existsContext(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Domain '" + id + "' does not exist!");
+        }
+
+        String processId = UUID.randomUUID().toString();
+        String userId = authenticationService.getUserId();
+        if (userId == null) {
+            log.warn("User is not signed in.");
+        }
+        connectorService.triggerKnowledgeSourceConnectorInBackground(
+                KnowledgeSourceConnector.FILESYSTEM, id, ksId, null, processId, userId);
 
         // Return 202 Accepted for normal notifications
         return ResponseEntity.status(HttpStatus.ACCEPTED)
