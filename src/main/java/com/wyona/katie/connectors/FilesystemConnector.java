@@ -1,5 +1,6 @@
 package com.wyona.katie.connectors;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class FilesystemConnector implements Connector {
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
      */
     public Hit[] getAnswers(Sentence question, int limit, KnowledgeSourceMeta ksMeta) {
-        log.info("Get answers using third-party RAG connector '" + ksMeta.getName() + "' ...");
+        log.info("TODO: Implement: " + ksMeta.getName() + "' ...");
         List<Hit> hits = new ArrayList<Hit>();
 
         return hits.toArray(new Hit[0]);
@@ -37,7 +38,12 @@ public class FilesystemConnector implements Connector {
      * @see Connector#update(Context, KnowledgeSourceMeta, WebhookPayload, String)
      */
     public List<Answer> update(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
-        log.info("TODO: Implement");
+        File baseDir = new File(ksMeta.getFilesystemBasePath());
+        if (baseDir.isDirectory()) {
+            log.info("Ingest data from filesystem: " + baseDir.getAbsolutePath());
+        } else {
+            log.warn("No such directory: " + baseDir.getAbsolutePath());
+        }
         return null;
     }
 }
