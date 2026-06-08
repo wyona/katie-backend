@@ -46,6 +46,8 @@ public class ConnectorService {
     private WebsiteConnector websiteConnector;
     @Autowired
     private TOPdeskConnector topDeskConnector;
+    @Autowired
+    private FilesystemConnector filesystemConnector;
 
     /**
      * Trigger third-party knowledge source synchronization in background
@@ -73,6 +75,8 @@ public class ConnectorService {
             connector = topDeskConnector;
         } else if (ksc.equals(KnowledgeSourceConnector.DISCOURSE)) {
             connector = discourseConnector;
+        } else if (ksc.equals((KnowledgeSourceConnector.FILESYSTEM))) {
+            connector = filesystemConnector;
         } else {
             log.error("No such connector '" + ksc + "'!");
         }
