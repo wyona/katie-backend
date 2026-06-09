@@ -53,7 +53,7 @@ public class FilesystemConnector implements Connector {
             String[] files = baseDir.list();
             for (String filename : files) {
                 try {
-                    List<Answer> _qnas = getChunks(new File(baseDir, filename));
+                    List<Answer> _qnas = getChunks(new File(baseDir, filename), domain.getId());
                     for (Answer answer : _qnas) {
                         qnas.add(answer);
                     }
@@ -72,7 +72,7 @@ public class FilesystemConnector implements Connector {
      * Ingest file into knowledge base
      * @param file PDF file
      */
-    private List<Answer> getChunks(File file) throws Exception {
+    private List<Answer> getChunks(File file, String domainId) throws Exception {
         log.info("Ingest file: " + file.getAbsolutePath());
 
         PDDocument pdDoc = PDDocument.load(file);
@@ -83,7 +83,7 @@ public class FilesystemConnector implements Connector {
         //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
         List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
         List<Answer> qnas = new ArrayList<Answer>();
-        String url = "http://filesystem/" + file.getName();
+        String url = "http://host.katie.internal/" + domainId + "/" + file.getName();
         for (String chunk : chunks) {
             qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, file.getName(), null, false, null, false, null));
         }
