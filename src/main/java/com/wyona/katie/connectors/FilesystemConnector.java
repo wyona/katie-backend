@@ -4,22 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.BackgroundProcessService;
 import com.wyona.katie.services.SegmentationService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Connector for ingesting data from Filesystem
@@ -30,6 +23,9 @@ public class FilesystemConnector implements Connector {
 
     @Autowired
     SegmentationService segmentationService;
+
+    @Autowired
+    private BackgroundProcessService backgroundProcessService;
 
     /**
      * @see Connector#getAnswers(Sentence, int, KnowledgeSourceMeta)
@@ -53,12 +49,13 @@ public class FilesystemConnector implements Connector {
             String[] files = baseDir.list();
             for (String filename : files) {
                 try {
-                    List<Answer> _qnas = getChunks(new File(baseDir, filename), domain.getId());
+                    List<Answer> _qnas = getChunks(new File(baseDir, filename), domain.getId(), processId);
                     for (Answer answer : _qnas) {
                         qnas.add(answer);
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
+                    backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
                 }
             }
         } else {
@@ -72,8 +69,9 @@ public class FilesystemConnector implements Connector {
      * Ingest file into knowledge base
      * @param file PDF file
      */
-    private List<Answer> getChunks(File file, String domainId) throws Exception {
+    private List<Answer> getChunks(File file, String domainId, String processId) throws Exception {
         log.info("Ingest file: " + file.getAbsolutePath());
+        backgroundProcessService.updateProcessStatus(processId, "Ingest file: " + file.getAbsolutePath());
 
         PDDocument pdDoc = PDDocument.load(file);
         String body = new PDFTextStripper().getText(pdDoc);
