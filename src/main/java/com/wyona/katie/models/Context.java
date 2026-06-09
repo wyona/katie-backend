@@ -577,7 +577,8 @@ public class Context {
 
     /**
      * Get directory containing information re a third-party URL
-     * @param url URL associated with QnA, e.g. "https://www.myright.ch/en/legal-tips/corona-private/covid-certificatetrequirement"
+     * @param url URL associated with QnA, e.g., "https://www.myright.ch/en/legal-tips/corona-private/covid-certificatetrequirement" or "https://ocw.mit.edu/courses/14-12-economic-applications-of-game-theory-fall-2025/"
+     * @return filesystem path containing URL, e.g., "/home/wyona/katie/data/contexts/26cf31c2-8cb6-4e7e-9552-1c1f9f1ed035/urls/ocw.mit.edu/courses/14-12-economic-applications-of-game-theory-fall-2025/"
      */
     private File getThirdPartyUrlPath(URI url) {
         String urlPath = url.getHost() + url.getPath();
