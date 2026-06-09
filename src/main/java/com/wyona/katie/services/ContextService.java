@@ -4031,9 +4031,9 @@ public class ContextService {
     }
 
     /**
-     * Add UUID to index file
-     * @param uuid TODO
-     * @param url TODO
+     * Add UUID to UUID / URL index file
+     * @param uuid UUID of chunk (question / answer), e.g., "5f586c48-4148-4528-b115-789bbb662117"
+     * @param url URL associated with chunk, e.g., "https://ocw.mit.edu/courses/14-12-economic-applications-of-game-theory-fall-2025/"
      */
     protected void addToUuidUrlIndex(String uuid, String url, Context domain) throws Exception {
         File file = domain.getUuidUrlIndex(URI.create(url));
