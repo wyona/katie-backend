@@ -83,7 +83,7 @@ public class FilesystemConnector implements Connector {
         //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
         List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
         List<Answer> qnas = new ArrayList<Answer>();
-        String url = "https://ocw.mit.edu/courses/14-12-economic-applications-of-game-theory-fall-2025/";
+        String url = "http://filesystem/" + file.getName();
         for (String chunk : chunks) {
             qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, file.getName(), null, false, null, false, null));
         }
