@@ -48,7 +48,8 @@ public class FilesystemConnector implements Connector {
             for (String filename : files) {
                 try {
                     String url = "http://host.katie.internal/" + domain.getId() + "/" + filename;
-                    List<String> textChunks = dataIngestionService.splitPDFIntoChunks(new File(baseDir, filename), url);
+                    // TODO: Make text splitter configurable
+                    List<String> textChunks = dataIngestionService.splitPDFIntoChunks(new File(baseDir, filename), TextSplitterImpl.FIXED_SIZE);
                     for (String chunk : textChunks) {
                         qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, filename, null, false, null, false, null));
                     }

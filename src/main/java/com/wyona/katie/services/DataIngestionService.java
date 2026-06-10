@@ -1,5 +1,6 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.models.TextSplitterImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -22,18 +25,36 @@ public class DataIngestionService {
     /**
      * Split PDF into text chunks
      * @param file PDF file
-     * @param url URL associated with PDF file
      * @return text chunks
      */
-    public List<String> splitPDFIntoChunks(File file, String url) throws Exception {
-        PDDocument pdDoc = PDDocument.load(file);
+    public List<String> splitPDFIntoChunks(File file, TextSplitterImpl textSplitterImpl) throws Exception {
+        InputStream in = new FileInputStream(file);
+        List<String> chunks = splitPDFIntoChunks(in, textSplitterImpl);
+        log.info("Number of chunks extracted from PDF document '" + file.getName() + "': " + chunks.size());
+        return chunks;
+    }
+
+    /**
+     * Split PDF into text chunks
+     * @param in PDF as input stream
+     * @return text chunks
+     */
+    public List<String> splitPDFIntoChunks(InputStream in, TextSplitterImpl textSplitterImpl) throws Exception {
+        PDDocument pdDoc = PDDocument.load(in);
         String body = new PDFTextStripper().getText(pdDoc);
         pdDoc.close();
 
-        // TODO: Make text splitter configurable
-        //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
         List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
-        log.info("Number of chunks extracted from PDF document '" + file.getName() + "': " + chunks.size());
+        if (textSplitterImpl.equals(TextSplitterImpl.SENTENCE)) {
+            chunks = segmentationService.splitBySentences(body, "en", 700, true);
+        } else if (textSplitterImpl.equals(TextSplitterImpl.AI21)) {
+            chunks = segmentationService.getSegmentsUsingAI21(body);
+        } else if (textSplitterImpl.equals(TextSplitterImpl.FIXED_SIZE)) {
+            chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+        } else {
+            log.error("No such text splitter implementation '" + textSplitterImpl + "'! Use fixed size text splitter ...");
+            chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+        }
         return chunks;
     }
 
