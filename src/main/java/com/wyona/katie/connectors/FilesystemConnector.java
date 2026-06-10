@@ -6,9 +6,7 @@ import java.util.List;
 
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.BackgroundProcessService;
-import com.wyona.katie.services.SegmentationService;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
+import com.wyona.katie.services.DataIngestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FilesystemConnector implements Connector {
 
     @Autowired
-    SegmentationService segmentationService;
+    DataIngestionService dataIngestionService;
 
     @Autowired
     private BackgroundProcessService backgroundProcessService;
@@ -49,9 +47,10 @@ public class FilesystemConnector implements Connector {
             String[] files = baseDir.list();
             for (String filename : files) {
                 try {
-                    List<Answer> _qnas = getChunks(new File(baseDir, filename), domain.getId(), processId);
-                    for (Answer answer : _qnas) {
-                        qnas.add(answer);
+                    String url = "http://host.katie.internal/" + domain.getId() + "/" + filename;
+                    List<String> textChunks = dataIngestionService.splitPDFIntoChunks(new File(baseDir, filename), url);
+                    for (String chunk : textChunks) {
+                        qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, filename, null, false, null, false, null));
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -62,30 +61,6 @@ public class FilesystemConnector implements Connector {
             log.warn("No such directory: " + baseDir.getAbsolutePath());
         }
 
-        return qnas;
-    }
-
-    /**
-     * Ingest file into knowledge base
-     * @param file PDF file
-     */
-    private List<Answer> getChunks(File file, String domainId, String processId) throws Exception {
-        log.info("Ingest file: " + file.getAbsolutePath());
-        backgroundProcessService.updateProcessStatus(processId, "Ingest file: " + file.getAbsolutePath());
-
-        PDDocument pdDoc = PDDocument.load(file);
-        String body = new PDFTextStripper().getText(pdDoc);
-        pdDoc.close();
-
-        // TODO: Make text splitter configurable
-        //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
-        List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
-        List<Answer> qnas = new ArrayList<Answer>();
-        String url = "http://host.katie.internal/" + domainId + "/" + file.getName();
-        for (String chunk : chunks) {
-            qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, file.getName(), null, false, null, false, null));
-        }
-        log.info("Number of chunks extracted from PDF document '" + file.getName() + "': " + chunks.size());
         return qnas;
     }
 }
