@@ -226,8 +226,10 @@ public class FAQControllerV2 {
     /**
      * REST interface to import QnAs from a file in SQuAD format (https://rajpurkar.github.io/SQuAD-explorer/)
      */
-    @RequestMapping(value = "/faq/import/squad", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    //@RequestMapping(value = "/faq/import/squad", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/faq/import/squad",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Import QnAs from a file in SQuAD format (https://rajpurkar.github.io/SQuAD-explorer/). Make sure that max-file-size, max-request-size is configured accordingly!")
     public ResponseEntity<?> importSQuAD(
             @Parameter(name = "language", description = "Language of SQuAD, e.g. 'de' or 'en'",required = true)
@@ -281,7 +283,10 @@ public class FAQControllerV2 {
     /**
      * REST interface to import FAQ from an XML
      */
-    @RequestMapping(value = "/faq/import/xml", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/faq/import/xml",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Import Frequently Asked Questions from an XML file")
     public ResponseEntity<?> importFAQfromXMLFile(
             @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
