@@ -297,7 +297,10 @@ public class BenchmarkController {
      * REST interface to run a full benchmark and create evaluation graphs
      * 
      */
-    @RequestMapping(value = "/run-benchmark", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/run-benchmark",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Run an extensive benchmark for every currently active search system returning accuracy, precision, recall and average performance time", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> performBenchmark(
             @Parameter(name = "email", description = "E-Mail to get notification when benchmark is completed",required = false)
