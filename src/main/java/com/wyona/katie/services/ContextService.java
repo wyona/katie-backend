@@ -2638,32 +2638,45 @@ public class ContextService {
 
     /**
      * Import PDF in the background
+     * @param filename PDF file name
+     * @param webUrl URL associated with PDF file
      * @param in PDF as InputStream
+     * @param userId Optional user Id
      */
     @Async
-    public void importPDF(String filename, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
+    public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
+        importPDF(filename, webUrl, in, textSplitterImpl, domain, bgProcessId);
+        backgroundProcessService.stopProcess(bgProcessId, domain.getId());
+    }
+
+    /**
+     * Import PDF in the background
+     * @param filename PDF file name
+     * @param webUrl URL associated with PDF file
+     * @param in PDF as InputStream
+     */
+    public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId) {
         filename = filename.replace(" ", "+");
         try {
             List<String> chunks = dataIngestionService.splitPDFIntoChunks(in, textSplitterImpl);
+            in.close();
             List<Answer> qnas = new ArrayList<Answer>();
             String title = filename; // TODO: Get PDF title
             for (String chunk : chunks) {
-                String url = "http://host.katie.internal/" + domain.getId() + "/" + filename;
-                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
+                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
                 qnas.add(qna);
                 String uuid = addQuestionAnswer(qna, domain).getUuid();
                 addToUuidUrlIndex(uuid, qna.getUrl(), domain);
                 train(new QnA(qna), domain, true);
             }
-            String msg = "Number of chunks extracted from PDF document: " + chunks.size();
+            String msg = "Number of chunks extracted from PDF document and imported into Katie domain '" + domain.getId() + "': " + chunks.size();
             log.info(msg);
             backgroundProcessService.updateProcessStatus(bgProcessId, msg);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
-        backgroundProcessService.stopProcess(bgProcessId, domain.getId());
     }
 
     /**

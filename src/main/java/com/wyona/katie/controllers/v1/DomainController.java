@@ -305,7 +305,8 @@ public class DomainController {
             }
             log.info("Name of uploaded file: " + file.getOriginalFilename());
             String processId = UUID.randomUUID().toString();
-            domainService.importPDF(file.getOriginalFilename(), file.getInputStream(), textSplitterImpl, domain, processId, user.getId());
+            String url = "http://host.katie.internal/" + domain.getId() + "/" + file.getOriginalFilename();
+            domainService.importPDF(file.getOriginalFilename(), url, file.getInputStream(), textSplitterImpl, domain, processId, user.getId());
 
             return new ResponseEntity<>("{\"bg-process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(AccessDeniedException e) {
