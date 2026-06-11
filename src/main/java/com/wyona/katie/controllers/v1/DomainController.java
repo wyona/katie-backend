@@ -214,7 +214,10 @@ public class DomainController {
     /**
      * Import QnAs from JSON file into a particular domain
      */
-    @RequestMapping(value = "/{id}/import/qnas-from-file", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/{id}/import/qnas-from-file",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Import QnAs from JSON file into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importQnAsFromFile(
             @Parameter(name = "id", description = "Domain Id",required = true)
@@ -1386,7 +1389,10 @@ public class DomainController {
     /**
      * Import Classification dataset from JSON file into a particular domain
      */
-    @RequestMapping(value = "/{id}/classification/import-dataset", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/{id}/classification/import-dataset",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Import classification dataset from JSON file into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> importClassificationDatasetFromFile(
             @Parameter(name = "id", description = "Domain Id",required = true)
@@ -1527,7 +1533,10 @@ public class DomainController {
     /**
      * Retrain classifier
      */
-    @RequestMapping(value = "/{id}/classification/retrain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/classification/retrain",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Retrain classifier (using existing samples and with optional new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
     public ResponseEntity<?> retrainClassifier(
             @Parameter(name = "id", description = "Domain Id",required = true)
