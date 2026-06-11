@@ -15,8 +15,6 @@ import com.wyona.katie.models.insights.Interval;
 import com.wyona.katie.models.insights.NgxChartsSeries;
 import com.wyona.katie.services.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +36,9 @@ import java.util.List;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 /**
  * Controller to access and manage a particular domain
@@ -269,12 +263,13 @@ public class DomainController {
     /**
      * Import PDF
      */
-    @RequestMapping(value = "/{id}/import/pdf", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Import PDF into a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
+    @PostMapping(value = "/{id}/import/pdf",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<?> importPDF(
             @Parameter(name = "id", description = "Domain Id", required = true)
             @PathVariable(value = "id", required = true) String id,
-            @Parameter(name = "text-splitter", description = "Text Splitter", required = true)
             @RequestParam(value = "text-splitter", required = true) TextSplitterImpl textSplitterImpl,
             @RequestPart("file") MultipartFile file,
             HttpServletRequest request) {
