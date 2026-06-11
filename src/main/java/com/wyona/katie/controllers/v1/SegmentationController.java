@@ -51,7 +51,10 @@ public class SegmentationController {
      * https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/en
      * https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1998/892_892_892/20230123/en/xml/fedlex-data-admin-ch-eli-cc-1998-892_892_892-20230123-en-xml-1.xml
      */
-    @RequestMapping(value = "/akoma-ntoso", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/akoma-ntoso",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Convert Akoma Ntoso XML into Katie import JSON")
     public ResponseEntity<?> convertAkomaNtoso(
             @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
@@ -87,7 +90,10 @@ public class SegmentationController {
      * REST interface to split text into chunks using AI21 segmentation service
      * https://docs.ai21.com/docs/text-segmentation-api
      */
-    @RequestMapping(value = "/ai21", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/ai21",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Split text into chunks using AI21 segmentation service")
     public ResponseEntity<?> getSegments(
             @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
@@ -129,8 +135,10 @@ public class SegmentationController {
      * TODO: Also consider: https://github.com/run-llama/llama-hub/tree/main/llama_hub/llama_packs/node_parser/semantic_chunking
      * TODO: Semnatic chunking https://www.youtube.com/watch?v=w_veb816Asg
      */
-    @RequestMapping(value = "/character", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    //@RequestMapping(value = "/character", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/character",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Split plain text document into chunks similar to langchain character text splitter")
     public ResponseEntity<?> getCharacterTextSplitter(
             @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
@@ -141,7 +149,7 @@ public class SegmentationController {
             @RequestParam(value = "chunk-size", required = true) Integer chunkSize,
             @Parameter(name = "chunk-overlap", description = "Chunk overlap, e.g. 100 characters" ,required = true)
             @RequestParam(value = "chunk-overlap", required = true) Integer chunkOverlap,
-            @Parameter(description = "Plain text file to upload", required = true)
+            // Plain text file to upload
             @RequestPart(name = "file", required = true) MultipartFile file,
             HttpServletRequest requestIn) {
 
@@ -178,7 +186,10 @@ public class SegmentationController {
     /**
      * REST interface to split plain text document into chunks containing a few sentences
      */
-    @RequestMapping(value = "/sentence", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/sentence",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary="Split plain text document into chunks containing a few setences")
     public ResponseEntity<?> getSentenceTextSplitter(
             @Parameter(name = "domainId", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')" ,required = true)
@@ -187,7 +198,7 @@ public class SegmentationController {
             @RequestParam(value = "chunk-size", required = true) Integer chunkSize,
             @Parameter(name = "chunk-overlap", description = "When true, then chunks overlap by one sentence" ,required = true)
             @RequestParam(value = "chunk-overlap", required = true) Boolean chunkOverlap,
-            @Parameter(description = "Plain text file to upload", required = true)
+            // Plain text file to upload
             @RequestPart(name = "file", required = true) MultipartFile file,
             HttpServletRequest requestIn) {
 
