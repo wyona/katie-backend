@@ -527,7 +527,7 @@ public class SharepointConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, msg);
 
                 InputStream in = new FileInputStream(dumpFile);
-                domainService.importPDF(webUrl, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
+                qnas = domainService.importPDF(webUrl, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
             } else {
                 String msg = "Text extraction from '" + contentUrl + "' of mime-type '" + mimeType + "' not implemented yet!";
                 log.warn(msg);
