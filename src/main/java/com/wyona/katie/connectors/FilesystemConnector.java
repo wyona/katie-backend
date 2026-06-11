@@ -54,7 +54,7 @@ public class FilesystemConnector implements Connector {
                     String url = "http://host.katie.internal/" + domain.getId() + "/" + filename;
                     InputStream in = new FileInputStream(new File(baseDir, filename));
                     // TODO: Make text splitter configurable
-                    domainService.importPDF(filename, url, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
+                    domainService.importPDF(url, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);

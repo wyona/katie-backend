@@ -2,14 +2,9 @@ package com.wyona.katie.services;
 
 import com.wyona.katie.models.TextSplitterImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -24,26 +19,10 @@ public class DataIngestionService {
 
     /**
      * Split PDF into text chunks
-     * @param file PDF file
+     * @param body PDF text body
      * @return text chunks
      */
-    public List<String> splitPDFIntoChunks(File file, TextSplitterImpl textSplitterImpl) throws Exception {
-        InputStream in = new FileInputStream(file);
-        List<String> chunks = splitPDFIntoChunks(in, textSplitterImpl);
-        log.info("Number of chunks extracted from PDF document '" + file.getName() + "': " + chunks.size());
-        return chunks;
-    }
-
-    /**
-     * Split PDF into text chunks
-     * @param in PDF as input stream
-     * @return text chunks
-     */
-    public List<String> splitPDFIntoChunks(InputStream in, TextSplitterImpl textSplitterImpl) throws Exception {
-        PDDocument pdDoc = PDDocument.load(in);
-        String body = new PDFTextStripper().getText(pdDoc);
-        pdDoc.close();
-
+    public List<String> splitPDFIntoChunks(String body, TextSplitterImpl textSplitterImpl) throws Exception {
         List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
         if (textSplitterImpl.equals(TextSplitterImpl.SENTENCE)) {
             chunks = segmentationService.splitBySentences(body, "en", 700, true);

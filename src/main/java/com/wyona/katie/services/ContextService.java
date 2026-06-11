@@ -13,6 +13,9 @@ import com.wyona.katie.models.insights.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -2646,23 +2649,26 @@ public class ContextService {
     @Async
     public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
-        importPDF(filename, webUrl, in, textSplitterImpl, domain, bgProcessId);
+        importPDF(webUrl, in, textSplitterImpl, domain, bgProcessId);
         backgroundProcessService.stopProcess(bgProcessId, domain.getId());
     }
 
     /**
      * Import PDF in the background
-     * @param filename PDF file name
      * @param webUrl URL associated with PDF file
      * @param in PDF as InputStream
      */
-    public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId) {
-        filename = filename.replace(" ", "+");
+    public void importPDF(String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId) {
         try {
-            List<String> chunks = dataIngestionService.splitPDFIntoChunks(in, textSplitterImpl);
+            PDDocument pdDoc = PDDocument.load(in);
+            PDDocumentInformation info = pdDoc.getDocumentInformation();
+            String title = info.getTitle();
+            String body = new PDFTextStripper().getText(pdDoc);
+            pdDoc.close();
             in.close();
+
+            List<String> chunks = dataIngestionService.splitPDFIntoChunks(body, textSplitterImpl);
             List<Answer> qnas = new ArrayList<Answer>();
-            String title = filename; // TODO: Get PDF title
             for (String chunk : chunks) {
                 Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
                 qnas.add(qna);
