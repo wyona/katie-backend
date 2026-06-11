@@ -527,13 +527,7 @@ public class SharepointConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, msg);
 
                 InputStream in = new FileInputStream(dumpFile);
-                List<String> chunks = dataIngestionService.splitPDFIntoChunks(in, TextSplitterImpl.FIXED_SIZE);
-                for (String chunk : chunks) {
-                    qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, null, null, null, null, null, null, null, null, fileName, null, false, null, false, null));
-                }
-                msg = "Number of chunks extracted from PDF document: " + chunks.size();
-                log.info(msg);
-                backgroundProcessService.updateProcessStatus(processId, msg);
+                domainService.importPDF(dumpFile.getName(), webUrl, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
             } else {
                 String msg = "Text extraction from '" + contentUrl + "' of mime-type '" + mimeType + "' not implemented yet!";
                 log.warn(msg);
