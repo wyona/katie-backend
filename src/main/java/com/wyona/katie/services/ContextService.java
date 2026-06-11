@@ -13,8 +13,6 @@ import com.wyona.katie.models.insights.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.lucene.index.VectorSimilarityFunction;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -33,7 +31,6 @@ import freemarker.template.Template;
 import org.apache.commons.io.FileUtils;
 
 import javax.mail.internet.MimeMessage;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * TODO: Consider renaming it to DomainService
@@ -150,6 +147,9 @@ public class ContextService {
 
     @Autowired
     SegmentationService segmentationService;
+
+    @Autowired
+    DataIngestionService dataIngestionService;
 
     @Autowired
     TOPdeskConnector topDeskConnector;
@@ -2645,28 +2645,12 @@ public class ContextService {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
         filename = filename.replace(" ", "+");
         try {
-            PDDocument pdDocument = PDDocument.load(in);
-            String body = new PDFTextStripper().getText(pdDocument);
-            pdDocument.close();
-            in.close();
-
-            String title = filename; // TODO: Get PDF title
-
+            List<String> chunks = dataIngestionService.splitPDFIntoChunks(in, textSplitterImpl);
             List<Answer> qnas = new ArrayList<Answer>();
-
-            List<String> chunks = new ArrayList<>();
-            if (textSplitterImpl.equals(TextSplitterImpl.SENTENCE)) {
-                chunks = segmentationService.splitBySentences(body, "en", 700, true);
-            } else if (textSplitterImpl.equals(TextSplitterImpl.AI21)) {
-                chunks = segmentationService.getSegmentsUsingAI21(body);
-            } else if (textSplitterImpl.equals(TextSplitterImpl.FIXED_SIZE)) {
-                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
-            } else {
-                log.error("No such text splitter implementation '" + textSplitterImpl + "'! Use fixed size text splitter ...");
-                chunks = segmentationService.getSegments(body, '\n', 2000, 100);
-            }
+            String title = filename; // TODO: Get PDF title
             for (String chunk : chunks) {
-                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, filename, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
+                String url = "http://host.katie.internal/" + domain.getId() + "/" + filename;
+                Answer qna = new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null);
                 qnas.add(qna);
                 String uuid = addQuestionAnswer(qna, domain).getUuid();
                 addToUuidUrlIndex(uuid, qna.getUrl(), domain);
