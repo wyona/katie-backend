@@ -4,6 +4,8 @@ import com.wyona.katie.config.RestProxyTemplate;
 import com.wyona.katie.integrations.msteams.services.MicrosoftAuthorizationService;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,8 +16,6 @@ import com.wyona.katie.services.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -50,7 +50,7 @@ public class SharepointConnector implements Connector {
     private ContextService domainService;
 
     @Autowired
-    SegmentationService segmentationService;
+    DataIngestionService dataIngestionService;
 
     private final String MS_GRAPH_BASE_URL = "https://graph.microsoft.com";
 
@@ -526,13 +526,8 @@ public class SharepointConnector implements Connector {
                 log.info(msg);
                 backgroundProcessService.updateProcessStatus(processId, msg);
 
-                PDDocument pdDoc = PDDocument.load(dumpFile);
-                String body = new PDFTextStripper().getText(pdDoc);
-                pdDoc.close();
-
-                // TODO: Make text splitter configurable
-                //List<String> chunks = segmentationService.splitBySentences(body, "en", 700, true);
-                List<String> chunks = segmentationService.getSegments(body, '\n', 2000, 100);
+                InputStream in = new FileInputStream(dumpFile);
+                List<String> chunks = dataIngestionService.splitPDFIntoChunks(in, TextSplitterImpl.FIXED_SIZE);
                 for (String chunk : chunks) {
                     qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, webUrl, null, null, null, null, null, null, null, null, fileName, null, false, null, false, null));
                 }
