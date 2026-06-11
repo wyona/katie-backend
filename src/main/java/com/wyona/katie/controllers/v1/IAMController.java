@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -413,7 +414,10 @@ public class IAMController {
     /**
      * Update profile picture of a particular user
      */
-    @RequestMapping(value = "/user/{id}/profile-picture", method = RequestMethod.PUT, produces = "application/json")
+    @PutMapping(value = "/user/{id}/profile-picture",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Update profile picture of a particular user", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> updateProfilePicture(
             @Parameter(name = "id", description = "Katie user Id, e.g. '9cfc7e09-fe62-4ae4-81b6-1605424d6f87'",required = true)
@@ -459,7 +463,10 @@ public class IAMController {
     /**
      * Get username by providing a profile picture
      */
-    @RequestMapping(value = "/user/forgot-username", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/user/forgot-username",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Get username by providing a profile picture")
     public ResponseEntity<?> getUsernameByProfilePicture(
             @RequestPart("file") MultipartFile file,
