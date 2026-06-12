@@ -103,44 +103,14 @@ public class ConnectorService {
                 }
                 Context domain = domainService.getContext(domainId);
                 List<Answer> qnas = connector.update(domain, ksMeta, payload, processId);
-                int counterSuccessful = 0;
-                if (qnas != null && qnas.size() > 0) {
-                    backgroundProcessService.updateProcessStatus(processId, "Import and index " + qnas.size() + " QnAs ...");
-                    for (Answer qna : qnas) {
-                        try {
-                            String uuid = domainService.addQuestionAnswer(qna, domain).getUuid();
-                            domainService.addToUuidUrlIndex(uuid, qna.getUrl(), domain);
 
-                            if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) && domain.getEmbeddingsImpl().equals(EmbeddingsImpl.COHERE)) {
-                                int throttleTimeInMillis = 10000; // TODO: Make configurable
-                                if (throttleTimeInMillis > 0) {
-                                    try {
-                                        String msg = "Sleep for " + throttleTimeInMillis + " milliseconds ...";
-                                        log.info(msg);
-                                        backgroundProcessService.updateProcessStatus(processId, msg);
-                                        Thread.sleep(throttleTimeInMillis);
-                                    } catch (Exception e) {
-                                        log.error(e.getMessage(), e);
-                                    }
-                                }
-                            }
-                            domainService.train(new QnA(qna), domain, true);
+                int counterSuccessful = domainService.importQnAs(domain, qnas, processId);
 
-                            counterSuccessful++;
-                        } catch (Exception e) {
-                            log.error(e.getMessage(), e);
-                            backgroundProcessService.updateProcessStatus(processId, "Import / indexing of '" + qna.getUrl() + "' failed: " + e.getMessage(), BackgroundProcessStatusType.ERROR);
-                        }
-                    }
-                    backgroundProcessService.updateProcessStatus(processId, counterSuccessful + " QnAs successfully imported and indexed.");
-
-                    backgroundProcessService.updateProcessStatus(processId, "Sync info updated.");
-                } else {
-                    log.warn("No QnAs imported!");
-                    counterSuccessful = -1;
+                if (counterSuccessful == -1) {
                     backgroundProcessService.updateProcessStatus(processId, ConnectorService.class.getSimpleName() + ": No QnAs imported! Maybe Connector itself already imported / updated QnAs.", BackgroundProcessStatusType.WARN);
                 }
                 updateSyncInfo(counterSuccessful, domainId, ksId);
+                backgroundProcessService.updateProcessStatus(processId, "Sync info updated.");
             } else {
                 backgroundProcessService.updateProcessStatus(processId, "No such knowledge source '" + ksId + " / " + ksc + "'!", BackgroundProcessStatusType.ERROR);
             }

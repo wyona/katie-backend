@@ -2649,10 +2649,59 @@ public class ContextService {
     @Async
     public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
+
         // TODO: Consider dumping file first
+        //utilsService.dumpContent(domain, null, null, "application/pdf", null);
+
         List<Answer> qnas = splitPDFIntoChunks(webUrl, in, textSplitterImpl, domain, bgProcessId);
-        // TODO: Import answers
+
+        importQnAs(domain, qnas, bgProcessId);
+        // TODO: Merge code
+        //importQnAs(null, domain, bgProcessId, null);
+
         backgroundProcessService.stopProcess(bgProcessId, domain.getId());
+    }
+
+    /**
+     * Import QnAs
+     */
+    protected int importQnAs(Context domain, List<Answer> qnas, String bgProcessId) {
+        int counterSuccessful = 0;
+        if (qnas != null && qnas.size() > 0) {
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Import and index " + qnas.size() + " QnAs ...");
+            for (Answer qna : qnas) {
+                try {
+                    String uuid = addQuestionAnswer(qna, domain).getUuid();
+                    addToUuidUrlIndex(uuid, qna.getUrl(), domain);
+
+                    if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) && domain.getEmbeddingsImpl().equals(EmbeddingsImpl.COHERE)) {
+                        int throttleTimeInMillis = 10000; // TODO: Make configurable
+                        if (throttleTimeInMillis > 0) {
+                            try {
+                                String msg = "Sleep for " + throttleTimeInMillis + " milliseconds ...";
+                                log.info(msg);
+                                backgroundProcessService.updateProcessStatus(bgProcessId, msg);
+                                Thread.sleep(throttleTimeInMillis);
+                            } catch (Exception e) {
+                                log.error(e.getMessage(), e);
+                            }
+                        }
+                    }
+                    train(new QnA(qna), domain, true);
+
+                    counterSuccessful++;
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    backgroundProcessService.updateProcessStatus(bgProcessId, "Import / indexing of '" + qna.getUrl() + "' failed: " + e.getMessage(), BackgroundProcessStatusType.ERROR);
+                }
+            }
+            backgroundProcessService.updateProcessStatus(bgProcessId, counterSuccessful + " QnAs successfully imported and indexed.");
+        } else {
+            log.warn("No QnAs imported!");
+            counterSuccessful = -1;
+            backgroundProcessService.updateProcessStatus(bgProcessId,"No QnAs imported!", BackgroundProcessStatusType.WARN);
+        }
+        return counterSuccessful;
     }
 
     /**
