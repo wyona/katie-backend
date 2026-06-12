@@ -122,10 +122,10 @@ public class OneNoteConnector implements Connector {
                     String urlPageContent = page.getContentURL();
                     String webUrl = page.getWebURL();
                     domainService.deletePreviouslyImportedChunks(webUrl, domain);
-                    File dumpFile = utilsService.dumpContent(domain, new URI(urlPageContent), token);
-                    ContentType contentType = null; // TODO: Get content type
-                    domainService.saveMetaInformation(urlPageContent, webUrl, new Date(), contentType, domain);
+                    String contentType = null; // TODO: Get content type
+                    utilsService.dumpContent(domain, new URI(urlPageContent), webUrl, contentType, token);
 
+                    File dumpFile = domain.getUrlDumpFile(new URI(urlPageContent));
                     String body = extractText(dumpFile);
                     String[] chunks = generateSegments(body);
                     for (String chunk : chunks) {

@@ -36,9 +36,10 @@ public class QnAsFromWebpageServiceMockImpl implements QnAsFromWebpageService {
      */
     public QnA[] getQnAs(URI url, Context domain) {
         try {
-            File file = utilsService.dumpContent(domain, url, null);
+            utilsService.dumpContent(domain, url, url.toString(), null, null);
 
-            return extractQnAs(file);
+            File dumpFile = domain.getUrlDumpFile(url);
+            return extractQnAs(dumpFile);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return null;

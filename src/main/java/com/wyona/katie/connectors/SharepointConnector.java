@@ -217,7 +217,7 @@ public class SharepointConnector implements Connector {
                         counterItems.increase();
                         String fileName = itemNode.get("name").asText();
                         String mimeType = itemNode.get("file").get("mimeType").asText();
-                        List<Answer> _qnas = getDocument(siteId, itemId, apiToken, domain, webUrl, fileName, mimeType, processId);
+                        List<Answer> _qnas = splitDocumentIntoChunks(siteId, itemId, apiToken, domain, webUrl, fileName, mimeType, processId);
                         if (_qnas != null) {
                             for (Answer qna : _qnas) {
                                 qnas.add(qna);
@@ -469,9 +469,7 @@ public class SharepointConnector implements Connector {
                 String title = bodyNode.get("title").asText();
                 String webUrl = webBaseUrl + "/" + bodyNode.get("webUrl").asText();
                 // TODO
-                //File dumpFile = utilsService.dumpPageContent(domain, new URI(contentUrl), apiToken);
-                ContentType contentType = null; // TODO: Get content type
-                domainService.saveMetaInformation(contentUrl, webUrl, new Date(), contentType, domain);
+                //File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), webUrl, null, apiToken);
                 domainService.deletePreviouslyImportedChunks(webUrl, domain);
 
                 String description = "NO_DESCRIPTION_AVAILABLE";
@@ -497,37 +495,37 @@ public class SharepointConnector implements Connector {
     }
 
     /**
-     * Transform a document into a QnA or multiple QnAs
+     * Split a document into a QnA or multiple QnAs
      * @param siteId SharePoint site Id, e.g. "43c98e69-7d22-4dc1-af38-4498240516e0"
      * @param fileId Document Id, e.g. "01X3SH2XSQWSMH4XZE7NDJDWPGASVM2CTJ"
+     * @param webUrl TODO
      * @param fileName File name, e.g. "chat-climate-SSRN-id4414628.pdf"
      * @param mimeType Document mime type, e.g. "application/pdf"
      * @param processId Background process Id
      * @return list of QnAs
      */
-    private List<Answer> getDocument(String siteId, String fileId, String apiToken, Context domain, String webUrl, String fileName, String mimeType, String processId) {
+    private List<Answer> splitDocumentIntoChunks(String siteId, String fileId, String apiToken, Context domain, String webUrl, String fileName, String mimeType, String processId) {
         List<Answer> qnas = new ArrayList<Answer>();
+        boolean isTestRun = false; // TODO: Make configurable
         try {
             // INFO: https://learn.microsoft.com/en-us/graph/api/driveitem-get-content?view=graph-rest-1.0&tabs=java
             // INFO: GET /sites/{siteId}/drive/items/{item-id}/content
             String contentUrl = MS_GRAPH_BASE_URL + "/beta/sites/" + siteId + "/drive/items/" + fileId + "/content";
             domainService.deletePreviouslyImportedChunks(webUrl, domain);
-            File dumpFile = utilsService.dumpContent(domain, new URI(contentUrl), apiToken);
-            ContentType contentType = null;
-            try {
-                contentType = ContentType.fromString(mimeType);
-            } catch (Exception e) {
-                log.warn("Content type '" + mimeType + "' not supported yet by Katie");
+            utilsService.dumpContent(domain, new URI(contentUrl), webUrl, mimeType, apiToken);
+            if (isTestRun) {
+                log.info("Test run, therefore dumped document will not be split into chunks: " + webUrl);
+                backgroundProcessService.updateProcessStatus(processId, "Test run, therefore dumped document will not be split into chunks: " + webUrl);
+                return qnas;
             }
-            domainService.saveMetaInformation(contentUrl, webUrl, new Date(), contentType, domain);
 
             if (mimeType.equals("application/pdf")) {
                 String msg = "Extract text from PDF document '" + contentUrl + "' ...";
                 log.info(msg);
                 backgroundProcessService.updateProcessStatus(processId, msg);
-
+                File dumpFile = domain.getUrlDumpFile(new URI(contentUrl));
                 InputStream in = new FileInputStream(dumpFile);
-                qnas = domainService.importPDF(webUrl, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
+                qnas = domainService.splitPDFIntoChunks(webUrl, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
             } else {
                 String msg = "Text extraction from '" + contentUrl + "' of mime-type '" + mimeType + "' not implemented yet!";
                 log.warn(msg);
@@ -591,7 +589,7 @@ public class SharepointConnector implements Connector {
                         String fileId = itemNode.get("id").asText();
                         String webUrl = itemNode.get("webUrl").asText();
                         String mimeType = itemNode.get("file").get("mimeType").asText();
-                        List<Answer> _qnas = getDocument(siteId, fileId, apiToken, domain, webUrl, fileName, mimeType, processId);
+                        List<Answer> _qnas = splitDocumentIntoChunks(siteId, fileId, apiToken, domain, webUrl, fileName, mimeType, processId);
                         if (_qnas != null) {
                             for (Answer qna : _qnas) {
                                 qnas.add(qna);

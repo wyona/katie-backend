@@ -2640,7 +2640,7 @@ public class ContextService {
     }
 
     /**
-     * Import PDF in the background
+     * Import PDF
      * @param filename PDF file name
      * @param webUrl URL associated with PDF file
      * @param in PDF as InputStream
@@ -2649,17 +2649,18 @@ public class ContextService {
     @Async
     public void importPDF(String filename, String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId, String userId) {
         backgroundProcessService.startProcess(bgProcessId, "Import PDF '" + filename + "' into domain '" + domain.getId() + "'.", userId);
-        List<Answer> qnas = importPDF(webUrl, in, textSplitterImpl, domain, bgProcessId);
-        // Import answers
+        // TODO: Consider dumping file first
+        List<Answer> qnas = splitPDFIntoChunks(webUrl, in, textSplitterImpl, domain, bgProcessId);
+        // TODO: Import answers
         backgroundProcessService.stopProcess(bgProcessId, domain.getId());
     }
 
     /**
-     * Import PDF in the background
+     * Split PDF into chunks
      * @param webUrl URL associated with PDF file
      * @param in PDF as InputStream
      */
-    public List<Answer> importPDF(String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId) {
+    public List<Answer> splitPDFIntoChunks(String webUrl, InputStream in, TextSplitterImpl textSplitterImpl, Context domain, String bgProcessId) {
         List<Answer> qnas = new ArrayList<Answer>();
         try {
             PDDocument pdDoc = PDDocument.load(in);
@@ -2698,11 +2699,10 @@ public class ContextService {
         try {
             backgroundProcessService.updateProcessStatus(bgProcessId, "Dump web page ...");
             deletePreviouslyImportedChunks(url.toString(), domain);
-            File dumpFile = utilsService.dumpContent(domain, url.toURI(), null);
-            ContentType contentType = ContentType.TEXT_HTML;
-            saveMetaInformation(url.toString(), url.toString(), new Date(), contentType, domain);
+            utilsService.dumpContent(domain, url.toURI(), url.toString(), "text/html", null);
 
             backgroundProcessService.updateProcessStatus(bgProcessId, "Extract text from dumped web page ...");
+            File dumpFile = domain.getUrlDumpFile(url.toURI());
             String body = extractText(dumpFile, cssSelector);
             String title = extractTitle(dumpFile, body);
 
@@ -3700,7 +3700,7 @@ public class ContextService {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(file, data);
 
-        return saveMetaInformation(url.toString(), url.toString(), new Date(), ContentType.APPLICATION_JSON, domain);
+        return utilsService.saveMetaInformation(url.toString(), url.toString(), new Date(), ContentType.APPLICATION_JSON, domain);
     }
 
     /**
@@ -3965,7 +3965,7 @@ public class ContextService {
         if (qnas != null && qnas.length > 0) {
             log.info("Webpage '" + url + "' contains " + qnas.length + " QnAs.");
             ContentType contentType = null; // TODO: Get content type
-            saveMetaInformation(url, url, currentDate, contentType, domain);
+            utilsService.saveMetaInformation(url, url, currentDate, contentType, domain);
         } else {
             log.warn("No QnAs extracted from webpage '" + url + "'!");
             throw new Exception("No QnAs extracted from webpage '" + url + "'!");
@@ -4019,20 +4019,6 @@ public class ContextService {
 
         // TODO: Delete UUID from index instead just deleting whole index, whereas see above
         uuidIndexFile.delete();
-    }
-
-    /**
-     * Save meta information re extraction of text / QnAs from URL
-     * @param contentUrl Content URL, e.g. "https://graph.microsoft.com/v1.0/groups/c5a3125f-f85a-472a-8561-db2cf74396ea/onenote/pages/1-fd1e338afe640a3219c58b850ad3c4f6!1-5aaade12-a1fc-478c-b98c-1f888fed25a0/content"
-     * @param webUrl Web URL, e.g. "https://szhglobal.sharepoint.com/sites/MSGR-00000778/Shared%20Documents/General/WIKI%20Energieberatung?wd=target%28F%C3%B6rderprogramme.one%7Cfb8f3fb7-e89b-4d08-b9f2-b52248c15f1e%2FFAQ%20F%C3%B6rderprogramme%7C9d034704-bbf1-43f6-8208-e5a29c649b04%2F%29"
-     * @param date Date when text / QnAs got extracted
-     */
-    public URLMeta saveMetaInformation(String contentUrl, String webUrl, Date date, ContentType contentType, Context domain) {
-        File metaFile = domain.getUrlMetaFile(URI.create(contentUrl));
-        if (!metaFile.getParentFile().isDirectory()) {
-            metaFile.getParentFile().mkdirs();
-        }
-        return xmlService.createUrlMeta(metaFile, contentUrl, webUrl, date.getTime(), contentType);
     }
 
     /**

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +60,8 @@ public class WebsiteConnector implements Connector {
                 pageUrl = payloadWebsite.getPageUrl();
             }
         }
+
+        boolean isTestRun = false; // TODO: Make configurable
         
         if (pageUrl != null) {
             log.info("Update knowledge source connected with Website '" + ksMeta.getWebsiteSeedUrl() + "' for page URL '" + pageUrl + "' ...");
@@ -77,12 +80,28 @@ public class WebsiteConnector implements Connector {
                 for (String url : urls) {
                     backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                     File dumpFile = domain.getUrlDumpFile(new URI(url));
-                    String cssSelector = null; // TODO: Allow CSS selector, e.g. div[id="content"] resp. [id="content"], because id is supposed to be unique
-                    String body = domainService.extractText(dumpFile, cssSelector);
-                    String title = domainService.extractTitle(dumpFile, body);
-                    String[] chunks = generateSegments(body, ksMeta, url, processId);
-                    for (String chunk : chunks) {
-                        qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
+                    if (isTestRun) {
+                        log.info("Test run, therefore dumped document will not be split into chunks: " + dumpFile.getAbsolutePath());
+                        backgroundProcessService.updateProcessStatus(processId, "Test run, therefore dumped document will not be split into chunks: " + dumpFile.getAbsolutePath());
+                        continue;
+                    }
+                    URLMeta urlMeta = domainService.getUrlMeta(new URI(url), domain);
+                    ContentType contentType = urlMeta.getContentType();
+                    if (contentType.equals(ContentType.APPLICATION_PDF)) {
+                        InputStream in = new FileInputStream(dumpFile);
+                        List<Answer> _qnas = domainService.splitPDFIntoChunks(url, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
+                        for (Answer answer : _qnas) {
+                            qnas.add(answer);
+                        }
+                    } else {
+                        String cssSelector = null; // TODO: Allow CSS selector, e.g. div[id="content"] resp. [id="content"], because id is supposed to be unique
+                        String body = domainService.extractText(dumpFile, cssSelector);
+                        String title = domainService.extractTitle(dumpFile, body);
+                        String[] chunks = generateSegments(body, ksMeta, url, processId);
+                        backgroundProcessService.updateProcessStatus(processId, "Number of chunks extracted from HTML page: " + chunks.length);
+                        for (String chunk : chunks) {
+                            qnas.add(new Answer(null, chunk, ContentType.TEXT_PLAIN, url, null, null, null, null, null, null, null, null, title, null, false, null, false, null));
+                        }
                     }
                 }
             }
@@ -95,6 +114,7 @@ public class WebsiteConnector implements Connector {
     }
 
     /**
+     * Dump web pages, respectively PDFs, etc.
      * @return list of dumped URLs
      */
     private List<String> dumpWebpages(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload) {
@@ -108,14 +128,16 @@ public class WebsiteConnector implements Connector {
             try {
                 for (String url : ksMeta.getWebsiteIndividualURLs()) {
                     domainService.deletePreviouslyImportedChunks(url, domain);
-                    File dumpFile = utilsService.dumpContent(domain, new URI(url), null);
-                    ContentType contentType = ContentType.TEXT_HTML;
-                    domainService.saveMetaInformation(url, url, new Date(), contentType, domain);
+                    utilsService.dumpContent(domain, new URI(url), url, null, null);
                     urls.add(url);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
+        }
+
+        if (payload != null) {
+            log.info("TODO: Process payload");
         }
 
         return urls;
