@@ -553,7 +553,8 @@ public class Context {
 
     /**
      * Get data path, which contains downloaded data referenced by an URL
-     * @param url URL of dumped webpage, e.g. "https://www.myright.ch/en/legal-tips/corona-private/covid-certificatetrequirement"
+     * @param url URL of dumped webpage, e.g., "https://www.myright.ch/en/legal-tips/corona-private/covid-certificatetrequirement"
+     * @return dump file, e.g., /Users/USERNAME/src/katie-backend/volume/contexts/946c2355-6def-4fad-8bb1-b512a5f58a4f/urls/www.myright.ch/en/legal-tips/corona-private/covid-certificatetrequirement/data" or "/Users/USERNAME/src/katie-backend/volume/contexts/946c2355-6def-4fad-8bb1-b512a5f58a4f/urls/graph.microsoft.com/v1.0/users/michael.wechner@wyona.com/onenote/pages/0-a84876c902edd24ab110904594185481!1-8D3F909A0DAE592D!647/content/data"
      */
     public File getUrlDumpFile(URI url) {
         return new File(getThirdPartyUrlPath(url), "data");
