@@ -77,7 +77,9 @@ public class UtilsService {
     /**
      * Dump content referenced by URL
      * @param domain Katie domain for which content will be indexed
-     * @param url Content URL, e.g. "https://graph.microsoft.com/v1.0/users/michael.wechner@wyona.com/onenote/pages/0-a84876c902edd24ab110904594185481!1-8D3F909A0DAE592D!647"
+     * @param url Content URL, e.g., "https://graph.microsoft.com/v1.0/users/michael.wechner@wyona.com/onenote/pages/0-a84876c902edd24ab110904594185481!1-8D3F909A0DAE592D!647"
+     * @param webUrl Web URL, e.g., "https://szhglobal.sharepoint.com/sites/MSGR-00000778/Shared%20Documents/General/WIKI%20Energieberatung?wd=target%28F%C3%B6rderprogramme.one%7Cfb8f3fb7-e89b-4d08-b9f2-b52248c15f1e%2FFAQ%20F%C3%B6rderprogramme%7C9d034704-bbf1-43f6-8208-e5a29c649b04%2F%29"
+     * @param mimeType Content type, e.g., "application/pdf"
      * @param apiToken Optional API token
      */
     public void dumpContent(Context domain, URI url, String webUrl, String mimeType, String apiToken) throws Exception {
