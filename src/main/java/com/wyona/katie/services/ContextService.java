@@ -3749,7 +3749,7 @@ public class ContextService {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(file, data);
 
-        return utilsService.saveMetaInformation(url.toString(), url.toString(), new Date(), ContentType.APPLICATION_JSON, domain);
+        return utilsService.saveMetaInformation(url.toString(), url.toString(), new Date(), ContentType.APPLICATION_JSON, domain, null, null);
     }
 
     /**
@@ -4014,7 +4014,7 @@ public class ContextService {
         if (qnas != null && qnas.length > 0) {
             log.info("Webpage '" + url + "' contains " + qnas.length + " QnAs.");
             ContentType contentType = null; // TODO: Get content type
-            utilsService.saveMetaInformation(url, url, currentDate, contentType, domain);
+            utilsService.saveMetaInformation(url, url, currentDate, contentType, domain, null, null);
         } else {
             log.warn("No QnAs extracted from webpage '" + url + "'!");
             throw new Exception("No QnAs extracted from webpage '" + url + "'!");

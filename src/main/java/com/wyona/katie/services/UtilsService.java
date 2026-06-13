@@ -15,6 +15,7 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.security.MessageDigest;
 import java.util.Date;
 
 @Slf4j
@@ -135,7 +136,16 @@ public class UtilsService {
                     log.warn("Content type '" + contentTypeFromResponse + "' not supported yet by Katie");
                 }
             }
-            log.info("Content type: " + contentType.toString());
+            if (contentType != null) {
+                log.info("Content type: " + contentType.toString());
+            }
+
+            String etag = connection.getHeaderField("ETag");
+            if (etag != null) {
+                log.info("Server ETag: " + etag);
+            } else {
+                log.info("No ETag header provided by the server.");
+            }
 
             InputStream in = connection.getInputStream();
             OutputStream out = new FileOutputStream(file);
@@ -144,7 +154,9 @@ public class UtilsService {
             in.close();
             connection.disconnect();
 
-            saveMetaInformation(url.toString(), webUrl, new Date(), contentType, domain);
+            String fileChecksum = getFileChecksum(file);
+
+            saveMetaInformation(url.toString(), webUrl, new Date(), contentType, domain, etag, fileChecksum);
         } else {
             log.info("URL '" + url + "' already dumped.");
         }
@@ -154,18 +166,43 @@ public class UtilsService {
     }
 
     /**
+     * Get checksum of file content
+     */
+    private String getFileChecksum(File file) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
+            }
+        }
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : digest.digest()) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        String fileChecksum = hexString.toString();
+        log.info("Generated File Checksum (SHA-256): " + fileChecksum);
+
+        return fileChecksum;
+    }
+
+    /**
      * Save meta information re extraction of text / QnAs from URL
      * @param contentUrl Content URL, e.g. "https://graph.microsoft.com/v1.0/groups/c5a3125f-f85a-472a-8561-db2cf74396ea/onenote/pages/1-fd1e338afe640a3219c58b850ad3c4f6!1-5aaade12-a1fc-478c-b98c-1f888fed25a0/content"
      * @param webUrl Web URL, e.g. "https://szhglobal.sharepoint.com/sites/MSGR-00000778/Shared%20Documents/General/WIKI%20Energieberatung?wd=target%28F%C3%B6rderprogramme.one%7Cfb8f3fb7-e89b-4d08-b9f2-b52248c15f1e%2FFAQ%20F%C3%B6rderprogramme%7C9d034704-bbf1-43f6-8208-e5a29c649b04%2F%29"
      * @param date Date when text / QnAs got extracted
      */
-    protected URLMeta saveMetaInformation(String contentUrl, String webUrl, Date date, ContentType contentType, Context domain) {
+    protected URLMeta saveMetaInformation(String contentUrl, String webUrl, Date date, ContentType contentType, Context domain, String etag, String checksum) {
         File metaFile = domain.getUrlMetaFile(URI.create(contentUrl));
         if (!metaFile.getParentFile().isDirectory()) {
             metaFile.getParentFile().mkdirs();
         }
         // TODO: Add file where content was dumped, e.g. "/Users/USERNAME/src/katie-backend/volume/contexts/946c2355-6def-4fad-8bb1-b512a5f58a4f/urls/graph.microsoft.com/v1.0/users/michael.wechner@wyona.com/onenote/pages/0-a84876c902edd24ab110904594185481!1-8D3F909A0DAE592D!647/content/data"
-        return xmlService.createUrlMeta(metaFile, contentUrl, webUrl, date.getTime(), contentType);
+        return xmlService.createUrlMeta(metaFile, contentUrl, webUrl, date.getTime(), contentType, etag, checksum);
     }
 
     /**
