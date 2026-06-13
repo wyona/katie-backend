@@ -3774,7 +3774,12 @@ public class ContextService {
     public URLMeta getUrlMeta(URI url, Context domain) {
         File metaFile = domain.getUrlMetaFile(url);
         try {
-            return xmlService.getUrlMeta(metaFile);
+            if (metaFile.isFile()) {
+                return xmlService.getUrlMeta(metaFile);
+            } else {
+                log.warn("No such URL Meta file yet: " + metaFile.getAbsolutePath());
+                return null;
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return null;

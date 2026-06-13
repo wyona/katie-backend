@@ -250,6 +250,10 @@ public class XMLService {
 
     private static final String THREAD_MESSAGE_TAG = "message";
 
+    private static final String URL_META_CHECKSUM = "checksum";
+    private static final String URL_META_ETAG = "etag";
+    private static final String URL_META_CONTENT_TYPE = "content-type";
+
     /**
      * @param id Domain Id
      */
@@ -497,16 +501,16 @@ public class XMLService {
         doc.getDocumentElement().setAttribute("url", contentUrl);
         doc.getDocumentElement().setAttribute("web-url", webUrl);
         doc.getDocumentElement().setAttribute("date", "" + date);
-        doc.getDocumentElement().setAttribute("etag", etag);
-        doc.getDocumentElement().setAttribute("checksum", checksum);
+        doc.getDocumentElement().setAttribute(URL_META_ETAG, etag);
+        doc.getDocumentElement().setAttribute(URL_META_CHECKSUM, checksum);
         if (contentType != null) {
-            doc.getDocumentElement().setAttribute("content-type", contentType.toString());
+            doc.getDocumentElement().setAttribute(URL_META_CONTENT_TYPE, contentType.toString());
         } else {
             log.warn("No content type available for URL " + contentUrl);
         }
         save(doc, file);
 
-        return new URLMeta(contentUrl, date, contentType);
+        return new URLMeta(contentUrl, date, contentType, etag, checksum);
     }
 
     /**
@@ -516,11 +520,22 @@ public class XMLService {
         Document doc = read(file);
         String url = doc.getDocumentElement().getAttribute("url");
         long importDate = Long.parseLong(doc.getDocumentElement().getAttribute("date"));
+
         ContentType contentType = null;
-        if (doc.getDocumentElement().hasAttribute("content-type")) {
-            contentType = ContentType.fromString(doc.getDocumentElement().getAttribute("content-type"));
+        if (doc.getDocumentElement().hasAttribute(URL_META_CONTENT_TYPE)) {
+            contentType = ContentType.fromString(doc.getDocumentElement().getAttribute(URL_META_CONTENT_TYPE));
         }
-        URLMeta urlMeta = new URLMeta(url, importDate, contentType);
+
+        String etag = null;
+        if (doc.getDocumentElement().hasAttribute(URL_META_ETAG)) {
+            etag = doc.getDocumentElement().getAttribute(URL_META_ETAG);
+        }
+        String checksum = null;
+        if (doc.getDocumentElement().hasAttribute(URL_META_CHECKSUM)) {
+            etag = doc.getDocumentElement().getAttribute(URL_META_CHECKSUM);
+        }
+
+        URLMeta urlMeta = new URLMeta(url, importDate, contentType, etag, checksum);
         return urlMeta;
     }
 

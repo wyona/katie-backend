@@ -78,14 +78,31 @@ public class WebsiteConnector implements Connector {
                 backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
                 List<String> urls = dumpWebpages(domain, ksMeta, payload);
                 for (String url : urls) {
-                    backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                     File dumpFile = domain.getUrlDumpFile(new URI(url));
                     if (isTestRun) {
                         log.info("Test run, therefore dumped document will not be split into chunks: " + dumpFile.getAbsolutePath());
                         backgroundProcessService.updateProcessStatus(processId, "Test run, therefore dumped document will not be split into chunks: " + dumpFile.getAbsolutePath());
                         continue;
                     }
-                    URLMeta urlMeta = domainService.getUrlMeta(new URI(url), domain);
+
+                    boolean modified = false;
+                    URLMeta urlMeta = domainService.getUrlMeta(URI.create(url), domain);
+                    if (urlMeta != null) {
+                        log.info("TODO: Check checksum, whether URL content has changed since last dump.");
+                        // TODO: utilsService.dumpContent() is overwriting etag and checksum!!!
+                        if (true) { // INFO: Content has changed since last sync
+                            modified = true;
+                        } else {
+                            modified = false;
+                        }
+                    }
+
+                    if (!modified) {
+                        backgroundProcessService.updateProcessStatus(processId, "Content was not modified, therefore skip ingestion of URL: " + url);
+                        continue;
+                    }
+
+                    backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
                     ContentType contentType = urlMeta.getContentType();
                     if (contentType != null && contentType.equals(ContentType.APPLICATION_PDF)) {
                         InputStream in = new FileInputStream(dumpFile);

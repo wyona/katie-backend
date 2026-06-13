@@ -5,14 +5,18 @@ public class URLMeta {
     private String url;
     private long importDate;
     private ContentType contentType;
+    private String etag;
+    private String checksum;
 
     /**
      *
      */
-    public URLMeta(String url, long importDate, ContentType contentType) {
+    public URLMeta(String url, long importDate, ContentType contentType, String etag, String checksum) {
         this.url = url;
         this.importDate = importDate;
         this.contentType = contentType;
+        this.etag = etag;
+        this.checksum = checksum;
     }
 
     /**
@@ -34,5 +38,19 @@ public class URLMeta {
      */
     public ContentType getContentType() {
         return contentType;
+    }
+
+    /**
+     *
+     */
+    public String getETag() {
+        return etag;
+    }
+
+    /**
+     *
+     */
+    public String getChecksum() {
+        return checksum;
     }
 }

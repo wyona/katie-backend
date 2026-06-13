@@ -92,8 +92,10 @@ public class UtilsService {
         }
 
         boolean dump = true;
-        if (file.isFile()) {
-            log.info("TODO: Check last modified, whether URL content has changed since last dump.");
+        File urlMetaFile = domain.getUrlMetaFile(url);
+        if (urlMetaFile.isFile()) {
+            URLMeta urlMeta = xmlService.getUrlMeta(urlMetaFile);
+            log.info("TODO: Check ETag, whether URL content has changed since last dump.");
             if (true) { // INFO: Content has changed since last sync
                 dump = true;
             } else {
