@@ -251,7 +251,9 @@ public class XMLService {
     private static final String THREAD_MESSAGE_TAG = "message";
 
     private static final String URL_META_CHECKSUM = "checksum";
+    private static final String URL_META_PREVIOUS_CHECKSUM = "previous-checksum";
     private static final String URL_META_ETAG = "etag";
+    private static final String URL_META_PREVIOUS_ETAG = "previous-etag";
     private static final String URL_META_CONTENT_TYPE = "content-type";
 
     /**
@@ -497,12 +499,33 @@ public class XMLService {
      * Create XML file containing meta information re QnAs extraction
      */
     public URLMeta createUrlMeta(File file, String contentUrl, String webUrl, long date, ContentType contentType, String etag, String checksum) {
+        String previousEtag = null;
+        String previousChecksum = null;
+        try {
+            URLMeta previousURLMeta = getUrlMeta(file);
+            if (previousURLMeta != null) {
+                previousEtag = previousURLMeta.getETag();
+                previousChecksum = previousURLMeta.getChecksum();
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         Document doc = createDocument(KATIE_NAMESPACE_1_0_0, "meta");
         doc.getDocumentElement().setAttribute("url", contentUrl);
         doc.getDocumentElement().setAttribute("web-url", webUrl);
         doc.getDocumentElement().setAttribute("date", "" + date);
+
         doc.getDocumentElement().setAttribute(URL_META_ETAG, etag);
+        if (previousEtag != null) {
+            doc.getDocumentElement().setAttribute(URL_META_PREVIOUS_ETAG, previousEtag);
+        }
+
         doc.getDocumentElement().setAttribute(URL_META_CHECKSUM, checksum);
+        if (previousChecksum != null) {
+            doc.getDocumentElement().setAttribute(URL_META_PREVIOUS_CHECKSUM, previousChecksum);
+        }
+
         if (contentType != null) {
             doc.getDocumentElement().setAttribute(URL_META_CONTENT_TYPE, contentType.toString());
         } else {
@@ -510,13 +533,18 @@ public class XMLService {
         }
         save(doc, file);
 
-        return new URLMeta(contentUrl, date, contentType, etag, checksum);
+        return new URLMeta(contentUrl, date, contentType, etag, previousEtag, checksum, previousChecksum);
     }
 
     /**
-     *
+     * Get URL meta information
+     * @param file File containing URL Meta information
      */
     public URLMeta getUrlMeta(File file) throws Exception {
+        if (!file.isFile()) {
+            log.warn("No such URL meta file (yet): " + file.getAbsolutePath());
+            return null;
+        }
         Document doc = read(file);
         String url = doc.getDocumentElement().getAttribute("url");
         long importDate = Long.parseLong(doc.getDocumentElement().getAttribute("date"));
@@ -530,12 +558,21 @@ public class XMLService {
         if (doc.getDocumentElement().hasAttribute(URL_META_ETAG)) {
             etag = doc.getDocumentElement().getAttribute(URL_META_ETAG);
         }
-        String checksum = null;
-        if (doc.getDocumentElement().hasAttribute(URL_META_CHECKSUM)) {
-            etag = doc.getDocumentElement().getAttribute(URL_META_CHECKSUM);
+        String previousEtag = null;
+        if (doc.getDocumentElement().hasAttribute(URL_META_PREVIOUS_ETAG)) {
+            previousEtag = doc.getDocumentElement().getAttribute(URL_META_PREVIOUS_ETAG);
         }
 
-        URLMeta urlMeta = new URLMeta(url, importDate, contentType, etag, checksum);
+        String checksum = null;
+        if (doc.getDocumentElement().hasAttribute(URL_META_CHECKSUM)) {
+            checksum = doc.getDocumentElement().getAttribute(URL_META_CHECKSUM);
+        }
+        String previousChecksum = null;
+        if (doc.getDocumentElement().hasAttribute(URL_META_PREVIOUS_CHECKSUM)) {
+            previousChecksum = doc.getDocumentElement().getAttribute(URL_META_PREVIOUS_CHECKSUM);
+        }
+        
+        URLMeta urlMeta = new URLMeta(url, importDate, contentType, etag, previousEtag, checksum, previousChecksum);
         return urlMeta;
     }
 

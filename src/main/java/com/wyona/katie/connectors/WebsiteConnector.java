@@ -76,7 +76,7 @@ public class WebsiteConnector implements Connector {
                 // TODO: Implement dumping and ingesting of one particular page
             } else {
                 backgroundProcessService.updateProcessStatus(processId, "Dump " + ksMeta.getWebsiteIndividualURLs().length + " pages of website '" + ksMeta.getWebsiteSeedUrl() + "' ...");
-                List<String> urls = dumpWebpages(domain, ksMeta, payload);
+                List<String> urls = dumpWebpages(domain, ksMeta, payload, processId);
                 for (String url : urls) {
                     File dumpFile = domain.getUrlDumpFile(new URI(url));
                     if (isTestRun) {
@@ -85,12 +85,11 @@ public class WebsiteConnector implements Connector {
                         continue;
                     }
 
-                    boolean modified = false;
+                    boolean modified = true;
                     URLMeta urlMeta = domainService.getUrlMeta(URI.create(url), domain);
                     if (urlMeta != null) {
-                        log.info("TODO: Check checksum, whether URL content has changed since last dump.");
-                        // TODO: utilsService.dumpContent() is overwriting etag and checksum!!!
-                        if (true) { // INFO: Content has changed since last sync
+                        log.info("Check whether URL content has changed since last dump ...");
+                        if (urlMeta.wasModified()) { // INFO: Content has changed since last sync
                             modified = true;
                         } else {
                             modified = false;
@@ -102,7 +101,9 @@ public class WebsiteConnector implements Connector {
                         continue;
                     }
 
-                    backgroundProcessService.updateProcessStatus(processId, "Dump content of page '" + url + "' ...");
+                    domainService.deletePreviouslyImportedChunks(url, domain);
+
+                    backgroundProcessService.updateProcessStatus(processId, "Ingest content of page '" + url + "' ...");
                     ContentType contentType = urlMeta.getContentType();
                     if (contentType != null && contentType.equals(ContentType.APPLICATION_PDF)) {
                         InputStream in = new FileInputStream(dumpFile);
@@ -134,7 +135,7 @@ public class WebsiteConnector implements Connector {
      * Dump web pages, respectively PDFs, etc.
      * @return list of dumped URLs
      */
-    private List<String> dumpWebpages(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload) {
+    private List<String> dumpWebpages(Context domain, KnowledgeSourceMeta ksMeta, WebhookPayload payload, String processId) {
         List<String> urls = new ArrayList<String>();
 
         if (ksMeta.getWebsiteSeedUrl() != null) {
@@ -144,7 +145,7 @@ public class WebsiteConnector implements Connector {
         if (ksMeta.getWebsiteIndividualURLs() != null) {
             try {
                 for (String url : ksMeta.getWebsiteIndividualURLs()) {
-                    domainService.deletePreviouslyImportedChunks(url, domain);
+                    backgroundProcessService.updateProcessStatus(processId, "Dump content of URL: " + url);
                     utilsService.dumpContent(domain, new URI(url), url, null, null);
                     urls.add(url);
                 }
