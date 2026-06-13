@@ -87,7 +87,7 @@ public class WebsiteConnector implements Connector {
                     }
                     URLMeta urlMeta = domainService.getUrlMeta(new URI(url), domain);
                     ContentType contentType = urlMeta.getContentType();
-                    if (contentType.equals(ContentType.APPLICATION_PDF)) {
+                    if (contentType != null && contentType.equals(ContentType.APPLICATION_PDF)) {
                         InputStream in = new FileInputStream(dumpFile);
                         List<Answer> _qnas = domainService.splitPDFIntoChunks(url, in, TextSplitterImpl.FIXED_SIZE, domain, processId);
                         for (Answer answer : _qnas) {
