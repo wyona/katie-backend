@@ -499,6 +499,8 @@ public class XMLService {
         doc.getDocumentElement().setAttribute("date", "" + date);
         if (contentType != null) {
             doc.getDocumentElement().setAttribute("content-type", contentType.toString());
+        } else {
+            log.warn("No content type available for URL " + contentUrl);
         }
         save(doc, file);
 
