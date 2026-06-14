@@ -511,13 +511,31 @@ public class SharepointConnector implements Connector {
             // INFO: https://learn.microsoft.com/en-us/graph/api/driveitem-get-content?view=graph-rest-1.0&tabs=java
             // INFO: GET /sites/{siteId}/drive/items/{item-id}/content
             String contentUrl = MS_GRAPH_BASE_URL + "/beta/sites/" + siteId + "/drive/items/" + fileId + "/content";
-            domainService.deletePreviouslyImportedChunks(webUrl, domain);
+
             utilsService.dumpContent(domain, new URI(contentUrl), webUrl, mimeType, apiToken);
             if (isTestRun) {
                 log.info("Test run, therefore dumped document will not be split into chunks: " + webUrl);
                 backgroundProcessService.updateProcessStatus(processId, "Test run, therefore dumped document will not be split into chunks: " + webUrl);
                 return qnas;
             }
+
+            boolean modified = true;
+            URLMeta urlMeta = domainService.getUrlMeta(URI.create(contentUrl), domain);
+            if (urlMeta != null) {
+                log.info("Check whether URL content has changed since last dump ...");
+                if (urlMeta.wasModified()) { // INFO: Content has changed since last sync
+                    modified = true;
+                } else {
+                    modified = false;
+                }
+            }
+
+            if (!modified) {
+                backgroundProcessService.updateProcessStatus(processId, "Content was not modified, therefore skip ingestion of URL: " + contentUrl);
+                return qnas;
+            }
+
+            domainService.deletePreviouslyImportedChunks(webUrl, domain);
 
             if (mimeType.equals("application/pdf")) {
                 String msg = "Extract text from PDF document '" + contentUrl + "' ...";
