@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +36,7 @@ import java.util.List;
  * Controller to ask questions (Version 3)
  */
 @Slf4j
+@Tag(name = "Ask Controller v3", description = "Endpoints for asking Katie questions")
 @RestController
 @RequestMapping(value = "/api/v3") 
 public class AskControllerV3 {
@@ -60,7 +62,7 @@ public class AskControllerV3 {
     /**
      * REST interface to get answer(s) to a question
      */
-    @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/ask/{domain-id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get answer(s) to a question", security = { @SecurityRequirement(name = "bearerAuth") })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ResponseAnswer.class), array = @ArraySchema(schema = @Schema(implementation = List.class)))),
@@ -74,7 +76,7 @@ public class AskControllerV3 {
             @RequestParam(value = "limit", required = false) Integer limit,
             @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned answers, e.g. 0 for starting with the answer with the best ranking, whereas 0 also the default", required = false)
             @RequestParam(value = "offset", required = false) Integer offset,
-            @Parameter(name = "question-and-optional-params", description = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            //@Parameter(name = "question-and-optional-params", description = "The 'question' field is required, all other fields are optional, like for example content type accepted by client (e.g. 'text/plain' or 'text/x.topdesk-html', whereas default is 'text/html'), classification (one) resp. classifications (multiple), language of questioner, message Id of client which sent question to Katie, or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndOptionalParams,
             @Parameter(name = "include-feedback-links", description = "When true, then answer contains feedback links (false by default)", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
             @RequestParam(value = "include-feedback-links", required = false) Boolean includeFeedbackLinks,
