@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -480,16 +481,18 @@ public class QuestionsController {
     }
 
     /**
-     * REST interface to add a thread message / response to an originally asked question
+     * REST interface to add thread message(s) / response(s) to an originally asked question
      */
-    @RequestMapping(value = "/asked/thread-message", method = RequestMethod.POST, produces = "application/json")
-    @Operation(summary = "Add a thread message / response to an originally asked question", security = { @SecurityRequirement(name = "bearerAuth") })
+    @PostMapping(value = "/asked/thread-message",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Add thread message(s) / response(s) to an originally asked question", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addThreadMessage(
             @Parameter(name = "client-message-id", description = "Client message / thread Id", required = true)
-            @RequestParam(value = "client-message-id", required = true) String messageId,
+            @RequestParam(value = "client-message-id", required = true) String threadId,
             @Parameter(name = "domain-id", description = "Katie domain Id", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "message", description = "The 'message' field is required, all other fields are optional", required = true)
+            //@Parameter(name = "message", description = "The 'message' field is required, all other fields are optional", required = true)
             @RequestBody ThreadMessage message,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -505,7 +508,7 @@ public class QuestionsController {
         try {
             Context domain = contextService.getDomain(domainId);
 
-            AskedQuestion askedQuestion = dataRepoService.getQuestionByMessageId(messageId);
+            AskedQuestion askedQuestion = dataRepoService.getQuestionByMessageId(threadId);
 
             String channelRequestId = askedQuestion.getChannelRequestId();
             log.info("Channel request Id: " + channelRequestId);
@@ -526,10 +529,14 @@ public class QuestionsController {
             }
             log.info("Channel Id: " + channelId);
 
-            if (message.getAuthor() != null) {
-                log.info("Also save author of thread message: " + message.getAuthor());
+            String messageSeparator = "NEXT_MESSAGE";
+            if (message.getMessageSeparator() != null) {
+                messageSeparator = message.getMessageSeparator();
             }
-            contextService.saveThreadMessage(domain, channelId, channelRequestId, messageId, message.getMessage());
+            String[] messages = message.getMessage().split(messageSeparator);
+            for (String m : messages) {
+                contextService.saveThreadMessage(domain, channelId, channelRequestId, threadId, m);
+            }
 
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(Exception e) {
