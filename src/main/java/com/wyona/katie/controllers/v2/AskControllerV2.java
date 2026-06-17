@@ -39,6 +39,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
  * Controller to ask questions (Version 2)
  */
 @Slf4j
+@Tag(name = "Ask Controller v2", description = "Endpoints for asking Katie questions")
 @RestController
 @RequestMapping(value = "/api/v2") 
 public class AskControllerV2 {
