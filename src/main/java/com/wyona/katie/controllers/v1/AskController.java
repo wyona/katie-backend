@@ -232,7 +232,8 @@ public class AskController {
 
         // TODO: Get classifications from request, whereas force to lower case
         List<String> classifications = new ArrayList<String>();
-        return answerByKatie(question, classifications, domain, dateSubmitted, remoteAddress);
+        String messageId = null; // TODO
+        return answerByKatie(question, messageId, classifications, domain, dateSubmitted, remoteAddress);
     }
 
     /**
@@ -295,17 +296,17 @@ public class AskController {
             }
         }
 
-        return answerByKatie(question, classifications, domain, dateSubmitted, remoteAddress);
+        return answerByKatie(question, questionAndContact.getMessageId(), classifications, domain, dateSubmitted, remoteAddress);
     }
 
     /**
      * Generate answer to question
      * @param question Question, e.g., "Can you explain the softmax function"
+     * @param messageId Message Id sent by client together with question, e.g., "I-260617-0352"
      */
-    private ResponseEntity<?> answerByKatie(String question, List<String> classifications, Context domain, Date dateSubmitted, String remoteAddress) {
+    private ResponseEntity<?> answerByKatie(String question, String messageId, List<String> classifications, Context domain, Date dateSubmitted, String remoteAddress) {
         try {
             // TODO: Get limit and offset as request parameters
-            String messageId = null; // TODO
             String channelRequestId = null; // TODO
             boolean includeFeedbackLinks = false;
             ContentType answerContentType = null;
