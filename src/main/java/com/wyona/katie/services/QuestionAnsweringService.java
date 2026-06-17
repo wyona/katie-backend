@@ -124,7 +124,7 @@ public class QuestionAnsweringService {
      * @param privacyOptions Optional privacy options
      * @param predictClassifications When true, then predict labels based on submitted question / message
      * @param classifications Provided Classifications to narrow down search space, e.g. "gravel bike", "bug", "instruction", "fact", "social", ...
-     * @param messageId Message Id sent by client together with question
+     * @param messageId Message Id sent by client together with question, e.g., "I-260617-0352"
      * @param domain Domain the question/answer is associated with
      * @param dateSubmitted Date when question was asked
      * @param remoteAddress Remote address, e.g. "178.197.227.93"
