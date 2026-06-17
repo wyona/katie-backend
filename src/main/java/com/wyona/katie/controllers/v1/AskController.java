@@ -167,7 +167,8 @@ public class AskController {
     /**
      * REST interface to get an answer for a particular question
      */
-    @RequestMapping(value = "/ask", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "/ask",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Ask question and get answer. If no answer is available, then the uuid and answer field of the response body will be null.",
             security = { @SecurityRequirement(name = "bearerAuth") }
@@ -237,12 +238,14 @@ public class AskController {
     /**
      * REST interface to get an answer for a particular question
      */
-    @RequestMapping(value = "/ask/{domain-id}", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/ask/{domain-id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="Ask question and get answer of a previously asked duplicated question. If no answer is available, then the uuid and answer field of the response body will be null.")
     public ResponseEntity<?> postQuestion(
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains its own set of questions/answers",required = true)
             @PathVariable(value = "domain-id", required = true) String domainId,
-            @Parameter(name = "question-and-contact-info", description = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
+            //@Parameter(name = "question-and-contact-info", description = "The 'question' field is required, all other fields are optional, like for example classification (comma separated classifications), language of questioner or contact information in case Katie does not know the answer and a human expert can send an answer to questioner", required = true)
             @RequestBody AskQuestionBody questionAndContact,
             HttpServletRequest request,
             HttpServletResponse response) {
