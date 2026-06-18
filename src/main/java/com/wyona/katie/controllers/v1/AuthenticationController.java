@@ -33,6 +33,7 @@ import org.springframework.security.core.Authentication;
  * Authentication controller to handle login, logout, etc.
  */
 @Slf4j
+@Tag(name = "Authentication Controller v1", description = "Endpoints for Katie authentication")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
