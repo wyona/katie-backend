@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(GET, "/tmp-test/push-notification/sample").hasRole(ADMIN_ROLE)
                 //.requestMatchers("/mcp/**").authenticated()
                 .anyRequest().permitAll()
-        ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));;
+        ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         // https://www.baeldung.com/spring-security-logout
         http.logout(logout -> logout
