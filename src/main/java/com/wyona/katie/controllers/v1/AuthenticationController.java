@@ -7,10 +7,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,7 +19,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
@@ -61,12 +58,14 @@ public class AuthenticationController {
     /**
      * Create generic JWT token (only Administrators)
      */
-    @RequestMapping(value = "/token/generic", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/token/generic",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="Create generic JWT token (only Administrators)")
     public ResponseEntity<?> generateGenericJWT(
         @Parameter(name = "seconds", description = "Token validity in seconds, e.g. 3600 (60 minutes)",required = true)
         @RequestParam(value = "seconds", required = true) long seconds,
-        @Parameter(name = "request-body", description = "Token payload, to set generic and custom claims, like for example custom claims 'endpoint' and 'scope'", required = true)
+        //@Parameter(name = "request-body", description = "Token payload, to set generic and custom claims, like for example custom claims 'endpoint' and 'scope'", required = true)
         @RequestBody JWTPayload payload,
         HttpServletRequest request,
         HttpServletResponse response) {
