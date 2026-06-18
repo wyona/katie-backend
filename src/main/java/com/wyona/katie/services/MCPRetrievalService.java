@@ -115,6 +115,10 @@ public class MCPRetrievalService {
             @ToolParam(description = "Swiss ZIP code within the city of Zurich (e.g. 8044, 8003, 8032).", required = true) Integer zipCode,
             @ToolParam(description = "Type of waste, either 'cardboard' or 'paper'", required = true) String wasteType
     ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            log.info("Allow anonynmous access.");
+        }
         log.info("Get the paper and cardboard collection dates for ZIP code " + zipCode + " in the city of Zurich.");
         OpenERZ openERZ = new OpenERZ();
         List<Date> dates = openERZ.getDates(zipCode.toString(), wasteType);
@@ -158,8 +162,8 @@ public class MCPRetrievalService {
                 throw new Exception("Access token invalid!");
             }
         } else if (authentication instanceof AnonymousAuthenticationToken) {
-            log.warn("AnonymousAuthenticationToken not implemented!");
-            throw new Exception("AnonymousAuthenticationToken not implemented!");
+            log.warn("Anonymous access not allowed!");
+            throw new Exception("Anonymous access not allowed!");
         } else {
             //Object principal = authentication.getPrincipal();
             //log.info("Authentication principal : " + principal);
