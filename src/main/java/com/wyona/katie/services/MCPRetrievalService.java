@@ -5,6 +5,7 @@ import com.wyona.katie.models.*;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
@@ -156,6 +157,9 @@ public class MCPRetrievalService {
                 log.warn("JWT Token is not valid!");
                 throw new Exception("Access token invalid!");
             }
+        } else if (authentication instanceof AnonymousAuthenticationToken) {
+            log.warn("AnonymousAuthenticationToken not implemented!");
+            throw new Exception("AnonymousAuthenticationToken not implemented!");
         } else {
             //Object principal = authentication.getPrincipal();
             //log.info("Authentication principal : " + principal);
