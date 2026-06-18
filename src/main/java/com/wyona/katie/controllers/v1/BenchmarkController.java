@@ -53,6 +53,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
  * Benchmark / Quality Assurance controller
  */
 @Slf4j
+@Tag(name = "Benchmark Controller v1", description = "Endpoints to run benchmarks")
 @RestController
 @RequestMapping(value = "/api/v1/benchmark")
 public class BenchmarkController {
