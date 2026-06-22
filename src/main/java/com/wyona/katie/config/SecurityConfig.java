@@ -58,11 +58,11 @@ public class SecurityConfig {
 
         // Authorization configuration, also see for example https://www.baeldung.com/spring-security-expressions
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/mcp/**").authenticated() // TODO: Make configurable
                 .requestMatchers(POST, "/tmp-test/push-notification/topic").hasRole(ADMIN_ROLE)
                 .requestMatchers(POST, "/tmp-test/push-notification/token").hasRole(ADMIN_ROLE)
                 .requestMatchers(POST, "/tmp-test/push-notification/data").hasRole(ADMIN_ROLE)
                 .requestMatchers(GET, "/tmp-test/push-notification/sample").hasRole(ADMIN_ROLE)
-                //.requestMatchers("/mcp/**").authenticated()
                 .anyRequest().permitAll()
         ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
