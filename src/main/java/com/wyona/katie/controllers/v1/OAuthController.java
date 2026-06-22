@@ -42,19 +42,22 @@ public class OAuthController {
         HttpServletResponse response) {
 
         log.info("Response type: " + responseType);
+        log.info("Redirect URI: " + redirectUri);
 
         String scope = "mcp";
         String once = "todo_once";
 
-        // TODO: Make redirect base URL configuarble
-        String redirectUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + clientId + "&response_type=" + responseType + "&scope=" + scope + "&redirect_uri=" + redirectUri + "&state=" + state + "&nonce=" + once;
-        if (true) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Location", redirectUrl);
-
-            return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
+        String googleOAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + clientId + "&response_type=" + responseType + "&scope=" + scope + "&redirect_uri=" + redirectUri + "&state=" + state + "&nonce=" + once;
+        boolean authenticated = true;
+        if (!authenticated) {
+            redirectUri = googleOAuthUrl;
         } else {
-            return new ResponseEntity<>(HttpStatus.OK);
+            log.info("Already authenticated successfully.");
+            redirectUri = redirectUri + "?code=HUGO";
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", redirectUri);
+        return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 }
