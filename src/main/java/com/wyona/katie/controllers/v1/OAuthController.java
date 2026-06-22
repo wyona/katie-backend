@@ -100,6 +100,9 @@ public class OAuthController {
         StringBuilder body = new StringBuilder("{");
         body.append("\"token_type\":\"bearer\"");
         String username = authenticationService.getUsername();
+        if (username == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         log.info("Generate access token for user '" + username + "' ...");
         String domainId = "todo_domain_id";
         String token = jwtService.generateJWT(username, domainId, seconds, null);
