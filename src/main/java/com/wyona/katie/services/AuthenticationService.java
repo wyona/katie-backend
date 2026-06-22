@@ -272,7 +272,7 @@ public class AuthenticationService {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            log.info("User is not signed in.");
+            log.info("User is not signed in, therefore return null as username ...");
             return null;
         }
         Object principal = authentication.getPrincipal();
