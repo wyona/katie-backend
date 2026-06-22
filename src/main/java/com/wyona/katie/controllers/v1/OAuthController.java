@@ -33,8 +33,6 @@ public class OAuthController {
     @Autowired
     private AuthenticationService authenticationService;
 
-    private String TODO_CODE = "TODO_CODE";
-
     /**
      * TODO
      */
@@ -62,8 +60,9 @@ public class OAuthController {
             String googleOAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + clientId + "&response_type=" + responseType + "&scope=" + scope + "&redirect_uri=" + redirectUri + "&state=" + state + "&nonce=" + once;
             redirectUri = googleOAuthUrl;
         } else {
-            log.info("Already authenticated successfully.");
-            redirectUri = redirectUri + "?code=" + TODO_CODE;
+            String username = authenticationService.getUsername();
+            log.info("User '" + username + "' already authenticated successfully.");
+            redirectUri = redirectUri + "?code=" + username;
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -91,18 +90,12 @@ public class OAuthController {
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
 
-        log.info("Verify code: " + code);
-        if (!code.equals(TODO_CODE)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        String username = code; // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
+        log.info("Username: " + username);
 
         long seconds = 3600;
         StringBuilder body = new StringBuilder("{");
         body.append("\"token_type\":\"bearer\"");
-        String username = authenticationService.getUsername();
-        if (username == null) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         log.info("Generate access token for user '" + username + "' ...");
         String domainId = "todo_domain_id";
         String token = jwtService.generateJWT(username, domainId, seconds, null);
