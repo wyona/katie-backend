@@ -53,9 +53,6 @@ public class AuthenticationController {
     @Autowired
     private ContextService domainService;
 
-    @Autowired
-    private HttpServletRequest request;
-
     /**
      * Create generic JWT token (only Administrators)
      */
@@ -245,7 +242,7 @@ public class AuthenticationController {
             if (!userDetails.getUsername().equals(providedUsername)) { // TODO/TBD: Only logout, when new credentials are valid for new user
                 log.info("Provided username '" + providedUsername + "' is not the same as signed in user '" + userDetails.getUsername() + "', therefore logout user ...");
                 try {
-                    logout(response);
+                    logout(request, response);
                 } catch(Exception e) {
                     log.error(e.getMessage(), e);
                 }
@@ -333,7 +330,7 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/username", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get username of signed in user")
-    public ResponseEntity<?> getUsername(HttpServletResponse response) {
+    public ResponseEntity<?> getUsername(HttpServletRequest request, HttpServletResponse response) {
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
         if (signedInUser != null) {
             return new ResponseEntity<>(new Username(signedInUser.getUsername()), HttpStatus.OK);
@@ -367,7 +364,7 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/user", method = RequestMethod.GET, produces = "application/json")
     @Operation(summary = "Get user information of signed in user")
-    public ResponseEntity<?> getUser(HttpServletResponse response) {
+    public ResponseEntity<?> getUser(HttpServletRequest request, HttpServletResponse response) {
         User signedInUser = rememberMeService.tryAutoLogin(request, response);
         if (signedInUser != null) {
             try {
@@ -395,7 +392,7 @@ public class AuthenticationController {
                 log.info("User is not signed in by session!");
             }
 
-            String username = logout(response);
+            String username = logout(request, response);
 
             LogoutResponse logoutResponse = new LogoutResponse();
             if (username != null) {
@@ -415,7 +412,7 @@ public class AuthenticationController {
     /**
      * @return username of logged out user
      */
-    private String logout(HttpServletResponse response) throws ServletException {
+    private String logout(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         Principal userPrincipal = request.getUserPrincipal();
         String username = null;
         if (userPrincipal != null) {
@@ -423,6 +420,8 @@ public class AuthenticationController {
         }
         request.logout();
         rememberMeService.disableAutoLogin(request, response);
+
+        log.info("User '" + username + "' signed out successfully.");
 
         return username;
     }
