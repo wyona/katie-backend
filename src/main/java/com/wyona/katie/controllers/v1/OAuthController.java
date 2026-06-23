@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
@@ -102,7 +104,8 @@ public class OAuthController {
         } else {
             String username = authenticationService.getUsername();
             log.info("User '" + username + "' already authenticated successfully.");
-            redirectUri = redirectUri + "?code=" + username + "&state=" + state;
+            String code = username; // TODO: Replace hack
+            redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         }
 
         HttpHeaders headers = new HttpHeaders();
