@@ -2470,7 +2470,7 @@ public class ContextService {
                         return false;
                     }
                 } else {
-                    log.warn("Endpoint '" + endpoint + "' does not match with endpoint provided by JWT token.");
+                    log.warn("Request endpoint '" + endpoint + "' does not match with endpoint '" + jwtTokenEndpoint + "' provided by JWT token.");
                     return false;
                 }
             } else {
