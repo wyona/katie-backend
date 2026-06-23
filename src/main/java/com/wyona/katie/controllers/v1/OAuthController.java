@@ -1,6 +1,10 @@
 package com.wyona.katie.controllers.v1;
 
+import com.wyona.katie.models.User;
+import com.wyona.katie.models.Username;
 import com.wyona.katie.services.AuthenticationService;
+import com.wyona.katie.services.ContextService;
+import com.wyona.katie.services.IAMService;
 import com.wyona.katie.services.JwtService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,11 +39,17 @@ public class OAuthController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private ContextService domainService;
+
+    @Autowired
+    private IAMService iamService;
+
     /**
-     * TODO
+     * Check whether user is authenticated / authorized
      */
     @GetMapping(value = "/authorize")
-    @Operation(summary="TODO")
+    @Operation(summary="Check whether user is authenticated / authorized. If not authenticated, then redirect to single-sign-on server.")
     public ResponseEntity<?> authorize(
         @Parameter(name = "response_type", description = "Response type, e.g., code", required = false)
         @RequestParam(value = "response_type", required = false) String responseType,
@@ -57,6 +67,9 @@ public class OAuthController {
 
         boolean authenticated = authenticationService.userIsSignedInBySession(request);
         if (!authenticated) {
+            log.info("User is not authenticated yet.");
+
+            // TODO: Make sign in server configurable, resp. use Katie itself
             String scope = "mcp";
             String once = "todo_once";
             String googleOAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + clientId + "&response_type=" + responseType + "&scope=" + scope + "&redirect_uri=" + redirectUri + "&state=" + state + "&nonce=" + once;
@@ -73,11 +86,11 @@ public class OAuthController {
     }
 
     /**
-     * TODO
+     * Get access token to access Katie MCP
      */
     @PostMapping(value = "/token",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary="TODO")
+    @Operation(summary="Get access token to access Katie MCP")
     public ResponseEntity<?> getToken(
             @Parameter(name = "grant_type", description = "TODO", required = false)
             @RequestParam(value = "grant_type", required = false) String grantType,
@@ -96,11 +109,13 @@ public class OAuthController {
         log.info("Username: " + username);
 
         log.info("Generate access token for user '" + username + "' ...");
-        long seconds = 3600;
-        String domainId = "todo_domain_id";
+        User user = iamService.getUserByUsername(new Username(username), false, false);
+        String[] domainIDs = domainService.getDomainIDsUserIsMemberOf(user);
+        String domainId = domainIDs[0]; // TODO: Select domain Id ...
         HashMap<String, String> claims = new HashMap<String, String>();
         claims.put(JwtService.JWT_CLAIM_ENDPOINT, "/mcp");
         claims.put(JwtService.JWT_CLAIM_SCOPE, "search");
+        long seconds = 3600;
         String token = jwtService.generateJWT(username, domainId, seconds, claims);
 
         StringBuilder body = new StringBuilder("{");
