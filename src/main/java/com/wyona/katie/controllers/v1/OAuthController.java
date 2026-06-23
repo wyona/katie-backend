@@ -46,6 +46,26 @@ public class OAuthController {
     private IAMService iamService;
 
     /**
+     * TODO
+     */
+    @PostMapping(value = "/register",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary="TODO")
+    public ResponseEntity<?> register(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        StringBuilder body = new StringBuilder("{");
+        body.append("\"client_id\":\"todo_client_id\"");
+        body.append(",\"client_secret\":\"todo_client_secret\"");
+        body.append(",\"redirect_uris\":[\"http://localhost:3080/api/mcp/katie/oauth/callback\"]");
+        body.append("}");
+
+        return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+    }
+
+    /**
      * Check whether user is authenticated / authorized
      */
     @GetMapping(value = "/authorize")
