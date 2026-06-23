@@ -88,7 +88,8 @@ public class OpenERZ {
     }
 
     /**
-     * @param zipCode ZIP code, e.g. "8044"
+     * Get dates of paper or cardboard collection
+     * @param zipCode ZIP code, e.g., "8044" or "8032"
      * @param wasteType Waste type, e.g. "paper" or "cardboard"
      * @return list of dates
      */
@@ -107,27 +108,23 @@ public class OpenERZ {
         headers.set("Accept", "application/json");
         //headers.set("Content-Type", "application/json; charset=UTF-8");
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        try {
-            ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("Response JSON: " + bodyNode);
+        ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.GET, request, JsonNode.class);
+        JsonNode bodyNode = response.getBody();
+        log.info("Response JSON: " + bodyNode);
 
-            JsonNode resultNode = bodyNode.get("result");
-            if (resultNode.isArray()) {
-                for (int i = 0; i < resultNode.size(); i++) {
-                    JsonNode dateNode = resultNode.get(i);
-                    String dateAsString = dateNode.get("date").asText(); // INFO: 2023-07-04"
-                    try {
-                        dates.add(dateFormat.parse(dateAsString));
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
+        JsonNode resultNode = bodyNode.get("result");
+        if (resultNode.isArray()) {
+            for (int i = 0; i < resultNode.size(); i++) {
+                JsonNode dateNode = resultNode.get(i);
+                String dateAsString = dateNode.get("date").asText(); // INFO: 2023-07-04"
+                try {
+                    dates.add(dateFormat.parse(dateAsString));
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                 }
-            } else {
-                log.error("No dates received!");
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        } else {
+            log.error("No dates received!");
         }
 
         return dates;
