@@ -102,7 +102,7 @@ public class OAuthController {
         } else {
             String username = authenticationService.getUsername();
             log.info("User '" + username + "' already authenticated successfully.");
-            redirectUri = redirectUri + "?code=" + username;
+            redirectUri = redirectUri + "?code=" + username + "&state=" + state;
         }
 
         HttpHeaders headers = new HttpHeaders();
