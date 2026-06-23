@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.HashMap;
+
 /**
  * OAuth controller
  */
@@ -96,13 +98,16 @@ public class OAuthController {
         log.info("Generate access token for user '" + username + "' ...");
         long seconds = 3600;
         String domainId = "todo_domain_id";
-        String token = jwtService.generateJWT(username, domainId, seconds, null);
+        HashMap<String, String> claims = new HashMap<String, String>();
+        claims.put(JwtService.JWT_CLAIM_ENDPOINT, "/mcp");
+        claims.put(JwtService.JWT_CLAIM_SCOPE, "search");
+        String token = jwtService.generateJWT(username, domainId, seconds, claims);
 
         StringBuilder body = new StringBuilder("{");
         body.append("\"token_type\":\"Bearer\"");
         body.append(",\"access_token\":\"" + token + "\"");
         body.append(",\"expires_in\":" + seconds);
-        body.append(",\"scope\":\"mcp\"");
+        body.append(",\"" + JwtService.JWT_CLAIM_SCOPE + "\":\"mcp\"");
         body.append("}");
 
         return new ResponseEntity<>(body.toString(), HttpStatus.OK);
