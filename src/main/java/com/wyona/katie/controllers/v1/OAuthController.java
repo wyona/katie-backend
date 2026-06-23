@@ -93,13 +93,16 @@ public class OAuthController {
         String username = code; // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
         log.info("Username: " + username);
 
-        long seconds = 3600;
-        StringBuilder body = new StringBuilder("{");
-        body.append("\"token_type\":\"bearer\"");
         log.info("Generate access token for user '" + username + "' ...");
+        long seconds = 3600;
         String domainId = "todo_domain_id";
         String token = jwtService.generateJWT(username, domainId, seconds, null);
+
+        StringBuilder body = new StringBuilder("{");
+        body.append("\"token_type\":\"Bearer\"");
         body.append(",\"access_token\":\"" + token + "\"");
+        body.append(",\"expires_in\":" + seconds);
+        body.append(",\"scope\":\"mcp\"");
         body.append("}");
 
         return new ResponseEntity<>(body.toString(), HttpStatus.OK);
