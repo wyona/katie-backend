@@ -4,8 +4,6 @@ import com.wyona.katie.config.CustomAuthenticationProvider;
 import com.wyona.katie.models.User;
 
 import com.wyona.katie.models.UserDetails;
-import com.wyona.katie.models.User;
-import com.wyona.katie.models.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.security.Principal;
 
-import io.jsonwebtoken.*;
-
-import org.springframework.core.io.ClassPathResource;
-import java.security.PrivateKey;
 import java.security.SignatureException;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 
 import java.nio.charset.StandardCharsets;
@@ -154,6 +145,22 @@ public class AuthenticationService {
             log.info("No JWT token provided.");
         }
         return null;
+    }
+
+    /**
+     * @return username of logged out user
+     */
+    public String logout(HttpServletRequest request) throws ServletException {
+        Principal userPrincipal = request.getUserPrincipal();
+        String username = null;
+        if (userPrincipal != null) {
+            username = userPrincipal.getName();
+        }
+        request.logout();
+
+        log.info("User '" + username + "' signed out successfully.");
+
+        return username;
     }
 
     /**

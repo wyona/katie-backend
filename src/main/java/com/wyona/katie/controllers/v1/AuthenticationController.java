@@ -413,12 +413,7 @@ public class AuthenticationController {
      * @return username of logged out user
      */
     private String logout(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        Principal userPrincipal = request.getUserPrincipal();
-        String username = null;
-        if (userPrincipal != null) {
-            username = userPrincipal.getName();
-        }
-        request.logout();
+        String username = authService.logout(request);
         rememberMeService.disableAutoLogin(request, response);
 
         log.info("User '" + username + "' signed out successfully.");
