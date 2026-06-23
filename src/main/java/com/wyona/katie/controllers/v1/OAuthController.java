@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.wyona.katie.models.OAuthRegisterBody;
 import com.wyona.katie.models.User;
 import com.wyona.katie.models.Username;
 import com.wyona.katie.services.AuthenticationService;
@@ -53,13 +54,17 @@ public class OAuthController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="TODO")
     public ResponseEntity<?> register(
+            @RequestBody OAuthRegisterBody oAuthRegisterBody,
             HttpServletRequest request,
             HttpServletResponse response) {
+
+        log.info("Clent name: " + oAuthRegisterBody.getClient_name());
+        log.info("Redirect URIs: " + oAuthRegisterBody.getRedirect_uris());
 
         StringBuilder body = new StringBuilder("{");
         body.append("\"client_id\":\"todo_client_id\"");
         body.append(",\"client_secret\":\"todo_client_secret\"");
-        body.append(",\"redirect_uris\":[\"http://localhost:3080/api/mcp/katie/oauth/callback\"]");
+        body.append(",\"redirect_uris\":[\"" + oAuthRegisterBody.getRedirect_uris()[0] + "\"]");
         body.append("}");
 
         return new ResponseEntity<>(body.toString(), HttpStatus.OK);
