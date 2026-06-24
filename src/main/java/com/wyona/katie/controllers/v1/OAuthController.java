@@ -10,6 +10,7 @@ import com.wyona.katie.services.JwtService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,9 @@ import java.util.HashMap;
 @RestController
 public class OAuthController {
 
+    @Value("${new.context.mail.body.host}")
+    private String defaultHostnameMailBody;
+
     @Autowired
     private JwtService jwtService;
 
@@ -49,12 +53,12 @@ public class OAuthController {
     private IAMService iamService;
 
     /**
-     * TODO
+     * Registers a new OAuth 2.0 client application dynamically and returns client credentials
      */
     @PostMapping(value = "/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary="TODO")
+    @Operation(summary="Registers a new OAuth 2.0 client application dynamically and returns client credentials")
     public ResponseEntity<?> register(
             @RequestBody OAuthRegisterBody oAuthRegisterBody,
             HttpServletRequest request,
@@ -62,6 +66,9 @@ public class OAuthController {
 
         log.info("Client name: " + oAuthRegisterBody.getClient_name());
         log.info("Redirect URIs: " + oAuthRegisterBody.getRedirect_uris());
+        log.info("Grant types: " + oAuthRegisterBody.getGrant_types());
+        log.info("Response types: " + oAuthRegisterBody.getResponse_types());
+        log.info("Token endpoint auth method: " + oAuthRegisterBody.getToken_endpoint_auth_method());
 
         // TODO: Make configurable
         String client_id = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj";
@@ -71,6 +78,7 @@ public class OAuthController {
         body.append("\"client_id\":\"" + client_id + "\"");
         body.append(",\"client_secret\":\"" + client_secret + "\"");
         body.append(",\"redirect_uris\":[\"" + oAuthRegisterBody.getRedirect_uris()[0] + "\"]");
+        body.append(",\"token_endpoint\":\"" + defaultHostnameMailBody + "/token" + "\"");
         body.append("}");
 
         return new ResponseEntity<>(body.toString(), HttpStatus.OK);
