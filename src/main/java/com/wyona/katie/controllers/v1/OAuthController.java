@@ -65,9 +65,9 @@ public class OAuthController {
             HttpServletResponse response) {
 
         log.info("Client name: " + oAuthRegisterBody.getClient_name());
-        log.info("Redirect URIs: " + oAuthRegisterBody.getRedirect_uris());
-        log.info("Grant types: " + oAuthRegisterBody.getGrant_types());
-        log.info("Response types: " + oAuthRegisterBody.getResponse_types());
+        log.info("Redirect URIs: " + String.join(",", oAuthRegisterBody.getRedirect_uris()));
+        log.info("Grant types: " + String.join(",", oAuthRegisterBody.getGrant_types()));
+        log.info("Response types: " + String.join(",", oAuthRegisterBody.getResponse_types()));
         log.info("Token endpoint auth method: " + oAuthRegisterBody.getToken_endpoint_auth_method());
 
         // TODO: Make configurable
