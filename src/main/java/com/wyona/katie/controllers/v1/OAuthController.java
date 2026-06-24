@@ -120,6 +120,16 @@ public class OAuthController {
             redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         }
 
+        // INFO: Sleep a little in order to prevent race condition
+        try {
+            for (int i = 0; i < 2; i++) {
+                log.info("Sleep for 2 seconds ...");
+                Thread.sleep(2000);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", redirectUri);
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
