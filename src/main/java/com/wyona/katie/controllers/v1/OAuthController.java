@@ -120,6 +120,7 @@ public class OAuthController {
             redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         }
 
+        // TODO: Consider replacing the sleep by displaying a simple intermediate page (HTML) (e.g., "Would you like to grant YourApp access to Katie?") with an "Allow" button.
         // INFO: Sleep a little in order to prevent race condition
         try {
             for (int i = 0; i < 2; i++) {
