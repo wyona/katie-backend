@@ -60,12 +60,16 @@ public class OAuthController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
-        log.info("Clent name: " + oAuthRegisterBody.getClient_name());
+        log.info("Client name: " + oAuthRegisterBody.getClient_name());
         log.info("Redirect URIs: " + oAuthRegisterBody.getRedirect_uris());
 
+        // TODO: Make configurable
+        String client_id = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj";
+        String client_secret = "3D138r5719ru3e1";
+
         StringBuilder body = new StringBuilder("{");
-        body.append("\"client_id\":\"todo_client_id\"");
-        body.append(",\"client_secret\":\"todo_client_secret\"");
+        body.append("\"client_id\":\"" + client_id + "\"");
+        body.append(",\"client_secret\":\"" + client_secret + "\"");
         body.append(",\"redirect_uris\":[\"" + oAuthRegisterBody.getRedirect_uris()[0] + "\"]");
         body.append("}");
 
