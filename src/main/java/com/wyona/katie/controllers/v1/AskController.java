@@ -526,7 +526,7 @@ public class AskController {
             @PathVariable(value = "domain-id", required = true) String domainId,
             @Parameter(name = "limit", description = "Maximum number of labels returned (default is 3)", required = false, schema = @Schema(type = "integer", defaultValue = "3"))
             @RequestParam(value = "limit", required = false) Integer limit,
-            @Parameter(name = "text", description = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
+            //@Parameter(name = "text", description = "Text to be classified, e.g. if the input text is 'Where was Michael born?', then the following classifications could be returned: birthplace, michael", required = true)
             @RequestBody Message text,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -557,6 +557,8 @@ public class AskController {
                 } else {
                     log.info("User '" + user.getId() + "' has neither role " + Role.ADMIN + ", nor is member of domain '" + domainId + "', but answers of domain '" + domainId + "' are generally public.");
                 }
+            } else {
+                domain = contextService.getContext(domainId);
             }
 
             if (asynchronous != null && asynchronous) {
