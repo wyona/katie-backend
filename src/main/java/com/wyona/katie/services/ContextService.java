@@ -3250,16 +3250,18 @@ public class ContextService {
             if (user != null) {
                 log.info("Notify '" + user.getEmail() + "' (" + user.getLanguage() + "), that a user has provided feedback re predicted labels '" + rating.getRequestuuid() + "' ...");
                 String email = user.getEmail();
-
+                
                 boolean positiveFeedback = false;
+                String subject = messageSource.getMessage("negative.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
                 if (rating.getRank() == 0) {
                     positiveFeedback = true;
+                    subject = messageSource.getMessage("positive.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
                 }
 
                 String ratingsLink = domain.getHost() + "/api/v1/feedback/ratings-of-predicted-labels?domain-id=" + domain.getId() + "&limit=10&offset=0";
                 String body = getLabelFeedbackNotificationBody(domain, positiveFeedback, rating, predictedClassification, classifiedText, ratingsLink, user.getLanguage());
 
-                String subject = getSubjectPrefix(domain) + " " + messageSource.getMessage("provide.feedback.on.predicted.labels", null, new Locale(user.getLanguage()));
+                subject = getSubjectPrefix(domain) + " " + subject;
                 mailerService.send(email, domain.getMailSenderEmail(), subject, body, true);
             } else {
                 log.warn("No such user '" + userId + "'.");
