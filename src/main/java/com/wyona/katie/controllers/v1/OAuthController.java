@@ -117,10 +117,11 @@ public class OAuthController {
             oAuthUrl = oAuthUrl + "?client_id=" + clientId;
             oAuthUrl = oAuthUrl + "&scope=" + scope;
             oAuthUrl = oAuthUrl + "&redirect_uri=" + redirectUri;
-            
+            oAuthUrl = oAuthUrl + "&response_type=" + responseType;
+
             if (oAuthUrl.contains("google")) {
                 String nonce = "0394852-3190485-2490358";
-                oAuthUrl = oAuthUrl + "&response_type=" + responseType + "&nonce=" + nonce;
+                oAuthUrl = oAuthUrl + "&nonce=" + nonce;
             }
 
             redirectUri = oAuthUrl;
