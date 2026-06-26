@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 /**
  * Microsoft specific authorization service
+ * TODO: Generalize this service, because it can also be used for other OAuth providers, like for example Google, Meta/Facebook, etc.
  */
 @Slf4j
 @Component
@@ -74,6 +75,35 @@ public class MicrosoftAuthorizationService {
             String accessToken = bodyNode.get("access_token").asText();
             log.info("Token received :-)");
             return accessToken;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get user email from OAuth provider
+     * @param oauthUrl OAuth provider user info URL, e.g., https://openidconnect.googleapis.com/v1/userinfo
+     * @param accessToken Access token
+     * @return email address of user
+     */
+    public String getUserEMail(String oauthUrl, String accessToken) {
+        // curl -H "Authorization: Bearer $ACCESS_TOKEN" https://openidconnect.googleapis.com/v1/userinfo
+
+        RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        try {
+            log.info("Try to get access token: " + oauthUrl);
+            ResponseEntity<JsonNode> response = restTemplate.postForEntity(oauthUrl, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.debug("JSON: " + bodyNode);
+            String email = bodyNode.get("email").asText();
+            return email;
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return null;

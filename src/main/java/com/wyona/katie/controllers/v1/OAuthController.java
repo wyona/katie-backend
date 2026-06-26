@@ -190,12 +190,21 @@ public class OAuthController {
             //String scope = "https://graph.microsoft.com/.default";
             String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
             String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
-            log.info("Access token: " + accessToken);
+            //log.debug("Access token: " + accessToken);
+
+            username = microsoftAuthorizationService.getUserEMail("https://openidconnect.googleapis.com/v1/userinfo", accessToken);
         }
+
         log.info("Username: " + username);
 
         log.info("Generate access token for user '" + username + "' ...");
         User user = iamService.getUserByUsername(new Username(username), false, false);
+
+        if (user == null) {
+            log.warn("No such user '" + username + "'!");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         String[] domainIDs = domainService.getDomainIDsUserIsMemberOf(user);
         String domainId = domainIDs[0]; // TODO: Select domain Id ...
         HashMap<String, String> claims = new HashMap<String, String>();
