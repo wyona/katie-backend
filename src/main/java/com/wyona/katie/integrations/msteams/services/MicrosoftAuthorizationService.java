@@ -29,9 +29,10 @@ public class MicrosoftAuthorizationService {
      * @param grantType grant_type must be "client_credentials"
      * @param clientId App / client Id, e.g. "aaa8c4a1-d204-468f-ac6e-540b26b3a122"
      * @param clientSecret App / client secret, whereas see https://app.katie.qa/ms-teams.html
+     * @param code TODO
      * @param scope Scope, e.g. "https://api.botframework.com/.default" or "https://graph.microsoft.com/.default"
      */
-    public String getAccessToken(String oauthUrl, String grantType, String clientId, String clientSecret, String scope) {
+    public String getAccessToken(String oauthUrl, String grantType, String clientId, String clientSecret, String code, String scope) {
         /*
           Test with Postman:
 
@@ -51,7 +52,13 @@ public class MicrosoftAuthorizationService {
         headers.set("Accept", "application/json");
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
 
-        String body = "grant_type=" + grantType + "&client_id=" + clientId + "&client_secret=" + clientSecret + "&scope=" + scope;
+        String body = "grant_type=" + grantType + "&client_id=" + clientId + "&scope=" + scope;
+        if (clientSecret != null) {
+            body = body + "&client_secret=" + clientSecret;
+        }
+        if (code !=null) {
+            body = body + "&code=" + code;
+        }
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
 
         try {

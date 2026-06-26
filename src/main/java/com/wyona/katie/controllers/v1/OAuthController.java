@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.wyona.katie.integrations.msteams.services.MicrosoftAuthorizationService;
 import com.wyona.katie.models.OAuthRegisterBody;
 import com.wyona.katie.models.User;
 import com.wyona.katie.models.Username;
@@ -40,8 +41,11 @@ public class OAuthController {
     @Value("${new.context.mail.body.host}")
     private String defaultHostnameMailBody;
 
-    @Value("${iam.oauth.url}")
-    private String iamOAuthURL;
+    @Value("${iam.oauth.auth}")
+    private String iamOAuthAuthURL;
+
+    @Value("${iam.oauth.token}")
+    private String iamOAuthTokenURL;
 
     @Autowired
     private JwtService jwtService;
@@ -54,6 +58,9 @@ public class OAuthController {
 
     @Autowired
     private IAMService iamService;
+
+    @Autowired
+    MicrosoftAuthorizationService microsoftAuthorizationService;
 
     private final String KATIE_PREFIX = "_katie_";
 
@@ -114,7 +121,7 @@ public class OAuthController {
             log.info("User is not authenticated yet.");
             String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
 
-            String oAuthUrl = iamOAuthURL;
+            String oAuthUrl = iamOAuthAuthURL;
 
             oAuthUrl = oAuthUrl + "?client_id=" + clientId;
             oAuthUrl = oAuthUrl + "&scope=" + scope;
@@ -158,15 +165,15 @@ public class OAuthController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary="Get access token to access Katie MCP")
     public ResponseEntity<?> getToken(
-            @Parameter(name = "grant_type", description = "TODO", required = false)
-            @RequestParam(value = "grant_type", required = false) String grantType,
+            @Parameter(name = "grant_type", description = "Grant type, e.g. authorization_code", required = true)
+            @RequestParam(value = "grant_type", required = true) String grantType,
             @Parameter(name = "redirect_urli", description = "Redirect URI", required = false)
             @RequestParam(value = "redirect_uri", required = false) String redirectUri,
             @Parameter(name = "code", description = "TODO", required = false)
             @RequestParam(value = "code", required = false) String code,
             @Parameter(name = "code_verifier", description = "TODO", required = false)
             @RequestParam(value = "code_verifier", required = false) String codeVerifier,
-            @Parameter(name = "client_id", description = "Client Id, e.g, 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com", required = false)
+            @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = false)
             @RequestParam(value = "client_id", required = false) String clientId,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
@@ -175,7 +182,10 @@ public class OAuthController {
         if (code.startsWith(KATIE_PREFIX)) {
             username = code.substring(KATIE_PREFIX.length()); // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
         } else {
-            log.info("TODO: Get access token from '" + iamOAuthURL + "' using code '" + code + "' ...");
+            log.info("TODO: Get access token from '" + iamOAuthTokenURL + "' using code '" + code + "' ...");
+
+            String scope = "https://graph.microsoft.com/.default";
+            String token = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, null, code, scope);
         }
         log.info("Username: " + username);
 

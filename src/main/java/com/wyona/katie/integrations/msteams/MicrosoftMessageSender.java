@@ -1105,7 +1105,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
      * https://docs.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-connector-authentication?view=azure-bot-service-4.0
      */
     private String getAccessToken() {
-        return authorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, scope);
+        return authorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, null, scope);
     }
 
     /**
