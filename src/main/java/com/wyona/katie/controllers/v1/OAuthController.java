@@ -187,7 +187,7 @@ public class OAuthController {
             //String scope = "https://graph.microsoft.com/.default";
             String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
             String clientSecret = null; // TODO: Set client secret
-            String token = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, clientSecret, code, redirectUri, scope);
+            String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, clientSecret, code, redirectUri, scope);
         }
         log.info("Username: " + username);
 
