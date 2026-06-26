@@ -47,6 +47,9 @@ public class OAuthController {
     @Value("${iam.oauth.token}")
     private String iamOAuthTokenURL;
 
+    @Value("${iam.oauth.client.secret}")
+    private String iamOAuthClientSecret;
+
     @Autowired
     private JwtService jwtService;
 
@@ -84,7 +87,7 @@ public class OAuthController {
 
         // TODO: Make configurable
         String client_id = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj";
-        String client_secret = "3D138r5719ru3e1";
+        String client_secret = "3D138r5719ru3e1"; // TODO: Replace by iamOAuthClientSecret
 
         StringBuilder body = new StringBuilder("{");
         body.append("\"client_id\":\"" + client_id + "\"");
@@ -186,8 +189,8 @@ public class OAuthController {
 
             //String scope = "https://graph.microsoft.com/.default";
             String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
-            String clientSecret = null; // TODO: Set client secret
-            String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, clientSecret, code, redirectUri, scope);
+            String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
+            log.info("Access token: " + accessToken);
         }
         log.info("Username: " + username);
 
