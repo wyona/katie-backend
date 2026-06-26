@@ -40,6 +40,9 @@ public class OAuthController {
     @Value("${new.context.mail.body.host}")
     private String defaultHostnameMailBody;
 
+    @Value("${iam.oauth.url}")
+    private String iamOAuthURL;
+
     @Autowired
     private JwtService jwtService;
 
@@ -92,12 +95,12 @@ public class OAuthController {
     public ResponseEntity<?> authorize(
         @Parameter(name = "response_type", description = "Response type, e.g., code", required = false)
         @RequestParam(value = "response_type", required = false) String responseType,
-        @Parameter(name = "redirect_uri", description = "Redirect URI", required = false)
-        @RequestParam(value = "redirect_uri", required = false) String redirectUri,
-        @Parameter(name = "state", description = "State", required = false)
+        @Parameter(name = "redirect_uri", description = "Redirect URI, e.g., http://localhost:6274/oauth/callback", required = true)
+        @RequestParam(value = "redirect_uri", required = true) String redirectUri,
+        @Parameter(name = "state", description = "State, e.g., 4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b", required = false)
         @RequestParam(value = "state", required = false) String state,
-        @Parameter(name = "client_id", description = "Client Id, e.g, 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com", required = false)
-        @RequestParam(value = "client_id", required = false) String clientId,
+        @Parameter(name = "client_id", description = "Client Id, e.g, 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
+        @RequestParam(value = "client_id", required = true) String clientId,
         HttpServletRequest request,
         HttpServletResponse response) {
 
@@ -107,28 +110,37 @@ public class OAuthController {
         boolean authenticated = authenticationService.userIsSignedInBySession(request);
         if (!authenticated) {
             log.info("User is not authenticated yet.");
+            String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
 
-            // TODO: Make sign in server configurable, resp. use Katie itself
-            String scope = "mcp";
-            String once = "todo_once";
-            String googleOAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + clientId + "&response_type=" + responseType + "&scope=" + scope + "&redirect_uri=" + redirectUri + "&state=" + state + "&nonce=" + once;
-            redirectUri = googleOAuthUrl;
+            String oAuthUrl = iamOAuthURL;
+
+            oAuthUrl = oAuthUrl + "?client_id=" + clientId;
+            oAuthUrl = oAuthUrl + "&scope=" + scope;
+            oAuthUrl = oAuthUrl + "&redirect_uri=" + redirectUri;
+            
+            if (oAuthUrl.contains("google")) {
+                String nonce = "0394852-3190485-2490358";
+                oAuthUrl = oAuthUrl + "&response_type=" + responseType + "&nonce=" + nonce;
+            }
+
+            redirectUri = oAuthUrl;
+            log.info("Redirect to: " + redirectUri);
         } else {
             String username = authenticationService.getUsername();
             log.info("User '" + username + "' already authenticated successfully.");
+            // TODO: Consider replacing the sleep by displaying a simple intermediate page (HTML) (e.g., "Would you like to grant YourApp access to Katie?") with an "Allow" button.
+            // INFO: Sleep a little in order to prevent race condition
+            try {
+                for (int i = 0; i < 2; i++) {
+                    log.info("Sleep for 2 seconds in order to avoid race condition ...");
+                    Thread.sleep(2000);
+                }
+            } catch(Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
             String code = username; // TODO: Replace hack
             redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
-        }
-
-        // TODO: Consider replacing the sleep by displaying a simple intermediate page (HTML) (e.g., "Would you like to grant YourApp access to Katie?") with an "Allow" button.
-        // INFO: Sleep a little in order to prevent race condition
-        try {
-            for (int i = 0; i < 2; i++) {
-                log.info("Sleep for 2 seconds ...");
-                Thread.sleep(2000);
-            }
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
         }
 
         HttpHeaders headers = new HttpHeaders();
