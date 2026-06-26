@@ -55,6 +55,8 @@ public class OAuthController {
     @Autowired
     private IAMService iamService;
 
+    private final String KATIE_PREFIX = "_katie_";
+
     /**
      * Registers a new OAuth 2.0 client application dynamically and returns client credentials
      */
@@ -140,7 +142,7 @@ public class OAuthController {
                 log.error(e.getMessage(), e);
             }
 
-            String code = username; // TODO: Replace hack
+            String code = KATIE_PREFIX + username; // TODO: Replace hack
             redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         }
 
@@ -169,7 +171,12 @@ public class OAuthController {
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
 
-        String username = code; // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
+        String username = null;
+        if (code.startsWith(KATIE_PREFIX)) {
+            username = code.substring(KATIE_PREFIX.length()); // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
+        } else {
+            log.info("TODO: Get access token from '" + iamOAuthURL + "' using code '" + code + "' ...");
+        }
         log.info("Username: " + username);
 
         log.info("Generate access token for user '" + username + "' ...");
