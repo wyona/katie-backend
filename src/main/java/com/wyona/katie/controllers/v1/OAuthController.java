@@ -184,8 +184,10 @@ public class OAuthController {
         } else {
             log.info("TODO: Get access token from '" + iamOAuthTokenURL + "' using code '" + code + "' ...");
 
-            String scope = "https://graph.microsoft.com/.default";
-            String token = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, null, code, scope);
+            //String scope = "https://graph.microsoft.com/.default";
+            String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
+            String clientSecret = null; // TODO: Set client secret
+            String token = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, clientSecret, code, redirectUri, scope);
         }
         log.info("Username: " + username);
 

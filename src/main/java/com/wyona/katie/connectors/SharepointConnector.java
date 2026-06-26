@@ -678,7 +678,7 @@ public class SharepointConnector implements Connector {
             // INFO: Make sure to click on "Grant admin consent for ..."
             String scope = MS_GRAPH_BASE_URL + "/.default";
 
-            token = microsoftAuthorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, null, scope);
+            token = microsoftAuthorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, null, null, scope);
             if (token != null) {
                 log.info("TODO: Cache token!");
             }

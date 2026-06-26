@@ -30,9 +30,10 @@ public class MicrosoftAuthorizationService {
      * @param clientId App / client Id, e.g. "aaa8c4a1-d204-468f-ac6e-540b26b3a122"
      * @param clientSecret App / client secret, whereas see https://app.katie.qa/ms-teams.html
      * @param code TODO
+     * @param redirectUri TODO
      * @param scope Scope, e.g. "https://api.botframework.com/.default" or "https://graph.microsoft.com/.default"
      */
-    public String getAccessToken(String oauthUrl, String grantType, String clientId, String clientSecret, String code, String scope) {
+    public String getAccessToken(String oauthUrl, String grantType, String clientId, String clientSecret, String code, String redirectUri, String scope) {
         /*
           Test with Postman:
 
@@ -59,6 +60,10 @@ public class MicrosoftAuthorizationService {
         if (code !=null) {
             body = body + "&code=" + code;
         }
+        if (redirectUri != null) {
+            body = body + "&redirect_uri=" + redirectUri;
+        }
+        log.info("Request body: " + body);
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
 
         try {
