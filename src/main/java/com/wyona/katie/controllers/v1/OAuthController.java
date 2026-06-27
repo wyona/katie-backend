@@ -86,12 +86,10 @@ public class OAuthController {
         log.info("Token endpoint auth method: " + oAuthRegisterBody.getToken_endpoint_auth_method());
 
         // TODO: Make configurable
-        String client_id = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj";
-        String client_secret = "3D138r5719ru3e1"; // TODO: Replace by iamOAuthClientSecret
+        String client_id = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
 
         StringBuilder body = new StringBuilder("{");
         body.append("\"client_id\":\"" + client_id + "\"");
-        body.append(",\"client_secret\":\"" + client_secret + "\"");
         body.append(",\"redirect_uris\":[\"" + oAuthRegisterBody.getRedirect_uris()[0] + "\"]");
         body.append(",\"token_endpoint\":\"" + defaultHostnameMailBody + "/token" + "\"");
         body.append("}");
@@ -111,7 +109,7 @@ public class OAuthController {
         @RequestParam(value = "redirect_uri", required = true) String redirectUri,
         @Parameter(name = "state", description = "State, e.g., 4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b", required = false)
         @RequestParam(value = "state", required = false) String state,
-        @Parameter(name = "client_id", description = "Client Id, e.g, 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
+        @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
         @RequestParam(value = "client_id", required = true) String clientId,
         HttpServletRequest request,
         HttpServletResponse response) {
@@ -152,7 +150,7 @@ public class OAuthController {
                 log.error(e.getMessage(), e);
             }
 
-            String code = KATIE_PREFIX + username; // TODO: Replace hack
+            String code = KATIE_PREFIX + username; // TODO: Replace hack, send user to Katie oauth page, similar to https://accounts.google.com/o/oauth2/v2/auth resp. https://accounts.google.com/v3/signin/accountchooser
             redirectUri = redirectUri + "?code=" + code + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
         }
 
@@ -192,6 +190,7 @@ public class OAuthController {
             String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
             //log.debug("Access token: " + accessToken);
 
+            // TODO: Replace hard coded OAuth userinfo URL
             username = microsoftAuthorizationService.getUserEMail("https://openidconnect.googleapis.com/v1/userinfo", accessToken);
         }
 
