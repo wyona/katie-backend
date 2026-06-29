@@ -47,6 +47,9 @@ public class OAuthController {
     @Value("${iam.oauth.token}")
     private String iamOAuthTokenURL;
 
+    @Value("${iam.oauth.userinfo}")
+    private String iamOAuthUserinfoURL;
+
     @Value("${iam.oauth.client.secret}")
     private String iamOAuthClientSecret;
 
@@ -190,8 +193,7 @@ public class OAuthController {
             String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
             //log.debug("Access token: " + accessToken);
 
-            // TODO: Replace hard coded OAuth userinfo URL
-            username = microsoftAuthorizationService.getUserEMail("https://openidconnect.googleapis.com/v1/userinfo", accessToken);
+            username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
         }
 
         log.info("Username: " + username);
