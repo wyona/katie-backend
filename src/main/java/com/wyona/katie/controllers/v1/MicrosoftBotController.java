@@ -1,6 +1,7 @@
 package com.wyona.katie.controllers.v1;
 
 import com.wyona.katie.config.RestProxyTemplate;
+import com.wyona.katie.integrations.msteams.services.MicrosoftAuthorizationService;
 import com.wyona.katie.integrations.msteams.services.MicrosoftDomainService;
 import com.wyona.katie.models.KnowledgeSourceMeta;
 import com.wyona.katie.models.msteams.MSTeamsDomainMapping;
@@ -72,6 +73,9 @@ public class MicrosoftBotController {
     private MicrosoftDomainService msDomainService;
 
     @Autowired
+    private MicrosoftAuthorizationService msAuthorizationService;
+
+    @Autowired
     private JwtService jwtService;
 
     @Autowired
@@ -121,7 +125,7 @@ public class MicrosoftBotController {
             return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        String tenantId = ksMeta.getMsTenant();
+        String tenantId = ksMeta.getMsTenant(); // INFO: For Example "c5dce9b8-8095-444d-9730-5ccb69b43413"
         String clientId = ksMeta.getMsClientId();
         String clientSecret = ksMeta.getMsClientSecret();
 
@@ -136,7 +140,12 @@ public class MicrosoftBotController {
 
             String scope = ksMeta.getMsScope();
 
+
+            String oAuthURL = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
             String accessToken = getAccessToken(code, tenantId, clientId, clientSecret, redirectUri, scope);
+            // TODO: Use msAuthorizationService.getAccessToken(...)
+            //String grantType = "authorization_code";
+            //String accessToken = msAuthorizationService.getAccessToken(oAuthURL, grantType, clientId, clientSecret, code, redirectUri, scope);
             log.info("Access token: " + accessToken);
 
             domainService.setMicrosoftGraphAPIToken(domainIdKnowledgesourceId[0], domainIdKnowledgesourceId[1], accessToken);
@@ -365,11 +374,11 @@ public class MicrosoftBotController {
 
     /**
      * Get bearer token, which allows to query SharePoint
-     * @param tenantId Microsoft tenant Id, e.g. "c5dce9b8-8095-444d-9730-5ccb69b43413"
+     * @param requestUrl Microsoft endpoint to get access token, e.g., "https://login.microsoftonline.com/c5dce9b8-8095-444d-9730-5ccb69b43413/oauth2/v2.0/token"
      * @param clientId Microsoft app Id, e.g. "046d7c6c-c3c0-40f0-93a1-abcd73ce5cbe"
      * @return access token
      */
-    private String getAccessToken(String code, String tenantId, String clientId, String clientSecret, String redirectUri, String scope) throws Exception {
+    private String getAccessToken(String code, String requestUrl, String clientId, String clientSecret, String redirectUri, String scope) throws Exception {
         StringBuilder body = new StringBuilder();
         body.append("code=" + code);
         body.append("&");
@@ -383,8 +392,6 @@ public class MicrosoftBotController {
         body.append("&");
         body.append("scope=" + scope);
 
-        // TODO: Consider using property "ms.oauth.url"
-        String requestUrl = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
         log.info("Get Access token from '" + requestUrl + "' ...");
 
         //log.debug("Request body: " + body);
