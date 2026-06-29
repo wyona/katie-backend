@@ -98,7 +98,7 @@ public class MicrosoftAuthorizationService {
         HttpEntity<String> request = new HttpEntity<String>(headers);
 
         try {
-            log.info("Try to get access token: " + oauthUrl);
+            log.info("Try to get user email: " + oauthUrl);
             ResponseEntity<JsonNode> response = restTemplate.postForEntity(oauthUrl, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
             log.debug("JSON: " + bodyNode);
