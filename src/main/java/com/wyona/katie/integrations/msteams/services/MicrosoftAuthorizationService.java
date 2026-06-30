@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 /**
  * Microsoft specific authorization service
@@ -101,9 +101,39 @@ public class MicrosoftAuthorizationService {
             log.info("Try to get user email: " + oauthUrl);
             ResponseEntity<JsonNode> response = restTemplate.postForEntity(oauthUrl, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
-            log.debug("JSON: " + bodyNode);
+            //log.debug("JSON: " + bodyNode);
             String email = bodyNode.get("email").asText();
             return email;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get Security Account Manager (SAM) Account Name
+     * @param accessToken Access token
+     * @return SAM account name, e.g., "mwechn"
+     */
+    public String getSAMAccountName(String accessToken) {
+        // Microsoft Graph: https://graph.microsoft.com/v1.0/me?$select=onPremisesSamAccountName,userPrincipalName,displayName
+
+        RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON)) ;
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        try {
+            String url = "https://graph.microsoft.com/v1.0/me?$select=onPremisesSamAccountName,userPrincipalName,displayName";
+            log.info("Try to get SAM account name: " + url);
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.debug("JSON: " + bodyNode);
+            JsonNode accountNameNode = bodyNode.get("onPremisesSamAccountName");
+            String accountName = accountNameNode != null && !accountNameNode.isNull() ? accountNameNode.asText() : null;
+            return accountName;
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return null;
