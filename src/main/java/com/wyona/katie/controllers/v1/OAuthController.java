@@ -194,6 +194,9 @@ public class OAuthController {
             //log.debug("Access token: " + accessToken);
 
             username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
+
+            //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
+            //log.info("Shortname: " + shortname);
         }
 
         log.info("Username: " + username);
