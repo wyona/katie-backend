@@ -117,7 +117,7 @@ public class ServerConfiguration {
     }
 
     /**
-     *
+     * @return OAuth authorization endpoint, e.g., "https://accounts.google.com/o/oauth2/v2/auth"
      */
     public String getDefaultOAuthAuthorizationtUri() {
         return defaultOAuthAuthorizationtUri;
