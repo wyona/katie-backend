@@ -202,7 +202,16 @@ public class JwtService {
      * Get public key as RSA public key object
      */
     public RSAPublicKey getPublicKeyAsRSA() throws Exception {
-        String key = new String(Files.readAllBytes(Paths.get(configDataPath + "/jwt/" + PUBLIC_KEY_AS_PEM)))
+        File file = new File(configDataPath,"jwt/" + PUBLIC_KEY_AS_PEM);
+        if (!file.isFile()) {
+            log.error("No public key as PEM exists: " + file.getAbsolutePath());
+
+            // TODO: Consider doing this through a REST interface, instead just automatically generating keys
+            generatePrivatePublicKeysAsPEM();
+            //throw new Exception("No public key as PEM exists: " + file.getName());
+        }
+
+        String key = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())))
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s", "");
@@ -243,11 +252,11 @@ public class JwtService {
 
         PrivateKey privateKey = pair.getPrivate();
         // Save private key in PKCS#8 PEM format
-        writePemFile(privateKey.getEncoded(), "PRIVATE KEY", "private_key_pkcs8.pem");
+        writePemFile(privateKey.getEncoded(), "PRIVATE KEY", PRIVATE_KEY_AS_PEM);
 
         PublicKey publicKey = pair.getPublic();
         // Save public key in X.509 PEM format
-        writePemFile(publicKey.getEncoded(), "PUBLIC KEY", "public_key.pem");
+        writePemFile(publicKey.getEncoded(), "PUBLIC KEY", PUBLIC_KEY_AS_PEM);
     }
 
     /**
