@@ -44,5 +44,7 @@ services:
       - MS_CLIENT_SECRET=TODO
       # Question classification implementation
       - QC_IMPLEMENTATION=OPEN_NLP
+      # OAuth
+      IAM_OAUTH_CLIENT_SECRET=TODO
     ports:
       - 8044:8080
