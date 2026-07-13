@@ -325,7 +325,7 @@ public class AIService {
      * @param sentenceOne First sentence, e.g. "How old are you?"
      * @param sentenceTwo Second sentence, e.g. "What is your age?" or "How many people live in Rio de Janeiro?"
      * @param embeddingsImpl Embedding service
-     * @param endpoint 
+     * @param endpoint Embedding endpoint
      * @param apiToken API token of embedding service
      * @param getEmbeddings When set to true, then embeddings will be returned as well
      */
