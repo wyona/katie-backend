@@ -1866,10 +1866,13 @@ public class XMLService {
 
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
                 embeddingsEndpoint = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
-            }
-            if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-                // TODO: Get from domain / context
-                embeddingsEndpoint = openAIAzureHost;
+            } else {
+                if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
+                    embeddingsEndpoint = openAIAzureHost;
+                    log.warn("No domain specific embeddings endpoint configured (Domain: " + domainId + "), therefore use globally configured OpenAI Azure endpoint '" + embeddingsEndpoint + "'.");
+                } else {
+                    log.error("No embeddings endpoint configured for domain '" + domainId + "'!");
+                }
             }
 
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR)) {
