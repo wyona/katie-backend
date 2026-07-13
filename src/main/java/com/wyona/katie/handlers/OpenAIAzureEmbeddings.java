@@ -37,8 +37,6 @@ import java.util.List;
 @Component
 public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
 
-    @Value("${spring.ai.azure.openai.endpoint}")
-    private String openAIAzureHost;
     @Value("${spring.ai.azure.openai.api-version}")
     private String openAIAzureApiVersion;
 
@@ -46,9 +44,9 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     //AzureOpenAiEmbeddingModel azureOpenAiEmbeddingModel;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
      */
-    public Vector getEmbedding(String sentence, String deploymentName, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiKey) throws Exception {
+    public Vector getEmbedding(String sentence, String deploymentName, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String apiKey) throws Exception {
         log.info("Get embedding from Azure OpenAI for sentence '" + sentence + "' ...");
 
         /*
@@ -78,7 +76,7 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
             HttpHeaders headers = getHttpHeaders(apiKey);
             HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
 
-            String requestUrl = openAIAzureHost + "/openai/deployments/" + deploymentName + "/embeddings?api-version=" + openAIAzureApiVersion;
+            String requestUrl = endpoint + "/openai/deployments/" + deploymentName + "/embeddings?api-version=" + openAIAzureApiVersion;
 
             log.info("Get embedding: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);

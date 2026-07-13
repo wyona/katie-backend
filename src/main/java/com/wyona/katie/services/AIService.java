@@ -325,15 +325,16 @@ public class AIService {
      * @param sentenceOne First sentence, e.g. "How old are you?"
      * @param sentenceTwo Second sentence, e.g. "What is your age?" or "How many people live in Rio de Janeiro?"
      * @param embeddingsImpl Embedding service
+     * @param endpoint 
      * @param apiToken API token of embedding service
      * @param getEmbeddings When set to true, then embeddings will be returned as well
      */
-    public Distances getDistancesBetweenSentences(String sentenceOne, String sentenceTwo, EmbeddingsImpl embeddingsImpl, String apiToken, boolean getEmbeddings) throws Exception {
+    public Distances getDistancesBetweenSentences(String sentenceOne, String sentenceTwo, EmbeddingsImpl embeddingsImpl, String endpoint, String apiToken, boolean getEmbeddings) throws Exception {
 
         String model = getEmbeddingModel(embeddingsImpl, true);
 
-        Vector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, apiToken);
-        Vector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, apiToken);
+        Vector embeddingOne = getSentenceEmbedding(sentenceOne, embeddingsImpl, model, endpoint, apiToken);
+        Vector embeddingTwo = getSentenceEmbedding(sentenceTwo, embeddingsImpl, model, endpoint, apiToken);
 
         // INFO: Very simple test
         /*
@@ -451,7 +452,7 @@ public class AIService {
      * Get embedding for a sentence
      * @param model Model of embeddings implementation
      */
-    private Vector getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String apiToken) throws Exception {
+    private Vector getSentenceEmbedding(String sentence, EmbeddingsImpl embeddingsImpl, String model, String endpoint, String apiToken) throws Exception {
         EmbeddingsProvider embeddingsProvider = null;
 
         if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {
@@ -473,7 +474,7 @@ public class AIService {
         }
 
         // TODO: Also allow int8
-        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, EmbeddingValueType.float32, apiToken);
+        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, EmbeddingValueType.float32, endpoint, apiToken);
     }
 
     /**

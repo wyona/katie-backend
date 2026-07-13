@@ -232,7 +232,7 @@ public class BenchmarkController {
                 _getEmbeddings = getEmbeddings;
             }
 
-            Distances distances = aiService.getDistancesBetweenSentences(sentenceOne, sentenceTwo, embeddingsImpl, getApiToken(embeddingsImpl, domain), _getEmbeddings);
+            Distances distances = aiService.getDistancesBetweenSentences(sentenceOne, sentenceTwo, embeddingsImpl, domain.getEmbeddingsEndpoint(), getApiToken(embeddingsImpl, domain), _getEmbeddings);
 
             return new ResponseEntity<>(distances, HttpStatus.OK);
         } catch(Exception e) {

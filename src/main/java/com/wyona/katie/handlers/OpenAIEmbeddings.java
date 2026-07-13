@@ -30,9 +30,9 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
     private String openAIHost;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
      */
-    public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String openAIKey) throws Exception {
+    public Vector getEmbedding(String sentence, String openAIModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String openAIKey) throws Exception {
         // INFO: https://platform.openai.com/docs/guides/embeddings/what-are-embeddings
         String requestUrl = openAIHost + "/v1/embeddings";
 

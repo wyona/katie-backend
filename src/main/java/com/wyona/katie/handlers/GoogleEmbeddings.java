@@ -34,9 +34,9 @@ public class GoogleEmbeddings implements EmbeddingsProvider {
     private String googleKey;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
      */
-    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String apiToken) {
+    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String apiToken) {
         log.info("Get embedding from Google for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;

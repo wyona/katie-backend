@@ -36,9 +36,9 @@ public class CohereEmbeddings implements EmbeddingsProvider {
     private String cohereVersion;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
      */
-    public Vector getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String cohereKey) {
+    public Vector getEmbedding(String sentence, String cohereModel, EmbeddingType inputType, EmbeddingValueType valueType, String endpoint, String cohereKey) {
         // INFO: https://txt.cohere.com/introducing-embed-v3/
         String inputTypeStr = "search_document";
         if (inputType.equals(EmbeddingType.SEARCH_QUERY)) {
