@@ -47,6 +47,12 @@ public class AzureGenerate implements GenerateProvider {
         log.info("Spring AI Azure OpenAI implementation (Deployment / Model: " + completionConfig.getModel() + ") ...");
         PromptMessage firstMessage = promptMessages.get(0);
 
+        if (temperature != null) {
+            log.info("Temperature: " + temperature);
+        } else {
+            log.warn("No temperature set, therefore set it to 1");
+            temperature = 1.0;
+        }
         AzureOpenAiChatOptions options = AzureOpenAiChatOptions.builder()
                 .deploymentName(completionConfig.getModel())
                 .temperature(temperature)
