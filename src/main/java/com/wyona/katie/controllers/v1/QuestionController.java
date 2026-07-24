@@ -51,6 +51,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
  * Controller to get questions (all and resubmitted) (Version 1)
  */
 @Slf4j
+@Tag(name = "QnA Controller v1", description = "Endpoints for managing QnAs")
 @RestController
 @RequestMapping(value = "/api/v1/question") 
 public class QuestionController {
