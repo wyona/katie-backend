@@ -430,18 +430,7 @@ public class QuestionsController {
 
                 question = completeAskedQuestionWithChannelInfo(domain, question);
 
-                String channelId = null;
-                log.info("Channel type: " + question.getChannelType());
-                if (question.getChannelType().equals(ChannelType.SLACK)) {
-                    channelId = question.getSlackChannelId();
-                } else if (question.getChannelType().equals(ChannelType.DISCORD)) {
-                    channelId = question.getDiscordChannelId();
-                } else if (question.getChannelType().equals(ChannelType.EMAIL)) {
-                    log.error("Get thread not implemented yet for channel type 'EMAIL'!");
-                    return new ResponseEntity<>(new com.wyona.katie.models.Error("No thread", "NOT_FOUND"), HttpStatus.NOT_FOUND);
-                } else {
-                    channelId = NO_CHANNEL_ID;
-                }
+                String channelId = getChannelId(question);
 
                 if (channelId != null) {
                     String[] messages = contextService.getThreadMessages(domain, channelId, question.getChannelRequestId());
@@ -489,7 +478,7 @@ public class QuestionsController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Add thread message(s) / response(s) to an originally asked question. The request body field 'message' is required, all other fields are optional. If multiple messages are submitted and no field 'messageSeparator' is provided, then one should use 'NEXT_MESSAGE' as message separator.", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addThreadMessage(
-            @Parameter(name = "client-message-id", description = "Client message / thread Id", required = true)
+            @Parameter(name = "client-message-id", description = "Client message / thread Id, e.g., 'I-260724-0119'", required = true)
             @RequestParam(value = "client-message-id", required = true) String threadId,
             @Parameter(name = "domain-id", description = "Katie domain Id", required = true)
             @RequestParam(value = "domain-id", required = true) String domainId,
@@ -513,21 +502,8 @@ public class QuestionsController {
 
             String channelRequestId = askedQuestion.getChannelRequestId();
             log.info("Channel request Id: " + channelRequestId);
-            ChannelType channelType = askedQuestion.getChannelType();
-            log.info("Channel type: " + channelType);
 
-            String channelId = null;
-            if (channelType.equals(ChannelType.SLACK)) {
-                SlackEvent slackEvent = dataRepoService.getSlackConversationValues(channelRequestId);
-                channelId = slackEvent.getChannel();
-            } else if (channelType.equals(ChannelType.DISCORD)) {
-                DiscordEvent discordEvent = dataRepoService.getDiscordConversationValuesForChannelRequestId(channelRequestId);
-                channelId = discordEvent.getChannelId();
-            } else {
-                channelId = NO_CHANNEL_ID;
-                log.error("No channel id available!");
-                //return new ResponseEntity<>(new Error("No channel Id available!", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
-            }
+            String channelId = getChannelId(askedQuestion);
             log.info("Channel Id: " + channelId);
 
             String messageSeparator = "NEXT_MESSAGE";
@@ -538,13 +514,55 @@ public class QuestionsController {
             for (String m : messages) {
                 contextService.saveThreadMessage(domain, channelId, channelRequestId, threadId, m);
             }
-            // TODO: Index / reindex thread
+
+            indexThreadMessages(domain, threadId);
 
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /**
+     * @param threadId Thread Id, e.g., "I-260724-0119" in the case of TOPdesk
+     */
+    private void indexThreadMessages(Context domain, String threadId) throws Exception  {
+        log.info("TODO: Index asked question together with thread messages ...");
+        AskedQuestion askedQuestion = dataRepoService.getQuestionByMessageId(threadId);
+        String channelRequestId = askedQuestion.getChannelRequestId();
+        log.info("Channel request Id: " + channelRequestId);
+        String channelId = getChannelId(askedQuestion);
+        String[] messages = contextService.getThreadMessages(domain, channelId, channelRequestId);
+    }
+
+    /**
+     * Get channel Id
+     * @return channel Id, e.g., "C018TT68E72" in the case of Slack
+     */
+    private String getChannelId(AskedQuestion question) {
+        String channelRequestId = question.getChannelRequestId();
+        log.info("Channel request Id: " + channelRequestId);
+        ChannelType channelType = question.getChannelType();
+        log.info("Channel type: " + channelType);
+
+        String channelId = null;
+        log.info("Channel type: " + question.getChannelType());
+        if (channelType.equals(ChannelType.SLACK)) {
+            SlackEvent slackEvent = dataRepoService.getSlackConversationValues(channelRequestId);
+            channelId = slackEvent.getChannel();
+        } else if (channelType.equals(ChannelType.DISCORD)) {
+            DiscordEvent discordEvent = dataRepoService.getDiscordConversationValuesForChannelRequestId(channelRequestId);
+            channelId = discordEvent.getChannelId();
+        } else if (channelType.equals(ChannelType.EMAIL)) {
+            channelId = NO_CHANNEL_ID;
+            log.info("Not implemented yet for channel type 'EMAIL', therefore use " + channelId);
+        } else {
+            channelId = NO_CHANNEL_ID;
+            log.info("No channel id available for channel type '" + channelType + "', therefore use " + channelId);
+        }
+
+        return channelId;
     }
 
     /**
