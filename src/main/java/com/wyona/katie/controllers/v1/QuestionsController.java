@@ -48,6 +48,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
  * Controller to get questions (all and resubmitted) (Version 1)
  */
 @Slf4j
+@Tag(name = "Questions Controller v1", description = "Endpoints for managing asked questions")
 @RestController
 @RequestMapping(value = "/api/v1/questions") 
 public class QuestionsController {
@@ -486,7 +487,7 @@ public class QuestionsController {
     @PostMapping(value = "/asked/thread-message",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Add thread message(s) / response(s) to an originally asked question", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Add thread message(s) / response(s) to an originally asked question. The request body field 'message' is required, all other fields are optional. If multiple messages are submitted and no field 'messageSeparator' is provided, then one should use 'NEXT_MESSAGE' as message separator.", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addThreadMessage(
             @Parameter(name = "client-message-id", description = "Client message / thread Id", required = true)
             @RequestParam(value = "client-message-id", required = true) String threadId,
@@ -537,6 +538,7 @@ public class QuestionsController {
             for (String m : messages) {
                 contextService.saveThreadMessage(domain, channelId, channelRequestId, threadId, m);
             }
+            // TODO: Index / reindex thread
 
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(Exception e) {
