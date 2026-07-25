@@ -1962,18 +1962,18 @@ public class DomainController {
     /**
      * Reindex all QnAs of a particular domain
      */
-    @RequestMapping(value = "/{id}/reindex", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/{id}/reindex", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Reindex all QnAs of a particular domain", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> reindex(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
-            @Parameter(name = "impl", description = "Detect duplicated question implementation",required = true)
+            //@Parameter(name = "impl", description = "Detect duplicated question implementation",required = true)
             @RequestParam(value = "impl", required = true) DetectDuplicatedQuestionImpl searchImpl,
             @Parameter(name = "query-service-url", description = "Query service base URL (e.g. http://localhost:8383/api/v2) or Azure AI Search endpoint (e.g. https://katie.search.windows.net)", required = false)
             @RequestParam(value = "query-service-url", required = false) String queryServiceBaseUrl,
             @Parameter(name = "query-service-token", description = "Query service Token / Key / Secret", required = false)
             @RequestParam(value = "query-service-token", required = false) String queryServiceToken,
-            @Parameter(name = "embedding-impl", description = "Embedding implementation",required = false)
+            //@Parameter(name = "embedding-impl", description = "Embedding implementation",required = false)
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
             @Parameter(name = "embedding-model", description = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
             @RequestParam(value = "embedding-model", required = false) String embeddingModel,
