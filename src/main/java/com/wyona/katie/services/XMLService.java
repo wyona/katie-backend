@@ -1634,6 +1634,12 @@ public class XMLService {
             }
             if (context.getEmbeddingsEndpoint() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR, context.getEmbeddingsEndpoint());
+            } else {
+                if (context.getEmbeddingsImpl().equals(EmbeddingsImpl.OPENAI_AZURE)) {
+                    log.error("No embeddings endpoint provided!");
+                } else {
+                    log.warn("No embeddings endpoint provided!");
+                }
             }
             if (context.getEmbeddingsApiToken() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR, context.getEmbeddingsApiToken());
