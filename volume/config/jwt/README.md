@@ -2,6 +2,10 @@
 
 TODO: Regenerate key pair on a regular basis, whereas either invalidate tokens or keep previous public key to validate previously generated tokens
 
+When Katie is deployed from scratch, then a private key and a public key are generated automatically when they do not exist yet, whereas see
+
+src/main/java/com/wyona/katie/services/JwtService.java#generatePrivatePublicKeysAsPEM()
+
 The private key "private_key_pkcs8.pem" is stored in a Base64 encoded PEM format (see https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
 
 Generate private and public keys https://gist.github.com/destan/b708d11bd4f403506d6d5bb5fe6a82c5
