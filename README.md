@@ -170,6 +170,7 @@ CONTAINER ID   IMAGE                 COMMAND                  CREATED          S
 * https://app.katie.qa/swagger-ui/index.html
 * Postman: env/postman/AskKatie.postman_collection.json
 * Private and public keys to generate JWTs: https://github.com/wyona/katie-backend/blob/main/volume/config/jwt/README.md
+* Debug HTTP traffic: sudo ngrep -d lo0 "" "port 8044"
 
 ## Katie as MCP Server
 
