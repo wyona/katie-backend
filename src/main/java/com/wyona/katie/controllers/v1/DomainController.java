@@ -15,6 +15,7 @@ import com.wyona.katie.models.insights.Interval;
 import com.wyona.katie.models.insights.NgxChartsSeries;
 import com.wyona.katie.services.*;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
  * Controller to access and manage a particular domain
  */
 @Slf4j
+@Tag(name = "Domain Controller v1", description = "Endpoints for managing a particular domain")
 @RestController
 @RequestMapping(value = "/api/v1/domain") 
 public class DomainController {
@@ -2025,8 +2027,14 @@ public class DomainController {
                 embeddingImpl = EmbeddingsImpl.SBERT;
             } else {
                 if (apiToken == null && !embeddingImpl.equals(EmbeddingsImpl.SBERT)) {
-                    log.error("For Embeddings Implementation '" + embeddingImpl + "' API Token is required!");
-                    return new ResponseEntity<>(new Error("For Embeddings Implementation '" + embeddingImpl + "' API Token is required!", "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+                    String errMsg = "For Embeddings Implementation '" + embeddingImpl + "' API Token is required!";
+                    log.error(errMsg);
+                    return new ResponseEntity<>(new Error(errMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+                }
+                if (embeddingImpl.equals(EmbeddingsImpl.OPENAI_AZURE) && embeddingEndpoint == null) {
+                    String errMsg = "For Embeddings Implementation '" + embeddingImpl + "' Endpoint is required!";
+                    log.error(errMsg);
+                    return new ResponseEntity<>(new Error(errMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
                 }
             }
 
