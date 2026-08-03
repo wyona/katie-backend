@@ -4279,6 +4279,7 @@ public class ContextService {
     }
 
     /**
+     * Index Question / Answer(s) thread
      * @param threadId Thread Id, e.g., "I-260724-0119" in the case of TOPdesk
      */
     @Async
@@ -4323,7 +4324,7 @@ public class ContextService {
     }
 
     /**
-     *
+     * Generate embedding-optimized summary of question / answer(s) thread
      */
     private String getEmbeddingOptimizedSummary(Context domain, String questionAnswersThread) throws Exception {
         String prompt = "Please generate an embedding-optimized summary intended for retrieval of the following question / answer(s) thread, whereas strip out ticket-specific details that don't generalize:";
