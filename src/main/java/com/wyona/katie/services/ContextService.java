@@ -3,6 +3,7 @@ package com.wyona.katie.services;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.connectors.TOPdeskConnector;
 import com.wyona.katie.exceptions.UserAlreadyMemberException;
+import com.wyona.katie.handlers.GenerateProvider;
 import com.wyona.katie.models.faq.TopicVisibility;
 import com.wyona.katie.models.faq.FAQ;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -149,13 +150,16 @@ public class ContextService {
     private BackgroundProcessService backgroundProcessService;
 
     @Autowired
-    SegmentationService segmentationService;
+    private SegmentationService segmentationService;
 
     @Autowired
-    DataIngestionService dataIngestionService;
+    private DataIngestionService dataIngestionService;
 
     @Autowired
-    TOPdeskConnector topDeskConnector;
+    private TOPdeskConnector topDeskConnector;
+
+    @Autowired
+    private GenerativeAIService generativeAIService;
 
     /**
      *
@@ -4278,7 +4282,7 @@ public class ContextService {
      * @param threadId Thread Id, e.g., "I-260724-0119" in the case of TOPdesk
      */
     @Async
-    public void indexThreadMessages(Context domain, String threadId) throws Exception  {
+    public void indexThreadMessages(Context domain, String threadId) {
         log.info("TODO: Index asked question together with thread messages ...");
 
         // TEST: Uncomment lines below to test thread
@@ -4293,24 +4297,45 @@ public class ContextService {
         }
          */
 
-        AskedQuestion askedQuestion = dataRepositoryService.getQuestionByMessageId(threadId);
-        StringBuilder text = new StringBuilder("Question: " + askedQuestion.getQuestion() + "\nAnswer: ");
-        String channelRequestId = askedQuestion.getChannelRequestId();
-        log.info("Channel request Id: " + channelRequestId);
-        String channelId = dataRepositoryService.getChannelId(askedQuestion);
-        String[] messages = getThreadMessages(domain, channelId, channelRequestId);
-        for (String message: messages) {
-            log.info("Thread message: " + message);
-            text.append(message);
+        try {
+            AskedQuestion askedQuestion = dataRepositoryService.getQuestionByMessageId(threadId);
+            StringBuilder text = new StringBuilder("Question: " + askedQuestion.getQuestion() + "\nThread Answer(s): ");
+            String channelRequestId = askedQuestion.getChannelRequestId();
+            log.info("Channel request Id: " + channelRequestId);
+            String channelId = dataRepositoryService.getChannelId(askedQuestion);
+            String[] messages = getThreadMessages(domain, channelId, channelRequestId);
+            for (String message : messages) {
+                log.info("Thread message: " + message);
+                text.append(message);
+            }
+            log.info("Question / Thread Answer(s): " + text);
+
+            String embeddingOptimizedSummary = getEmbeddingOptimizedSummary(domain, text.toString());
+            log.info("Embedding-optimized summary: " + embeddingOptimizedSummary);
+
+            Answer qna = new Answer(null, embeddingOptimizedSummary, null, null, null, null, null, null, null, null, domain.getId(), null, askedQuestion.getQuestion(), null, false, null, false, null);
+            addQuestionAnswer(qna, domain);
+            boolean indexAlternativeQuestions = true; // TODO: Make configurable
+            train(new QnA(qna), domain, indexAlternativeQuestions);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
+    }
 
-        log.info("Question / Answer: " + text);
-        // TODO: Process question / answer by LLM using the following prompt: "TODO"
+    /**
+     *
+     */
+    private String getEmbeddingOptimizedSummary(Context domain, String questionAnswersThread) throws Exception {
+        String prompt = "Please generate an embedding-optimized summary intended for retrieval of the following question / answer(s) thread, whereas strip out ticket-specific details that don't generalize:";
+        prompt = prompt + "\n\n" + questionAnswersThread;
 
-        Answer qna = new Answer(null, text.toString(), null, null, null, null, null, null, null, null, domain.getId(), null, askedQuestion.getQuestion(), null, false, null, false, null);
-        addQuestionAnswer(qna, domain);
-        boolean indexAlternativeQuestions = true; // TODO: Make configurable
-        train(new QnA(qna), domain, indexAlternativeQuestions);
+        CompletionImpl completionImpl = domain.getCompletionConfig(false).getCompletionImpl();
+        GenerateProvider generateProvider = generativeAIService.getGenAIImplementation(completionImpl);
+        List<PromptMessage> promptMessages = new ArrayList<>();
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, prompt));
+        CompletionResponse embeddingOptimizedSummary = generateProvider.getCompletion(promptMessages, null, domain.getCompletionConfig(false), 0.7);
+
+        return embeddingOptimizedSummary.getText();
     }
 
     /**
