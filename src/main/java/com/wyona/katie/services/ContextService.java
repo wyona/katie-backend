@@ -4282,6 +4282,7 @@ public class ContextService {
         log.info("TODO: Index asked question together with thread messages ...");
 
         // TEST: Uncomment lines below to test thread
+        /*
         try {
             for (int i = 0; i < 5; i++) {
                 log.info("Sleep for 2 seconds ...");
@@ -4290,15 +4291,26 @@ public class ContextService {
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
+         */
 
         AskedQuestion askedQuestion = dataRepositoryService.getQuestionByMessageId(threadId);
+        StringBuilder text = new StringBuilder("Question: " + askedQuestion.getQuestion() + "\nAnswer: ");
         String channelRequestId = askedQuestion.getChannelRequestId();
         log.info("Channel request Id: " + channelRequestId);
         String channelId = dataRepositoryService.getChannelId(askedQuestion);
         String[] messages = getThreadMessages(domain, channelId, channelRequestId);
         for (String message: messages) {
             log.info("Thread message: " + message);
+            text.append(message);
         }
+
+        log.info("Question / Answer: " + text);
+        // TODO: Process question / answer by LLM using the following prompt: "TODO"
+
+        Answer qna = new Answer(null, text.toString(), null, null, null, null, null, null, null, null, domain.getId(), null, askedQuestion.getQuestion(), null, false, null, false, null);
+        addQuestionAnswer(qna, domain);
+        boolean indexAlternativeQuestions = true; // TODO: Make configurable
+        train(new QnA(qna), domain, indexAlternativeQuestions);
     }
 
     /**
