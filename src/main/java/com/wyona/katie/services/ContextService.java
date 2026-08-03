@@ -4275,6 +4275,33 @@ public class ContextService {
     }
 
     /**
+     * @param threadId Thread Id, e.g., "I-260724-0119" in the case of TOPdesk
+     */
+    @Async
+    public void indexThreadMessages(Context domain, String threadId) throws Exception  {
+        log.info("TODO: Index asked question together with thread messages ...");
+
+        // TEST: Uncomment lines below to test thread
+        try {
+            for (int i = 0; i < 5; i++) {
+                log.info("Sleep for 2 seconds ...");
+                Thread.sleep(2000);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        AskedQuestion askedQuestion = dataRepositoryService.getQuestionByMessageId(threadId);
+        String channelRequestId = askedQuestion.getChannelRequestId();
+        log.info("Channel request Id: " + channelRequestId);
+        String channelId = dataRepositoryService.getChannelId(askedQuestion);
+        String[] messages = getThreadMessages(domain, channelId, channelRequestId);
+        for (String message: messages) {
+            log.info("Thread message: " + message);
+        }
+    }
+
+    /**
      * Get thread messages
      * @param domain Katie domain
      * @param channelId Channel Id

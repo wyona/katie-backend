@@ -89,8 +89,6 @@ public class QuestionsController {
     @Autowired
     private AuthenticationService authenticationService;
 
-    private final static String NO_CHANNEL_ID = "NO_CHANNEL_ID";
-
     /**
      * REST interface to approve answer of asked question
      */
@@ -430,7 +428,7 @@ public class QuestionsController {
 
                 question = completeAskedQuestionWithChannelInfo(domain, question);
 
-                String channelId = getChannelId(question);
+                String channelId = dataRepoService.getChannelId(question);
 
                 if (channelId != null) {
                     String[] messages = contextService.getThreadMessages(domain, channelId, question.getChannelRequestId());
@@ -503,7 +501,7 @@ public class QuestionsController {
             String channelRequestId = askedQuestion.getChannelRequestId();
             log.info("Channel request Id: " + channelRequestId);
 
-            String channelId = getChannelId(askedQuestion);
+            String channelId = dataRepoService.getChannelId(askedQuestion);
             log.info("Channel Id: " + channelId);
 
             String messageSeparator = "NEXT_MESSAGE";
@@ -515,54 +513,13 @@ public class QuestionsController {
                 contextService.saveThreadMessage(domain, channelId, channelRequestId, threadId, m);
             }
 
-            indexThreadMessages(domain, threadId);
+            contextService.indexThreadMessages(domain, threadId);
 
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    /**
-     * @param threadId Thread Id, e.g., "I-260724-0119" in the case of TOPdesk
-     */
-    private void indexThreadMessages(Context domain, String threadId) throws Exception  {
-        log.info("TODO: Index asked question together with thread messages ...");
-        AskedQuestion askedQuestion = dataRepoService.getQuestionByMessageId(threadId);
-        String channelRequestId = askedQuestion.getChannelRequestId();
-        log.info("Channel request Id: " + channelRequestId);
-        String channelId = getChannelId(askedQuestion);
-        String[] messages = contextService.getThreadMessages(domain, channelId, channelRequestId);
-    }
-
-    /**
-     * Get channel Id
-     * @return channel Id, e.g., "C018TT68E72" in the case of Slack
-     */
-    private String getChannelId(AskedQuestion question) {
-        String channelRequestId = question.getChannelRequestId();
-        log.info("Channel request Id: " + channelRequestId);
-        ChannelType channelType = question.getChannelType();
-        log.info("Channel type: " + channelType);
-
-        String channelId = null;
-        log.info("Channel type: " + question.getChannelType());
-        if (channelType.equals(ChannelType.SLACK)) {
-            SlackEvent slackEvent = dataRepoService.getSlackConversationValues(channelRequestId);
-            channelId = slackEvent.getChannel();
-        } else if (channelType.equals(ChannelType.DISCORD)) {
-            DiscordEvent discordEvent = dataRepoService.getDiscordConversationValuesForChannelRequestId(channelRequestId);
-            channelId = discordEvent.getChannelId();
-        } else if (channelType.equals(ChannelType.EMAIL)) {
-            channelId = NO_CHANNEL_ID;
-            log.info("Not implemented yet for channel type 'EMAIL', therefore use " + channelId);
-        } else {
-            channelId = NO_CHANNEL_ID;
-            log.info("No channel id available for channel type '" + channelType + "', therefore use " + channelId);
-        }
-
-        return channelId;
     }
 
     /**

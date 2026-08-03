@@ -130,6 +130,8 @@ public class DataRepositoryService {
 
     private static final String PREDICTED_LABELS_FIELD = "predicted-labels";
 
+    private final static String NO_CHANNEL_ID = "NO_CHANNEL_ID";
+
     /**
      * Write embedding into a file
      * @param vector Embedding vector
@@ -529,6 +531,35 @@ public class DataRepositoryService {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    /**
+     * Get channel Id
+     * @return channel Id, e.g., "C018TT68E72" in the case of Slack
+     */
+    public String getChannelId(AskedQuestion question) {
+        String channelRequestId = question.getChannelRequestId();
+        log.info("Channel request Id: " + channelRequestId);
+        ChannelType channelType = question.getChannelType();
+        log.info("Channel type: " + channelType);
+
+        String channelId = null;
+        log.info("Channel type: " + question.getChannelType());
+        if (channelType.equals(ChannelType.SLACK)) {
+            SlackEvent slackEvent = getSlackConversationValues(channelRequestId);
+            channelId = slackEvent.getChannel();
+        } else if (channelType.equals(ChannelType.DISCORD)) {
+            DiscordEvent discordEvent = getDiscordConversationValuesForChannelRequestId(channelRequestId);
+            channelId = discordEvent.getChannelId();
+        } else if (channelType.equals(ChannelType.EMAIL)) {
+            channelId = NO_CHANNEL_ID;
+            log.info("Not implemented yet for channel type 'EMAIL', therefore use " + channelId);
+        } else {
+            channelId = NO_CHANNEL_ID;
+            log.info("No channel id available for channel type '" + channelType + "', therefore use " + channelId);
+        }
+
+        return channelId;
     }
 
     /**
