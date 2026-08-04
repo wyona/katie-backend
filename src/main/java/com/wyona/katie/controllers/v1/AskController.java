@@ -717,6 +717,22 @@ public class AskController {
             }
 
             String completedText = generativeAIService.getCompletion(domain, chatCompletionsRequest, user);
+
+            PromptMessageWithRoleLowerCase mostRecentUserMessage = chatCompletionsRequest.getMessages()[chatCompletionsRequest.getMessages().length - 1];
+            String messageId = null;
+            String remoteAddress = null;
+            Date dateSubmitted = new Date();
+            String uuidTopAnswer = null;
+            String answerTopAnswer = null;
+            double scoreTopAnswer = 0;
+            PermissionStatus permissionStatusFirstAnswer = PermissionStatus.USER_AUTHORIZED_TO_READ_ANSWER;
+            String moderationStatus = null;
+            ChannelType channelType = ChannelType.UNDEFINED;
+            String channelRequestId = null;
+            int offset = 0;
+            String  logEntryUUID = dataRepoService.logQuestion(mostRecentUserMessage.getContent(), null, messageId, remoteAddress, dateSubmitted, domain, user.getUsername(), uuidTopAnswer, answerTopAnswer, scoreTopAnswer, domain.getScoreThreshold(), permissionStatusFirstAnswer, moderationStatus, channelType, channelRequestId, offset);
+
+            // INFO: Add answer (completed text) to choices, which was added above to response body
             choices = addChoice(mapper, choices, PromptMessageRoleLowerCase.assistant.toString(), completedText, 0);
 
             return new ResponseEntity<>(body.toString(), HttpStatus.OK);
