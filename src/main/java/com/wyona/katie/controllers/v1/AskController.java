@@ -650,7 +650,7 @@ public class AskController {
     public ResponseEntity<?> chatCompletions(
             @Parameter(name = "domain-id", description = "Domain Id of knowledge base, for example 'b3158772-ac8f-4ec1-a9d7-bd0d3887fd9b', which contains LLM configuration",required = true)
             @PathVariable(value = "domain-id", required = true) String _domainId,
-            @Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            //@Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
             @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -751,7 +751,7 @@ public class AskController {
     //@PostMapping(path ="/chat/completions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary="Chat with a LLM using Server Sent Events")
     public Flux<ServerSentEvent<String>> chatCompletionsAsSSE(
-            @Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
+            //@Parameter(name = "request-body", description = "Request body, see https://docs.mistral.ai/api/ or https://platform.openai.com/docs/api-reference/chat/create", required = true)
             @RequestBody ChatCompletionsRequest chatCompletionsRequest,
             HttpServletRequest request, HttpServletResponse response) {
 
