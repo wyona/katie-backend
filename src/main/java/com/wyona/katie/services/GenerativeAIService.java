@@ -81,15 +81,13 @@ public class GenerativeAIService {
         if (chosenSuggestion != null) {
             log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
             appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, learningCoachService.getSystemPrompt(chosenSuggestion));
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, learningCoachService.getSuggestionText(chosenSuggestion.getIndex()));
         } else if (chatCompletionsRequest.getSuggestions().length > 0) {
             // TODO
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.system, "TODO");
         } else {
             log.info("No suggestion provided.");
-            PromptMessageWithRoleLowerCase mostRecentUserMessage = chatCompletionsRequest.getMessages()[chatCompletionsRequest.getMessages().length - 1];
-            appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, mostRecentUserMessage.getContent());
         }
+        String userMessage = getUserMessage(chatCompletionsRequest);
+        appendMessageToConversationHistory(domain, chatCompletionsRequest.getConversation_id(), PromptMessageRoleLowerCase.user, userMessage);
 
         String completedText = "Hi, this is a mock response from Katie :-)";
         if (false) {
@@ -133,7 +131,31 @@ public class GenerativeAIService {
     }
 
     /**
-     * Append message to conversation history
+     * Get user message from chat completion request
+     * @return user message, e.g., "What is a softmax function?"
+     */
+    public String getUserMessage(ChatCompletionsRequest chatCompletionsRequest) {
+        ChosenSuggestion chosenSuggestion = chatCompletionsRequest.getchosen_suggestion();
+        if (chosenSuggestion != null) {
+            log.info("Chosen suggestion Id: " + chosenSuggestion.getIndex());
+            return learningCoachService.getSuggestionText(chosenSuggestion.getIndex());
+        } else if (chatCompletionsRequest.getSuggestions().length > 0) {
+            // TODO
+            return"TODO";
+        } else {
+            log.info("No suggestion provided.");
+            if (chatCompletionsRequest.getMessages().length > 0) {
+                PromptMessageWithRoleLowerCase mostRecentUserMessage = chatCompletionsRequest.getMessages()[chatCompletionsRequest.getMessages().length - 1];
+                return mostRecentUserMessage.getContent();
+            } else {
+                return "NO_MESSAGE_AVAILABLE_YET";
+            }
+        }
+    }
+
+    /**
+     * Append user message to conversation history
+     * @param message User message, e.g., "What is a softmax function?"
      */
     private void appendMessageToConversationHistory(Context domain, String conversationId, PromptMessageRoleLowerCase role, String message) {
         log.info("Add message to conversation '" + conversationId + "' ...");
