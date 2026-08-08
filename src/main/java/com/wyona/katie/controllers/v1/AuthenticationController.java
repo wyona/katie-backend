@@ -202,11 +202,16 @@ public class AuthenticationController {
     /**
      * Login with username/password or JWT token
      */
-    @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
+    @PostMapping(value = "/login",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Login with username/password or JWT token", security = { @SecurityRequirement(name = "bearerAuth") })
-    public ResponseEntity<?> doLogin(@RequestBody(required = false) Credentials credentials,
+    public ResponseEntity<?> doLogin(
         @Parameter(name = "rememberMe", description = "True when user wants to stay logged in beyond session expiry and false otherwise", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
         @RequestParam(value = "rememberMe", required = false) Boolean rememberMe,
+        @Parameter(name = "accessToken", description = "True when client wants an access token", required = false, schema = @Schema(type = "boolean", defaultValue = "false"))
+        @RequestParam(value = "accessToken", required = false) Boolean accessToken,
+        @RequestBody(required = false) Credentials credentials,
         HttpServletRequest request,
         HttpServletResponse response) {
 
@@ -221,6 +226,11 @@ public class AuthenticationController {
                 log.info("Username and password should not be set when token is set!");
                 return new ResponseEntity<>(new Error("Bad credentials", "AUTHENTICATION_FAILED"), HttpStatus.BAD_REQUEST);
             }
+        }
+
+        boolean includeAccessToken = false;
+        if (accessToken != null && accessToken) {
+            includeAccessToken = true;
         }
 
         // INFO: Check whether user is already signed in
@@ -248,6 +258,11 @@ public class AuthenticationController {
                 }
             } else {
                 log.info("Provided username '" + providedUsername + "' is the same as signed in user '" + userDetails.getUsername() + "'.");
+
+                if (includeAccessToken) {
+                    userDetails.setToken("TODO_RESET_ACCESS_TOKEN");
+                }
+
                 return new ResponseEntity<>(userDetails, HttpStatus.OK);
             }
         }
@@ -255,6 +270,9 @@ public class AuthenticationController {
         try {
             UserDetails userDetails = authService.tryJWTLogin(request);
             if (userDetails != null) {
+                if (includeAccessToken) {
+                    userDetails.setToken("TODO_RETURN_USED_ACCESS_TOKEN");
+                }
                 return new ResponseEntity<>(userDetails, HttpStatus.OK);
             }
         } catch(Exception e) {
@@ -271,6 +289,12 @@ public class AuthenticationController {
             userPrincipal = request.getUserPrincipal();
             UserDetails userDetails = authService.getUserDetails(userPrincipal);
             log.info("User '" + userDetails.getUsername() + "' authenticated successfully.");
+            if (includeAccessToken) {
+                User user = iamService.getUserByUsername(new com.wyona.katie.models.Username(username), false, false);
+                String token = jwtService.generateJWT(user, 3600, false, null);
+                log.info("Include access token: " + token);
+                userDetails.setToken(token);
+            }
 
             boolean _rememberMe = false;
             if (rememberMe != null && rememberMe) {

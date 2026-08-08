@@ -10,6 +10,7 @@ public class UserDetails {
 
     private String username;
     private String[] roles;
+    private String accessToken;
 
     // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
     /**
@@ -24,6 +25,7 @@ public class UserDetails {
     public UserDetails(String username, String[] roles) {
         this.username = username;
         this.roles = roles;
+        this.accessToken = null;
     }
 
     /**
@@ -38,5 +40,19 @@ public class UserDetails {
      */
     public String[] getRoles() {
         return roles;
+    }
+
+    /**
+     * Set access token
+     */
+    public void setToken(String token) {
+        this.accessToken = token;
+    }
+
+    /**
+     * Get access token
+     */
+    public String getToken() {
+        return accessToken;
     }
 }
