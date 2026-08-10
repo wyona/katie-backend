@@ -14,6 +14,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.SessionManagementFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static org.springframework.http.HttpMethod.*;
 
@@ -30,9 +33,25 @@ public class SecurityConfig {
     //private static final String USER_ROLE = "USER";
 
     @Bean
-    CorsFilter corsFilter() {
-        return new CorsFilter();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
+        //configuration.setAllowedOrigins(java.util.List.of("*"));
+
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        configuration.setAllowedHeaders(java.util.List.of("*"));
+
+        configuration.setAllowCredentials(true);
+
+        configuration.setMaxAge(180L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
+
 
     /**
      * @return filter adding a Content Security Policy with dynamically generated nonce
@@ -46,7 +65,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.info("Configure / set access permissions ...");
 
-        http.addFilterBefore(corsFilter(), SessionManagementFilter.class); // https://stackoverflow.com/questions/40286549/spring-boot-security-cors
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.addFilterBefore(cspNonceFilter(), SessionManagementFilter.class);
 
         // TODO: Reconsider enabling CSRF, whereas see https://portswigger.net/web-security/csrf
