@@ -64,11 +64,17 @@ public class MCPRetrievalService {
         */
         String jwtToken = getJwtToken(authentication);
         if (!domainService.isAuthorized(domainId, jwtToken, "/mcp", jwtService.SCOPE_SEARCH)) {
-            log.warn("Not authorized to search domain '" + domainId + "' using MCP!");
-            throw new Exception("Not authorized to search domain '" + domainId + "' using MCP!");
+            String msg = "Not authorized to search domain '\" + domainId + \"' using MCP!";
+            log.warn(msg);
+            throw new Exception(msg);
         }
 
         Context domain = xmlService.parseContextConfig(domainId);
+        if (domain.getAnswersGenerallyProtected()) {
+            String msg = "The answers of the domain '" + domainId + "' are generally protected!";
+            log.warn(msg);
+            throw new Exception(msg);
+        }
 
         if (question.trim().length() == 0) {
             log.warn("No question provided!");
@@ -78,13 +84,14 @@ public class MCPRetrievalService {
         }
 
         try {
+            boolean checkAuthorization = true;
             List<String> classifications = new ArrayList<String>();
             String messageId = null; // TODO
             String channelRequestId = null; // TODO
             boolean includeFeedbackLinks = false;
             ContentType answerContentType = null;
             String remoteAddress = null; // getRemoteAddress(request);
-            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, true, answerContentType, includeFeedbackLinks, false, false);
+            java.util.List<ResponseAnswer> responseAnswers = qaService.getAnswers(question, null, false, classifications, messageId, domain, new Date(), remoteAddress, ChannelType.UNDEFINED, channelRequestId, 10, 0, checkAuthorization, answerContentType, includeFeedbackLinks, false, false);
             return responseAnswers;
 
             /*
