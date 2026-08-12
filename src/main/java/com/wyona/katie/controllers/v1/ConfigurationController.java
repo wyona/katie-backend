@@ -148,6 +148,9 @@ public class ConfigurationController {
     @Value("${iam.oauth.auth}")
     private String iamOAuthAuthURL;
 
+    @Value("${iam.oauth.scope}")
+    private String iamOAuthScope;
+
     @Autowired
     private AuthenticationService authService;
 
@@ -211,12 +214,12 @@ public class ConfigurationController {
 
         if (contextService.isAdmin()) {
             String[] domainIDs = contextService.getContextIDs();
-            ServerConfiguration config = new ServerConfiguration(katieEnv, katieVersion, domainIDs, defaultNerImplementation, questionClassificationImpl, defaultEmbeddings, defaultReRankImpl, defaultHostnameMailBody, iamOAuthAuthURL, slackRedirectUri, microsoftRedirectUri, emailSenderCofig, emailSystemAdmin);
+            ServerConfiguration config = new ServerConfiguration(katieEnv, katieVersion, domainIDs, defaultNerImplementation, questionClassificationImpl, defaultEmbeddings, defaultReRankImpl, defaultHostnameMailBody, iamOAuthAuthURL, iamOAuthScope, slackRedirectUri, microsoftRedirectUri, emailSenderCofig, emailSystemAdmin);
             return new ResponseEntity<>(config, HttpStatus.OK);
         } else {
-            ServerConfigurationPublic configPublic = new ServerConfigurationPublic(katieEnv, katieVersion, defaultHostnameMailBody, iamOAuthAuthURL, slackRedirectUri, microsoftRedirectUri, emailSystemAdmin);
+            ServerConfigurationPublic configPublic = new ServerConfigurationPublic(katieEnv, katieVersion, defaultHostnameMailBody, iamOAuthAuthURL, iamOAuthScope, slackRedirectUri, microsoftRedirectUri, emailSystemAdmin);
             return new ResponseEntity<>(configPublic, HttpStatus.OK);
-            //return new ResponseEntity<>(new Error("Access denied", "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
+            //return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
     }
 

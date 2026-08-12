@@ -20,6 +20,7 @@ public class ServerConfiguration {
     private String[] domainIDs;
     private String defaultHostnameMailBody;
     private String defaultOAuthAuthorizationtUri;
+    private String defaultOAuthScope;
     private String slackRedirectUri;
     private String microsoftRedirectUri;
     private EmailSenderConfig emailSenderConfig;
@@ -37,7 +38,7 @@ public class ServerConfiguration {
      * @param environment Environment where Katie is running, e.g. "cloud" or "on-premises"
      * @param emailSystemAdmin Email of system administrator
      */
-    public ServerConfiguration(String environment, String version, String[] domainIDs, NerImpl nerImplementation, QuestionClassificationImpl questionClassificationImpl, EmbeddingsImpl embeddingsImpl, ReRankImpl reRankImpl, String defaultHostnameMailBody, String defaultOAuthAuthorizationtUri, String slackRedirectUri, String microsoftRedirectUri, EmailSenderConfig emailSenderConfig, String emailSystemAdmin) {
+    public ServerConfiguration(String environment, String version, String[] domainIDs, NerImpl nerImplementation, QuestionClassificationImpl questionClassificationImpl, EmbeddingsImpl embeddingsImpl, ReRankImpl reRankImpl, String defaultHostnameMailBody, String defaultOAuthAuthorizationtUri, String defaultOAuthScope, String slackRedirectUri, String microsoftRedirectUri, EmailSenderConfig emailSenderConfig, String emailSystemAdmin) {
         this.environment = environment;
         this.version = version;
         this.domainIDs = domainIDs;
@@ -47,6 +48,7 @@ public class ServerConfiguration {
         this.reRankImpl = reRankImpl;
         this.defaultHostnameMailBody = defaultHostnameMailBody;
         this.defaultOAuthAuthorizationtUri = defaultOAuthAuthorizationtUri;
+        this.defaultOAuthScope = defaultOAuthScope;
         this.slackRedirectUri = slackRedirectUri;
         this.microsoftRedirectUri = microsoftRedirectUri;
         this.emailSenderConfig = emailSenderConfig;
@@ -121,6 +123,13 @@ public class ServerConfiguration {
      */
     public String getDefaultOAuthAuthorizationtUri() {
         return defaultOAuthAuthorizationtUri;
+    }
+
+    /**
+     * @return OAuth scope, e.g., "openid email profile"
+     */
+    public String getDefaultOAuthScope() {
+        return defaultOAuthScope;
     }
 
     /**

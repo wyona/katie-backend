@@ -53,6 +53,9 @@ public class OAuthController {
     @Value("${iam.oauth.client.secret}")
     private String iamOAuthClientSecret;
 
+    @Value("${iam.oauth.scope}")
+    private String iamOAuthScope;
+
     @Autowired
     private JwtService jwtService;
 
@@ -123,11 +126,12 @@ public class OAuthController {
         boolean authenticated = authenticationService.userIsSignedInBySession(request);
         if (!authenticated) {
             log.info("User is not authenticated yet.");
-            String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
 
             String oAuthUrl = iamOAuthAuthURL;
 
             oAuthUrl = oAuthUrl + "?client_id=" + clientId;
+            String scope = URLEncoder.encode(iamOAuthScope, StandardCharsets.UTF_8);
+            log.info("Configured scope: " + scope);
             oAuthUrl = oAuthUrl + "&scope=" + scope;
             oAuthUrl = oAuthUrl + "&redirect_uri=" + redirectUri;
             oAuthUrl = oAuthUrl + "&response_type=" + responseType;
