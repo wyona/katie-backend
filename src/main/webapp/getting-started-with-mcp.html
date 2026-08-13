@@ -56,6 +56,7 @@ Katie can be used as MCP server with the URL https://app.katie.qa/mcp respective
   <li>The MCP client will send a request (/mcp) to Katie and if it replies with 401, then the MCP client will send an OAuth authorize request to Katie (<a href="https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/authorize" target="_blank">https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/authorize</a>)</li>
   <li>Katie will redirect the client to the authentication server, e.g., Google (<a href="https://accounts.google.com/o/oauth2/v2/auth" target="_blank">https://accounts.google.com/o/oauth2/v2/auth</a>), Microsoft, ...</li>
   <li>When the client could authenticate itself and got redirected back to itself, then the MCP client will ask Katie for an access token (<a href="https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/getToken" target="_blank">https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/getToken</a>)</li>
+  <li>The MCP client will use the received access token to access Katie MCP at /mcp</li>
 </ul>
 
 <h2>Contact</h2>
