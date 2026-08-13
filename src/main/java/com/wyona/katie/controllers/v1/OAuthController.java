@@ -205,17 +205,13 @@ public class OAuthController {
         if (code.startsWith(KATIE_PREFIX)) {
             username = code.substring(KATIE_PREFIX.length()); // TODO: getToken() is a back-channel request and therefore we have to get username otherwise
         } else {
-            log.info("TODO: Get access token from '" + iamOAuthTokenURL + "' using code '" + code + "' ...");
+            log.info("Get scope information from issuer '" + iamOAuthTokenURL + "' using code '" + code + "' ...");
 
+            // TODO: Get scope from request
             //String scope = "https://graph.microsoft.com/.default";
             String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
-            String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
-            //log.debug("Access token: " + accessToken);
 
-            username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
-
-            //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
-            //log.info("Shortname: " + shortname);
+            username = getUsernameFromIssuer(scope, grantType, clientId, code, redirectUri);
         }
 
         log.info("Username: " + username);
@@ -244,5 +240,55 @@ public class OAuthController {
         body.append("}");
 
         return new ResponseEntity<>(body.toString(), HttpStatus.OK);
+    }
+
+    /**
+     * OAuth callback
+     */
+    @GetMapping(value = "/oauth/callback")
+    @Operation(summary="OAuth callback")
+    public ResponseEntity<?> oauthCallback(
+            @Parameter(name = "state", description = "TODO", required = false)
+            @RequestParam(value = "state", required = false) String state,
+            @Parameter(name = "code", description = "TODO", required = true)
+            @RequestParam(value = "code", required = true) String code,
+            @Parameter(name = "iss", description = "Issuer, e.g., https://accounts.google.com", required = false)
+            @RequestParam(value = "iss", required = false) String iss,
+            @Parameter(name = "scope", description = "Scope", required = false)
+            @RequestParam(value = "scope", required = false) String scope,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception  {
+
+        log.info("OAuth callback ...");
+
+        log.info("Code: " + code);
+        log.info("State: " + state);
+        log.info("Scope: " + scope);
+        log.info("Issuer: " + iss);
+
+        String grantType = "authorization_code";
+        String clientId = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
+        String username = getUsernameFromIssuer(scope, grantType, clientId, code, null);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Get username from issuer
+     */
+    private String getUsernameFromIssuer(String scope, String grantType, String clientId, String code, String redirectUri) {
+        log.info("Get username from issuer ...");
+
+        //String scope = "https://graph.microsoft.com/.default";
+        scope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
+        String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
+        //log.debug("Access token: " + accessToken);
+
+        String username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
+
+        //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
+        //log.info("Shortname: " + shortname);
+
+        return username;
     }
 }
