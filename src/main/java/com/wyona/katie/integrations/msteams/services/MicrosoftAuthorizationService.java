@@ -27,7 +27,7 @@ public class MicrosoftAuthorizationService {
      * See https://learn.microsoft.com/en-us/graph/auth-v2-service?tabs=http#token-request
      *
      * @param oauthUrl OAuth URL, e.g. "https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token" or "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
-     * @param grantType grant_type must be "client_credentials"
+     * @param grantType grant_type must be "client_credentials" or "authorization_code"
      * @param clientId App / client Id, e.g. "aaa8c4a1-d204-468f-ac6e-540b26b3a122"
      * @param clientSecret App / client secret, whereas see https://app.katie.qa/ms-teams.html
      * @param code TODO
@@ -54,15 +54,26 @@ public class MicrosoftAuthorizationService {
         headers.set("Accept", "application/json");
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
 
-        String body = "grant_type=" + grantType + "&client_id=" + clientId + "&scope=" + scope;
+        String body = "grant_type=" + grantType + "&scope=" + scope;
+        if (clientId != null) {
+            body = body + "&client_id=" + clientId;
+        } else {
+            log.info("No client id provided.");
+        }
         if (clientSecret != null) {
             body = body + "&client_secret=" + clientSecret;
+        } else {
+            log.info("No client secret provided");
         }
         if (code !=null) {
             body = body + "&code=" + code;
+        } else {
+            log.info("No code provided.");
         }
         if (redirectUri != null) {
             body = body + "&redirect_uri=" + redirectUri;
+        } else {
+            log.info("No redirect URI provided.");
         }
         log.info("Request body: " + body);
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
