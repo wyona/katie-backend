@@ -117,11 +117,24 @@ public class OAuthController {
         @RequestParam(value = "state", required = false) String state,
         @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
         @RequestParam(value = "client_id", required = true) String clientId,
+        @Parameter(name = "scope", description = "Scope, e.g., 'openid email profile'", required = false)
+        @RequestParam(value = "scope", required = false) String scope,
+        @Parameter(name = "code_challenge", description = "Code challenge", required = false)
+        @RequestParam(value = "code_challenge", required = false) String codeChallenge,
+        @Parameter(name = "code_challenge_method", description = "Code challenge method, e.g., S256", required = false)
+        @RequestParam(value = "code_challenge_method", required = false) String codeChallengeMethod,
         HttpServletRequest request,
         HttpServletResponse response) {
 
+        log.info("Try to authorize client ...");
+
         log.info("Response type: " + responseType);
         log.info("Redirect URI: " + redirectUri);
+        log.info("State: " + state);
+        log.info("Client ID: " + clientId);
+        log.info("Scope: " + scope);
+        log.info("Code challenge: "  + codeChallenge);
+        log.info("Code challenge method: " + codeChallengeMethod);
 
         boolean authenticated = authenticationService.userIsSignedInBySession(request);
         if (!authenticated) {
@@ -130,9 +143,9 @@ public class OAuthController {
             String oAuthUrl = iamOAuthAuthURL;
 
             oAuthUrl = oAuthUrl + "?client_id=" + clientId;
-            String scope = URLEncoder.encode(iamOAuthScope, StandardCharsets.UTF_8);
-            log.info("Configured scope: " + scope);
-            oAuthUrl = oAuthUrl + "&scope=" + scope;
+            String configuredScope = URLEncoder.encode(iamOAuthScope, StandardCharsets.UTF_8);
+            log.info("Configured scope by Katie: " + configuredScope);
+            oAuthUrl = oAuthUrl + "&scope=" + configuredScope;
             oAuthUrl = oAuthUrl + "&redirect_uri=" + redirectUri;
             oAuthUrl = oAuthUrl + "&response_type=" + responseType;
 
@@ -185,6 +198,8 @@ public class OAuthController {
             @RequestParam(value = "client_id", required = false) String clientId,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
+
+        log.info("Try to get access token to access Katie MCP ...");
 
         String username = null;
         if (code.startsWith(KATIE_PREFIX)) {
