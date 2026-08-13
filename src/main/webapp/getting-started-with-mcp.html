@@ -49,6 +49,15 @@ Katie can be used as MCP server with the URL https://app.katie.qa/mcp respective
   <li>Set access token inside MCP client (e.g., npx @modelcontextprotocol/inspector@0.16.8), whereas this access token does only allow to query "public" domains, where answers are not generally protected, because the token does not contain a particular user / domain member.</li>
 </ul>
 
+<h2>OAuth 2.0 Flow</h2>
+
+<ul>
+  <li>Configure OAuth inside your MCP client (Client OD, Redirect URL, Scope)</li>
+  <li>The MCP client will send a request (/mcp) to Katie and if it replies with 401, then the MCP client will send an OAuth authorize request to Katie (<a href="https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/authorize" target="_blank">https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/authorize</a>)</li>
+  <li>Katie will redirect the client to the authentication server, e.g., Google (<a href="https://accounts.google.com/o/oauth2/v2/auth" target="_blank">https://accounts.google.com/o/oauth2/v2/auth</a>), Microsoft, ...</li>
+  <li>When the client could authenticate itself and got redirected back to itself, then the MCP client will ask Katie for an access token (<a href="https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/getToken" target="_blank">https://app.katie.qa/swagger-ui/index.html#/OAuth%20Controller%20v1/getToken</a>)</li>
+</ul>
+
 <h2>Contact</h2>
 <p>
 <a href="mailto:contact@wyona.com?subject=Regarding Katie ...">contact@wyona.com</a>
