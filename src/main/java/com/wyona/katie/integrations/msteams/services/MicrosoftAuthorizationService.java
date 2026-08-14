@@ -94,7 +94,7 @@ public class MicrosoftAuthorizationService {
 
     /**
      * Get user email from OAuth provider
-     * @param oauthUrl OAuth provider user info URL, e.g., https://openidconnect.googleapis.com/v1/userinfo
+     * @param oauthUrl OAuth provider user info URL, e.g., https://openidconnect.googleapis.com/v1/userinfo or https://graph.microsoft.com/oidc/userinfo
      * @param accessToken Access token
      * @return email address of user
      */
