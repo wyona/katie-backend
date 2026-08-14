@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * OAuth controller
@@ -278,8 +279,8 @@ public class OAuthController {
         //String grantType = "client_credentials";
         String grantType = "authorization_code";
 
-        //String clientId = "71098c9b-6ec0-483d-8c68-c98c7bef085e";
-        String clientId = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
+        String clientId = "71098c9b-6ec0-483d-8c68-c98c7bef085e";
+        //String clientId = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
 
         //String useScope = "https://graph.microsoft.com/.default";
         String useScope = "openid email profile";
@@ -307,11 +308,15 @@ public class OAuthController {
         if (accessToken != null) {
             String username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
 
-            //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
-            //log.info("Shortname: " + shortname);
+            String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
+            log.info("Shortname: " + shortname);
+
+            List<String> groups = microsoftAuthorizationService.getGroups(accessToken);
+            for (String group : groups) {
+                log.info("Group: " + group);
+            }
 
             return username;
-            //return shortname;
         } else {
             log.error("No access token could be retrieved!");
             return null;

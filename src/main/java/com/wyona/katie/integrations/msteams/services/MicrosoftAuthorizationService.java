@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -141,10 +142,50 @@ public class MicrosoftAuthorizationService {
             log.info("Try to get SAM account name: " + url);
             ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
-            log.debug("JSON: " + bodyNode);
+            log.info("JSON: " + bodyNode);
             JsonNode accountNameNode = bodyNode.get("onPremisesSamAccountName");
             String accountName = accountNameNode != null && !accountNameNode.isNull() ? accountNameNode.asText() : null;
             return accountName;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get groups of user
+     * @param accessToken Access token
+     * @return list of groups
+     */
+    public List<String> getGroups(String accessToken) {
+        RestTemplate restTemplate = restProxyTemplate.getRestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON)) ;
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+
+        try {
+            String url = "https://graph.microsoft.com/v1.0/me/memberOf/microsoft.graph.group?$select=id,displayName,securityEnabled";
+            log.info("Try to get groups: " + url);
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class);
+            JsonNode bodyNode = response.getBody();
+            log.info("JSON: " + bodyNode);
+            List<String> groups = new ArrayList<String>();
+
+            if (bodyNode != null && bodyNode.has("value")) {
+                JsonNode groupsArray = bodyNode.get("value");
+
+                // Loop through each group entry found inside the array
+                for (JsonNode groupNode : groupsArray) {
+                    String groupId = groupNode.path("id").asText();
+                    String groupName = groupNode.path("displayName").asText();
+                    //boolean isSecurityGroup = groupNode.path("securityEnabled").asBoolean();
+                    groups.add(groupId);
+                }
+            }
+
+            return groups;
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return null;
