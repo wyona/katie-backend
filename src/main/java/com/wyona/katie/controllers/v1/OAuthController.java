@@ -245,7 +245,7 @@ public class OAuthController {
     /**
      * OAuth callback
      */
-    @GetMapping(value = "/oauth/callback")
+    @GetMapping(value = "/oauth/openid/callback")
     @Operation(summary="OAuth callback")
     public ResponseEntity<?> oauthCallback(
             @Parameter(name = "state", description = "TODO", required = false)
@@ -256,39 +256,65 @@ public class OAuthController {
             @RequestParam(value = "iss", required = false) String iss,
             @Parameter(name = "scope", description = "Scope", required = false)
             @RequestParam(value = "scope", required = false) String scope,
+            @Parameter(name = "authuser", description = "TODO", required = false)
+            @RequestParam(value = "authuser", required = false) String authUser,
+            @Parameter(name = "hd", description = "TODO", required = false)
+            @RequestParam(value = "hd", required = false) String hd,
+            @Parameter(name = "prompt", description = "TODO", required = false)
+            @RequestParam(value = "prompt", required = false) String prompt,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
 
         log.info("OAuth callback ...");
 
-        log.info("Code: " + code);
+        log.info("Received Code, in order to request access token: " + code);
         log.info("State: " + state);
-        log.info("Scope: " + scope);
+        log.info("Received Scope: " + scope);
         log.info("Issuer: " + iss);
+        log.info("Auth user: " + authUser);
+        log.info("hd: " + hd);
+        log.info("Prompt:" + prompt);
 
+        //String grantType = "client_credentials";
         String grantType = "authorization_code";
+
+        //String clientId = "71098c9b-6ec0-483d-8c68-c98c7bef085e";
         String clientId = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
-        String username = getUsernameFromIssuer(scope, grantType, clientId, code, null);
+
+        //String useScope = "https://graph.microsoft.com/.default";
+        String useScope = "openid email profile";
+        if (scope != null) {
+            log.warn("Scope received by callback, but we use the following scope nevertheless: " + useScope);
+        }
+        String redirectUri = "http://localhost:3080/oauth/openid/callback";
+        String username = getUsernameFromIssuer(useScope, grantType, clientId, code, redirectUri);
+        log.info("Username: " + username);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Get username from issuer
+     * @param scope Scope, e.g., https://graph.microsoft.com/.default
      */
     private String getUsernameFromIssuer(String scope, String grantType, String clientId, String code, String redirectUri) {
         log.info("Get username from issuer ...");
 
-        //String scope = "https://graph.microsoft.com/.default";
         scope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
         String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
-        //log.debug("Access token: " + accessToken);
+        log.info("Access token: " + accessToken);
 
-        String username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
+        if (accessToken != null) {
+            String username = microsoftAuthorizationService.getUserEMail(iamOAuthUserinfoURL, accessToken);
 
-        //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
-        //log.info("Shortname: " + shortname);
+            //String shortname = microsoftAuthorizationService.getSAMAccountName(accessToken);
+            //log.info("Shortname: " + shortname);
 
-        return username;
+            return username;
+            //return shortname;
+        } else {
+            log.error("No access token could be retrieved!");
+            return null;
+        }
     }
 }
