@@ -1,5 +1,6 @@
 package com.wyona.katie.controllers.v1;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.wyona.katie.integrations.msteams.services.MicrosoftAuthorizationService;
 import com.wyona.katie.models.OAuthRegisterBody;
 import com.wyona.katie.models.User;
@@ -326,8 +327,12 @@ public class OAuthController {
             String shortname = jwtService.getPayloadClaimValue(idToken, "onPremisesSamAccountName");
             log.info("Shortname: " + shortname);
 
-            // TODO: Get groups from idToken
-            jwtService.getPayloadClaimValue(idToken, "groups");
+            JsonNode groupsNode = jwtService.getPayloadClaimNode(idToken, "groups");
+            if (groupsNode.isArray()) {
+                for (int i = 0; i < groupsNode.size(); i++) {
+                    log.info("Group: " + groupsNode.get(i).asText());
+                }
+            }
 
             return username;
         } else {
