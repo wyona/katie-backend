@@ -67,6 +67,9 @@ public class IAMService {
     @Value("${self_registration_requests.data_path}")
     private String selfRegistrationRequestsDataPath;
 
+    @Value("${iam.oauth.states.data_path}")
+    private String oauthStatesDataPath;
+
     private static final String USER_PROFILE_IMAGE_NAME = "selfie.jpg";
 
     private static final String PROFILE_PICTURE_CLASS_NAME = "ProfilePicture";
@@ -684,6 +687,27 @@ public class IAMService {
     }
 
     /**
+     * Save client id associated with state
+     * @param clientId Client Id, e.g., "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com" or "71098c9b-6ec0-483d-8c68-c98c7bef085e"
+     * @param state State, e.g., "4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b"
+     */
+    public void saveOAuthClientId(String clientId, String state) throws Exception {
+        File selfRegistrationRequestDir = new File(oauthStatesDataPath);
+        if (!selfRegistrationRequestDir.isDirectory()) {
+            selfRegistrationRequestDir.mkdirs();
+        }
+
+        OAuthStateInfo infos = new OAuthStateInfo(clientId, state);
+
+        // INFO: Save information temporarily
+        ObjectMapper objectMapper = new ObjectMapper();
+        File oauthStateFile = new File(oauthStatesDataPath, state + ".json");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(oauthStateFile));
+        objectMapper.writeValue(writer, infos);
+        writer.close();
+    }
+
+    /**
      * Reject self-registration
      * @param tokenAdmin JWT token
      */
@@ -768,7 +792,7 @@ public class IAMService {
             selfRegistrationRequestDir.mkdirs();
         }
 
-        // INFO: Save information temporarily at "volume/registrations-requests"
+        // INFO: Save information temporarily at "volume/self-registration-requests"
         ObjectMapper objectMapper = new ObjectMapper();
         File selfRegistrationRequestFile = new File(selfRegistrationRequestsDataPath, token + ".json");
         BufferedWriter writer = new BufferedWriter(new FileWriter(selfRegistrationRequestFile));
