@@ -114,8 +114,8 @@ public class OAuthController {
         @RequestParam(value = "response_type", required = false) String responseType,
         @Parameter(name = "redirect_uri", description = "Redirect URI, e.g., http://localhost:6274/oauth/callback", required = true)
         @RequestParam(value = "redirect_uri", required = true) String redirectUri,
-        @Parameter(name = "state", description = "State, e.g., 4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b", required = false)
-        @RequestParam(value = "state", required = false) String state,
+        @Parameter(name = "state", description = "State, e.g., 4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b", required = true)
+        @RequestParam(value = "state", required = true) String state,
         @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
         @RequestParam(value = "client_id", required = true) String clientId,
         @Parameter(name = "scope", description = "Scope, e.g., 'openid email profile'", required = false)
@@ -131,8 +131,16 @@ public class OAuthController {
 
         log.info("Response type: " + responseType);
         log.info("Redirect URI: " + redirectUri);
+
         log.info("State: " + state);
         log.info("Client ID: " + clientId);
+        try {
+            iamService.saveOAuthClientId(clientId, state);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         log.info("Scope: " + scope);
         log.info("Code challenge: "  + codeChallenge);
         log.info("Code challenge method: " + codeChallengeMethod);
@@ -149,6 +157,7 @@ public class OAuthController {
             oAuthUrl = oAuthUrl + "&scope=" + configuredScope;
             oAuthUrl = oAuthUrl + "&redirect_uri=" + redirectUri;
             oAuthUrl = oAuthUrl + "&response_type=" + responseType;
+            oAuthUrl = oAuthUrl + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
 
             if (oAuthUrl.contains("google")) {
                 String nonce = "0394852-3190485-2490358";
@@ -251,6 +260,8 @@ public class OAuthController {
     public ResponseEntity<?> oauthCallback(
             @Parameter(name = "state", description = "TODO", required = false)
             @RequestParam(value = "state", required = false) String state,
+            @Parameter(name = "session_state", description = "TODO", required = false)
+            @RequestParam(value = "session_state", required = false) String sessionState,
             @Parameter(name = "code", description = "TODO", required = true)
             @RequestParam(value = "code", required = true) String code,
             @Parameter(name = "iss", description = "Issuer, e.g., https://accounts.google.com", required = false)
@@ -270,6 +281,7 @@ public class OAuthController {
 
         log.info("Received Code, in order to request access token: " + code);
         log.info("State: " + state);
+        log.info("Session state: " + sessionState);
         log.info("Received Scope: " + scope);
         log.info("Issuer: " + iss);
         log.info("Auth user: " + authUser);
@@ -279,8 +291,10 @@ public class OAuthController {
         //String grantType = "client_credentials";
         String grantType = "authorization_code";
 
-        String clientId = "71098c9b-6ec0-483d-8c68-c98c7bef085e";
-        //String clientId = "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com";
+        String clientId = getClientId(state);
+        if (clientId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         //String useScope = "https://graph.microsoft.com/.default";
         String useScope = "openid email profile";
@@ -319,6 +333,20 @@ public class OAuthController {
             return username;
         } else {
             log.error("No access token could be retrieved!");
+            return null;
+        }
+    }
+
+    /**
+     * Get client id associated with state
+     * @param state State, e.g., "4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b"
+     * @return client id, e.g., "1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com" or "71098c9b-6ec0-483d-8c68-c98c7bef085e"
+     */
+    private String getClientId(String state) {
+        try {
+            return iamService.getOAuthClientId(state).getClientId();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
             return null;
         }
     }
