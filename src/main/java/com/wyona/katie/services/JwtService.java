@@ -392,6 +392,7 @@ public class JwtService {
     }
 
     /**
+     * IMPORTANT: This method has the same functionality as getPayloadClaimValue(), but uses 0 instead 1
      * @param claim Claim Id, e.g. "kid"
      */
     public String getHeaderValue(String jwtToken, String claim) {
@@ -415,7 +416,26 @@ public class JwtService {
     }
 
     /**
-     *
+     * Get JSON node of a particular claim
+     * @param claim Claim Id, e.g., "groups"
+     * @return claim JSON node, e.g., array of group names
+     */
+    public JsonNode getPayloadClaimNode(String jwtToken, String claim) {
+        log.info("Get payload JSON node for '" + claim + "' ...");
+        String payload = getChunk(jwtToken, 1);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode headerNode = mapper.readTree(payload);
+            JsonNode claimNode = headerNode.get(claim);
+            return claimNode;
+        } catch(Exception e) {
+            log.error(e.getMessage(),e);
+            return null;
+        }
+    }
+
+    /**
+     * @param i TODO
      */
     private String getChunk(String jwtToken, int i) {
         String[] chunks = jwtToken.split("\\.");
@@ -424,7 +444,7 @@ public class JwtService {
     }
 
     /**
-     *
+     * Get claim value from payload chunk
      */
     private String parseChunk(String chunk, String claim) {
         ObjectMapper mapper = new ObjectMapper();
