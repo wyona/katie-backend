@@ -708,6 +708,20 @@ public class IAMService {
     }
 
     /**
+     * @param state State, e.g., "4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b"
+     * @return client id
+     */
+    public OAuthStateInfo getOAuthClientId(String state) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        File oauthStateFile = new File(oauthStatesDataPath, state + ".json");
+        BufferedReader reader = new BufferedReader(new FileReader(oauthStateFile));
+        OAuthStateInfo info = objectMapper.readValue(reader, OAuthStateInfo.class);
+        reader.close();
+
+        return info;
+    }
+
+    /**
      * Reject self-registration
      * @param tokenAdmin JWT token
      */
@@ -794,7 +808,7 @@ public class IAMService {
 
         // INFO: Save information temporarily at "volume/self-registration-requests"
         ObjectMapper objectMapper = new ObjectMapper();
-        File selfRegistrationRequestFile = new File(selfRegistrationRequestsDataPath, token + ".json");
+        File selfRegistrationRequestFile = getSelfRegistrationInfoFile(token);
         BufferedWriter writer = new BufferedWriter(new FileWriter(selfRegistrationRequestFile));
         objectMapper.writeValue(writer, infos);
         writer.close();
@@ -804,7 +818,14 @@ public class IAMService {
      * @return true when temporary self-registration infos exist
      */
     private boolean existsSelfRegistrationInfo(String token) {
-        return new File(selfRegistrationRequestsDataPath, token + ".json").isFile();
+        return getSelfRegistrationInfoFile(token).isFile();
+    }
+
+    /**
+     *
+     */
+    private File getSelfRegistrationInfoFile(String token) {
+        return new File(selfRegistrationRequestsDataPath, token + ".json");
     }
 
     /**
@@ -812,7 +833,7 @@ public class IAMService {
      */
     private SelfRegistrationInformation getSelfRegistrationInfo(String token) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        File selfRegistrationRequestFile = new File(selfRegistrationRequestsDataPath, token + ".json");
+        File selfRegistrationRequestFile = getSelfRegistrationInfoFile(token);
         BufferedReader reader = new BufferedReader(new FileReader(selfRegistrationRequestFile));
         SelfRegistrationInformation infos = objectMapper.readValue(reader, SelfRegistrationInformation.class);
         reader.close();
@@ -824,7 +845,7 @@ public class IAMService {
      *
      */
     private void deleteSelfRegistrationInformation(String token) {
-        File selfRegistrationRequestFile = new File(selfRegistrationRequestsDataPath, token + ".json");
+        File selfRegistrationRequestFile = getSelfRegistrationInfoFile(token);
         selfRegistrationRequestFile.delete();
     }
 
