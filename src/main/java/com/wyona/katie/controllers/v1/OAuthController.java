@@ -116,7 +116,7 @@ public class OAuthController {
         @RequestParam(value = "redirect_uri", required = true) String redirectUri,
         @Parameter(name = "state", description = "State, e.g., 4dfa51ab3da5ab6efcad70bb4a5037dc37512ad3705e1a6201d0727552dace0b", required = true)
         @RequestParam(value = "state", required = true) String state,
-        @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e", required = true)
+        @Parameter(name = "client_id", description = "Client Id, e.g., 1045897086839-7dhg0h1rbc9kdeklfdghtfj9r85p08dj.apps.googleusercontent.com or 71098c9b-6ec0-483d-8c68-c98c7bef085e. IMPORTANT: Make sure to configure iam.oauth.client.secret accordingly!", required = true)
         @RequestParam(value = "client_id", required = true) String clientId,
         @Parameter(name = "scope", description = "Scope, e.g., 'openid email profile'", required = false)
         @RequestParam(value = "scope", required = false) String scope,
