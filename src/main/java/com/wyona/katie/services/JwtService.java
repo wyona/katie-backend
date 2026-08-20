@@ -430,7 +430,16 @@ public class JwtService {
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode headerNode = mapper.readTree(chunk);
-            return headerNode.get(claim).asText();
+            JsonNode claimNode = headerNode.get(claim);
+            if (claimNode.isTextual()) {
+                return claimNode.asText();
+            } else if (claimNode.isArray()) {
+                log.warn("Claim '" + claim + "' is an array!");
+                return null;
+            } else {
+                log.warn("Claim '" + claim + "' is neither textual nor array!");
+                return null;
+            }
         } catch(Exception e) {
             log.error(e.getMessage(),e);
             return null;

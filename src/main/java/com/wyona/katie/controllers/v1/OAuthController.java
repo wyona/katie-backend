@@ -327,6 +327,7 @@ public class OAuthController {
             log.info("Shortname: " + shortname);
 
             // TODO: Get groups from idToken
+            jwtService.getPayloadClaimValue(idToken, "groups");
 
             return username;
         } else {
