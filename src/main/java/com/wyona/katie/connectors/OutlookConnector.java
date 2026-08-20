@@ -246,7 +246,7 @@ public class OutlookConnector implements Connector {
             // INFO: Make sure to click on "Grant admin consent for ..."
             String scope = "https://graph.microsoft.com/.default";
 
-            token = microsoftAuthorizationService.getAccessToken(oauthUrl, grantType, clientId, clientSecret, null, null, scope);
+            token = microsoftAuthorizationService.getAccessAndIDToken(oauthUrl, grantType, clientId, clientSecret, null, null, scope).get(microsoftAuthorizationService.ACCESS_TOKEN);
         }
 
         // INFO: https://jwt.ms/ or https://jwt.io/

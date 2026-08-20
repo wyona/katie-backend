@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OAuth controller
@@ -316,7 +317,12 @@ public class OAuthController {
         log.info("Get username from issuer ...");
 
         scope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
-        String accessToken = microsoftAuthorizationService.getAccessToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
+        Map<String, String> tokens = microsoftAuthorizationService.getAccessAndIDToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
+
+        String idToken = tokens.get(microsoftAuthorizationService.ID_TOKEN);
+        // TODO: Get groups and onPremisesSamAccountName from idToken
+
+        String accessToken = tokens.get(microsoftAuthorizationService.ACCESS_TOKEN);
         log.info("Access token: " + accessToken);
 
         if (accessToken != null) {

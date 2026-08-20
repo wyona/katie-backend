@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Microsoft specific authorization service
@@ -21,10 +23,14 @@ import java.util.List;
 @Component
 public class MicrosoftAuthorizationService {
 
+    public static final String ACCESS_TOKEN = "access_token";
+    public static final String ID_TOKEN = "id_token";
+
     @Autowired
     private RestProxyTemplate restProxyTemplate;
 
     /**
+     * Get access token and ID token
      * See https://learn.microsoft.com/en-us/graph/auth-v2-service?tabs=http#token-request
      *
      * @param oauthUrl OAuth URL, e.g. "https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token" or "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
@@ -34,8 +40,9 @@ public class MicrosoftAuthorizationService {
      * @param code TODO
      * @param redirectUri TODO
      * @param scope Scope, e.g. "https://api.botframework.com/.default" or "https://graph.microsoft.com/.default"
+     * @return access token and ID token
      */
-    public String getAccessToken(String oauthUrl, String grantType, String clientId, String clientSecret, String code, String redirectUri, String scope) {
+    public Map<String, String> getAccessAndIDToken(String oauthUrl, String grantType, String clientId, String clientSecret, String code, String redirectUri, String scope) {
         /*
           Test with Postman:
 
@@ -83,10 +90,23 @@ public class MicrosoftAuthorizationService {
             log.info("Try to get access token: " + oauthUrl);
             ResponseEntity<JsonNode> response = restTemplate.postForEntity(oauthUrl, request, JsonNode.class);
             JsonNode bodyNode = response.getBody();
-            //log.debug("JSON: " + bodyNode);
-            String accessToken = bodyNode.get("access_token").asText();
-            log.info("Token received :-)");
-            return accessToken;
+            //log.info("JSON: " + bodyNode);
+
+            Map<String, String> tokens = new HashMap<>();
+
+            if (bodyNode.has(ACCESS_TOKEN)) {
+                String accessToken = bodyNode.get(ACCESS_TOKEN).asText();
+                tokens.put(ACCESS_TOKEN, accessToken);
+                log.info("Access token received :-)");
+            }
+
+            if (bodyNode.has(ID_TOKEN)) {
+                String idToken = bodyNode.get(ID_TOKEN).asText();
+                tokens.put(ID_TOKEN, idToken);
+                log.info("ID token received :-)");
+            }
+
+            return tokens;
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return null;
@@ -123,6 +143,7 @@ public class MicrosoftAuthorizationService {
     }
 
     /**
+     * IMPORTANT: One can also get the SAM from the ID token directly
      * Get Security Account Manager (SAM) Account Name
      * @param accessToken Access token
      * @return SAM account name, e.g., "mwechn"
