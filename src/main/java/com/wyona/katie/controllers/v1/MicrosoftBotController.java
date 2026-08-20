@@ -277,8 +277,8 @@ public class MicrosoftBotController {
                     log.info("Signature of JWT is valid :-)");
                     // https://docs.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-connector-authentication?view=azure-bot-service-4.0#step-4-verify-the-jwt-token
                     // TODO Also check that issuer is "https://api.botframework.com"
-                    String issuer = jwtService.getPayloadValue(jwtToken, "iss");
-                    String audience = jwtService.getPayloadValue(jwtToken, "aud");
+                    String issuer = jwtService.getPayloadClaimValue(jwtToken, "iss");
+                    String audience = jwtService.getPayloadClaimValue(jwtToken, "aud");
                     if (audience.equals(msClientId)) {
                         log.info("Token is valid.");
                     } else {

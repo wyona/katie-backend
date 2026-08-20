@@ -320,8 +320,21 @@ public class OAuthController {
         Map<String, String> tokens = microsoftAuthorizationService.getAccessAndIDToken(iamOAuthTokenURL, grantType, clientId, iamOAuthClientSecret, code, redirectUri, scope);
 
         String idToken = tokens.get(microsoftAuthorizationService.ID_TOKEN);
-        // TODO: Get groups and onPremisesSamAccountName from idToken
+        if (idToken != null) {
+            String username = jwtService.getPayloadClaimValue(idToken, "email");
 
+            String shortname = jwtService.getPayloadClaimValue(idToken, "onPremisesSamAccountName");
+            log.info("Shortname: " + shortname);
+
+            // TODO: Get groups from idToken
+
+            return username;
+        } else {
+            log.error("No ID token could be retrieved!");
+            return null;
+        }
+
+        /*
         String accessToken = tokens.get(microsoftAuthorizationService.ACCESS_TOKEN);
         log.info("Access token: " + accessToken);
 
@@ -341,6 +354,7 @@ public class OAuthController {
             log.error("No access token could be retrieved!");
             return null;
         }
+         */
     }
 
     /**

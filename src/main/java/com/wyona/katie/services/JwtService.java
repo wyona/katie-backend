@@ -402,9 +402,12 @@ public class JwtService {
     }
 
     /**
-     * @param claim Claim Id, e.g. "aud"
+     * Get value of a particular claim
+     * @param jwtToken JWT token containing payload
+     * @param claim Claim Id, e.g., "aud" or "email"
+     * @return claim value, e.g, "0ad83515-917c-4bcd-85t9-d95d23e234c2" or "michael.wechner@wyona.com"
      */
-    public String getPayloadValue(String jwtToken, String claim) {
+    public String getPayloadClaimValue(String jwtToken, String claim) {
         log.info("Get payload value for '" + claim + "' ...");
         String payload = getChunk(jwtToken, 1);
         log.info("JWT payload: " + payload);
