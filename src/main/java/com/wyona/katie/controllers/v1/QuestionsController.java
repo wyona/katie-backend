@@ -764,10 +764,10 @@ public class QuestionsController {
             @Parameter(name = "domainId", description = "Domain Id of knowledge base of trained questions (e.g. 'wyona' or 'ROOT')",required = true)
             @RequestParam(value = "domainId", required = true) String domainId,
             // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#pagination@Parameter(name = "limit", value = "Pagination: Limit the number of returned trained QnAs", required = false)
-            @Parameter(name = "limit", description = "Pagination: Limit the number of returned trained QnAs", required = false)
-            @RequestParam(value = "limit", required = false) Integer limit,
-            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned trained QnAs", required = false)
-            @RequestParam(value = "offset", required = false) Integer offset,
+            @Parameter(name = "limit", description = "Pagination: Limit the number of returned trained QnAs", required = false, schema = @Schema(type = "integer", defaultValue = "10"))
+            @RequestParam(value = "limit", defaultValue = "10", required = false) Integer limit,
+            @Parameter(name = "offset", description = "Pagination: Offset indicates the start of the returned trained QnAs", required = false, schema = @Schema(type = "integer", defaultValue = "0"))
+            @RequestParam(value = "offset", defaultValue = "0", required = false) Integer offset,
             HttpServletRequest request, HttpServletResponse response) {
 
         try {
