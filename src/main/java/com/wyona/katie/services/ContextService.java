@@ -5056,6 +5056,7 @@ public class ContextService {
             String username = authService.getUsername();
 
             String[] answerUUIDs = questionsAnswersDir.list();
+            log.info("Number of trained QnAs: " + answerUUIDs.length);
 
             for (int i = 0; i < answerUUIDs.length; i++) {
                 log.info("Trained answer UUID: " + answerUUIDs[i]);
@@ -5092,6 +5093,8 @@ public class ContextService {
                 pAnswers.add(answers.get(i));
             }
             return pAnswers.toArray(new Answer[0]);
+        } else {
+            log.warn("No offset and no limit set!");
         }
 
         return answers.toArray(new Answer[0]);
