@@ -778,7 +778,7 @@ public class QuestionsController {
 
         rememberMeService.tryAutoLogin(request, response);
 
-        log.info("Get all trained questions/answers for domain '" + domainId + "' ...");
+        log.info("Get all trained questions / answers for domain '" + domainId + "' ...");
 
         // TEST: Uncomment lines below to test frotend spinner
         /*
@@ -797,10 +797,14 @@ public class QuestionsController {
                 int _limit = -1;
                 if (limit != null) {
                     _limit = limit.intValue();
+                } else {
+                    log.warn("No limit set.");
                 }
                 int _offset = -1;
                 if (offset !=  null) {
                     _offset = offset.intValue();
+                } else {
+                    log.info("No offset set.");
                 }
                 log.info("Limit: " + _limit);
                 log.info("Offset: " + _offset);
