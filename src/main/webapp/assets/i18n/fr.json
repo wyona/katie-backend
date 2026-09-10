@@ -219,6 +219,7 @@
         "forgot_password_notification_sent": "Katie a envoyé une notification à votre adresse e-mail. Veuillez vérifier vos e-mails et réinitialiser votre mot de passe.",
         "enter_email": "Veuillez insérer votre e-mail ou nom d'utilisateur",
         "next": "Suivant",
+        "previous": "Précédent",
         "forgot_password": "Mot de passe oublié?",
         "manage_my_account": "Gérer mon compte",
         "dashboard": "Tableau de bord",

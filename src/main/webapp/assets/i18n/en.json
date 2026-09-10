@@ -219,6 +219,7 @@
         "forgot_password_notification_sent": "Katie sent a notification to your email address. Please check your emails and reset your password.",
         "enter_email": "Please enter your email or username",
         "next": "Next",
+        "previous": "Previous",
         "forgot_password": "Forgot Password?",
         "manage_my_account": "Manage my account",
         "dashboard": "Dashboard",
