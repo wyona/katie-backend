@@ -5043,8 +5043,8 @@ public class ContextService {
     /**
      * Get all trained QnAs of a particular domain, which the user is authorized to access
      * @param domain Domain containing QnAs
-     * @param limit Limit number of returned QnAs
-     * @param offset From where to start returning QnAs
+     * @param limit Limit number of returned QnAs, e.g., 8
+     * @param offset From where to start returning QnAs, e.g., 0
      */
     public Answer[] getTrainedQnAs(Context domain, int limit, int offset) throws Exception {
         log.info("Get all trained QnAs of domain '" + domain.getId() + "' ...");
@@ -5056,26 +5056,38 @@ public class ContextService {
             String username = authService.getUsername();
 
             String[] answerUUIDs = questionsAnswersDir.list();
-            log.info("Number of trained QnAs: " + answerUUIDs.length);
+            log.info("Number of QnAs: " + answerUUIDs.length);
 
             for (int i = 0; i < answerUUIDs.length; i++) {
-                log.info("Trained answer UUID: " + answerUUIDs[i]);
-                try {
-                    Answer qna = getQnA(null, answerUUIDs[i], domain);
-                    if (qna.isTrained()) {
-                        PermissionStatus ps = iamService.getPermissionStatus(qna, username);
-                        if (iamService.isAuthorized(ps)) {
-                            answers.add(qna);
-                        } else {
-                            log.info("User '" + username + "' is not authorized (permission status: '" + ps + "') to access answer '" + answerUUIDs[i] + "'.");
-                            qna.setAnswer("INFO: Answer protected: " + ps);
-                            answers.add(qna);
+                if (i >= offset && i < offset + limit) {
+                    log.info("Check whether QnA " + answerUUIDs[i] + " should be returned ...");
+                    try {
+                        Answer qna = getQnA(null, answerUUIDs[i], domain);
+                        if (!qna.isTrained()) {
+                            log.warn("Qna '" + qna.getUuid() + "' of domain '" + qna.getDomainid() + "' is not trained yet!");
                         }
-                    } else {
-                        log.info("Qna '" + qna.getUuid() + "' of domain '" + qna.getDomainid() + "' is not trained yet.");
+                        //if (!qna.isTrained()) {
+                            PermissionStatus ps = iamService.getPermissionStatus(qna, username);
+                            if (iamService.isAuthorized(ps)) {
+                                log.info("User is authorized to see QnA " + qna.getUuid());
+                                answers.add(qna);
+                            } else {
+                                log.info("User '" + username + "' is not authorized (permission status: '" + ps + "') to access answer '" + answerUUIDs[i] + "'.");
+                                qna.setAnswer("INFO: Answer protected: " + ps);
+                                answers.add(qna);
+                            }
+                        //} else {
+                        //    log.warn("Qna '" + qna.getUuid() + "' of domain '" + qna.getDomainid() + "' is not trained yet, and therefore will not be returned");
+                        //}
+                    } catch (Exception e) {
+                        log.error("Something is wrong with QnA '" + domain.getId() + " / " + answerUUIDs[i] + "': " + e.getMessage());
                     }
-                } catch(Exception e) {
-                    log.error("Something is wrong with QnA '" + domain.getId()  + " / " + answerUUIDs[i] + "': " + e.getMessage());
+                } else {
+                    log.info("Ignore QnA " +answerUUIDs[i] + ", because either below offset (" + offset + ") or limit reached (" + limit + ")");
+                    if (i >= offset + limit) {
+                        log.info("Limit reached, therefore ignore all other QnAs.");
+                        break;
+                    }
                 }
             }
         } else {
@@ -5085,17 +5097,6 @@ public class ContextService {
 
         // TODO: Scalability / Performance
         Collections.sort(answers, Answer.DateComparator);
-
-        if (offset >= 0 && limit >= 0 && offset < answers.size() && offset + limit < answers.size()) {
-            log.warn("TODO: Improve pagination (limit '" + limit + "' and offset '" + offset + "')!");
-            List<Answer> pAnswers = new ArrayList<Answer>();
-            for (int i = offset; i < offset + limit; i++) {
-                pAnswers.add(answers.get(i));
-            }
-            return pAnswers.toArray(new Answer[0]);
-        } else {
-            log.warn("No offset and no limit set!");
-        }
 
         return answers.toArray(new Answer[0]);
     }
