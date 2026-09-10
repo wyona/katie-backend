@@ -115,7 +115,7 @@ In case startup fails, then delete the .idea directory and the file askkatie-web
 * Set environment variable: export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 * Configure your JDK version inside the shell script 'build.sh' (search for JAVA_VERSION_REQUIRED)
 * Build webapp as war, run: 'sh build.sh'
-* Build image: docker build -t katie .
+* Build image: docker build --no-cache -t katie .
 * Tag image:
     * docker tag katie wyona/katie:1.383.0
     * docker tag katie wyona/katie-mac-m:1.383.0
