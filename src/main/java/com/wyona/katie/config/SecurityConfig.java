@@ -32,6 +32,9 @@ public class SecurityConfig {
     private static final String ADMIN_ROLE = "ADMIN";
     //private static final String USER_ROLE = "USER";
 
+    /**
+     * IMPORTANT: When Katie is running behind a reverse proxy, then make sure to configure the virtual host configuration accordingly (RequestHeader set X-Forwarded-Proto "https") and that server.forward-headers-strategy=framework is set inside application.properties
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
