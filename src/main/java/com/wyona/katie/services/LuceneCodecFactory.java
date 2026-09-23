@@ -5,8 +5,8 @@ import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.KnnVectorsFormat;
 import org.apache.lucene.codecs.KnnVectorsReader;
 import org.apache.lucene.codecs.KnnVectorsWriter;
-import org.apache.lucene.codecs.lucene103.Lucene103Codec;
-import org.apache.lucene.codecs.lucene102.Lucene102HnswBinaryQuantizedVectorsFormat;
+import org.apache.lucene.codecs.lucene104.Lucene104Codec;
+import org.apache.lucene.codecs.lucene104.Lucene104HnswScalarQuantizedVectorsFormat;
 import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
 import org.springframework.stereotype.Component;
@@ -30,21 +30,21 @@ public class LuceneCodecFactory {
         log.info("Get codec ...");
 
         if (valueType == EmbeddingValueType.int8) {
-            Codec codecInt8 = new Lucene103Codec() {
+            Codec codecInt8 = new Lucene104Codec() {
                 @Override
                 public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
-                    var delegate = new Lucene102HnswBinaryQuantizedVectorsFormat();
+                    var delegate = new Lucene104HnswScalarQuantizedVectorsFormat();
                     log.info("Vector Value Type: int8, Maximum Vector Dimension: " + maxDimensions);
                     return new DelegatingKnnVectorsFormat(delegate, maxDimensions);
                 }
             };
             return codecInt8;
         } else {
-            Codec codecFloat32 = new Lucene103Codec() {
+            Codec codecFloat32 = new Lucene104Codec() {
                 @Override
                 public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
                     // TODO: Shouldn't there be a non quantized format version, similar to https://lucene.apache.org/core/9_12_0/core/org/apache/lucene/codecs/lucene99/Lucene99HnswVectorsFormat.html
-                    var delegate = new Lucene102HnswBinaryQuantizedVectorsFormat();
+                    var delegate = new Lucene104HnswScalarQuantizedVectorsFormat();
                     log.info("Vector Value Type: float32, Maximum Vector Dimension: " + maxDimensions);
                     return new DelegatingKnnVectorsFormat(delegate, maxDimensions);
                 }
