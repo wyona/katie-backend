@@ -87,14 +87,16 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
     }
 
     /**
-     *
+     * Set / get HTTP header including authorization header
+     * @param apiKey API key
      */
-    private HttpHeaders getHttpHeaders(String openAIKey) {
+    private HttpHeaders getHttpHeaders(String apiKey) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json; charset=UTF-8");
 
-        headers.set("Authorization", "Bearer " + openAIKey);
+        headers.set("Authorization", "Bearer " + apiKey);
+        //headers.setBasicAuth(username, password);
 
         return headers;
     }
