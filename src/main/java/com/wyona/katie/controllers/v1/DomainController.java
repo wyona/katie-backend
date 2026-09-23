@@ -39,7 +39,7 @@ import java.util.UUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * Controller to access and manage a particular domain
@@ -1084,6 +1084,9 @@ public class DomainController {
         if (!domainService.existsContext(id)) {
             return new ResponseEntity<>(new Error("Domain '" + id + "' does not exist!", "NO_SUCH_DOMAIN"), HttpStatus.NOT_FOUND);
         }
+
+        log.info("Is test run: " + payload.getIsTestRun());
+        log.info("Request type: " + payload.getRequestType());
 
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
