@@ -60,7 +60,7 @@ public class WebhookPayloadTOPdesk extends WebhookPayload {
     }
 
     /**
-     * @return true if a test run is performed that does not make any changes
+     * @return true if a test run is performed that does not make any changes, otherwise false
      */
     public Boolean getIsTestRun() {
         return isTestRun;
