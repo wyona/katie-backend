@@ -40,18 +40,21 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
     }
 
     /**
+     * Get vector embedding from an OpenAI compatible API
      * @param requestUrl URL of OpenAI compatible embedding endpoint, e.g. "http://localhost:3000/v1/embeddings" or "https://api.mistral.ai/v1/embeddings"
-     * @param modelName Model name, e.g. "mistral-embed"
+     * @param model Model name (including provider LLM proxy provider name), e.g. "mistral-embed" or "azure/text-embedding-ada-002" (LLM proxy, e.g., Bifrost)
+     * @param text Text to be embedded
+     * @param token API key
      */
-    public Vector getEmbeddingFromOpenAICompatibleInterface(String requestUrl, String modelName, String sentence, String token) throws Exception {
-        log.info("Get embedding from OpenAI compatible endpoint for sentence '" + sentence + "' ...");
+    public Vector getEmbeddingFromOpenAICompatibleInterface(String requestUrl, String model, String text, String token) throws Exception {
+        log.info("Get embedding (Model: " + model + ") from OpenAI compatible endpoint (" + requestUrl + ") for text '" + text + "' ...");
 
         FloatVector vector = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode rootNode = mapper.createObjectNode();
-            rootNode.put("input", sentence); // TODO: Array of strings for batch processing
-            rootNode.put("model", modelName);
+            rootNode.put("input", text); // TODO: Array of strings for batch processing
+            rootNode.put("model", model);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(token);
