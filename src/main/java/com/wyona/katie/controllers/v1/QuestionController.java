@@ -119,7 +119,7 @@ public class QuestionController {
     @RequestMapping(value = "/trained/{domainid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Add a new QnA to domain and train QnA once added", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> addQuestionAndAnswer(
-            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
+            @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')", required = true)
             @PathVariable("domainid") String domainid,
             //@Parameter(name = "newQnA", description = "Only needs to contain originalQuestion and answer", required = true)
             @RequestBody Answer newQnA
