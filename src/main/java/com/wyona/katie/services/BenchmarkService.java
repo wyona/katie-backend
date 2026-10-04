@@ -454,14 +454,15 @@ public class BenchmarkService {
     }
 
     /**
-     * Run classification benchmark
+     * Run classification benchmark, where for multiple texts the labels are being predicted and compared with preferred labels by humans
      */
     @Async
     public void runClassificationBenchmark(String domainId, int throttleTimeInMillis, String email, User user, String processId) {
-        backgroundProcessService.startProcess(processId, "Run classification benchmark ...", user.getId());
+        backgroundProcessService.startProcess(processId, "Run classification benchmark (Domain Id: " + domainId + ") ...", user.getId());
 
         try {
             Context domain = contextService.getContext(domainId);
+            backgroundProcessService.updateProcessStatus(processId, "Classifier used by domain: " + domain.getClassifierImpl());
 
             LocalDateTime currentDateTime = LocalDateTime.now();
             String benchmarkId = getBenchmarkId(currentDateTime);
@@ -471,6 +472,8 @@ public class BenchmarkService {
 
             if (total == 0) {
                 backgroundProcessService.updateProcessStatus(processId, "No human preference dataset entries available!", BackgroundProcessStatusType.WARN);
+            } else {
+                backgroundProcessService.updateProcessStatus(processId, "Human preference dataset with " + total + " entries for domain " + domainId + " loaded.");
             }
 
             int successful = 0;
@@ -485,15 +488,21 @@ public class BenchmarkService {
                         log.error(e.getMessage(), e);
                     }
                 }
+
+                backgroundProcessService.updateProcessStatus(processId, "Classify text '" + preference.getText() + "' and compare prediction with preference ...");
                 HitLabel[] labels = classificationService.predictLabels(domain, preference.getText(), 3);
                 if (labels != null && labels.length > 0) {
-                    backgroundProcessService.updateProcessStatus(processId, "Classify text '" + preference.getText() + "' and compare prediction with preference ...");
-                    if (preference.getChosenLabel() != null && labels[0].getLabel().getId().equals(preference.getChosenLabel().getId())) {
-                        backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference match");
-                        successful++;
-                    } else {
-                        backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference do not match", BackgroundProcessStatusType.WARN);
-                        failedPredictions.add(preference);
+                    try {
+                        if (preference.getChosenLabel() != null && labels[0].getLabel().getId().equals(preference.getChosenLabel().getId())) {
+                            backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference match");
+                            successful++;
+                        } else {
+                            backgroundProcessService.updateProcessStatus(processId, "Prediction '" + labels[0].getLabel().getTerm()  + "' and chosen preference '" + preference.getChosenLabel().getTerm() + "' do not match", BackgroundProcessStatusType.WARN);
+                            failedPredictions.add(preference);
+                        }
+                    } catch (Exception e) {
+                        backgroundProcessService.updateProcessStatus(processId, "Error while comparing prediction and preference (" + preference.getMeta().getId() + "): " + e.getMessage(), BackgroundProcessStatusType.ERROR);
+                        log.error(e.getMessage(), e);
                     }
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "No labels predicted for text '" + preference.getText() + "'", BackgroundProcessStatusType.WARN);
