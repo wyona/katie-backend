@@ -493,16 +493,24 @@ public class BenchmarkService {
                 HitLabel[] labels = classificationService.predictLabels(domain, preference.getText(), 3);
                 if (labels != null && labels.length > 0) {
                     try {
-                        if (preference.getChosenLabel() != null && labels[0].getLabel().getId().equals(preference.getChosenLabel().getId())) {
-                            backgroundProcessService.updateProcessStatus(processId, "Prediction and chosen preference match");
-                            successful++;
+                        if (preference.getChosenLabel() != null && preference.getChosenLabel().getId() != null) {
+                            if (labels[0].getLabel().getId().equals(preference.getChosenLabel().getId())) {
+                                backgroundProcessService.updateProcessStatus(processId, "Prediction '" + labels[0].getLabel().getTerm() + "' and chosen preference '" + preference.getChosenLabel().getTerm() + "' match");
+                                successful++;
+                             } else {
+                                backgroundProcessService.updateProcessStatus(processId, "Prediction '" + labels[0].getLabel().getTerm()  + "' and chosen preference '" + preference.getChosenLabel().getTerm() + "' do not match", BackgroundProcessStatusType.WARN);
+                                failedPredictions.add(preference);
+                            }
                         } else {
-                            backgroundProcessService.updateProcessStatus(processId, "Prediction '" + labels[0].getLabel().getTerm()  + "' and chosen preference '" + preference.getChosenLabel().getTerm() + "' do not match", BackgroundProcessStatusType.WARN);
+                            String logMsg = "Preference label probably got deleted (Rating Id: " + preference.getMeta().getId() + ")!";
+                            backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.WARN);
+                            log.warn(logMsg);
                             failedPredictions.add(preference);
                         }
                     } catch (Exception e) {
                         backgroundProcessService.updateProcessStatus(processId, "Error while comparing prediction and preference (" + preference.getMeta().getId() + "): " + e.getMessage(), BackgroundProcessStatusType.ERROR);
                         log.error(e.getMessage(), e);
+                        failedPredictions.add(preference);
                     }
                 } else {
                     backgroundProcessService.updateProcessStatus(processId, "No labels predicted for text '" + preference.getText() + "'", BackgroundProcessStatusType.WARN);
