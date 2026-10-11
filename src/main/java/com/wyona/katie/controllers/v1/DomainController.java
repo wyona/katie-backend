@@ -524,7 +524,7 @@ public class DomainController {
     public ResponseEntity<?> updateClassificationImplementation(
             @Parameter(name = "id", description = "Domain Id (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("id") String domainid,
-            @Parameter(name = "classification-impl", description = "Classification implementation", required = true)
+            //@Parameter(name = "classification-impl", description = "Classification implementation", required = true)
             @RequestParam(value = "classification-impl", required = true) ClassificationImpl classificationImpl
     ) {
         try {
