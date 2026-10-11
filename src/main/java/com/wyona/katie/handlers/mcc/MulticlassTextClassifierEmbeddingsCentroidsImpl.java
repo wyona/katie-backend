@@ -116,6 +116,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     }
 
     /**
+     * Search for similar text samples and return their labels
      * @param queryVector Embedding vector of text to be classified
      * @return labels of similar sample vectors
      */
@@ -343,7 +344,9 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     }
 
     /**
-     * @param indexName Name of index, e.g. "lucene-samples" or "lucene-centroids"
+     * Get directory containing lucene index
+     * @param indexName Name of index, e.g., "lucene-samples" or "lucene-centroids"
+     * @return directory containing index, e.g., ".../abb6edd3-34a9-4a84-b12a-13d5dfd8152f/classifications/classifier-embeddings-centroid/lucene-samples"
      */
     private Directory getIndexDirectory(Context domain, String indexName) throws Exception {
         File indexDir = new File(getClassifierDir(domain), indexName);
