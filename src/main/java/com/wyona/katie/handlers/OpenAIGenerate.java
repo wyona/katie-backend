@@ -547,6 +547,7 @@ public class OpenAIGenerate implements GenerateProvider {
             HttpHeaders headers = getAssistantHttpHeaders(completionConfig.getApiKey());
             HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
+            // TODO: This endpoint was shutdown by OpenAI on August 26, 2026, see https://github.com/wyona/katie-backend/issues/59 and https://developers.openai.com/api/docs/assistants/migration
             String requestUrl = getHost(completionConfig) + "/v1/assistants";
             log.info("Create assistant: " + requestUrl + " (Body: " + requestBodyNode + ")");
             RestTemplate restTemplate = new RestTemplate();
