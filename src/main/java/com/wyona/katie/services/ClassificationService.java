@@ -77,18 +77,29 @@ public class ClassificationService {
     }
 
     /**
-     * Retrain classifier with human preferences dataset
+     * Finetune classifier with human preference dataset
+     * @param retrain When true, then retrain classifier from scratch
      * @param preferences Human preferences
      * @param bgProcessId Background process Id
      */
     @Async
-    public void retrain(Context domain, List<HumanPreferenceLabel> preferences, String bgProcessId, String userId) {
-        backgroundProcessService.startProcess(bgProcessId, "Retrain classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
+    public void finetune(Context domain, boolean retrain, List<HumanPreferenceLabel> preferences, String bgProcessId, String userId) {
+        backgroundProcessService.startProcess(bgProcessId, "Finetune classifier '" + domain.getClassifierImpl() + "' for domain '" + domain.getId() + "'.", userId);
 
         MulticlassTextClassifier classifier = getClassifier(domain.getClassifierImpl());
 
+        if (retrain) {
+            try {
+                backgroundProcessService.updateProcessStatus(bgProcessId, "Retrain classifier from scratch with previously imported samples ...");
+                classifier.retrain(domain, bgProcessId);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
+            }
+        }
+
         if (preferences != null && preferences.size() > 0) {
-            backgroundProcessService.updateProcessStatus(bgProcessId, "Retrain classifier with human preferences dataset ...");
+            backgroundProcessService.updateProcessStatus(bgProcessId, "Finetune classifier with human preferences dataset ...");
             // TODO: Get all approved ratings and do batch training
             for (HumanPreferenceLabel preference : preferences) {
                 if (preference.getChosenLabel() != null) {
@@ -113,7 +124,7 @@ public class ClassificationService {
                                 TextSample[] samples = new TextSample[1];
                                 samples[0] = sample;
                                 classifier.train(domain, samples);
-                                backgroundProcessService.updateProcessStatus(bgProcessId, "Classifier " + classifier.getClass().getName() + " retrained with new sample(s).");
+                                backgroundProcessService.updateProcessStatus(bgProcessId, "Classifier " + classifier.getClass().getName() + " finetuned with new sample(s).");
 
                                 // TODO: Only delete when "local" preference dataset is being used
                                 log.info("Remove rating '" + ratingId + "' from local preference dataset ...");

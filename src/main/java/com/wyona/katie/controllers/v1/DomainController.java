@@ -15,6 +15,7 @@ import com.wyona.katie.models.insights.Interval;
 import com.wyona.katie.models.insights.NgxChartsSeries;
 import com.wyona.katie.services.*;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
@@ -1537,16 +1538,18 @@ public class DomainController {
     }
 
     /**
-     * Retrain classifier
+     * Finetune classifier with human preference dataset
      */
-    @PostMapping(value = "/{id}/classification/retrain",
+    @PostMapping(value = "/{id}/classification/finetune",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary="Retrain classifier (using existing samples and with optional new samples from human preferences dataset, see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
-    public ResponseEntity<?> retrainClassifier(
+    @Operation(summary="Finetune classifier with human preference dataset (see /swagger-ui/#/feedback-controller/getRatingsOfPredictedLabelsUsingGET)")
+    public ResponseEntity<?> finetuneClassifier(
             @Parameter(name = "id", description = "Domain Id",required = true)
             @PathVariable(value = "id", required = true) String id,
+            @Parameter(name = "retrain", description = "Default is false, but when set to true, then retrain classifier from scratch with previously loaded samples", required = true, schema = @Schema(type = "boolean", defaultValue = "false"))
+            @RequestParam(value = "retrain", required = true) Boolean retrain,
             // TODO: Add description for file, e.g. "Preference Dataset" and if not provided, then the existing samples are being used
             @RequestPart(name = "file", required = false) MultipartFile preferenceDataset,
             HttpServletRequest request) {
@@ -1568,7 +1571,7 @@ public class DomainController {
                 preferences.add(localPreference);
             }
 
-            classificationService.retrain(domain, preferences, bgProcessId, userId);
+            classificationService.finetune(domain, retrain, preferences, bgProcessId, userId);
 
             String responseBody = "{\"bg-process-id\":\"" + bgProcessId + "\"}";
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
