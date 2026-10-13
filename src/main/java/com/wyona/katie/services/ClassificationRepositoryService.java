@@ -119,6 +119,11 @@ public class ClassificationRepositoryService {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 Classification classification = mapper.readValue(metaFile, Classification.class);
+
+                // TODO: Make sure, that frequency is set inside metaFile, them the following code will not be necessary anymore
+                File sampleDir = getSamplesDir(domain, labelKatieId);
+                classification.setFrequency(sampleDir.listFiles().length);
+                
                 return classification;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

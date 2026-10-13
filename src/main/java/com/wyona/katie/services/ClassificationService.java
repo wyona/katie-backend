@@ -364,16 +364,20 @@ public class ClassificationService {
                     Classification classification = classificationRepoService.getClassification(domain, humanPreference.getChosenLabel().getKatieId());
                     if (classification != null) {
                         humanPreference.getChosenLabel().setId(classification.getId());
+                        humanPreference.getChosenLabel().setFrequency(classification.getFrequency());
                     } else {
                         log.warn("No such label with Katie Id '" + humanPreference.getChosenLabel().getKatieId() + "'! Label probably got deleted.");
+                        humanPreference.getChosenLabel().setFrequency(0);
                     }
                 }
                 if (humanPreference.getRejectedLabel() != null) {
                     Classification classification = classificationRepoService.getClassification(domain, humanPreference.getRejectedLabel().getKatieId());
                     if (classification != null) {
                         humanPreference.getRejectedLabel().setId(classification.getId());
+                        humanPreference.getRejectedLabel().setFrequency(classification.getFrequency());
                     } else {
                         log.warn("No such label with Katie Id '" + humanPreference.getRejectedLabel().getKatieId() + "'! Label probably got deleted.");
+                        humanPreference.getRejectedLabel().setFrequency(0);
                     }
                 }
 
