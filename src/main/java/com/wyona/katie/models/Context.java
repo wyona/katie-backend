@@ -1061,8 +1061,9 @@ public class Context {
      * Get embeddings implementation for classification
      */
     public EmbeddingsImpl getClassificationEmbeddingsImpl() {
-        // TODO: Get from configuration
+        // TODO: Get from configuration, instead hard coded
         return EmbeddingsImpl.SBERT;
+        //return EmbeddingsImpl.OPENAI_COMPATIBLE;
     }
 
     /**
