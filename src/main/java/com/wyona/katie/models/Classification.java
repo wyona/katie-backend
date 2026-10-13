@@ -82,7 +82,7 @@ public class Classification implements Comparable<Classification> {
     }
 
     /**
-     *
+     * Set number of samples in this class, resp. number of samples that are labeled with this class
      */
     public void setFrequency(int frequency) {
         this.frequency = frequency;
