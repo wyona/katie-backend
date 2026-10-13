@@ -94,9 +94,9 @@ public class EmbeddingsService {
      * Get embedding for a text
      * @param sentence Text
      * @param impl Embedding provider
-     * @param model Model of embeddings implementation, e.g. "mistral-embed"
-     * @param embeddingType Embedding type
-     * @param embeddingEndpoint OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
+     * @param model Model of embeddings implementation, e.g., "mistral-embed", or "azure/text-embedding-3-small"
+     * @param embeddingType Embedding type, e.g., SEARCH_DOCUMENT or SEARCH_QUERY
+     * @param embeddingEndpoint OpenAI compatible embedding endpoint, e.g., "https://api.mistral.ai/v1/embeddings" or "https://llm.apache.org/v1/embeddings"
      * @param apiToken API token of embedding provider
      * @return embedding vector
      */
