@@ -478,6 +478,7 @@ public class BenchmarkService {
 
             int successful = 0;
             List<HumanPreferenceLabel> failedPredictions = new ArrayList<>();
+            List<HumanPreferenceLabel> notVerifiablePredictions = new ArrayList<>();
 
             for (HumanPreferenceLabel preference : preferences) {
                 if (throttleTimeInMillis > 0) {
@@ -497,14 +498,15 @@ public class BenchmarkService {
                             String logMsg = "Preference label probably got deleted (Rating Id: " + preference.getMeta().getId() + ")!";
                             backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.WARN);
                             log.warn(logMsg);
-                            failedPredictions.add(preference);
+                            notVerifiablePredictions.add(preference);
                             continue;
                         }
 
+                        // This case should not really happen
                         if (labels[0].getLabel() == null || labels[0].getLabel().getId() == null) {
                             String logMsg = "Prediction label probably got deleted (Prediction Request Id: " + preference.getMeta().getRequestUuid() + ")!";
-                            backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.WARN);
-                            log.warn(logMsg);
+                            backgroundProcessService.updateProcessStatus(processId, logMsg, BackgroundProcessStatusType.ERROR);
+                            log.error(logMsg);
                             failedPredictions.add(preference);
                             continue;
                         }
@@ -527,8 +529,8 @@ public class BenchmarkService {
                 }
             }
 
-            double accuracy = Double.valueOf(successful) / Double.valueOf(total);
-            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ")";
+            double accuracy = Double.valueOf(successful) / Double.valueOf(total - notVerifiablePredictions.size());
+            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ", Not verifianle: " + notVerifiablePredictions.size() + ")";
             backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
 
             if (email != null) {
