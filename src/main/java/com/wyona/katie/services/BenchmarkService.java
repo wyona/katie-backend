@@ -530,7 +530,7 @@ public class BenchmarkService {
             }
 
             double accuracy = Double.valueOf(successful) / Double.valueOf(total - notVerifiablePredictions.size());
-            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ", Not verifianle: " + notVerifiablePredictions.size() + ")";
+            String benchmarkResult = "Accuracy: " + accuracy + " (Total: " + total + ", Successful: " + successful + ", Failed: " + failedPredictions.size() + ", Not verifiable: " + notVerifiablePredictions.size() + ")";
             backgroundProcessService.updateProcessStatus(processId, benchmarkResult);
 
             if (email != null) {
