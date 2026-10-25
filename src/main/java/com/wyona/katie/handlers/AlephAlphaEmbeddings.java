@@ -33,9 +33,9 @@ public class AlephAlphaEmbeddings implements EmbeddingsProvider {
     private String hosting;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, Integer, String, String)
      */
-    public Vector getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String alephAlphaToken) {
+    public Vector getEmbedding(String sentence, String alephAlphaModel, EmbeddingType embeddingType, EmbeddingValueType valueType, Integer dimensions, String endpoint, String alephAlphaToken) {
         log.info("Get embedding from Aleph Alpha for sentence '" + sentence + "' ...");
 
         FloatVector vector = null;

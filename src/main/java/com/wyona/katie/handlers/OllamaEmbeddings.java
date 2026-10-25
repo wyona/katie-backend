@@ -28,9 +28,9 @@ public class OllamaEmbeddings implements EmbeddingsProvider {
     private OllamaEmbeddingModel embeddingModel;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, Integer, String, String)
      */
-    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String apiToken) {
+    public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, Integer dimensions, String endpoint, String apiToken) {
         OllamaEmbeddingOptions options = OllamaEmbeddingOptions.builder()
                 .model(model)
                 .truncate(false)

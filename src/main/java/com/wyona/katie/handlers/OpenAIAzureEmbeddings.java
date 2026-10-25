@@ -44,9 +44,9 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
     //AzureOpenAiEmbeddingModel azureOpenAiEmbeddingModel;
 
     /**
-     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, String, String)
+     * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, Integer, String, String)
      */
-    public Vector getEmbedding(String sentence, String deploymentName, EmbeddingType embeddingType, EmbeddingValueType valueType, String endpoint, String apiKey) throws Exception {
+    public Vector getEmbedding(String sentence, String deploymentName, EmbeddingType embeddingType, EmbeddingValueType valueType, Integer dimensions, String endpoint, String apiKey) throws Exception {
         log.info("Get embedding from Azure OpenAI for sentence '" + sentence + "' ...");
 
         /*
@@ -69,21 +69,26 @@ public class OpenAIAzureEmbeddings implements EmbeddingsProvider {
         FloatVector vector = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            ObjectNode inputNode = mapper.createObjectNode();
-            inputNode.put("input", sentence);
+            ObjectNode requestBodyNode = mapper.createObjectNode();
+            requestBodyNode.put("input", sentence);
+
+            if (dimensions != null && dimensions > 0) {
+                requestBodyNode.put("dimensions", dimensions.intValue());
+                log.info("Use truncated embedding, reduced dimensions: " + dimensions);
+            }
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = getHttpHeaders(apiKey);
-            HttpEntity<String> request = new HttpEntity<String>(inputNode.toString(), headers);
+            HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
 
             String requestUrl = endpoint + "/openai/deployments/" + deploymentName + "/embeddings?api-version=" + openAIAzureApiVersion;
 
             log.info("Get embedding: " + requestUrl);
             ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
-            JsonNode bodyNode = response.getBody();
-            log.info("JSON: " + bodyNode);
+            JsonNode responseBodyNode = response.getBody();
+            log.info("JSON: " + responseBodyNode);
 
-            JsonNode embeddingNode = bodyNode.get("data").get(0).get("embedding");
+            JsonNode embeddingNode = responseBodyNode.get("data").get(0).get("embedding");
             if (embeddingNode.isArray()) {
                 vector = new FloatVector(embeddingNode.size());
 

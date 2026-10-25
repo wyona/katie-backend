@@ -102,25 +102,29 @@ public class EmbeddingsService {
      */
     public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String embeddingEndpoint, String apiToken) throws Exception {
         Vector vector = null;
+
+        //Integer dimensions = 1024;
+        Integer dimensions = null; // TODO
+        
         if (impl.equals(EmbeddingsImpl.SBERT) || impl.equals(EmbeddingsImpl.UNSET)) {
-            vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI)) {
-            vector = openAIImpl.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = openAIImpl.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-            vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = openAIAzureImpl.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI_COMPATIBLE)) {
             vector = openAIImpl.getEmbeddingFromOpenAICompatibleInterface(embeddingEndpoint, model, sentence, apiToken);
         } else if (impl.equals(EmbeddingsImpl.COHERE)) {
             log.info("Get embedding from Cohere (Model: " + model + ", Input Type: " + embeddingType + ", Value Type: " + valueType + ") ...");
-            vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = cohereEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.ALEPH_ALPHA)) {
-            vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = alephAlphaEmbeddingsImpl.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OLLAMA)) {
-            vector = ollamaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = ollamaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.NUMENTA)) {
-            vector = numentaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = numentaEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.GOOGLE)) {
-            vector = googleEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, embeddingEndpoint, apiToken);
+            vector = googleEmbeddings.getEmbedding(sentence, model, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else {
             log.error("No such embedding implementation '" + impl + "' supported!");
         }

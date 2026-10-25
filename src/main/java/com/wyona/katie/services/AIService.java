@@ -473,8 +473,9 @@ public class AIService {
             log.error("No such embedding implementation '" + embeddingsImpl + "' supported!");
         }
 
-        // TODO: Also allow int8
-        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, EmbeddingValueType.float32, endpoint, apiToken);
+        EmbeddingValueType embeddingValueType = EmbeddingValueType.float32; // TODO: Also allow int8
+        Integer dimensions = null; // TODO: Also allow truncated embeddings
+        return embeddingsProvider.getEmbedding(sentence, model, EmbeddingType.SEARCH_DOCUMENT, embeddingValueType, dimensions, endpoint, apiToken);
     }
 
     /**
