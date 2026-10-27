@@ -104,6 +104,7 @@ public class MicrosoftAuthorizationService {
                 String idToken = bodyNode.get(ID_TOKEN).asText();
                 tokens.put(ID_TOKEN, idToken);
                 log.info("ID token received :-)");
+                //log.info("ID token: " + idToken);
             }
 
             return tokens;
