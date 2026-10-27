@@ -48,7 +48,7 @@ import java.util.UUID;
 public class XMLService {
 
     @Value("${spring.ai.azure.openai.endpoint}")
-    private String openAIAzureHost;
+    private String defaultOpenAIAzureHost;
 
     @Value("${mistral.ai.completion.model}")
     private String mistralAIModel;
@@ -61,6 +61,9 @@ public class XMLService {
 
     @Value("${spring.ai.ollama.base-url}")
     private String ollamaDefaultHost;
+
+    @Value("${sbert.hostname}")
+    private String sbertHostname;
 
     @Value("${iam.data_path}")
     private String iamDataPath;
@@ -1882,8 +1885,12 @@ public class XMLService {
                 embeddingsEndpoint = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
             } else {
                 if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-                    embeddingsEndpoint = openAIAzureHost;
+                    embeddingsEndpoint = defaultOpenAIAzureHost;
                     log.warn("No domain specific embeddings endpoint configured (Domain: " + domainId + "), therefore use globally configured OpenAI Azure endpoint '" + embeddingsEndpoint + "'.");
+                } else if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {
+                    log.info("SBERT endpoint: " + sbertHostname);
+                } else if (embeddingsImpl.equals(EmbeddingsImpl.OLLAMA)) {
+                    log.info("Ollama endpoint: " + ollamaDefaultHost);
                 } else {
                     log.error("No embeddings endpoint configured for domain '" + domainId + "'!");
                 }
