@@ -42,6 +42,9 @@ public class GenerativeAIService {
             return alephAlphaGenerate;
         } else if (impl.equals(CompletionImpl.OPENAI)) {
             return openAIGenerate;
+        } else if (impl.equals(CompletionImpl.OPENAI_COMPATIBLE)) {
+            // We can use the OpenAI implementation
+            return openAIGenerate;
         } else if (impl.equals(CompletionImpl.AZURE)) {
             return azureGenerate;
         } else if (impl.equals(CompletionImpl.MISTRAL_AI)) {
