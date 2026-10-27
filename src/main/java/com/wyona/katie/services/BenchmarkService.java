@@ -314,7 +314,8 @@ public class BenchmarkService {
         double timeToIndex = -1;
         timeToIndex = new Date().getTime();
 
-        contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
+        Integer embeddingsDimensions = null;
+        contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), embeddingsDimensions, rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
         timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
 
         backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets indexed.");
@@ -757,7 +758,8 @@ public class BenchmarkService {
 
         try {
             timeToIndex = new Date().getTime();
-            contextService.reindex(domainId, rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), indexAlternativeQuestions, true, processId, throttleTimeInMillis);
+            Integer embeddingDimensions = null;
+            contextService.reindex(domainId, rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), embeddingDimensions, rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), indexAlternativeQuestions, true, processId, throttleTimeInMillis);
             timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

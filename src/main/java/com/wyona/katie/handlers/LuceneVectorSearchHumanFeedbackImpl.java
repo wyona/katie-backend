@@ -89,7 +89,9 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
      */
     public Rating[] getHumanFeedback(String question, Context domain) throws Exception {
         log.info("Consider human feedback: Get embedding for question ...");
-        Vector queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null,null);
+        //Integer dimensions = 1024; // TODO: Also allow truncated embeddings
+        Integer dimensions = null;
+        Vector queryVector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, dimensions, null,null);
         int k = 7; // INFO: The number of documents to find
 
 
@@ -137,7 +139,9 @@ public class LuceneVectorSearchHumanFeedbackImpl implements HumanFeedbackHandler
         // TODO: Check input sequence length and log warning when text is too long:
         //  https://www.sbert.net/examples/applications/computing-embeddings/README.html#input-sequence-length
         //  https://docs.cohere.ai/docs/embeddings#how-embeddings-are-obtained
-        Vector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, null,null);
+        //Integer dimensions = 1024; // TODO: Also allow truncated embeddings
+        Integer dimensions = null;
+        Vector vector = embeddingsService.getEmbedding(question, EMBEDDINGS_IMPL, null, EmbeddingType.SEARCH_QUERY, VECTOR_VALUE_TYPE, dimensions, null,null);
 
         FieldType vectorFieldType = KnnFloatVectorField.createFieldType(vector.getDimension(), domain.getVectorSimilarityMetric());
         // TODO: Use KnnFloatVectorField

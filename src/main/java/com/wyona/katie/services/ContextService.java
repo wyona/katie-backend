@@ -1451,6 +1451,7 @@ public class ContextService {
      * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
+     * @param embeddingDimensions Optional dimensions parameter to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken Embedding implementation API token
@@ -1460,7 +1461,7 @@ public class ContextService {
      * @param userId Id of signed in user
      */
     @Async
-    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
+    public void reindexInBackground(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, Integer embeddingDimensions, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, String userId, int throttleTimeInMillis) {
         if (existsReindexLock(domainId)) {
             String existingProcessId = getReindexProcessId(domainId);
             log.warn("Reindexing of domain '" + domainId + "' already in progress (Process Id: " + existingProcessId + "), therefore no other reindex process will be started.");
@@ -1488,7 +1489,7 @@ public class ContextService {
          */
 
         try {
-            reindex(domainId, retrievalImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
+            reindex(domainId, retrievalImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingDimensions, embeddingValueType, embeddingEndpoint, apiToken, indexAlternativeQuestions, indexAllQnAs, processId, throttleTimeInMillis);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             backgroundProcessService.updateProcessStatus(processId, e.getMessage(), BackgroundProcessStatusType.ERROR);
@@ -1542,6 +1543,7 @@ public class ContextService {
      * @param queryServiceToken Query service token / key / secret
      * @param embeddingImpl Embedding implementation when LUCENE_VECTOR_SEARCH is selected as search implementation
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
+     * @param embeddingDimensions Optional dimensions parameter to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken Embedding implementation API token
@@ -1550,7 +1552,7 @@ public class ContextService {
      * @param processId Background process UUID
      * @param throttleTimeInMillis Time in milliseconds to throttle re-indexing, because OpenAI, Cohere, etc. do have rate limits
      */
-    protected void reindex(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
+    protected void reindex(String domainId, DetectDuplicatedQuestionImpl retrievalImpl, String queryServiceBaseUrl, String queryServiceToken, EmbeddingsImpl embeddingImpl, String embeddingModel, Integer embeddingDimensions, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken, boolean indexAlternativeQuestions, boolean indexAllQnAs, String processId, int throttleTimeInMillis) throws Exception {
         Context domain = getContext(domainId);
         log.info("Reindex domain '" + domainId + "' and replace current index implementation '" + domain.getDetectDuplicatedQuestionImpl() + "' by '" + retrievalImpl + "' ...");
 
@@ -1600,7 +1602,7 @@ public class ContextService {
         String aiServiceBaseUrl = aiService.createTenant(domain, retrievalImpl);
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);
 
-        domain = setRetrievalImplementation(domain, retrievalImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken);
+        domain = setRetrievalImplementation(domain, retrievalImpl, aiServiceBaseUrl, embeddingImpl, embeddingModel, embeddingDimensions, embeddingValueType, embeddingEndpoint, apiToken);
         saveDomainConfig(domain);
 
 
@@ -1884,10 +1886,11 @@ public class ContextService {
         log.info("AI Service base URL or Id: " + aiServiceBaseUrl);
 
         String defaultEmbeddingModel = null; // TODO: Make configurable
+        Integer embeddingsDimensions = null;
         EmbeddingValueType defaultEmbeddingValueType = EmbeddingValueType.float32; // TODO: Make configurable
         String defaultEmbeddingEndpoint = null; // TOOD: Make configurable
 
-        newContext = setRetrievalImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, defaultEmbeddingValueType, defaultEmbeddingEndpoint, newContext.getEmbeddingsApiToken());
+        newContext = setRetrievalImplementation(newContext, defaultDetectDuplicatedQuestionImpl, aiServiceBaseUrl, defaultEmbeddingImpl, defaultEmbeddingModel, embeddingsDimensions, defaultEmbeddingValueType, defaultEmbeddingEndpoint, newContext.getEmbeddingsApiToken());
         saveDomainConfig(newContext);
 
         return newContext;
@@ -1920,11 +1923,12 @@ public class ContextService {
      * @param aiServiceBaseUrl Retrieval base URL or index or corpus Id, e.g. "http://localhost:19530/" or "askkatie_5bd57b92-da98-422f-8ad6-6670b9c69184"
      * @param embeddingImpl Embedding provider, e.g., "OpenAI", "Cohere", ...
      * @param embeddingModel Embedding model, e.g. 'all-mpnet-base-v2' or 'embed-multilingual-v3.0'
+     * @param embeddingDimensions Optional dimensions parameter to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
      * @param embeddingValueType Embedding value type, either float32 or int8 / byte
      * @param embeddingEndpoint Optional OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings
      * @param apiToken API Token of Embeddings Implementation
      */
-    private Context setRetrievalImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
+    private Context setRetrievalImplementation(Context domain, DetectDuplicatedQuestionImpl questionAnswerImplementation, String aiServiceBaseUrl, EmbeddingsImpl embeddingImpl, String embeddingModel, Integer embeddingDimensions, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
         if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH)) {
@@ -1969,6 +1973,7 @@ public class ContextService {
                 } else {
                     if (embeddingModel != null && !embeddingModel.isEmpty()) {
                         domain.setEmbeddingsModel(embeddingModel);
+                        domain.setEmbeddingsDimensions(embeddingDimensions);
                     } else {
                         // INFO: Get default embedding model for embedding implementation
                         domain.setEmbeddingsModel(aiService.getEmbeddingModel(embeddingImpl, true));

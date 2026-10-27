@@ -50,7 +50,7 @@ public class EmbeddingsService {
      */
     public Vector getEmbedding(String text, Context domain, EmbeddingType embeddingType, EmbeddingValueType valueType) throws Exception {
         try {
-            return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
+            return getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), embeddingType, valueType, domain.getEmbeddingsDimensions(), domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
         } catch (Exception e) {
             throw e;
         } finally {
@@ -96,16 +96,14 @@ public class EmbeddingsService {
      * @param impl Embedding provider
      * @param model Model of embeddings implementation, e.g., "mistral-embed", or "azure/text-embedding-3-small"
      * @param embeddingType Embedding type, e.g., SEARCH_DOCUMENT or SEARCH_QUERY
+     * @param dimensions Optional dimensions parameter to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
      * @param embeddingEndpoint OpenAI compatible embedding endpoint, e.g., "https://api.mistral.ai/v1/embeddings" or "https://llm.apache.org/v1/embeddings"
      * @param apiToken API token of embedding provider
      * @return embedding vector
      */
-    public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, String embeddingEndpoint, String apiToken) throws Exception {
+    public Vector getEmbedding(String sentence, EmbeddingsImpl impl, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, Integer dimensions, String embeddingEndpoint, String apiToken) throws Exception {
         Vector vector = null;
 
-        //Integer dimensions = 1024;
-        Integer dimensions = null; // TODO
-        
         if (impl.equals(EmbeddingsImpl.SBERT) || impl.equals(EmbeddingsImpl.UNSET)) {
             vector = sbertImpl.getEmbedding(sentence, null, embeddingType, valueType, dimensions, embeddingEndpoint, apiToken);
         } else if (impl.equals(EmbeddingsImpl.OPENAI)) {

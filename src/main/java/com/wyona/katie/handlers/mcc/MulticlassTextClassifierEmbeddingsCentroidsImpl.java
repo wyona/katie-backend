@@ -52,16 +52,18 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
     /**
      * Get vector embedding for a particular text
      */
-    private Vector getEmnbedding(String text, Context domain, EmbeddingType embeddingType) throws Exception {
-        return embeddingsService.getEmbedding(text, domain.getClassificationEmbeddingsImpl(), null, embeddingType, VECTOR_VALUE_TYPE, null, null);
-        //return embeddingsService.getEmbedding(text, EmbeddingsImpl.OPENAI_COMPATIBLE, "azure/text-embedding-3-small", embeddingType, VECTOR_VALUE_TYPE, "https://llm.apache.org/v1/embeddings", "REPLACE");
+    private Vector getEmbedding(String text, Context domain, EmbeddingType embeddingType) throws Exception {
+        //Integer dimensions = 1024; // TODO: Also allow truncated embeddings
+        Integer dimensions = null;
+        return embeddingsService.getEmbedding(text, domain.getClassificationEmbeddingsImpl(), null, embeddingType, VECTOR_VALUE_TYPE, dimensions, null, null);
+        //return embeddingsService.getEmbedding(text, EmbeddingsImpl.OPENAI_COMPATIBLE, "azure/text-embedding-3-small", embeddingType, VECTOR_VALUE_TYPE, dimensions, "https://llm.apache.org/v1/embeddings", "REPLACE");
     }
 
     /**
      * @see com.wyona.katie.handlers.mcc.MulticlassTextClassifier#predictLabels(Context, String, int)
      */
     public HitLabel[] predictLabels(Context domain, String text, int limit) throws Exception {
-        Vector queryVector = getEmnbedding(text, domain, EmbeddingType.SEARCH_QUERY);
+        Vector queryVector = getEmbedding(text, domain, EmbeddingType.SEARCH_QUERY);
 
         // TODO: Consider to combine both search results!
         // TODO: centroids can be very close to each other, which means a query vector can be very close to a a wrong centroid and at the same time very close to an invidual sample vector associated with the correct centroid.
@@ -192,7 +194,7 @@ public class MulticlassTextClassifierEmbeddingsCentroidsImpl implements Multicla
 
         String classId = sample.getClassification().getKatieId();
 
-        Vector sampleVector = getEmnbedding(sample.getText(), domain, EmbeddingType.SEARCH_DOCUMENT);
+        Vector sampleVector = getEmbedding(sample.getText(), domain, EmbeddingType.SEARCH_DOCUMENT);
         indexSampleVector(sample.getId(), classId, sampleVector, domain);
 
         File embeddingFile = getEmbeddingFile(domain, classId, sample.getId());

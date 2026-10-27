@@ -1981,8 +1981,10 @@ public class DomainController {
             @RequestParam(value = "query-service-token", required = false) String queryServiceToken,
             //@Parameter(name = "embedding-impl", description = "Embedding implementation",required = false)
             @RequestParam(value = "embedding-impl", required = false) EmbeddingsImpl embeddingImpl,
-            @Parameter(name = "embedding-model", description = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small",required = false)
+            @Parameter(name = "embedding-model", description = "Embedding model, e.g. all-mpnet-base-v2 or text-embedding-3-small", required = false)
             @RequestParam(value = "embedding-model", required = false) String embeddingModel,
+            @Parameter(name = "embedding-dimensions", description = "Embedding dimensions", required = false)
+            @RequestParam(value = "embedding-dimensions", required = false) Integer embeddingDimensions,
             @Parameter(name = "embedding-description-type", description = "Embedding value type",required = false)
             @RequestParam(value = "embedding-value-type", required = false) EmbeddingValueType embeddingValueType,
             @Parameter(name = "embedding-endpoint", description = "OpenAI compatible embedding endpoint, e.g. https://api.mistral.ai/v1/embeddings", required = false)
@@ -2032,7 +2034,7 @@ public class DomainController {
             if (embeddingImpl == null) {
                 embeddingImpl = EmbeddingsImpl.SBERT;
             } else {
-                if (apiToken == null && !embeddingImpl.equals(EmbeddingsImpl.SBERT)) {
+                if (apiToken == null && (!embeddingImpl.equals(EmbeddingsImpl.SBERT) && !embeddingImpl.equals(EmbeddingsImpl.OLLAMA))) {
                     String errMsg = "For Embeddings Implementation '" + embeddingImpl + "' API Token is required!";
                     log.error(errMsg);
                     return new ResponseEntity<>(new Error(errMsg, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
@@ -2065,7 +2067,7 @@ public class DomainController {
         String processId = UUID.randomUUID().toString();
         String userId = authenticationService.getUserId();
 
-        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingValueType, embeddingEndpoint, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
+        domainService.reindexInBackground(id, searchImpl, queryServiceBaseUrl, queryServiceToken, embeddingImpl, embeddingModel, embeddingDimensions, embeddingValueType, embeddingEndpoint, apiToken,_indexAlternativeQuestions, _indexAllQnAs, processId, userId, throttleTimeInMillis);
 
         /* INFO: Delay response to test frontend spinner
         try {

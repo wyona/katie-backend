@@ -162,6 +162,7 @@ public class XMLService {
 
     private static final String CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR = "embeddings-impl";
     private static final String CONTEXT_VECTOR_SEARCH_MODEL_ATTR = "model";
+    private static final String CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR = "embeddings-dimensions";
     private static final String CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR = "value-type";
     private static final String CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR = "embeddings-endpoint";
     private static final String CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR = "api-token";
@@ -1629,6 +1630,9 @@ public class XMLService {
             if (context.getEmbeddingsModel() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR, context.getEmbeddingsModel());
             }
+            if (context.getEmbeddingsDimensions() != null) {
+                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR, context.getEmbeddingsDimensions().toString());
+            }
             if (context.getEmbeddingValueType() != null) {
                 luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR, context.getEmbeddingValueType().toString());
             }
@@ -1785,6 +1789,7 @@ public class XMLService {
 
         EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.UNSET;
         String embeddingsModel = null;
+        Integer embeddingsDimensions = null;
         EmbeddingValueType embeddingValueType = null;
         String embeddingsEndpoint = null;
         String embeddingsApiToken = null;
@@ -1863,6 +1868,9 @@ public class XMLService {
             }
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR)) {
                 embeddingsModel = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR);
+            }
+            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR)) {
+                embeddingsDimensions = Integer.parseInt(luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR));
             }
             if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)) {
                 embeddingValueType = EmbeddingValueType.valueOf(luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR));
@@ -2164,6 +2172,7 @@ public class XMLService {
             domain.setEmbeddingsImpl(embeddingsImpl);
             domain.setEmbeddingsModel(embeddingsModel);
             domain.setEmbeddingValueType(embeddingValueType);
+            domain.setEmbeddingsDimensions(embeddingsDimensions);
             domain.setEmbeddingsEndpoint(embeddingsEndpoint);
             domain.setEmbeddingsApiToken(embeddingsApiToken);
         }
@@ -2184,6 +2193,8 @@ public class XMLService {
         if (completionImpl.equals(CompletionImpl.ALEPH_ALPHA)) {
             model = "luminous-base"; // TODO: Make configurable
         } else if (completionImpl.equals(CompletionImpl.OPENAI)) {
+            model = openAIModel;
+        } else if (completionImpl.equals(CompletionImpl.OPENAI_COMPATIBLE)) {
             model = openAIModel;
         } else if (completionImpl.equals(CompletionImpl.AZURE)) {
             // TODO: Offer alternative?!
