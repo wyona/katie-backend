@@ -279,7 +279,7 @@ public class OAuthController {
             HttpServletRequest request,
             HttpServletResponse response) throws Exception  {
 
-        log.info("OAuth callback ...");
+        log.info("Handle OAuth callback ...");
 
         log.info("Received Code, in order to request access token: " + code);
         log.info("State: " + state);
