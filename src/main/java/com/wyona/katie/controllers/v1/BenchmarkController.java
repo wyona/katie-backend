@@ -424,7 +424,7 @@ public class BenchmarkController {
     public ResponseEntity<?> runMtebEvaluation(
             @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'Wyona/LIMIT-very-small' (https://huggingface.co/datasets/Wyona/LIMIT-very-small) or 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
             @RequestParam(value = "dataset-path", required = true) String datasetPath,
-            @Parameter(name = "retrieval-algorithm", description = "Retrieval implementation", required = true)
+            //@Parameter(name = "retrieval-algorithm", description = "Retrieval implementation", required = true)
             @RequestParam(value = "retrieval-algorithm", required = true, defaultValue = "LUCENE_DEFAULT") DetectDuplicatedQuestionImpl retrievalImpl,
             HttpServletRequest request) {
 
