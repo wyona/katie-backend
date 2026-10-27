@@ -486,11 +486,11 @@ public class DomainController {
             @PathVariable("id") String domainid,
             //@Parameter(name = "completion-impl", description = "Completion implementation", required = true)
             @RequestParam(value = "completion-impl", required = true) CompletionImpl completionImpl,
-            @Parameter(name = "completion-model", description = "Completion model", required = true)
+            @Parameter(name = "completion-model", description = "Completion model, e.g., gpt-6-luna", required = true)
             @RequestParam(value = "completion-model", required = true) String completionModel,
             @Parameter(name = "completion-api-key", description = "Completion API key", required = true)
             @RequestParam(value = "completion-api-key", required = true) String completionApiKey,
-            @Parameter(name = "completion-host", description = "Completion host, e.g. https://openai-katie.openai.azure.com", required = false)
+            @Parameter(name = "completion-host", description = "Completion host, e.g., https://openai-katie.openai.azure.com or https://llm.apache.org", required = false)
             @RequestParam(value = "completion-host", required = false) String completionHost
     ) {
         try {
