@@ -31,6 +31,7 @@ public class Context {
     private EmbeddingsImpl embeddingsImpl;
     private String embeddingsModel;
     private EmbeddingValueType embeddingValueType;
+    private Integer embeddingsDimensions;
     private String embeddingsEndpoint;
     private String embeddingsApiToken;
     private VectorSimilarityFunction vectorSimilarityMetric;
@@ -139,6 +140,8 @@ public class Context {
         this.informUserReNoAnswerAvailable = false;
 
         this.reindexBackgroundProcessId = reindexBackgroundProcessId;
+
+        this.embeddingsDimensions = null;
     }
 
     /**
@@ -262,6 +265,20 @@ public class Context {
      */
     public String getEmbeddingsModel() {
         return embeddingsModel;
+    }
+
+    /**
+     * Set reduced embedding dimensions, in order to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
+     */
+    public void setEmbeddingsDimensions(Integer embeddingsDimensions) {
+        this.embeddingsDimensions = embeddingsDimensions;
+    }
+
+    /**
+     * Get reduced embedding dimensions, in order to use truncated embeddings. When an embedding model (e.g., Qwen3-Embedding-8B with 4096 dimensions) supports the Matryoshka approach, then we might want to use truncated embeddings (1014 instead 4096). See for example https://huggingface.co/blog/matryoshka
+     */
+    public Integer getEmbeddingsDimensions() {
+        return embeddingsDimensions;
     }
 
     /**
