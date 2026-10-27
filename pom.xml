@@ -654,7 +654,7 @@
       <!--<h2.version>1.4.197</h2.version>-->
       <h2.version>2.4.240</h2.version>
       <jackson.version>2.19.4</jackson.version>
-      <springai.version>1.1.0-M3</springai.version>
+      <springai.version>1.1.8</springai.version>
       <lucene.version>10.5.1</lucene.version> <!-- IMPORTANT: Also update subclass of default Lucene Codec inside com/wyona/katie/services/LuceneCodecFactory.java ... -->
       <!--<lucene.version>9.5.0-SNAPSHOT</lucene.version>-->
       <!-- IMPORTANT: Remove log4j version when upgrading Spring Boot version and Spring Boot has a recent log4j dependency -->

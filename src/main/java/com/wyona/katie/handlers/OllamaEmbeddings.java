@@ -31,10 +31,15 @@ public class OllamaEmbeddings implements EmbeddingsProvider {
      * @see EmbeddingsProvider#getEmbedding(String, String, EmbeddingType, EmbeddingValueType, Integer, String, String)
      */
     public Vector getEmbedding(String sentence, String model, EmbeddingType embeddingType, EmbeddingValueType valueType, Integer dimensions, String endpoint, String apiToken) {
-        OllamaEmbeddingOptions options = OllamaEmbeddingOptions.builder()
+        OllamaEmbeddingOptions.Builder optionsBuilder = OllamaEmbeddingOptions.builder()
                 .model(model)
-                .truncate(false)
-                .build();
+                .truncate(false);
+
+        if (dimensions != null) {
+            optionsBuilder.dimensions(dimensions);
+        }
+
+        OllamaEmbeddingOptions options = optionsBuilder.build();
 
         log.info("Get embedding for text '" + sentence + "' using SpringAI Ollama (" + options.getModel() + ") ...");
 
