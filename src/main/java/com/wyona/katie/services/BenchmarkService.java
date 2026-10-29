@@ -828,7 +828,12 @@ public class BenchmarkService {
         StringBuilder meta = new StringBuilder("Retrieval Implementation: " + domain.getDetectDuplicatedQuestionImpl());
         if (domain.getDetectDuplicatedQuestionImpl().equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             meta.append(", Dense Embeddings Impl: " + domain.getEmbeddingsImpl());
-            meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl(), true));
+            if (domain.getEmbeddingsModel() != null) {
+                meta.append(", Dense Embeddings Model: " + domain.getEmbeddingsModel());
+            } else {
+                // Get default model
+                meta.append(", Dense Embeddings Model: " + aiService.getEmbeddingModel(domain.getEmbeddingsImpl(), true));
+            }
             if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
                 meta.append(", Dense Embeddings Provider URL: " + sbertImpl.getHttpHost());
             } else {
