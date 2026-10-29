@@ -452,10 +452,11 @@ public class BenchmarkController {
             RetrievalConfiguration rConfig = new RetrievalConfiguration();
             rConfig.setRetrievalImpl(retrievalImpl);
             if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
-                rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+                //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
+                //rConfig.setEmbeddingModel("models/sentence-transformers_all-mpnet-base-v2");
 
-                //rConfig.setEmbeddingImpl(EmbeddingsImpl.OLLAMA);
-                //rConfig.setEmbeddingModel("qwen3-embedding:0.6b");
+                rConfig.setEmbeddingImpl(EmbeddingsImpl.OLLAMA);
+                rConfig.setEmbeddingModel("qwen3-embedding:0.6b");
             }
 
             // TODO: Only allow Lucene algorithms
