@@ -87,6 +87,8 @@ public class AIService {
     private NumentaEmbeddingsWithoutPreTokenization numentaEmbeddings;
     @Autowired
     private GoogleEmbeddings googleEmbeddings;
+    @Autowired
+    private OllamaEmbeddings ollamaEmbeddings;
 
     @Autowired
     private NamedEntityRecognitionService nerService;
@@ -442,7 +444,7 @@ public class AIService {
         } else if (embeddingsImpl.equals(EmbeddingsImpl.GOOGLE)) {
             model = googleModel; // TODO: Make model configurable
         } else {
-            log.error("No such embedding implementation '" + embeddingsImpl + "' supported!");
+            log.error("No default model configured for embedding implementation '" + embeddingsImpl + "'!");
         }
 
         return model;
@@ -469,6 +471,8 @@ public class AIService {
             embeddingsProvider = numentaEmbeddings;
         } else if (embeddingsImpl.equals(EmbeddingsImpl.GOOGLE)) {
             embeddingsProvider = googleEmbeddings;
+        } else if (embeddingsImpl.equals(EmbeddingsImpl.OLLAMA)) {
+            embeddingsProvider = ollamaEmbeddings;
         } else {
             log.error("No such embedding implementation '" + embeddingsImpl + "' supported!");
         }
