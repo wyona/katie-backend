@@ -982,7 +982,9 @@ public class QuestionAnsweringService {
         final int BATCH_SIZE = 100;
         for (BenchmarkQuestion question : questions) {
             log.info("Evaluate question: " + question.getQuestion());
-            benchmark.addResult(getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), recall_top_k, domain, throttleTimeInMillis));
+            BenchmarkPrecisionResult result = getAccuracyAndPrecisionAndRecall(question.getQuestion(), question.getRelevantUuids(), recall_top_k, domain, throttleTimeInMillis);
+            backgroundProcessService.updateProcessStatus(processId, "Question evaluated: '" + question.getQuestion() + "', recall@" + recall_top_k + ": " + result.getRecall());
+            benchmark.addResult(result);
             counter++;
 
             if (counter % BATCH_SIZE == 0) {
