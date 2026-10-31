@@ -15,6 +15,8 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.search.highlight.TokenSources;
 
+import opennlp.tools.stopword.*;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -30,12 +32,19 @@ public class KeywordsExtractor {
      */
     public static List<CardKeyword> getKeywordsV2(String text) throws Exception {
         List<CardKeyword> cardKeywords = new ArrayList<>();
+
+        StopwordFilter filter = StopwordLists.forLanguage("en");
+
         TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
         stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
         while (stream.incrementToken()) {
             CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
             log.info("Extracted token/keyword: " + keyword.getStem());
-            cardKeywords.add(keyword);
+            if (filter.isStopword(keyword.getStem())) {
+                log.info("Skip stopword: " + keyword.getStem());
+            } else {
+                cardKeywords.add(keyword);
+            }
         }
         stream.end();
         stream.close();
