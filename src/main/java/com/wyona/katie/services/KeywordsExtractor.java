@@ -10,8 +10,10 @@ import org.apache.lucene.analysis.de.GermanAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.search.highlight.TokenSources;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,28 +26,46 @@ import java.util.*;
 public class KeywordsExtractor {
 
     /**
+     *
+     */
+    public static List<CardKeyword> getKeywordsV2(String text) throws Exception {
+        List<CardKeyword> cardKeywords = new ArrayList<>();
+        TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
+        stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
+        while (stream.incrementToken()) {
+            CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
+            log.info("Extracted token/keyword: " + keyword.getStem());
+            cardKeywords.add(keyword);
+        }
+        stream.end();
+        stream.close();
+
+        return cardKeywords;
+    }
+
+    /**
      * Get list of keywords with stem form, frequency rank, and terms dictionary
      *
-     * @param fullText
+     * @param text Text to extract keywords from
      * @return List<CardKeyword>, which contains keywords cards
      * @throws IOException
      */
-    public static List<CardKeyword> getKeywordsList(String fullText, Language language) throws IOException {
+    public static List<CardKeyword> getKeywords(String text, Language language) throws IOException {
 
         TokenStream tokenStream = null;
 
         try {
             // treat the dashed words, don't let separate them during the processing
-            fullText = fullText.replaceAll("-+", "-0");
+            text = text.replaceAll("-+", "-0");
 
             // replace any punctuation char but apostrophes and dashes with a space
-            fullText = fullText.replaceAll("[\\p{Punct}&&[^'-]]+", " ");
+            text = text.replaceAll("[\\p{Punct}&&[^'-]]+", " ");
 
             // replace most common English contractions
-            fullText = fullText.replaceAll("(?:'(?:[tdsm]|[vr]e|ll))+\\b", "");
+            text = text.replaceAll("(?:'(?:[tdsm]|[vr]e|ll))+\\b", "");
 
             StandardTokenizer stdToken = new StandardTokenizer();
-            stdToken.setReader(new StringReader(fullText));
+            stdToken.setReader(new StringReader(text));
 
             org.apache.lucene.analysis.CharArraySet stopSet = EnglishAnalyzer.getDefaultStopSet();
             if (language == Language.de) {
