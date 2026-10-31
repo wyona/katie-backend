@@ -767,12 +767,14 @@ public class AIService {
 
         String text = qna.getQuestion() + " " + qna.getAnswer(); // TODO: What about alternative questions?
 
-        //java.util.List<CardKeyword> keywords = KeywordsExtractor.getKeywordsList(getContent(qna), Language.de);
+        List<CardKeyword> keywords = new ArrayList<>();
+        //keywords = KeywordsExtractor.getKeywordsList(getContent(qna), Language.de);
 
         TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
         stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
         while (stream.incrementToken()) {
-            log.debug("Extracted token: " + stream.getAttribute(CharTermAttribute.class));
+            CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
+            //log.info("Extracted token/keyword: " + keyword.getStem());
         }
         stream.end();
         stream.close();
