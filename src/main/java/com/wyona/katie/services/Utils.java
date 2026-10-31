@@ -1,5 +1,7 @@
 package com.wyona.katie.services;
 
+import com.wyona.katie.models.Answer;
+import com.wyona.katie.models.QnA;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.wyona.html2mrkdwn.*;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,44 @@ import java.util.Locale;
 
 @Slf4j
 public class Utils {
+
+    /**
+     * Get content of Answer, for example for keyword extraction
+     */
+    public static String getContent(Answer qna) {
+        StringBuilder content = new StringBuilder();
+        if (qna.getOriginalquestion() != null) {
+            content.append(Utils.stripHTML(qna.getOriginalquestion(), false, false));
+        }
+        if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
+            content.append(Utils.stripHTML(qna.getAnswer(), false, false));
+        } else {
+            log.info("Answer is encrypted, therefore do not add to content for keyword extraction.");
+        }
+        for (String aQuestion : qna.getAlternativequestions()) {
+            content.append(Utils.stripHTML(aQuestion, false, false));
+        }
+        return content.toString();
+    }
+
+    /**
+     * Get content of QnA, for example for keyword extraction
+     */
+    public static String getContent(QnA qna) {
+        StringBuilder content = new StringBuilder();
+        if (qna.getQuestion() != null) {
+            content.append(Utils.stripHTML(qna.getQuestion(), false, false));
+        }
+        if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
+            content.append(Utils.stripHTML(qna.getAnswer(), false, false));
+        } else {
+            log.info("Answer is encrypted, therefore do not add to content for keyword extraction.");
+        }
+        for (String aQuestion : qna.getAlternativeQuestions()) {
+            content.append(Utils.stripHTML(aQuestion, false, false));
+        }
+        return content.toString();
+    }
 
     /**
      * @param secret Secret, e.g. "3202FGgKalMnVTLOX6AldOcFlmtWdsiUV4Fo2iNuPAx"
