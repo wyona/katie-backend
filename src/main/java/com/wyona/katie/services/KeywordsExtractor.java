@@ -30,17 +30,17 @@ public class KeywordsExtractor {
     /**
      *
      */
-    public static List<CardKeyword> getKeywordsV2(String text) throws Exception {
+    public static List<CardKeyword> getKeywordsV2(String text, Language lang, boolean skipStopwords) throws Exception {
         List<CardKeyword> cardKeywords = new ArrayList<>();
 
-        StopwordFilter filter = StopwordLists.forLanguage("en");
+        StopwordFilter filter = StopwordLists.forLanguage("en"); // TODO: Replace hard coded language
 
         TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
         stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
         while (stream.incrementToken()) {
             CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
             log.info("Extracted token/keyword: " + keyword.getStem());
-            if (filter.isStopword(keyword.getStem())) {
+            if (skipStopwords && filter.isStopword(keyword.getStem())) {
                 log.info("Skip stopword: " + keyword.getStem());
             } else {
                 cardKeywords.add(keyword);

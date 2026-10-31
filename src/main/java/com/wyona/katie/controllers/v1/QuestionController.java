@@ -350,7 +350,7 @@ public class QuestionController {
                     Language languageOfQnA = qna.getFaqLanguage();
                     log.info("Language of QnA: " + languageOfQnA);
                     //List<CardKeyword> keywords = KeywordsExtractor.getKeywords(Utils.getContent(qna), languageOfQnA);
-                    List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna));
+                    List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), languageOfQnA, true);
                     return new ResponseEntity<>(keywords, HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>(new Error("Access denied: " + permissionStatus, "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
