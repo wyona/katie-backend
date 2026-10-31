@@ -767,7 +767,7 @@ public class AIService {
 
         List<CardKeyword> keywords = new ArrayList<>();
         //keywords = KeywordsExtractor.getKeywordsList(getContent(qna), Language.de);
-        keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), Language.en, true);
+        keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), Language.en, true); // TODO: Replace hard coded language
 
         log.info("TODO: Update autocomplete / auto-suggest index ...");
         //domainService.addAutocompletionEntry(domain.getId(), "TODO");

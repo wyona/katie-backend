@@ -39,7 +39,7 @@ public class KeywordsExtractor {
         stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
         while (stream.incrementToken()) {
             CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
-            log.info("Extracted token/keyword: " + keyword.getStem());
+            //log.info("Extracted token/keyword: " + keyword.getStem());
             if (skipStopwords && filter.isStopword(keyword.getStem())) {
                 log.info("Skip stopword: " + keyword.getStem());
             } else {

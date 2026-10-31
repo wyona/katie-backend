@@ -1,9 +1,9 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.models.Context;
-import com.wyona.katie.models.Hit;
-import com.wyona.katie.models.QnA;
-import com.wyona.katie.models.Sentence;
+import com.wyona.katie.models.*;
+import com.wyona.katie.services.CardKeyword;
+import com.wyona.katie.services.KeywordsExtractor;
+import com.wyona.katie.services.Utils;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +46,16 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      */
     public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
         log.error("TODO: Implement retrain(QnA, Context, boolean) ...");
+
+        List<CardKeyword> keywords = new ArrayList<>();
+        try {
+            keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), Language.en, true); // TODO: Replace hard coded language
+            for (CardKeyword keyword : keywords) {
+                log.info("Keyword: " + keyword.getStem());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
