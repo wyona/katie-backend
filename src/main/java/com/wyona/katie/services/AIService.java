@@ -765,19 +765,9 @@ public class AIService {
     private void extractKeywordsAndAddToAutocompletionIndex(QnA qna, Context domain) throws Exception {
         log.info("Extract keywords from content of QnA in order to use for autocomplete / auto-suggest ...");
 
-        String text = qna.getQuestion() + " " + qna.getAnswer(); // TODO: What about alternative questions?
-
         List<CardKeyword> keywords = new ArrayList<>();
         //keywords = KeywordsExtractor.getKeywordsList(getContent(qna), Language.de);
-
-        TokenStream stream = TokenSources.getTokenStream(null, null, text, new StandardAnalyzer(), -1);
-        stream.reset(); // INFO: See https://lucene.apache.org/core/9_8_0/core/org/apache/lucene/analysis/TokenStream.html
-        while (stream.incrementToken()) {
-            CardKeyword keyword = new CardKeyword(stream.getAttribute(CharTermAttribute.class).toString());
-            //log.info("Extracted token/keyword: " + keyword.getStem());
-        }
-        stream.end();
-        stream.close();
+        keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna));
 
         log.info("TODO: Update autocomplete / auto-suggest index ...");
         //domainService.addAutocompletionEntry(domain.getId(), "TODO");
