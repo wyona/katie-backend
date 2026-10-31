@@ -347,7 +347,8 @@ public class QuestionController {
                 log.info("Permission status of QnA '" + uuid + "' of domain '" + domainid + "': " + permissionStatus);
                 if (iamService.isAuthorized(permissionStatus)) {
                     // TODO: Set language independent of FAQ setting
-                    java.util.List<CardKeyword> keywords = KeywordsExtractor.getKeywordsList(getContent(qna), qna.getFaqLanguage());
+                    List<CardKeyword> keywords = KeywordsExtractor.getKeywords(Utils.getContent(qna), qna.getFaqLanguage());
+                    //List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna));
                     return new ResponseEntity<>(keywords, HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>(new Error("Access denied: " + permissionStatus, "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
@@ -359,25 +360,6 @@ public class QuestionController {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "TODO_ERROR"), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    /**
-     * Get content of QnA for keyword extraction
-     */
-    private String getContent(Answer qna) {
-        StringBuilder content = new StringBuilder();
-        if (qna.getOriginalquestion() != null) {
-            content.append(Utils.stripHTML(qna.getOriginalquestion(), false, false));
-        }
-        if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
-            content.append(Utils.stripHTML(qna.getAnswer(), false, false));
-        } else {
-            log.info("Answer is encrypted, therefore do not add to content for keyword extraction.");
-        }
-        for (String aQuestion : qna.getAlternativequestions()) {
-            content.append(Utils.stripHTML(aQuestion, false, false));
-        }
-        return content.toString();
     }
 
     /**
