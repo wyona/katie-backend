@@ -15,6 +15,7 @@ public enum DetectDuplicatedQuestionImpl {
     MILVUS,
     QUERY_SERVICE,
     KATIE,
+    KATIE_EXPERIMENTAL,
     AZURE_AI_SEARCH,
     LLM,
     MCP

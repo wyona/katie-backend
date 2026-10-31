@@ -154,6 +154,7 @@ public class XMLService {
     private static final String CONTEXT_LLM_SEARCH_ASSISTANT_NAME_ATTR = "assistant-name";
     private static final String CONTEXT_LLM_SEARCH_ASSISTANT_INSTRUCTIONS_ATTR = "assistant-instructions";
     private static final String CONTEXT_KATIE_SEARCH_TAG = "katie-search";
+    private static final String CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG = "katie-experimental-retrieval";
     private static final String CONTEXT_AZURE_AI_SEARCH_TAG = "azure-ai-search";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGES_TAG = "generative-prompt-messages";
     private static final String CONTEXT_GEN_AI_PROMPT_MESSAGE_TAG = "msg";
@@ -1578,6 +1579,14 @@ public class XMLService {
             doc.getDocumentElement().appendChild(katieSearchElement);
         }
 
+        // INFO: Katie experimental retrieval implementation
+        if (ddqi.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL)) {
+            log.info("Add element " + CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
+            Element katieExperimentalRetrievalElement = doc.createElement(CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
+            // TODO
+            doc.getDocumentElement().appendChild(katieExperimentalRetrievalElement);
+        }
+
         // INFO: Azure AI Search implementation
         if (ddqi.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             Element azureAISearchEl = doc.createElement(CONTEXT_AZURE_AI_SEARCH_TAG);
@@ -1803,6 +1812,7 @@ public class XMLService {
         Element mcpEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_MCP_TAG);
         Element llmSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_LLM_SEARCH_TAG);
         Element katieSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_SEARCH_TAG);
+        Element katieExperimentalRetrievalEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
         Element azureAISearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_AZURE_AI_SEARCH_TAG);
 
         // INFO: Query service configuration
@@ -2127,6 +2137,9 @@ public class XMLService {
         }
         if (katieSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
+        }
+        if (katieExperimentalRetrievalEl != null) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL);
         }
         if (azureAISearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);

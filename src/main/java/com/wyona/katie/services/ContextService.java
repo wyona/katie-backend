@@ -1945,6 +1945,8 @@ public class ContextService {
             domain.setQueryServiceUrl(aiServiceBaseUrl);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             domain.setAzureAISearchIndexName(aiServiceBaseUrl);
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);

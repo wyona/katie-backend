@@ -48,6 +48,8 @@ public class AIService {
     @Autowired
     private KatieQuestionAnswerImpl katieImpl;
     @Autowired
+    private KatieExperimentalRetrievalImpl katieExperimentalRetrieval;
+    @Autowired
     private AzureAISearchImpl azureAISearchImpl;
     @Autowired
     private LLMQuestionAnswerImpl llmQuestionAnswerImpl;
@@ -638,6 +640,8 @@ public class AIService {
             return queryServiceImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.KATIE)) {
             return katieImpl;
+        } else if (impl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL)) {
+            return katieExperimentalRetrieval;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             return azureAISearchImpl;
         } else if (impl.equals(DetectDuplicatedQuestionImpl.LLM)) {
@@ -690,9 +694,10 @@ public class AIService {
     protected void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) throws Exception {
         log.info("Retrain QnA with UUID '" + qna.getUuid() + "' ...");
 
-        QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(domain.getDetectDuplicatedQuestionImpl());
         // TODO: Is replaceTwoOrMoreSpacesBySingleSpace() necessary, because stripHTML also allows to remove multiple spaces
         qna.setAnswer(replaceTwoOrMoreSpacesBySingleSpace(Utils.stripHTML(qna.getAnswer(), false, false)));
+
+        QuestionAnswerHandler answerQuestionImpl = getAnswerQuestionImpl(domain.getDetectDuplicatedQuestionImpl());
         answerQuestionImpl.retrain(qna, domain, indexAlternativeQuestions);
 
         extractKeywordsAndAddToAutocompletionIndex(qna, domain);
