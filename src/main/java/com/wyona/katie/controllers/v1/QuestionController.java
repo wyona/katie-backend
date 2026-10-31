@@ -347,8 +347,10 @@ public class QuestionController {
                 log.info("Permission status of QnA '" + uuid + "' of domain '" + domainid + "': " + permissionStatus);
                 if (iamService.isAuthorized(permissionStatus)) {
                     // TODO: Set language independent of FAQ setting
-                    List<CardKeyword> keywords = KeywordsExtractor.getKeywords(Utils.getContent(qna), qna.getFaqLanguage());
-                    //List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna));
+                    Language languageOfQnA = qna.getFaqLanguage();
+                    log.info("Language of QnA: " + languageOfQnA);
+                    //List<CardKeyword> keywords = KeywordsExtractor.getKeywords(Utils.getContent(qna), languageOfQnA);
+                    List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna));
                     return new ResponseEntity<>(keywords, HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>(new Error("Access denied: " + permissionStatus, "ACCESS_DENIED"), HttpStatus.FORBIDDEN);
