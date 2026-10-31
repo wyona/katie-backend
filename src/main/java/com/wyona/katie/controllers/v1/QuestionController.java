@@ -325,7 +325,7 @@ public class QuestionController {
      * REST interface to extract auto-suggest terms from QnA
      */
     @RequestMapping(value = "/trained/{domainid}/{uuid}/autocompletion-terms", method = RequestMethod.GET, produces = "application/json")
-    @Operation(summary = "Exract auto-suggest terms from QnA", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "Extract auto-suggest terms from QnA", security = { @SecurityRequirement(name = "bearerAuth") })
     public ResponseEntity<?> getExtractedSuggestions(
             @Parameter(name = "domainid", description = "Domain Id trained question/answer is associated with (e.g. 'ROOT' or 'df9f42a1-5697-47f0-909d-3f4b88d9baf6')",required = true)
             @PathVariable("domainid") String domainid,
@@ -366,7 +366,9 @@ public class QuestionController {
      */
     private String getContent(Answer qna) {
         StringBuilder content = new StringBuilder();
-        content.append(Utils.stripHTML(qna.getOriginalquestion(), false, false));
+        if (qna.getOriginalquestion() != null) {
+            content.append(Utils.stripHTML(qna.getOriginalquestion(), false, false));
+        }
         if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
             content.append(Utils.stripHTML(qna.getAnswer(), false, false));
         } else {
