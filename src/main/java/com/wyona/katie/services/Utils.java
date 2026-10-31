@@ -22,14 +22,17 @@ public class Utils {
         StringBuilder content = new StringBuilder();
         if (qna.getOriginalquestion() != null) {
             content.append(Utils.stripHTML(qna.getOriginalquestion(), false, false));
+            content.append(" ");
         }
         if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
             content.append(Utils.stripHTML(qna.getAnswer(), false, false));
+            content.append(" ");
         } else {
             log.info("Answer is encrypted, therefore do not add to content for keyword extraction.");
         }
         for (String aQuestion : qna.getAlternativequestions()) {
             content.append(Utils.stripHTML(aQuestion, false, false));
+            content.append(" ");
         }
         return content.toString();
     }
@@ -41,14 +44,17 @@ public class Utils {
         StringBuilder content = new StringBuilder();
         if (qna.getQuestion() != null) {
             content.append(Utils.stripHTML(qna.getQuestion(), false, false));
+            content.append(" ");
         }
         if (qna.getAnswerClientSideEncryptionAlgorithm() == null) {
             content.append(Utils.stripHTML(qna.getAnswer(), false, false));
+            content.append(" ");
         } else {
             log.info("Answer is encrypted, therefore do not add to content for keyword extraction.");
         }
         for (String aQuestion : qna.getAlternativeQuestions()) {
             content.append(Utils.stripHTML(aQuestion, false, false));
+            content.append(" ");
         }
         return content.toString();
     }
