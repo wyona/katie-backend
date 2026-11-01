@@ -107,4 +107,12 @@ public class CardKeyword implements Comparable<CardKeyword> {
     public int getFrequency() {
         return this.frequency;
     }
+
+    /**
+     * @see Object#toString()
+     */
+    @Override
+    public String toString() {
+        return stem;
+    }
 }
