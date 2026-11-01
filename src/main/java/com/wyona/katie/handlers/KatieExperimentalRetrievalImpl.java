@@ -1,14 +1,13 @@
 package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
-import com.wyona.katie.services.CardKeyword;
-import com.wyona.katie.services.KeywordsExtractor;
-import com.wyona.katie.services.LuceneCodecFactory;
-import com.wyona.katie.services.Utils;
+import com.wyona.katie.services.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.document.Document;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.VectorEncoding;
+import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,18 @@ import java.util.List;
 @Component
 public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
+    EmbeddingValueType embeddingValueTypeFloat32 = EmbeddingValueType.float32;
+    VectorSimilarityFunction vectorSimilarityFunctionCosine = VectorSimilarityFunction.COSINE;
+
     @Autowired
     private LuceneCodecFactory luceneCodecFactory;
+
+    @Autowired
+    private EmbeddingsService embeddingsService;
+
+    private static final String ID_FIELD = "id";
+    private static final String TEXT_FIELD = "text";
+    private static final String VECTOR_FIELD = "vector";
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -100,7 +109,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
-                indedTextAsVector(writer, keyword.getStem());
+                indedTextAsVector(writer, keyword.getStem(), qna.getUuid());
             }
 
             writer.close();
@@ -143,7 +152,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     private IndexWriterConfig getIndexWriterConfig() {
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(EmbeddingValueType.float32));
+        iwc.setCodec(luceneCodecFactory.getCodec(embeddingValueTypeFloat32));
         return iwc;
     }
 
@@ -168,7 +177,26 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     /**
      *
      */
-    private void indedTextAsVector(IndexWriter writer, String text) {
+    private void indedTextAsVector(IndexWriter writer, String text, String id) {
         Document doc = new Document();
+
+        Field idField = new StringField(ID_FIELD, id, Field.Store.YES);
+        doc.add(idField);
+
+        Field textField = new StringField(TEXT_FIELD, text, Field.Store.YES);
+        doc.add(textField);
+
+        try {
+            String model = null;
+            Vector vector = embeddingsService.getEmbedding(text, EmbeddingsImpl.SBERT, model, EmbeddingType.SEARCH_DOCUMENT, embeddingValueTypeFloat32, null, null, null);
+            FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), vectorSimilarityFunctionCosine, VectorEncoding.FLOAT32);
+            Field vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
+            doc.add(vectorField);
+
+            writer.addDocument(doc);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return;
+        }
     }
 }
