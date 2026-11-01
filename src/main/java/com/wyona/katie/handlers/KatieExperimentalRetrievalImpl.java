@@ -45,24 +45,22 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#retrain(QnA, Context, boolean)
      */
     public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Implement retrain(QnA, Context, boolean) ...");
+        log.error("TODO: Finish implementation of retrain(QnA, Context, boolean) ...");
 
-        List<CardKeyword> keywords = new ArrayList<>();
-        try {
-            keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), Language.en, true); // TODO: Replace hard coded language
-            for (CardKeyword keyword : keywords) {
-                log.info("Keyword: " + keyword.getStem());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        // TODO: Consider deleting old references
+        train(qna, domain, indexAlternativeQuestions);
     }
 
     /**
      * @see QuestionAnswerHandler#train(QnA[], Context, boolean)
      */
     public QnA[] train(QnA[] qnas, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Implement train(QnA[], Context, boolean) ...");
+        log.warn("TODO: Finish implementation to index more than one QnA at the same time!");
+        for (QnA qna: qnas) {
+            train(qna, domain, indexAlternativeQuestions);
+        }
+
+        // TODO: Only return QnAs which got trained successfully
         return qnas;
     }
 
@@ -70,7 +68,16 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Implement train(QnA, Context, boolean) ...");
+        log.error("TODO: Finish implementation of train(QnA, Context, boolean) ...");
+        Language languageOfQnA = null;
+        try {
+            List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), languageOfQnA, true);
+            for (CardKeyword keyword : keywords) {
+                log.info("Keyword: " + keyword);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -78,7 +85,18 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      */
     public Hit[] getAnswers(Sentence question, Context context, int limit) {
         List<Hit> hits = new ArrayList<>();
-        log.error("Implement getAnswers(Sentence, Context, int) ...");
+        log.error("TODO: Implement getAnswers(Sentence, Context, int) ...");
+
+        Language languageOfQuestion = null;
+        try {
+            List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(question.getSentence(), languageOfQuestion, true);
+            for (CardKeyword keyword : keywords) {
+                log.info("Keyword: " + keyword);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         return hits.toArray(new Hit[0]);
     }
 
