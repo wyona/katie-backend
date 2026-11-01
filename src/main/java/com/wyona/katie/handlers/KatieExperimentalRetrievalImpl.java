@@ -130,7 +130,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(question.getSentence(), languageOfQuestion, true);
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
-                vectorSimilaritySearch(keyword.getStem(), context);
+                hits = vectorSimilaritySearch(keyword.getStem(), context);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -150,10 +150,11 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     /**
      *
      */
-    private void vectorSimilaritySearch(String text, Context domain) {
-        Vector queryVector = null;
+    private List<Hit> vectorSimilaritySearch(String text, Context domain) {
+        List<Hit> hits = new ArrayList<>();
+
         try {
-            queryVector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_QUERY, embeddingValueTypeFloat32, null, null, null);
+            Vector queryVector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_QUERY, embeddingValueTypeFloat32, null, null, null);
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
@@ -163,7 +164,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = storedFields.document(scoreDoc.doc);
                 String id = doc.get(ID_FIELD);
-                log.info("Dense vector embedding found with ID '" + id + "' and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
+                String text_field_value = doc.get(TEXT_FIELD);
+                log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
+
                 /*
                 String _question = null; // doc.get(CONTENTS_FIELD);
                 Date dateAnswered = null;
@@ -178,13 +181,14 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
                 } else {
                     log.info("Confidence score " + scoreDoc.score + " (" +  domain.getVectorSimilarityMetric() + ") is below similarity threshold " + SIMILARITY_THRESHOLD + "!");
                 }
-
                  */
             }
             indexReader.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+
+        return hits;
     }
 
     /**
