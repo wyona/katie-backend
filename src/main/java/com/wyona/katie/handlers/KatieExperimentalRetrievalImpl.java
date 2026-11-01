@@ -4,10 +4,8 @@ import com.wyona.katie.models.*;
 import com.wyona.katie.services.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.VectorEncoding;
-import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +27,8 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
     EmbeddingValueType embeddingValueTypeFloat32 = EmbeddingValueType.float32;
     VectorSimilarityFunction vectorSimilarityFunctionCosine = VectorSimilarityFunction.COSINE;
+    EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.SBERT;
+    String model = null;
 
     @Autowired
     private LuceneCodecFactory luceneCodecFactory;
@@ -130,6 +130,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(question.getSentence(), languageOfQuestion, true);
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
+                vectorSimilaritySearch(keyword.getStem(), context);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -144,6 +145,46 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         log.error("TODO: Implement getAnswers(String, List, Context, int) ...");
         return null;
+    }
+
+    /**
+     *
+     */
+    private void vectorSimilaritySearch(String text, Context domain) {
+        Vector queryVector = null;
+        try {
+            queryVector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_QUERY, embeddingValueTypeFloat32, null, null, null);
+            IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+            StoredFields storedFields = indexReader.storedFields();
+            IndexSearcher searcher = new IndexSearcher(indexReader);
+            int k = 100;
+            Query query = query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            TopDocs topDocs = searcher.search(query, k);
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document doc = storedFields.document(scoreDoc.doc);
+                String id = doc.get(ID_FIELD);
+                log.info("Dense vector embedding found with ID '" + id + "' and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
+                /*
+                String _question = null; // doc.get(CONTENTS_FIELD);
+                Date dateAnswered = null;
+                Date dateAnswerModified = null;
+                Date dateOriginalQuestionSubmitted = null;
+                String uuid = Answer.removePrefix(path);
+
+                double SIMILARITY_THRESHOLD = 0.67; // TODO
+                //if (scoreDoc.score > SIMILARITY_THRESHOLD) {
+                if (true) {
+                    answers.add(new Hit(new Answer(question, path, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, _question, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
+                } else {
+                    log.info("Confidence score " + scoreDoc.score + " (" +  domain.getVectorSimilarityMetric() + ") is below similarity threshold " + SIMILARITY_THRESHOLD + "!");
+                }
+
+                 */
+            }
+            indexReader.close();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -187,8 +228,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         doc.add(textField);
 
         try {
-            String model = null;
-            Vector vector = embeddingsService.getEmbedding(text, EmbeddingsImpl.SBERT, model, EmbeddingType.SEARCH_DOCUMENT, embeddingValueTypeFloat32, null, null, null);
+            Vector vector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_DOCUMENT, embeddingValueTypeFloat32, null, null, null);
             FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), vectorSimilarityFunctionCosine, VectorEncoding.FLOAT32);
             Field vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
