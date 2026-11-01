@@ -3,11 +3,21 @@ package com.wyona.katie.handlers;
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.CardKeyword;
 import com.wyona.katie.services.KeywordsExtractor;
+import com.wyona.katie.services.LuceneCodecFactory;
 import com.wyona.katie.services.Utils;
+import org.apache.commons.io.FileUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +28,23 @@ import java.util.List;
 @Component
 public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
+    @Autowired
+    private LuceneCodecFactory luceneCodecFactory;
+
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
      */
     public void deleteTenant(Context domain) {
-        log.info("Delete tenant, nothing to delete though yet.");
+        log.info("Delete tenant ...");
+        File indexDir = getIndexDirectoryPath(domain);
+        if (indexDir.isDirectory()) {
+            log.info("Delete directory recursively: " + indexDir.getAbsolutePath());
+            try {
+                FileUtils.deleteDirectory(indexDir);
+            } catch(Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
     }
 
     /**
@@ -72,9 +94,16 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         Language languageOfQnA = null;
         try {
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), languageOfQnA, true);
+
+            IndexWriter writer = null;
+            writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig());
+
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
+                indedTextAsVector(writer, keyword.getStem());
             }
+
+            writer.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -106,5 +135,40 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         log.error("TODO: Implement getAnswers(String, List, Context, int) ...");
         return null;
+    }
+
+    /**
+     *
+     */
+    private IndexWriterConfig getIndexWriterConfig() {
+        IndexWriterConfig iwc = new IndexWriterConfig();
+        //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+        iwc.setCodec(luceneCodecFactory.getCodec(EmbeddingValueType.float32));
+        return iwc;
+    }
+
+    /**
+     *
+     */
+    private Directory getIndexDirectory(Context domain) throws Exception {
+        File indexDir = getIndexDirectoryPath(domain);
+        if (!indexDir.isDirectory()) {
+            indexDir.mkdirs();
+        }
+        return FSDirectory.open(Paths.get(indexDir.getAbsolutePath()));
+    }
+
+    /**
+     *
+     */
+    private File getIndexDirectoryPath(Context domain) {
+        return new File(domain.getContextDirectory(), "katie-experimental-lucene-vector-index");
+    }
+
+    /**
+     *
+     */
+    private void indedTextAsVector(IndexWriter writer, String text) {
+        Document doc = new Document();
     }
 }
