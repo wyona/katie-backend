@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -166,22 +167,11 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
                 String id = doc.get(ID_FIELD);
                 String text_field_value = doc.get(TEXT_FIELD);
                 log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
-
-                /*
-                String _question = null; // doc.get(CONTENTS_FIELD);
                 Date dateAnswered = null;
                 Date dateAnswerModified = null;
                 Date dateOriginalQuestionSubmitted = null;
-                String uuid = Answer.removePrefix(path);
-
-                double SIMILARITY_THRESHOLD = 0.67; // TODO
-                //if (scoreDoc.score > SIMILARITY_THRESHOLD) {
-                if (true) {
-                    answers.add(new Hit(new Answer(question, path, null, null, classifications, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), uuid, _question, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
-                } else {
-                    log.info("Confidence score " + scoreDoc.score + " (" +  domain.getVectorSimilarityMetric() + ") is below similarity threshold " + SIMILARITY_THRESHOLD + "!");
-                }
-                 */
+                String path = Answer.AK_UUID_COLON + id;
+                hits.add(new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
             }
             indexReader.close();
         } catch (Exception e) {
