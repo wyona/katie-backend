@@ -70,7 +70,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
      */
     public void deleteTenant(Context domain) {
         log.info("Lucene-Vector-Search implementation of deleting tenant ...");
-        File indexDir = new File(domain.getContextDirectory(), "lucene-vector-index");
+        File indexDir = new File(getVectorIndexDir(domain));
         if (indexDir.isDirectory()) {
             log.info("Delete directory recursively: " + indexDir.getAbsolutePath());
             try {
@@ -85,13 +85,9 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
      * @see QuestionAnswerHandler#createTenant(Context)
      */
     public String createTenant(Context domain) throws Exception {
-        IndexWriterConfig iwc = new IndexWriterConfig();
-        //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
-
         IndexWriter writer = null;
         try {
-            writer = new IndexWriter(getIndexDirectory(domain), iwc);
+            writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig(domain));
             // writer.forceMerge(1);
             writer.close();
         } catch (Exception e){
@@ -110,10 +106,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
         String akUuid = Answer.AK_UUID_COLON + qna.getUuid();
 
-        IndexWriterConfig iwc = new IndexWriterConfig();
-        //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
-
+        IndexWriterConfig iwc = getIndexWriterConfig(domain);
         // INFO: https://www.elastic.co/de/blog/what-is-an-apache-lucene-codec
         log.info("Lucene Codec: " + iwc.getCodec());
 
@@ -319,13 +312,10 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             reader.close();
 
             log.info("Delete document with path '" + akUuid + "' from index of domain '" + domain.getId() + "' ...");
-            IndexWriterConfig iwc = new IndexWriterConfig();
-            //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
 
             IndexWriter writer = null;
             try {
-                writer = new IndexWriter(getIndexDirectory(domain), iwc);
+                writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig(domain));
                 Term term = new Term(PATH_FIELD, akUuid);
                 writer.deleteDocuments(term);
                 // writer.forceMerge(1);
@@ -473,6 +463,16 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         }
 
         return answers.toArray(new Hit[0]);
+    }
+
+    /**
+     *
+     */
+    private IndexWriterConfig getIndexWriterConfig(Context domain) {
+        IndexWriterConfig iwc = new IndexWriterConfig();
+        //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
+        return iwc;
     }
 
     /**
