@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Katie experimental retrieval implementation
@@ -133,9 +134,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(Sentence question, Context context, int limit) {
         log.error("Find answers ...");
 
-        // INFO: Merge hits of all keywords by answer path (ak-uuid:ID), whereas scores of the same answer get summed up, such that answers matching several keywords rank higher
-        Map<String, Answer> answersByPath = new LinkedHashMap<>();
-        Map<String, Double> scoresByPath = new HashMap<>();
+        Map<String, Double> sumOfScoresById = new HashMap<>();
 
         Language languageOfQuestion = null;
         try {
@@ -143,22 +142,36 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
                 for (Hit hit : vectorSimilaritySearch(keyword.getStem(), context)) {
-                    String path = Answer.AK_UUID_COLON + hit.getAnswer().getUuid();
-                    answersByPath.putIfAbsent(path, hit.getAnswer());
-                    scoresByPath.merge(path, hit.getScore(), Double::sum);
+                    sumOfScoresById.merge(hit.getAnswer().getUuid(), hit.getScore(), Double::sum);
                 }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
 
+        Map<String, Double> sortedMapDescending = sumOfScoresById.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
         List<Hit> hits = new ArrayList<>();
-        for (Map.Entry<String, Answer> entry : answersByPath.entrySet()) {
-            hits.add(new Hit(entry.getValue(), scoresByPath.get(entry.getKey())));
+        for (Map.Entry<String, Double> entry : sortedMapDescending.entrySet()) {
+            log.info("Sum of scores by Id: " + entry.getKey()  + ": " + entry.getValue());
+            String path = Answer.AK_UUID_COLON + entry.getKey();
+            Date dateAnswered = null;
+            Date dateAnswerModified = null;
+            Date dateOriginalQuestionSubmitted = null;
+            Hit hit = new Hit(new Answer(question.getSentence(), path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, context.getId(), entry.getKey(), null, dateOriginalQuestionSubmitted, true, null, true, null), entry.getValue());
+            hits.add(hit);
         }
-        hits.sort(Comparator.comparingDouble(Hit::getScore).reversed());
 
         if (limit > 0 && hits.size() > limit) {
+            log.info("Only return " + limit + " hits.");
             hits = hits.subList(0, limit);
         }
 
@@ -184,8 +197,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
-            int k = 100;
-            Query query = query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            int k = 10;
+            //int k = 50;
+            Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
             TopDocs topDocs = searcher.search(query, k);
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = storedFields.document(scoreDoc.doc);
