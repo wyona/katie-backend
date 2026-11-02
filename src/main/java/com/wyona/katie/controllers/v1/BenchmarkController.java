@@ -428,7 +428,7 @@ public class BenchmarkController {
             @RequestParam(value = "retrieval-algorithm", required = true, defaultValue = "LUCENE_DEFAULT") DetectDuplicatedQuestionImpl retrievalImpl,
             HttpServletRequest request) {
 
-        if (!(retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL))) {
+        if (!(retrievalImpl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL))) {
             return new ResponseEntity<>("{\"message\":\"Retrieval algorithm " + retrievalImpl + " not supported yet. Currently only the Lucene based algorithms are supported.\"}", HttpStatus.NOT_IMPLEMENTED);
         }
 
