@@ -16,8 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Katie experimental retrieval implementation
@@ -28,8 +32,12 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
     EmbeddingValueType embeddingValueTypeFloat32 = EmbeddingValueType.float32;
     VectorSimilarityFunction vectorSimilarityFunctionCosine = VectorSimilarityFunction.COSINE;
-    EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.SBERT;
-    String model = null;
+
+    // TODO: Make embedding configuration configurable
+    //EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.SBERT;
+    //String model = null;
+    EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.OLLAMA;
+    String model = "qwen3-embedding:0.6b";
 
     @Autowired
     private LuceneCodecFactory luceneCodecFactory;
@@ -100,7 +108,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#train(QnA, Context, boolean)
      */
     public void train(QnA qna, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Finish implementation of train(QnA, Context, boolean) ...");
+        log.info("Train QnA '" + qna.getUuid() + "' ...");
         Language languageOfQnA = null;
         try {
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), languageOfQnA, true);
@@ -123,18 +131,35 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#getAnswers(Sentence, Context, int)
      */
     public Hit[] getAnswers(Sentence question, Context context, int limit) {
-        List<Hit> hits = new ArrayList<>();
-        log.error("TODO: Implement getAnswers(Sentence, Context, int) ...");
+        log.error("Find answers ...");
+
+        // INFO: Merge hits of all keywords by answer path (ak-uuid:ID), whereas scores of the same answer get summed up, such that answers matching several keywords rank higher
+        Map<String, Answer> answersByPath = new LinkedHashMap<>();
+        Map<String, Double> scoresByPath = new HashMap<>();
 
         Language languageOfQuestion = null;
         try {
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(question.getSentence(), languageOfQuestion, true);
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
-                hits = vectorSimilaritySearch(keyword.getStem(), context);
+                for (Hit hit : vectorSimilaritySearch(keyword.getStem(), context)) {
+                    String path = Answer.AK_UUID_COLON + hit.getAnswer().getUuid();
+                    answersByPath.putIfAbsent(path, hit.getAnswer());
+                    scoresByPath.merge(path, hit.getScore(), Double::sum);
+                }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        }
+
+        List<Hit> hits = new ArrayList<>();
+        for (Map.Entry<String, Answer> entry : answersByPath.entrySet()) {
+            hits.add(new Hit(entry.getValue(), scoresByPath.get(entry.getKey())));
+        }
+        hits.sort(Comparator.comparingDouble(Hit::getScore).reversed());
+
+        if (limit > 0 && hits.size() > limit) {
+            hits = hits.subList(0, limit);
         }
 
         return hits.toArray(new Hit[0]);
@@ -171,7 +196,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
                 Date dateAnswerModified = null;
                 Date dateOriginalQuestionSubmitted = null;
                 String path = Answer.AK_UUID_COLON + id;
-                hits.add(new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score));
+
+                Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
+                hits.add(hit);
             }
             indexReader.close();
         } catch (Exception e) {
@@ -230,7 +257,6 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             writer.addDocument(doc);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return;
         }
     }
 }
