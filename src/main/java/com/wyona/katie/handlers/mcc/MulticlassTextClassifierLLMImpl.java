@@ -5,10 +5,7 @@ import com.wyona.katie.handlers.MistralAIGenerate;
 import com.wyona.katie.handlers.OllamaGenerate;
 import com.wyona.katie.handlers.OpenAIGenerate;
 import com.wyona.katie.models.*;
-import com.wyona.katie.services.BackgroundProcessService;
-import com.wyona.katie.services.ClassificationRepositoryService;
-import com.wyona.katie.services.GenerativeAIService;
-import com.wyona.katie.services.XMLService;
+import com.wyona.katie.services.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +31,9 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
 
     @Autowired
     GenerativeAIService generativeAIService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Value("${re_rank.llm.temperature}")
     private Double temperature;
@@ -74,9 +74,19 @@ public class MulticlassTextClassifierLLMImpl implements MulticlassTextClassifier
             CompletionConfig completionConfig = domain.getCompletionConfig(false);
             CompletionAssistant assistant = getAssistant(generateProvider, domain, tools, completionConfig.getModel(), completionConfig.getApiKey());
 
-            CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(false), temperature);
-            //completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
-            completedText = completionResponse.getText();
+            try {
+                CompletionResponse completionResponse = generateProvider.getCompletion(promptMessages, assistant, domain.getCompletionConfig(false), temperature);
+                //completionResponse.getFunctionArgumentValue(getFilePathTool.getFunctionArgument());
+                completedText = completionResponse.getText();
+            } catch (Exception e) {
+                List<RoleDomain> roles = new ArrayList<>();
+                roles.add(RoleDomain.OWNER);
+                roles.add(RoleDomain.ADMIN);
+                String subject = "Completion to classify text failed (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
+                boolean notificationSent = notificationService.notifyDomainMembers(domain.getId(), roles, subject, e.getMessage(), false);
+
+                throw e;
+            }
         } else {
             String errorMsg = "Completion provider '" + completionImpl + "' not implemented yet! Make sure that the domain configuration attribute '" + XMLService.CONTEXT_GENERATIVE_AI_IMPLEMENTATION_ATTR + "' is set correctly.";
             log.error(errorMsg);
