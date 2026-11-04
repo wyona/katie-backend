@@ -567,7 +567,7 @@ public class AskController {
                 return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
             } else {
                 if (user == null) {
-                    throw new java.nio.file.AccessDeniedException("User is not signed in!");
+                    throw new AccessDeniedException("User is not signed in!");
                 }
                 if (!contextService.isMemberOrAdmin(domain.getId(), user)) {
                     if (domain.getAnswersGenerallyProtected()) {
