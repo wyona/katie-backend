@@ -4,6 +4,7 @@ import com.wyona.katie.services.DataRepositoryService;
 import com.wyona.katie.services.EmbeddingsService;
 import com.wyona.katie.services.LuceneCodecFactory;
 import com.wyona.katie.models.*;
+import com.wyona.katie.services.NotificationService;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -39,6 +40,9 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
 
     @Autowired
     private DataRepositoryService dataRepoService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private static final String PATH_FIELD = "qna_uuid";
     private static final String VECTOR_FIELD = "vector";
@@ -379,7 +383,12 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         try {
             queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
         } catch (Exception e) {
-            log.error("Get embedding failed, therefore do not search for answers.");
+            log.error("Get embedding for question failed, therefore cannot search for answers");
+            List<RoleDomain> roles = new ArrayList<>();
+            roles.add(RoleDomain.OWNER);
+            roles.add(RoleDomain.ADMIN);
+            String subject = "Get embedding for question failed (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
+            boolean notificationSent = notificationService.notifyDomainMembers(domain.getId(), roles, subject, e.getMessage(), false);
             //log.error(e.getMessage(), e);
             //return answers.toArray(new Hit[0]);
             throw e;
