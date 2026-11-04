@@ -1316,9 +1316,15 @@ public class XMLService {
             // TODO: Resolve member/user values
             String language = "en";
 
-            Date created = null;
-            // TODO: Get date when user account of member was created
-            users.add(new User(id, null, null, null, null, null, null, null, null, memberIsExpert, memberIsModerator, domainRole, language, locked, approved, created));
+            Date created = null; // TODO: Get date when user account of member was created
+
+            // TODO: See UsersXMLFileService.java
+            String firstname = null;
+            String lastname = null;
+            String email = null;
+            String username = null;
+
+            users.add(new User(id, username, null, null, null, null, email, firstname, lastname, memberIsExpert, memberIsModerator, domainRole, language, locked, approved, created));
         }
 
         return users.toArray(new User[0]);
