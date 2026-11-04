@@ -4972,7 +4972,7 @@ public class ContextService {
 
         // TODO: Implement batch delete
         Context domain = getContext(domainId);
-        Answer[] qnas = getTrainedQnAs(domain, 0, -1);
+        Answer[] qnas = getTrainedQnAs(domain, 10, -1);
         for (Answer qna : qnas) {
             deleteTrainedQnA(domain, qna.getUuid());
         }
@@ -5048,13 +5048,13 @@ public class ContextService {
     }
 
     /**
-     * Get all trained QnAs of a particular domain, which the user is authorized to access
+     * Get trained QnAs of a particular domain, which the user is authorized to access
      * @param domain Domain containing QnAs
      * @param limit Limit number of returned QnAs, e.g., 8
      * @param offset From where to start returning QnAs, e.g., 0
      */
     public Answer[] getTrainedQnAs(Context domain, int limit, int offset) throws Exception {
-        log.info("Get all trained QnAs of domain '" + domain.getId() + "' ...");
+        log.info("Get trained QnAs (offset: " + offset + ", limit: " + limit + ") of domain '" + domain.getId() + "' ...");
 
         List<Answer> answers = new ArrayList<Answer>();
 
@@ -5063,7 +5063,7 @@ public class ContextService {
             String username = authService.getUsername();
 
             String[] answerUUIDs = questionsAnswersDir.list();
-            log.info("Number of QnAs: " + answerUUIDs.length);
+            log.info("Total number of QnAs contained by domain '" + domain.getId() + "': " + answerUUIDs.length);
 
             for (int i = 0; i < answerUUIDs.length; i++) {
                 if (i >= offset && i < offset + limit) {
@@ -5101,6 +5101,8 @@ public class ContextService {
             String errMsg = "No such directory '" + questionsAnswersDir.getAbsolutePath() + "'!";
             log.error(errMsg);
         }
+
+        log.info(answers.size() + " QnAs added to list.");
 
         // TODO: Scalability / Performance
         Collections.sort(answers, Answer.DateComparator);
