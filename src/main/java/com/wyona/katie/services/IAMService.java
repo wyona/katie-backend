@@ -74,22 +74,20 @@ public class IAMService {
 
     private static final String PROFILE_PICTURE_CLASS_NAME = "ProfilePicture";
 
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
     private XMLService xmlService;
+    @Autowired
     private UsersXMLFileService usersXMLFileService;
+    @Autowired
     private MailerService mailerService;
+    @Autowired
     private JwtService jwtService;
 
     private final static String SUBJECT_APPROVE_SELF_REGISTRATION = "approve-self-registration";
     private final static String TOKEN = "token";
     private final static String USER_ID = "user_id";
-
-    @Autowired
-    public IAMService(XMLService xmlService, UsersXMLFileService usersXMLFileService, MailerService mailerService, JwtService jwtService) {
-        this.xmlService = xmlService;
-        this.usersXMLFileService = usersXMLFileService;
-        this.mailerService = mailerService;
-        this.jwtService = jwtService;
-    }
 
     /**
      *
@@ -785,7 +783,7 @@ public class IAMService {
                 body.append("\n\n");
                 body.append("User profile: " + defaultHostname + "/#/iam/user/" + user.getId() + "/edit");
 
-                mailerService.notifyAdministrator("User confirmed email and new user account created", body.toString(), null, false);
+                notificationService.notifyAdministrator("User confirmed email and new user account created", body.toString(), null, false);
 
                 // TODO: Create personal domain
             }
@@ -893,10 +891,10 @@ public class IAMService {
         }
 
         try {
-            mailerService.notifyAdministrator(subject, body.toString(), null, false);
+            notificationService.notifyAdministrator(subject, body.toString(), null, false);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            mailerService.notifyAdministrator(subject, "Self-registration for user '" + infos.getEmail() + "' failed!", null, false);
+            notificationService.notifyAdministrator(subject, "Self-registration for user '" + infos.getEmail() + "' failed!", null, false);
         }
     }
 

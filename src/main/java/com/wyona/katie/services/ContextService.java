@@ -123,6 +123,9 @@ public class ContextService {
     private MailerService mailerService;
 
     @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
     private AnalyticsService analyticsService;
 
     @Autowired
@@ -1340,10 +1343,10 @@ public class ContextService {
              */
 
             User[] owners = getMembers(domainId, false, RoleDomain.OWNER);
-            mailerService.notifyUsers(owners, subject, message);
+            notificationService.notifyUsers(owners, subject, message);
 
             User[] admins = getMembers(domainId, false, RoleDomain.ADMIN);
-            mailerService.notifyUsers(admins, subject, message);
+            notificationService.notifyUsers(admins, subject, message);
 
             return owners.length + admins.length;
         } catch (Exception e) {

@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class AnswerFromTextServiceRestImpl implements AnswerFromTextService {
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     @Value("${aft.rest.impl.host}")
     private String host;
@@ -97,7 +97,7 @@ public class AnswerFromTextServiceRestImpl implements AnswerFromTextService {
             } else {
                 log.error(e.getMessage(), e);
             }
-            mailerService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
+            notificationService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
             //return Optional.empty();
             return "ERROR";
         } catch(ResourceAccessException e) {
@@ -106,16 +106,16 @@ public class AnswerFromTextServiceRestImpl implements AnswerFromTextService {
             if (e.getMessage().contains("Read timed out")) {
                 log.info("Configured connect timeout in milliseconds: " + connectTimeout);
                 log.info("Configured read timeout in milliseconds: " + readTimeout);
-                mailerService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body + "\n\nConfigured read timeout in milliseconds:\n\n" + readTimeout, null, false);
+                notificationService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body + "\n\nConfigured read timeout in milliseconds:\n\n" + readTimeout, null, false);
             } else {
-                mailerService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
+                notificationService.notifyAdministrator("ERROR: Get answer from text failed", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
             }
             // TODO: The method isAlive(String) should also detect when the Question Classifier is down
             //return Optional.empty();
             return "ERROR";
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            mailerService.notifyAdministrator("ERROR: Analyzing message by QuestionClassifierRestImpl failed ", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
+            notificationService.notifyAdministrator("ERROR: Analyzing message by QuestionClassifierRestImpl failed ", e.getMessage() + "\n\nJSON:\n\n" + body, null, false);
             //return Optional.empty();
             return "ERROR";
         }
@@ -165,7 +165,7 @@ public class AnswerFromTextServiceRestImpl implements AnswerFromTextService {
         }
 
         log.warn("Answer from Text service '" + host + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The Answer from Text Service at '" + host + "' seems to be DOWN", null, null, false);
+        notificationService.notifyAdministrator("WARNING: The Answer from Text Service at '" + host + "' seems to be DOWN", null, null, false);
         return false;
     }
 

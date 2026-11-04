@@ -97,7 +97,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
     private AnalyticsService analyticsService;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     @Autowired
     private ResourceBundleMessageSource messageSource;
@@ -582,7 +582,7 @@ public class MicrosoftMessageSender extends CommonMessageSender  {
      */
     private void notifyAdministrators(String subject, String message) throws Exception {
         User[] admins = iamService.getAdministrators();
-        mailerService.notifyUsers(admins, subject, message);
+        notificationService.notifyUsers(admins, subject, message);
     }
 
     /**

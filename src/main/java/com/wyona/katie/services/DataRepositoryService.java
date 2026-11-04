@@ -39,7 +39,7 @@ public class DataRepositoryService {
     private XMLService xmlService;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     @Autowired
     private UsersXMLFileService usersXMLFileService;
@@ -1037,7 +1037,7 @@ public class DataRepositoryService {
             log.warn("Question is too long (> " + MAX_DB_LENGTH + ") and therefore gets shortened ...");
             question = question.substring(0, MAX_DB_LENGTH);
             log.debug("New length: " + question.length());
-            mailerService.notifyAdministrator("WARNING: Submitted question exceeds maximum number of characters", getExceedsMessageBody(MAX_DB_LENGTH, domainId, submittedQestion, question), null, true);
+            notificationService.notifyAdministrator("WARNING: Submitted question exceeds maximum number of characters", getExceedsMessageBody(MAX_DB_LENGTH, domainId, submittedQestion, question), null, true);
             return question;
         }
     }

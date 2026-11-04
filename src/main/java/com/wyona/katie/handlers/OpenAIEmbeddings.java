@@ -1,11 +1,8 @@
 package com.wyona.katie.handlers;
 
-import com.wyona.katie.models.EmbeddingType;
+import com.wyona.katie.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.wyona.katie.models.EmbeddingValueType;
-import com.wyona.katie.models.FloatVector;
-import com.wyona.katie.models.Vector;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -18,6 +15,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -80,6 +80,10 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
                 }
             }
         } catch(Exception e) {
+            List<RoleDomain> roles = new ArrayList<>();
+            roles.add(RoleDomain.OWNER);
+            roles.add(RoleDomain.ADMIN);
+            //notificationSent = notificationService.notifyDomainMembers(domainId, roles, subject, body.toString(), false);
             log.error(e.getMessage(), e);
             throw e;
         }

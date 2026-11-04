@@ -2,6 +2,7 @@ package com.wyona.katie.handlers.qc;
 
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.MailerService;
+import com.wyona.katie.services.NotificationService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 public class QuestionClassifierRestImpl implements QuestionClassifier, ClassificationHandler {
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     @Value("${questionClassifier.scheme}")
     private String questionClassifierScheme;
@@ -111,7 +112,7 @@ public class QuestionClassifierRestImpl implements QuestionClassifier, Classific
         }
 
         log.warn("Question Classifier '" + getHost() + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The Question Classifier Service at '" + requestUrl + "' seems to be DOWN", null, null, false);
+        notificationService.notifyAdministrator("WARNING: The Question Classifier Service at '" + requestUrl + "' seems to be DOWN", null, null, false);
         return false;
     }
 
@@ -190,7 +191,7 @@ public class QuestionClassifierRestImpl implements QuestionClassifier, Classific
             } else {
                 log.error(e.getMessage(), e);
             }
-            mailerService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input) + "\n\nStatus Code:\n\n" + e.getRawStatusCode(), null, false);
+            notificationService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input) + "\n\nStatus Code:\n\n" + e.getRawStatusCode(), null, false);
             return Optional.empty();
         } catch(ResourceAccessException e) {
             // INFO: Both timeout and not reachable exceptions are handled as ResourceAccessException by restTemplate
@@ -198,15 +199,15 @@ public class QuestionClassifierRestImpl implements QuestionClassifier, Classific
             if (e.getMessage().contains("Read timed out")) {
                 log.info("Configured connect timeout in milliseconds: " + connectTimeout);
                 log.info("Configured read timeout in milliseconds: " + readTimeout);
-                mailerService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input) + "\n\nConfigured read timeout in milliseconds:\n\n" + readTimeout, null, false);
+                notificationService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input) + "\n\nConfigured read timeout in milliseconds:\n\n" + readTimeout, null, false);
             } else {
-                mailerService.notifyAdministrator(getSubject(),  getErrorMessageBody(e.getMessage(), input), null, false);
+                notificationService.notifyAdministrator(getSubject(),  getErrorMessageBody(e.getMessage(), input), null, false);
             }
             // TODO: The method isAlive(String) should also detect when the Question Classifier is down
             return Optional.empty();
         } catch(Exception e) {
             log.error(e.getMessage(), e);
-            mailerService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input), null, false);
+            notificationService.notifyAdministrator(getSubject(), getErrorMessageBody(e.getMessage(), input), null, false);
             return Optional.empty();
         }
     }

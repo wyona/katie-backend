@@ -40,7 +40,7 @@ public class DiscordNewMessageListener extends CommonMessageSender {
     private DataRepositoryService dataRepoService;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     @Autowired
     private QuestionAnalyzerService questionAnalyzerService;
@@ -176,7 +176,7 @@ public class DiscordNewMessageListener extends CommonMessageSender {
                 //String subject = "WARNING: The limit of questions has been reached";
                 String msgToAdmin = "WARNING: The limit of " + numberOfQuestionsLimit + " questions during the last 24 hours for the domain '" + domain.getId() + "' and channel type '" + ChannelType.DISCORD + "' has been reached.";
                 log.warn(msgToAdmin);
-                mailerService.notifyAdministrator(msgToAdmin, null, domain.getMailSenderEmail(), false);
+                notificationService.notifyAdministrator(msgToAdmin, null, domain.getMailSenderEmail(), false);
                 return Mono.empty();
             }
 

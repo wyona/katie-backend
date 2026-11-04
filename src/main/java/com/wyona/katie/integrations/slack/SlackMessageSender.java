@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
-import com.wyona.katie.integrations.slack.services.DomainService;
-
 import org.springframework.scheduling.annotation.Async;
 
 import java.io.StringWriter;
@@ -118,6 +116,9 @@ public class SlackMessageSender extends CommonMessageSender  {
 
     @Autowired
     private MailerService mailerService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private AnalyticsService analyticsService;
@@ -1378,7 +1379,7 @@ public class SlackMessageSender extends CommonMessageSender  {
 
                 String msgToAdmin = "WARNING: The limit of " + numberOfQuestionsLimit + " questions during the last 24 hours for the domain '" + domain.getId() + "' and channel type '" + ChannelType.SLACK + "' has been reached.";
                 log.warn(msgToAdmin);
-                mailerService.notifyAdministrator(msgToAdmin, null, domain.getMailSenderEmail(), false);
+                notificationService.notifyAdministrator(msgToAdmin, null, domain.getMailSenderEmail(), false);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
@@ -1665,7 +1666,7 @@ public class SlackMessageSender extends CommonMessageSender  {
         contextService.sendInvitation(technicalUser, user.getEmail(), user.getUsername(), newDomain.getId());
         
         String domainURL = newDomain.getHost() + "/#/domain/" + newDomain.getId();
-        mailerService.notifyAdministrator("Slack user created new domain", "Slack user with email '" + email + "' created new Katie domain " + domainURL, null, false);
+        notificationService.notifyAdministrator("Slack user created new domain", "Slack user with email '" + email + "' created new Katie domain " + domainURL, null, false);
 
         String[] args = new String[3];
         args[0] = getKatieDomainLink("*" + newDomain.getId() + "*", newDomain, null); // TODO: Consider adding JWT token

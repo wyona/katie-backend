@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.*;
 import com.wyona.katie.services.MailerService;
+import com.wyona.katie.services.NotificationService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +55,7 @@ public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
     private String apiKey;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     private static final String CLAZZ_QUESTION = "Question";
     private static final String FIELD_QUESTION = "question";
@@ -88,7 +89,7 @@ public class WeaviateQuestionAnswerImpl implements QuestionAnswerHandler {
         }
 
         log.warn("Weaviate '" + getHost(null) + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The Weaviate Server at '" + getHost(null) + "' seems to be DOWN", null, null, false);
+        notificationService.notifyAdministrator("WARNING: The Weaviate Server at '" + getHost(null) + "' seems to be DOWN", null, null, false);
         return false;
     }
 

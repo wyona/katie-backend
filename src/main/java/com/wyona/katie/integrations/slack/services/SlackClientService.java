@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.slack.api.methods.response.auth.AuthTestResponse;
+import com.wyona.katie.services.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class SlackClientService {
     private String postMessageURL;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     /**
      * @param token Security token associated with Slack team Id / workspace (https://api.slack.com/authentication/token-types#bot)
@@ -113,12 +114,12 @@ public class SlackClientService {
 
             if (!successfull) {
                 String errMsg = bodyNode.get("error").asText();
-                mailerService.notifyAdministrator("Send request to Slack failed: " + errMsg, body, null, false);
+                notificationService.notifyAdministrator("Send request to Slack failed: " + errMsg, body, null, false);
             }
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             try {
-                mailerService.notifyAdministrator("Send request to Slack failed: " + e.getMessage(), body, null, false);
+                notificationService.notifyAdministrator("Send request to Slack failed: " + e.getMessage(), body, null, false);
             } catch(Exception mailException) {
                 log.error(mailException.getMessage(), mailException);
             }

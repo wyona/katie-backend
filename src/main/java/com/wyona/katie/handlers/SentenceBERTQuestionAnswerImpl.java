@@ -2,6 +2,7 @@ package com.wyona.katie.handlers;
 
 import com.wyona.katie.models.Vector;
 import com.wyona.katie.services.MailerService;
+import com.wyona.katie.services.NotificationService;
 import com.wyona.katie.services.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -53,7 +54,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
     private String sbertBasicAuthPassword;
 
     @Autowired
-    private MailerService mailerService;
+    private NotificationService notificationService;
 
     private static final String DATE_KATIE_FIELD = "date_katie";
     private static final String TYPE = "question_answer";
@@ -110,7 +111,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
         }
 
         log.warn("SentenceBERT '" + getHttpHost() + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The SentenceBERT Server at '" + getHttpHost() + "' seems to be DOWN", null, null, false);
+        notificationService.notifyAdministrator("WARNING: The SentenceBERT Server at '" + getHttpHost() + "' seems to be DOWN", null, null, false);
         return null;
     }
 
@@ -532,7 +533,7 @@ public class SentenceBERTQuestionAnswerImpl implements QuestionAnswerHandler, Em
         }
 
         log.warn("SentenceBERT '" + getHttpHost() + "' seems to be down!");
-        mailerService.notifyAdministrator("WARNING: The SentenceBERT Server at '" + getHttpHost() + "' seems to be DOWN", null, null, false);
+        notificationService.notifyAdministrator("WARNING: The SentenceBERT Server at '" + getHttpHost() + "' seems to be DOWN", null, null, false);
         return false;
     }
 

@@ -58,40 +58,6 @@ public class MailerService {
     //private static final List<String> GMAIL_SCOPES = Collections.singletonList(GmailScopes.MAIL_GOOGLE_COM);
 
     /**
-     * Notify technical system administrator of Katie
-     * @param subject Subject of notification message
-     * @param body Optional plain text body
-     * @param fromEmail Optional sender email address
-     * @param isHTMLMessage True when format of message is HTML, false otherwise
-     */
-    public void notifyAdministrator(String subject, String body, String fromEmail, boolean isHTMLMessage) {
-        if (body == null) {
-            body = subject;
-        }
-        try {
-            if (fromEmail == null) {
-                fromEmail = mailDefaultSenderAddress;
-            }
-            send(mailDefaultAdminAddress, fromEmail, mailSubjectTag + " " + subject, body, isHTMLMessage);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     *
-     */
-    public void notifyUsers(User[] users, String subject, String message) {
-        for (User user: users) {
-            try {
-                send(user.getEmail(), mailDefaultSenderAddress, mailSubjectTag + " " + subject, message, true);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
      * Send email
      * @param email Email address to which email will be sent, e.g. michael.wechner@wyona.com
      * @param fromEmail Optional sender email, e.g. "no-reply@wyona.com" or "Katie <no-reply@katie.qa>"
