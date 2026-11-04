@@ -95,12 +95,13 @@ public class NotificationService {
         try {
             User[] users = xmlService.getMembers(domainId, false, false);
             for (User user : users) {
-                // TODO: Use roles argument and replace hard coded ADMIN and OWNER roles
-                if (user.getDomainRole() != null && (user.getDomainRole().equals(RoleDomain.ADMIN) || user.getDomainRole().equals(RoleDomain.OWNER))) {
-                    // xmlService.getMembers() does not return email, etc. of user
+                RoleDomain role = user.getDomainRole();
+                if (hasOneOfTheseRoles(user, roles)) {
+                    // xmlService.getMembers() does not return email, etc. of user, therefore overwrite
                     user = usersXMLFileService.getIAMUserById(user.getId(), false, false);
+                    user.setDomainRole(role);
 
-                    log.info("Notify user " + user.getFirstname() + " (" + user.getEmail()+ ") about occured error(s) ...");
+                    log.info("Notify domain member '" + user.getFirstname() + "' (" + user.getEmail()+ ", " + user.getDomainRole() + ") of domain '" + domainId + "' about occured error(s) ...");
                     mailerService.send(user.getEmail(), null, subject, body.toString(), false);
                     notificationSent = true;
                 }
@@ -122,5 +123,17 @@ public class NotificationService {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * @return true when user has one of the roles provided by the list and false otherwise
+     */
+    private boolean hasOneOfTheseRoles(User user, List<RoleDomain> roles) {
+        for (RoleDomain role : roles) {
+            if (user.getDomainRole() != null && user.getDomainRole().equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
