@@ -54,6 +54,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 @RequestMapping(value = "/api/v1/questions") 
 public class QuestionsController {
 
+    private static final String PROCESS_ID_KEY = "process-id";
+
     @Autowired
     private SlackMessageSender slackMessageSender;
 
@@ -868,7 +870,7 @@ public class QuestionsController {
             return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
         contextService.deleteAllTrainedQnAs(domainId, backgroundProcessId, user);
-        return new ResponseEntity<>("{\"process-id\":\"" + backgroundProcessId + "\"}", HttpStatus.OK);
+        return new ResponseEntity<>("{\"" + PROCESS_ID_KEY + "\":\"" + backgroundProcessId + "\"}", HttpStatus.OK);
     }
 
     /**
@@ -903,15 +905,14 @@ public class QuestionsController {
         }
          */
 
-        try {
-            contextService.deleteAllQnAs(domainId);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (AccessDeniedException e) {
-            log.warn(e.getMessage(), e);
-            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        String backgroundProcessId = UUID.randomUUID().toString();
+        User user = iamService.getUser(false, false);
+        if (user == null) {
+            log.error("User is not signed in!");
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
+        contextService.deleteAllQnAs(domainId, backgroundProcessId, user);
+        return new ResponseEntity<>("{\"" +PROCESS_ID_KEY + "\":\"" + backgroundProcessId + "\"}", HttpStatus.OK);
     }
 }

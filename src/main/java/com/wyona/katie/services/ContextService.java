@@ -4999,38 +4999,47 @@ public class ContextService {
      * Delete all QnAs of a particular domain
      * @param domainId Domain Id
      */
-    public void deleteAllQnAs(String domainId) throws Exception {
-        if (!isMemberOrAdmin(domainId)) {
-            String msg = "User is neither member of domain '" + domainId + "', nor has system role " + Role.ADMIN + "!";
-            log.info(msg);
-            throw new java.nio.file.AccessDeniedException(msg);
+    @Async
+    public void deleteAllQnAs(String domainId, String bgProcessId, User user) {
+        backgroundProcessService.startProcess(bgProcessId, "Delete all QnAs of domain '" + domainId + "' ...", user.getId());
+        try {
+            if (!isMemberOrAdmin(domainId, user)) {
+                String msg = "User is neither member of domain '" + domainId + "', nor has system role " + Role.ADMIN + "!";
+                log.info(msg);
+                throw new java.nio.file.AccessDeniedException(msg);
+            }
+
+            RoleDomain role = xmlService.getRole(user.getId(), domainId);
+            if (!(role == RoleDomain.ADMIN || role == RoleDomain.OWNER)) {
+                String msg = "Member of domain '" + domainId + "' has neither domain role " + RoleDomain.ADMIN + " nor " + RoleDomain.OWNER + "!";
+                log.info(msg);
+                throw new java.nio.file.AccessDeniedException(msg);
+            }
+
+            Context domain = getContext(domainId);
+
+            Answer[] qnas = getAllQnAs(domain);
+            String[] uuids = new String[qnas.length];
+            for (int i = 0; i < qnas.length; i++) {
+                uuids[i] = qnas[i].getUuid();
+            }
+
+            aiService.clean(domain);
+
+            deleteQnAsFromFAQ(domain, uuids);
+            deleteQnAsFromStorage(domain, uuids);
+
+            File urlsBaseDir = domain.getURLsDataPath();
+            log.info("Try to delete urls base dir: " + urlsBaseDir.getAbsolutePath());
+            if (urlsBaseDir.isDirectory()) {
+                FileUtils.deleteDirectory(urlsBaseDir);
+            }
+            backgroundProcessService.updateProcessStatus(bgProcessId, "All QnAs of domain '" + domainId + "' deleted.");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
-
-        RoleDomain role = xmlService.getRole(authService.getUserId(), domainId);
-        if (!(role == RoleDomain.ADMIN || role == RoleDomain.OWNER)) {
-            String msg = "Member of domain '" + domainId + "' has neither domain role " + RoleDomain.ADMIN + " nor " + RoleDomain.OWNER + "!";
-            log.info(msg);
-            throw new java.nio.file.AccessDeniedException(msg);
-        }
-
-        Context domain = getContext(domainId);
-
-        Answer[] qnas = getAllQnAs(domain);
-        String[] uuids = new String[qnas.length];
-        for (int i = 0; i < qnas.length; i++) {
-            uuids[i] = qnas[i].getUuid();
-        }
-
-        aiService.clean(domain);
-
-        deleteQnAsFromFAQ(domain, uuids);
-        deleteQnAsFromStorage(domain, uuids);
-
-        File urlsBaseDir = domain.getURLsDataPath();
-        log.info("Try to delete urls base dir: " + urlsBaseDir.getAbsolutePath());
-        if (urlsBaseDir.isDirectory()) {
-            FileUtils.deleteDirectory(urlsBaseDir);
-        }
+        backgroundProcessService.stopProcess(bgProcessId, domainId);
     }
 
     /**
