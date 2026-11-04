@@ -16,9 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  */
@@ -80,10 +77,6 @@ public class OpenAIEmbeddings implements EmbeddingsProvider {
                 }
             }
         } catch(Exception e) {
-            List<RoleDomain> roles = new ArrayList<>();
-            roles.add(RoleDomain.OWNER);
-            roles.add(RoleDomain.ADMIN);
-            //notificationSent = notificationService.notifyDomainMembers(domainId, roles, subject, body.toString(), false);
             log.error(e.getMessage(), e);
             throw e;
         }
