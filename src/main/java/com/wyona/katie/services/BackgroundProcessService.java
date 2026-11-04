@@ -14,6 +14,8 @@ import org.w3c.dom.Element;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -33,6 +35,9 @@ public class BackgroundProcessService {
 
     @Autowired
     private MailerService mailerService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private IAMService iamService;
@@ -142,6 +147,7 @@ public class BackgroundProcessService {
             log.error(e.getMessage(), e);
         }
 
+        //errorOccured = true; // To test notifications
         if (errorOccured) {
             log.warn("Error(s) occured during the execution of the background process '" + id + "'.");
             String subject = mailSubjectTag + " WARNING: Error(s) occurred during the execution of a background process";
@@ -150,26 +156,21 @@ public class BackgroundProcessService {
             body.append(katieHost + "/swagger-ui/index.html#/background-process-controller/getStatusOfRunningProcess");
 
             if (domainId != null) {
-                boolean motificationSent = false;
+                boolean notificationSent = false;
                 try {
-                    User[] users = xmlService.getMembers(domainId, false, false);
-                    for (User user : users) {
-                        if (user.getDomainRole() != null && (user.getDomainRole().equals(RoleDomain.ADMIN) || user.getDomainRole().equals(RoleDomain.OWNER))) {
-                            user = iamService.getUserByIdWithoutAuthCheck(user.getId());
-                            log.info("Notify user " + user.getFirstname() + " (" + user.getEmail()+ ") about occured error(s) ...");
-                            mailerService.send(user.getEmail(), null, subject, body.toString(), false);
-                            motificationSent = true;
-                        }
-                    }
+                    List<RoleDomain> roles = new ArrayList<>();
+                    roles.add(RoleDomain.OWNER);
+                    roles.add(RoleDomain.ADMIN);
+                    notificationSent = notificationService.notifyDomainMembers(domainId, roles, subject, body.toString(), false);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
-                if (!motificationSent) {
+                if (!notificationSent) {
                     log.warn("No member of domain '" + domainId + "' has role ADMIN or OWNER, therefore send notification to system administrator ...");
-                    mailerService.notifyAdministrator(subject, body.toString(), null, false);
+                    notificationService.notifyAdministrator(subject, body.toString(), null, false);
                 }
             } else {
-                mailerService.notifyAdministrator(subject, body.toString(), null, false);
+                notificationService.notifyAdministrator(subject, body.toString(), null, false);
             }
         } else {
             log.info("No error(s) occured during the execution of the background process '" + id + "'.");
