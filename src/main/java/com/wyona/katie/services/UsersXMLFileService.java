@@ -279,7 +279,7 @@ public class UsersXMLFileService {
 
     /**
      * Get a user with a particular username managed by IAM system
-     * @param username Username of user
+     * @param username Username of user, e.g., "michael.wechner@wyona.com"
      * @param includingPassword True when password should be returned as well
      * @param includingJWT True when JWT should be returned as well
      */
@@ -289,7 +289,7 @@ public class UsersXMLFileService {
 
     /**
      * Get a particular user managed by IAM system
-     * @param value Value of element, e.g. username "michael.wechner@wyona.com"
+     * @param value Value of element, e.g., username "michael.wechner@wyona.com"
      * @param includingPassword True when password should be returned as well
      * @param includingJWT True when JWT should be returned as well
      */
@@ -358,7 +358,7 @@ public class UsersXMLFileService {
 
     /**
      * Get a user with particular Id managed by IAM system
-     * @param id User id
+     * @param id User id, e.g., "c0646e06-16f3-4c41-a7a0-2d1dbc10a67d"
      * @param includingPassword True when password should be returned as well
      * @param includingJWT True when JWT should be returned as well
      */
