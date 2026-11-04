@@ -34,6 +34,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -88,6 +89,9 @@ public class QuestionsController {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private IAMService iamService;
 
     /**
      * REST interface to approve answer of asked question
@@ -857,16 +861,14 @@ public class QuestionsController {
         }
          */
 
-        try {
-            contextService.deleteAllTrainedQnAs(domainId);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (AccessDeniedException e) {
-            log.warn(e.getMessage(), e);
-            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            return new ResponseEntity<>(new com.wyona.katie.models.Error(e.getMessage(), "INTERNAL_SERVER_ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
+        String backgroundProcessId = UUID.randomUUID().toString();
+        User user = iamService.getUser(false, false);
+        if (user == null) {
+            log.error("User is not signed in!");
+            return new ResponseEntity<>(new Error("Access denied", "FORBIDDEN"), HttpStatus.FORBIDDEN);
         }
+        contextService.deleteAllTrainedQnAs(domainId, backgroundProcessId, user);
+        return new ResponseEntity<>("{\"process-id\":\"" + backgroundProcessId + "\"}", HttpStatus.OK);
     }
 
     /**

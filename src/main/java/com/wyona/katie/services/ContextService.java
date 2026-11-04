@@ -1022,13 +1022,11 @@ public class ContextService {
     }
 
     /**
-     * Get number of QnAs which a particular domain contains
+     * Get total number of QnAs of a particular domain
      */
     private int getNumberOfQnAs(Context domain) {
         File questionsAnswersDir = domain.getQuestionsAnswersDataPath();
         if (questionsAnswersDir.isDirectory()) {
-            String username = authService.getUsername();
-
             String[] answerUUIDs = questionsAnswersDir.list();
             return answerUUIDs.length;
         } else {
@@ -4956,26 +4954,45 @@ public class ContextService {
      * Delete all trained QnAs of a particular domain, which the user is authorized to access
      * @param domainId Domain Id
      */
-    public void deleteAllTrainedQnAs(String domainId) throws Exception {
-        if (!isMemberOrAdmin(domainId)) {
-            String msg = "User is neither member of domain '" + domainId + "', nor has system role " + Role.ADMIN + "!";
-            log.info(msg);
-            throw new java.nio.file.AccessDeniedException(msg);
+    @Async
+    public void deleteAllTrainedQnAs(String domainId, String bgProcessId, User user) {
+        backgroundProcessService.startProcess(bgProcessId, "Delete all trained QnAs of domain '" + domainId + "' ...", user.getId());
+
+        try {
+            if (!isMemberOrAdmin(domainId, user)) {
+                String msg = "User '" + user.getUsername() + "' is neither member of domain '" + domainId + "', nor has system role " + Role.ADMIN + "!";
+                log.info(msg);
+                throw new java.nio.file.AccessDeniedException(msg);
+            }
+
+            RoleDomain role = xmlService.getRole(user.getId(), domainId);
+            if (!(role == RoleDomain.ADMIN || role == RoleDomain.OWNER)) {
+                String msg = "Member of domain '" + domainId + "' has neither domain role " + RoleDomain.ADMIN + " nor " + RoleDomain.OWNER + "!";
+                log.info(msg);
+                throw new java.nio.file.AccessDeniedException(msg);
+            }
+
+            Context domain = getContext(domainId);
+
+            int batchSize = 500;
+            int totalNumberOfQnAs = getNumberOfQnAs(domain);
+            int numberOfDeletedQuestions = 0;
+            while (totalNumberOfQnAs > 0) {
+                Answer[] qnas = getTrainedQnAs(domain, batchSize, -1);
+                for (Answer qna : qnas) {
+                    deleteTrainedQnA(domain, qna.getUuid());
+                }
+                numberOfDeletedQuestions = numberOfDeletedQuestions + qnas.length;
+                // TODO: What if QnAs are being added in parallel?!
+                totalNumberOfQnAs = totalNumberOfQnAs - batchSize;
+            }
+            backgroundProcessService.updateProcessStatus(bgProcessId, numberOfDeletedQuestions + " QnAs deleted.");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            backgroundProcessService.updateProcessStatus(bgProcessId, e.getMessage(), BackgroundProcessStatusType.ERROR);
         }
 
-        RoleDomain role = xmlService.getRole(authService.getUserId(), domainId);
-        if (!(role == RoleDomain.ADMIN || role == RoleDomain.OWNER)) {
-            String msg = "Member of domain '" + domainId + "' has neither domain role " + RoleDomain.ADMIN + " nor " + RoleDomain.OWNER + "!";
-            log.info(msg);
-            throw new java.nio.file.AccessDeniedException(msg);
-        }
-
-        // TODO: Implement batch delete
-        Context domain = getContext(domainId);
-        Answer[] qnas = getTrainedQnAs(domain, 10, -1);
-        for (Answer qna : qnas) {
-            deleteTrainedQnA(domain, qna.getUuid());
-        }
+        backgroundProcessService.stopProcess(bgProcessId, domainId);
     }
 
     /**
@@ -5063,6 +5080,7 @@ public class ContextService {
             String username = authService.getUsername();
 
             String[] answerUUIDs = questionsAnswersDir.list();
+            //int totalNumberOfQnAs = getNumberOfQnAs(domain);
             log.info("Total number of QnAs contained by domain '" + domain.getId() + "': " + answerUUIDs.length);
 
             for (int i = 0; i < answerUUIDs.length; i++) {
