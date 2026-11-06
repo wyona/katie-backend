@@ -46,6 +46,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     @Autowired
     private EmbeddingsService embeddingsService;
 
+    @Autowired
+    private OpenAIGenerate openAIGenerate;
+
     private static final String ID_FIELD = "id";
     private static final String TEXT_FIELD = "text";
     private static final String VECTOR_FIELD = "vector";
@@ -112,7 +115,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         log.info("Train QnA '" + qna.getUuid() + "' ...");
         Language languageOfQnA = null;
         try {
-            List<String> chunks = getChunks(Utils.getContent(qna), languageOfQnA);
+            List<String> chunks = getChunks(Utils.getContent(qna), languageOfQnA, domain);
             //List<String> chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
 
             IndexWriter writer = null;
@@ -260,14 +263,17 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @param text Text to be decomposed, e.g., "Michael likes oranges, apples and red bicycles"
      * @return independent pieces of information, e.g., "Michael likes oranges", "Michael likes apples", "Michael likes red bicycles"
      */
-    private List<String> getChunks(String text, Language language) throws Exception {
+    private List<String> getChunks(String text, Language language, Context domain) throws Exception {
         List<String> chunks = new ArrayList<>();
 
-        // TODO: Use LLM to decompose text
-        List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(text, language, true);
-        for (CardKeyword keyword : keywords) {
-            chunks.add(keyword.getStem());
-        }
+        StringBuilder PROMPT = new StringBuilder("Decompose the following text into semantically independent pieces of information (Subject -> Relationship -> Object)");
+        PROMPT.append(", as for example 'Michael likes oranges, apples and red bicycles' should be decomposed into the three chunks 'Michael likes oranges', 'Michael likes apples' and 'Michael likes red bicycles'.");
+        PROMPT.append("The Text to be decomposed is: " + text);
+        List<PromptMessage> promptMessages = new ArrayList<>();
+
+        promptMessages.add(new PromptMessage(PromptMessageRole.USER, PROMPT.toString()));
+        String completedText = openAIGenerate.getCompletion(promptMessages, null, domain.getCompletionConfig(false), 0.7).getText();
+        chunks.add(completedText);
 
         return chunks;
     }
