@@ -138,6 +138,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(Sentence question, Context context, int limit) {
         log.error("Find answers ...");
 
+        List<Hit> hits = vectorSimilaritySearch(question.getSentence(), context);
+
+        /*
         Map<String, Double> sumOfScoresById = new HashMap<>();
 
         Language languageOfQuestion = null;
@@ -174,6 +177,8 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             Hit hit = new Hit(new Answer(question.getSentence(), path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, context.getId(), entry.getKey(), null, dateOriginalQuestionSubmitted, true, null, true, null), entry.getValue());
             hits.add(hit);
         }
+
+         */
 
         if (limit > 0 && hits.size() > limit) {
             log.info("Only return " + limit + " hits.");
@@ -266,14 +271,25 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     private List<String> getChunks(String text, Language language, Context domain) throws Exception {
         List<String> chunks = new ArrayList<>();
 
+        String SEPARATOR = "###";
+
         StringBuilder PROMPT = new StringBuilder("Decompose the following text into semantically independent pieces of information (Subject -> Relationship -> Object)");
         PROMPT.append(", as for example 'Michael likes oranges, apples and red bicycles' should be decomposed into the three chunks 'Michael likes oranges', 'Michael likes apples' and 'Michael likes red bicycles'.");
-        PROMPT.append("The Text to be decomposed is: " + text);
+        PROMPT.append(" Separate the independent pieces by thre hashtags'" + SEPARATOR + "'.");
+        PROMPT.append(" The Text to be decomposed is: " + text);
         List<PromptMessage> promptMessages = new ArrayList<>();
 
         promptMessages.add(new PromptMessage(PromptMessageRole.USER, PROMPT.toString()));
+        // TODO: See MulticlassTextClassifierLLMImpl
         String completedText = openAIGenerate.getCompletion(promptMessages, null, domain.getCompletionConfig(false), 0.7).getText();
-        chunks.add(completedText);
+        String[] pieces = completedText.split(SEPARATOR);
+        if (pieces != null && pieces.length > 0) {
+            for (String piece : pieces) {
+                chunks.add(piece);
+            }
+        } else {
+            log.error("No pieces!");
+        }
 
         return chunks;
     }
