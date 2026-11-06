@@ -113,6 +113,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         Language languageOfQnA = null;
         try {
             List<String> chunks = getChunks(Utils.getContent(qna), languageOfQnA);
+            //List<String> chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
 
             IndexWriter writer = null;
             writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig());
@@ -138,6 +139,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
         Language languageOfQuestion = null;
         try {
+            // TODO: Do not split question into keywords
             List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(question.getSentence(), languageOfQuestion, true);
             for (CardKeyword keyword : keywords) {
                 log.info("Keyword: " + keyword);
@@ -260,10 +262,29 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      */
     private List<String> getChunks(String text, Language language) throws Exception {
         List<String> chunks = new ArrayList<>();
+
+        // TODO: Use LLM to decompose text
         List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(text, language, true);
         for (CardKeyword keyword : keywords) {
             chunks.add(keyword.getStem());
         }
+
+        return chunks;
+    }
+
+    /**
+     * Split text into keywords
+     * @param text Text to be split into keywords, e.g., "Michael likes oranges, apples and red bicycles"
+     * @return keywords, e.g., "Michael", "oranges", "apples", "red", "bicycles"
+     */
+    private List<String> getKeywords(String text, Language language) throws Exception {
+        List<String> chunks = new ArrayList<>();
+
+        List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(text, language, true);
+        for (CardKeyword keyword : keywords) {
+            chunks.add(keyword.getStem());
+        }
+
         return chunks;
     }
 
