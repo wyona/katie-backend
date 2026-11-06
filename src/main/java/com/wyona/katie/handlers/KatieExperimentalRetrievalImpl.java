@@ -112,14 +112,14 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         log.info("Train QnA '" + qna.getUuid() + "' ...");
         Language languageOfQnA = null;
         try {
-            List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(Utils.getContent(qna), languageOfQnA, true);
+            List<String> chunks = getChunks(Utils.getContent(qna), languageOfQnA);
 
             IndexWriter writer = null;
             writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig());
 
-            for (CardKeyword keyword : keywords) {
-                log.info("Keyword: " + keyword);
-                indedTextAsVector(writer, keyword.getStem(), qna.getUuid());
+            for (String chunk: chunks) {
+                log.info("Chunk: " + chunk);
+                indedTextAsVector(writer, chunk, qna.getUuid());
             }
 
             writer.close();
@@ -187,7 +187,10 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     }
 
     /**
-     *
+     * Find similar texts
+     * @param text Text for which similar texts should be found
+     * @param domain Domain containing vector embedding index
+     * @return similar texts
      */
     private List<Hit> vectorSimilaritySearch(String text, Context domain) {
         List<Hit> hits = new ArrayList<>();
@@ -251,7 +254,23 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     }
 
     /**
-     *
+     * Decompose text into semantically independent pieces of information (semantic decomposition, fact-based chunking, Subject → Relationship → Object)
+     * @param text Text to be decomposed, e.g., "Michael likes oranges, apples and red bicycles"
+     * @return independent pieces of information, e.g., "Michael likes oranges", "Michael likes apples", "Michael likes red bicycles"
+     */
+    private List<String> getChunks(String text, Language language) throws Exception {
+        List<String> chunks = new ArrayList<>();
+        List<CardKeyword> keywords = KeywordsExtractor.getKeywordsV2(text, language, true);
+        for (CardKeyword keyword : keywords) {
+            chunks.add(keyword.getStem());
+        }
+        return chunks;
+    }
+
+    /**
+     * Index text as vector embedding
+     * @param text Text for which vector embedding should be generated
+     * @param id Id of QnA provided text is associated with
      */
     private void indedTextAsVector(IndexWriter writer, String text, String id) {
         Document doc = new Document();
