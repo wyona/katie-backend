@@ -381,13 +381,31 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
         log.info("Get dense embedding for question ...");
         Vector queryVector = null;
         try {
+            int max_length = 8000; // TODO: Make configurable
+            if (question.length() > max_length) {
+                String truncatedQuestion = question.substring(0, max_length);
+
+                log.warn("Question has more than " + max_length + " characters, therefore truncate question, such that question fits into maximum context length of embedding model.");
+                List<RoleDomain> roles = new ArrayList<>();
+                roles.add(RoleDomain.OWNER);
+                roles.add(RoleDomain.ADMIN);
+                String subject = "WARNING: Question truncated (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
+                StringBuilder body = new StringBuilder("Truncated question:\n");
+                body.append(truncatedQuestion);
+                body.append("\n\n\n");
+                body.append("Original/untruncated question:\n");
+                body.append(question);
+                notificationService.notifyDomainMembers(domain.getId(), roles, subject, body.toString(), false);
+
+                question = truncatedQuestion;
+            }
             queryVector = embeddingsService.getEmbedding(question, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
         } catch (Exception e) {
             log.error("Get embedding for question failed, therefore cannot search for answers");
             List<RoleDomain> roles = new ArrayList<>();
             roles.add(RoleDomain.OWNER);
             roles.add(RoleDomain.ADMIN);
-            String subject = "Get embedding for question failed (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
+            String subject = "ERROR: Get embedding for question failed (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
             StringBuilder body = new StringBuilder(e.getMessage());
             body.append("\n\n\nQuestion:\n");
             int max_length = 500;
@@ -395,8 +413,7 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             if (question.length() > max_length) {
                 body.append(" ... (question truncated)");
             }
-            boolean notificationSent = notificationService.notifyDomainMembers(domain.getId(), roles, subject, body.toString(), false);
-            //log.error(e.getMessage(), e);
+            notificationService.notifyDomainMembers(domain.getId(), roles, subject, body.toString(), false);
             //return answers.toArray(new Hit[0]);
             throw e;
         }
