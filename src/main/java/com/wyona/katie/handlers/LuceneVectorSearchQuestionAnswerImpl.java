@@ -388,7 +388,14 @@ public class LuceneVectorSearchQuestionAnswerImpl implements QuestionAnswerHandl
             roles.add(RoleDomain.OWNER);
             roles.add(RoleDomain.ADMIN);
             String subject = "Get embedding for question failed (Host: " + domain.getHost() + ", Domain: " + domain.getId() + ")";
-            boolean notificationSent = notificationService.notifyDomainMembers(domain.getId(), roles, subject, e.getMessage(), false);
+            StringBuilder body = new StringBuilder(e.getMessage());
+            body.append("\n\n\nQuestion:\n");
+            int max_length = 200;
+            body.append(question.substring(0, Math.min(question.length(), max_length)));
+            if (question.length() > max_length) {
+                body.append(" ... (question truncated)");
+            }
+            boolean notificationSent = notificationService.notifyDomainMembers(domain.getId(), roles, subject, body.toString(), false);
             //log.error(e.getMessage(), e);
             //return answers.toArray(new Hit[0]);
             throw e;
