@@ -31,14 +31,7 @@ import java.util.stream.Collectors;
 @Component
 public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
-    EmbeddingValueType embeddingValueTypeFloat32 = EmbeddingValueType.float32;
     VectorSimilarityFunction vectorSimilarityFunctionCosine = VectorSimilarityFunction.COSINE;
-
-    // TODO: Make embedding configuration configurable
-    //EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.SBERT;
-    //String model = null;
-    EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.OLLAMA;
-    String model = "qwen3-embedding:0.6b";
 
     @Autowired
     private LuceneCodecFactory luceneCodecFactory;
@@ -119,11 +112,11 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             //List<String> chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
 
             IndexWriter writer = null;
-            writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig());
+            writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig(domain));
 
             for (String chunk: chunks) {
                 log.info("Chunk: " + chunk);
-                indedTextAsVector(writer, chunk, qna.getUuid());
+                indedTextAsVector(domain, writer, chunk, qna.getUuid());
             }
 
             writer.close();
@@ -206,7 +199,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         List<Hit> hits = new ArrayList<>();
 
         try {
-            Vector queryVector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_QUERY, embeddingValueTypeFloat32, null, null, null);
+            Vector queryVector = embeddingsService.getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType(), domain.getEmbeddingsDimensions(), domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
@@ -238,10 +231,10 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     /**
      *
      */
-    private IndexWriterConfig getIndexWriterConfig() {
+    private IndexWriterConfig getIndexWriterConfig(Context domain) {
         IndexWriterConfig iwc = new IndexWriterConfig();
         //iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-        iwc.setCodec(luceneCodecFactory.getCodec(embeddingValueTypeFloat32));
+        iwc.setCodec(luceneCodecFactory.getCodec(domain.getEmbeddingValueType()));
         return iwc;
     }
 
@@ -315,7 +308,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @param text Text for which vector embedding should be generated
      * @param id Id of QnA provided text is associated with
      */
-    private void indedTextAsVector(IndexWriter writer, String text, String id) {
+    private void indedTextAsVector(Context domain, IndexWriter writer, String text, String id) {
         Document doc = new Document();
 
         Field idField = new StringField(ID_FIELD, id, Field.Store.YES);
@@ -325,7 +318,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         doc.add(textField);
 
         try {
-            Vector vector = embeddingsService.getEmbedding(text, embeddingsImpl, model, EmbeddingType.SEARCH_DOCUMENT, embeddingValueTypeFloat32, null, null, null);
+            Vector vector = embeddingsService.getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType(), domain.getEmbeddingsDimensions(), domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
             FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), vectorSimilarityFunctionCosine, VectorEncoding.FLOAT32);
             Field vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
