@@ -504,7 +504,7 @@ public class DomainController {
                 completionConfig.setHost(completionHost);
             }
 
-            domainService.updateCompletionConfig(domainid, completionConfig);
+            domainService.updateCompletionConfig(domainid, completionConfig, null);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             // TODO: Consider returning a body
             //return new ResponseEntity<>(body, HttpStatus.OK);
