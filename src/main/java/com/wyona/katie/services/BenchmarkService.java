@@ -91,7 +91,7 @@ public class BenchmarkService {
      * @param rConfig Retrieval configuration
      */
     @Async
-    public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, RetrievalConfiguration rConfig, User user, String processId) {
+    public void runMtebEvaluation(int throttleTimeInMillis, String datasetPath, RetrievalConfiguration rConfig, CompletionConfig completionConfig, User user, String processId) {
         backgroundProcessService.startProcess(processId, "Run MTEB evaluation for datatset '" + datasetPath + "' ...", user.getId());
 
         File corpusFile = null;
@@ -129,6 +129,10 @@ public class BenchmarkService {
                 backgroundProcessService.updateProcessStatus(processId, "Create MTEB evaluation domain '" + domainName + "' ...");
                 Context domain = contextService.createDomain(false, domainName, domainName, false, user);
                 backgroundProcessService.updateProcessStatus(processId, "New domain created: " + domain.getId());
+
+                // Set LLM configuration
+                contextService.updateCompletionConfig(domain.getId(), completionConfig, user);
+                backgroundProcessService.updateProcessStatus(processId, "LLM configured");
 
                 HashMap corpusAnswerIds = indexCorpus(domain, rConfig, processId, corpusFile, throttleTimeInMillis);
 
@@ -289,6 +293,7 @@ public class BenchmarkService {
     /**
      * Index corpus
      * @param rConfig Retrieval configuration
+     * @param corpusFile File containing texts to be indexed, one text per line
      */
     private HashMap indexCorpus(Context domain, RetrievalConfiguration rConfig, String processId, File corpusFile, int throttleTimeInMillis) throws Exception {
         backgroundProcessService.updateProcessStatus(processId, "Indexing corpus '" + corpusFile.getAbsolutePath() + "'...");
@@ -310,10 +315,12 @@ public class BenchmarkService {
             corpusAnswerIds.put(id, answer.getUuid());
         }
         reader.close();
+        backgroundProcessService.updateProcessStatus(processId, numberOfLines + " text snippets added to domain.");
 
         double timeToIndex = -1;
         timeToIndex = new Date().getTime();
 
+        backgroundProcessService.updateProcessStatus(processId, "Start indexing uaing '" + rConfig.getRetrievalImpl() + "' ...");
         Integer embeddingsDimensions = null;
         contextService.reindex(domain.getId(), rConfig.getRetrievalImpl(), null, null, rConfig.getEmbeddingImpl(), rConfig.getEmbeddingModel(), embeddingsDimensions, rConfig.getEmbeddingValueType(), rConfig.getEmbeddingEndpoint(), rConfig.getEmbeddingAPIToken(), false, true, processId, throttleTimeInMillis);
         timeToIndex = (new Date().getTime() - timeToIndex) / 1000.0;
