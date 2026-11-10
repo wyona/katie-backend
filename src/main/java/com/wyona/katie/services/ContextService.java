@@ -1948,6 +1948,7 @@ public class ContextService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL);
+            domain = setEmbeddingConfiguration(domain, embeddingImpl, embeddingModel, embeddingDimensions, embeddingValueType, embeddingEndpoint, apiToken);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH)) {
             domain.setAzureAISearchIndexName(aiServiceBaseUrl);
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
@@ -1962,30 +1963,46 @@ public class ContextService {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.MCP);
         } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
-            domain.setEmbeddingsImpl(embeddingImpl);
-            domain.setEmbeddingsEndpoint(embeddingEndpoint);
-            domain.setEmbeddingsApiToken(apiToken);
+            domain = setEmbeddingConfiguration(domain, embeddingImpl, embeddingModel, embeddingDimensions, embeddingValueType, embeddingEndpoint, apiToken);
+        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
+            // TODO: Replace hard coded SBERT implementation
+            domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
+        } else {
+            log.error("No setter for retrieval implementation " + questionAnswerImplementation + " exists yet!");
+        }
+        return domain;
+    }
 
-            String vectorSimilarityMetric = defaultVectorSearchSimilarityMetric;
+    /**
+     * Set embeddings configuration
+     * @return domain configuration including embeddings configuration
+     */
+    private Context setEmbeddingConfiguration(Context domain, EmbeddingsImpl embeddingImpl, String embeddingModel, Integer embeddingDimensions, EmbeddingValueType embeddingValueType, String embeddingEndpoint, String apiToken) {
+        domain.setEmbeddingsImpl(embeddingImpl);
+        domain.setEmbeddingsEndpoint(embeddingEndpoint);
+        domain.setEmbeddingsApiToken(apiToken);
 
-            if (embeddingImpl != null) {
-                domain.setEmbeddingValueType(embeddingValueType);
+        String vectorSimilarityMetric = defaultVectorSearchSimilarityMetric;
 
-                if (embeddingImpl.equals(EmbeddingsImpl.SBERT)) {
-                    domain.setEmbeddingsModel(null);
+        if (embeddingImpl != null) {
+            domain.setEmbeddingValueType(embeddingValueType);
+
+            if (embeddingImpl.equals(EmbeddingsImpl.SBERT)) {
+                domain.setEmbeddingsModel(null);
+            } else {
+                if (embeddingModel != null && !embeddingModel.isEmpty()) {
+                    domain.setEmbeddingsModel(embeddingModel);
+                    domain.setEmbeddingsDimensions(embeddingDimensions);
                 } else {
-                    if (embeddingModel != null && !embeddingModel.isEmpty()) {
-                        domain.setEmbeddingsModel(embeddingModel);
-                        domain.setEmbeddingsDimensions(embeddingDimensions);
-                    } else {
-                        // INFO: Get default embedding model for embedding implementation
-                        domain.setEmbeddingsModel(aiService.getEmbeddingModel(embeddingImpl, true));
-                    }
+                    // INFO: Get default embedding model for embedding implementation
+                    domain.setEmbeddingsModel(aiService.getEmbeddingModel(embeddingImpl, true));
                 }
+            }
 
-                if (embeddingImpl.equals(EmbeddingsImpl.COHERE)) {
-                    vectorSimilarityMetric = cohereVectorSearchSimilarityMetric;
-                }
+            if (embeddingImpl.equals(EmbeddingsImpl.COHERE)) {
+                vectorSimilarityMetric = cohereVectorSearchSimilarityMetric;
+            }
 
                 /*
                 if (embeddingImpl.equals(EmbeddingsImpl.OPENAI)) {
@@ -2003,18 +2020,12 @@ public class ContextService {
                     domain.setEmbeddingsModel(null);
                 }
                  */
-            } else {
-                domain.setEmbeddingsModel(null);
-            }
-
-            domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(vectorSimilarityMetric));
-        } else if (questionAnswerImplementation.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
-            domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
-            // TODO: Replace hard coded SBERT implementation
-            domain.setEmbeddingsImpl(EmbeddingsImpl.SBERT);
         } else {
-            log.error("No setter for retrieval implementation " + questionAnswerImplementation + " exists yet!");
+            domain.setEmbeddingsModel(null);
         }
+
+        domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(vectorSimilarityMetric));
+
         return domain;
     }
 
@@ -2107,12 +2118,18 @@ public class ContextService {
     /**
      * Update completion / chat configuration used by domain
      */
-    public void updateCompletionConfig(String domainId, CompletionConfig completionConfig) throws Exception {
+    public void updateCompletionConfig(String domainId, CompletionConfig completionConfig, User user) throws Exception {
         if (!existsContext(domainId)) {
             throw new Exception("Domain '" + domainId + "' does not exist!");
         }
-        if (!isMemberOrAdmin(domainId)) {
-            throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+        if (user != null) {
+            if (!isMemberOrAdmin(domainId, user)) {
+                throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+            }
+        } else {
+            if (!isMemberOrAdmin(domainId)) {
+                throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domainId + "', nor has role " + Role.ADMIN + "!");
+            }
         }
 
         Context domain = getContext(domainId);
