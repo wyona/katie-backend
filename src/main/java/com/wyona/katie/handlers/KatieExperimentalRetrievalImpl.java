@@ -74,18 +74,51 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#delete(String, Context)
      */
     public boolean delete(String uuid, Context domain) {
-        log.error("TODO: Implement delete(String, Context) ...");
-        return false;
+        log.info("Deleting lucene documents with id '" + uuid + "' from index of domain '" + domain.getId() + "' ...");
+        try {
+            IndexReader reader = DirectoryReader.open(getIndexDirectory(domain));
+            int numberOfDocsBeforeDeleting = reader.numDocs();
+            log.info("Number of lucene documents before deleting: " + numberOfDocsBeforeDeleting);
+            //log.info("Number of deleted documents: " + reader.numDeletedDocs());
+            reader.close();
+
+            IndexWriter writer = null;
+            try {
+                writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig(domain));
+                Term term = new Term(ID_FIELD, uuid);
+                writer.deleteDocuments(term);
+                // writer.forceMerge(1);
+                writer.close();
+            } catch (Exception e){
+                closeIndexWriter(writer);
+                throw e;
+            }
+
+            reader = DirectoryReader.open(getIndexDirectory(domain));
+            int numberOfDocsAfterDeleting = reader.numDocs();
+            log.info("Number of deleted lucene documents: " + (numberOfDocsBeforeDeleting - numberOfDocsAfterDeleting));
+            log.info("Number of lucene documents after deleting: " + numberOfDocsAfterDeleting);
+            // TODO: Not sure whether the method numDeletedDocs() makes sense here
+            //log.info("Number of deleted documents: " + reader.numDeletedDocs());
+            reader.close();
+
+            return true;
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     /**
      * @see QuestionAnswerHandler#retrain(QnA, Context, boolean)
      */
     public void retrain(QnA qna, Context domain, boolean indexAlternativeQuestions) {
-        log.error("TODO: Finish implementation of retrain(QnA, Context, boolean) ...");
-
-        // TODO: Consider deleting old references
-        train(qna, domain, indexAlternativeQuestions);
+        log.warn("TODO: Delete/train is just a workaround, implement retrain by itself");
+        if (delete(qna.getUuid(), domain)) {
+            train(qna, domain, indexAlternativeQuestions);
+        } else {
+            log.warn("QnA with UUID '" + qna.getUuid() + "' was not deleted and therefore was not retrained!");
+        }
     }
 
     /**
@@ -187,6 +220,20 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     public Hit[] getAnswers(String question, List<String> classifications, Context domain, int limit) {
         log.error("TODO: Implement getAnswers(String, List, Context, int) ...");
         return null;
+    }
+
+    /**
+     *
+     */
+    private void closeIndexWriter(IndexWriter writer) {
+        if (writer != null) {
+            log.error("Something went wrong, but always make sure to close index writer ...");
+            try {
+                writer.close();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
     }
 
     /**
