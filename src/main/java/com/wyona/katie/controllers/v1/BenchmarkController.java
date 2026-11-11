@@ -426,6 +426,16 @@ public class BenchmarkController {
             @RequestParam(value = "dataset-path", required = true) String datasetPath,
             //@Parameter(name = "retrieval-algorithm", description = "Retrieval implementation", required = true)
             @RequestParam(value = "retrieval-algorithm", required = true, defaultValue = "LUCENE_DEFAULT") DetectDuplicatedQuestionImpl retrievalImpl,
+            @RequestParam(value = "embeddings-impl", required = false, defaultValue = "OLLAMA") EmbeddingsImpl embeddingsImpl,
+            @Parameter(name = "embeddings-model", description = "Embeddings model, e.g., 'qwen3-embedding:0.6b' or ", required = false)
+            @RequestParam(value = "embeddings-model", required = false, defaultValue = "qwen3-embedding:0.6b") String embeddingsModel,
+            @RequestParam(value = "completion-impl", required = false, defaultValue = "OPENAI_COMPATIBLE") CompletionImpl completionImpl,
+            @Parameter(name = "completion-model", description = "Completion model, e.g., 'gpt-6-luna'", required = false)
+            @RequestParam(value = "completion-model", required = false, defaultValue = "gpt-6-luna") String completionModel,
+            @Parameter(name = "completion-host", description = "Completion host, e.g., 'https://llm.apache.org'", required = false)
+            @RequestParam(value = "completion-host", required = false) String completionHost,
+            @Parameter(name = "completion-api-key", description = "Completion API key", required = false)
+            @RequestParam(value = "completion-api-key", required = false) String completionApiKey,
             HttpServletRequest request) {
 
         if (!(retrievalImpl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL))) {
@@ -451,17 +461,24 @@ public class BenchmarkController {
 
             RetrievalConfiguration rConfig = new RetrievalConfiguration();
             rConfig.setRetrievalImpl(retrievalImpl);
-            if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
-                //rConfig.setEmbeddingImpl(EmbeddingsImpl.SBERT);
-                //rConfig.setEmbeddingModel("models/sentence-transformers_all-mpnet-base-v2");
+            if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
+                rConfig.setEmbeddingImpl(embeddingsImpl);
+                rConfig.setEmbeddingModel(embeddingsModel);
+                //rConfig.setEmbeddingEndpoint("TODO");
+                //rConfig.setEmbeddingAPIToken("TODO");
+                // Set embeddings dimensions
 
-                rConfig.setEmbeddingImpl(EmbeddingsImpl.OLLAMA);
-                rConfig.setEmbeddingModel("qwen3-embedding:0.6b");
+                rConfig.setEmbeddingValueType(EmbeddingValueType.float32);
+                // TODO: Set VectorSimilarityFunction.COSINE
             }
 
-            // TODO: Only allow Lucene algorithms
+            CompletionConfig completionConfig = new CompletionConfig();
+            completionConfig.setCompletionImpl(completionImpl);
+            completionConfig.setModel(completionModel);
+            completionConfig.setApiKey(completionApiKey);
+            completionConfig.setHost(completionHost);
 
-            bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, user, processId);
+            bmService.runMtebEvaluation(throttleTimeInMillis, datasetPath, rConfig, completionConfig, user, processId);
 
             return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(Exception e) {
