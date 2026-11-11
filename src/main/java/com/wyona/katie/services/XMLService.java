@@ -1588,8 +1588,9 @@ public class XMLService {
         if (ddqi.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL)) {
             log.info("Add element " + CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
             Element katieExperimentalRetrievalElement = doc.createElement(CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
-            // TODO
             doc.getDocumentElement().appendChild(katieExperimentalRetrievalElement);
+
+            setEmbeddingConfiguration(context, katieExperimentalRetrievalElement);
         }
 
         // INFO: Azure AI Search implementation
@@ -1641,34 +1642,9 @@ public class XMLService {
         // INFO: Lucene vector search
         if (ddqi.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH)) {
             Element luceneVectorSearchElement = doc.createElement(CONTEXT_LUCENE_VECTOR_SEARCH_TAG);
-            if (context.getEmbeddingsImpl() != null && !context.getEmbeddingsImpl().equals(EmbeddingsImpl.UNSET)) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR, context.getEmbeddingsImpl().toString());
-            }
-            if (context.getEmbeddingsModel() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR, context.getEmbeddingsModel());
-            }
-            if (context.getEmbeddingsDimensions() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR, context.getEmbeddingsDimensions().toString());
-            }
-            if (context.getEmbeddingValueType() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR, context.getEmbeddingValueType().toString());
-            }
-            if (context.getEmbeddingsEndpoint() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR, context.getEmbeddingsEndpoint());
-            } else {
-                if (context.getEmbeddingsImpl().equals(EmbeddingsImpl.OPENAI_AZURE)) {
-                    log.error("No embeddings endpoint provided!");
-                } else {
-                    log.warn("No embeddings endpoint provided!");
-                }
-            }
-            if (context.getEmbeddingsApiToken() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR, context.getEmbeddingsApiToken());
-            }
-            if (context.getVectorSimilarityMetric() != null) {
-                luceneVectorSearchElement.setAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR, "" + context.getVectorSimilarityMetric());
-            }
             doc.getDocumentElement().appendChild(luceneVectorSearchElement);
+
+            setEmbeddingConfiguration(context, luceneVectorSearchElement);
         }
 
         if (ddqi.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
@@ -1771,6 +1747,84 @@ public class XMLService {
     }
 
     /**
+     * Get embedding configuration
+     */
+    private Context getEmbeddingConfiguration(Context domain, Element embeddingConfigElement) {
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
+            // TODO: Check first whether embeddingsImpl != EmbeddingsImpl.UNSET
+            domain.setEmbeddingsImpl(EmbeddingsImpl.valueOf(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)));
+        }
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR)) {
+            domain.setEmbeddingsModel(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR));
+        }
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR)) {
+            domain.setEmbeddingsDimensions(Integer.parseInt(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR)));
+        }
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)) {
+            domain.setEmbeddingValueType(EmbeddingValueType.valueOf(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)));
+        } else {
+            domain.setEmbeddingValueType(EmbeddingValueType.float32);
+        }
+
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
+            domain.setEmbeddingsEndpoint(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR));
+        } else {
+            if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.OPENAI_AZURE)) {
+                domain.setEmbeddingsEndpoint(defaultOpenAIAzureHost);
+                log.warn("No domain specific embeddings endpoint configured (Domain: " + domain.getId() + "), therefore use globally configured OpenAI Azure endpoint '" + domain.getEmbeddingsEndpoint() + "'.");
+            } else if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.SBERT)) {
+                log.info("SBERT endpoint: " + sbertHostname);
+            } else if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.OLLAMA)) {
+                log.info("Ollama endpoint: " + ollamaDefaultHost);
+            } else {
+                log.error("No embeddings endpoint configured for domain '" + domain.getId() + "'!");
+            }
+        }
+
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR)) {
+            domain.setEmbeddingsApiToken(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR));
+        }
+        if (embeddingConfigElement.hasAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR)) {
+            domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(embeddingConfigElement.getAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR)));
+        }
+
+        return domain;
+    }
+
+    /**
+     * Set embedding configuration
+     */
+    private void setEmbeddingConfiguration(Context domain, Element embeddingConfigElement) {
+        if (domain.getEmbeddingsImpl() != null && !domain.getEmbeddingsImpl().equals(EmbeddingsImpl.UNSET)) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR, domain.getEmbeddingsImpl().toString());
+        }
+        if (domain.getEmbeddingsModel() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR, domain.getEmbeddingsModel());
+        }
+        if (domain.getEmbeddingsDimensions() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR, domain.getEmbeddingsDimensions().toString());
+        }
+        if (domain.getEmbeddingValueType() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR, domain.getEmbeddingValueType().toString());
+        }
+        if (domain.getEmbeddingsEndpoint() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR, domain.getEmbeddingsEndpoint());
+        } else {
+            if (domain.getEmbeddingsImpl().equals(EmbeddingsImpl.OPENAI_AZURE)) {
+                log.error("No embeddings endpoint provided!");
+            } else {
+                log.warn("No embeddings endpoint provided!");
+            }
+        }
+        if (domain.getEmbeddingsApiToken() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR, domain.getEmbeddingsApiToken());
+        }
+        if (domain.getVectorSimilarityMetric() != null) {
+            embeddingConfigElement.setAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR, "" + domain.getVectorSimilarityMetric());
+        }
+    }
+
+    /**
      * Parse domain configuration
      * @param domainId Domain Id
      * @return domain object
@@ -1804,14 +1858,6 @@ public class XMLService {
             name = doc.getDocumentElement().getAttribute(DOMAIN_NAME_ATTR);
         }
 
-        EmbeddingsImpl embeddingsImpl = EmbeddingsImpl.UNSET;
-        String embeddingsModel = null;
-        Integer embeddingsDimensions = null;
-        EmbeddingValueType embeddingValueType = null;
-        String embeddingsEndpoint = null;
-        String embeddingsApiToken = null;
-        String similarityMetricStr = null;
-
         String nerImpl = getAttributeStringValue(doc, CONTEXT_NER_TAG, CONTEXT_NER_IMPL_ATTR, null);
 
         Element mcpEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_MCP_TAG);
@@ -1819,6 +1865,7 @@ public class XMLService {
         Element katieSearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_SEARCH_TAG);
         Element katieExperimentalRetrievalEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_KATIE_EXPERIMENTAL_RETRIEVAL_TAG);
         Element azureAISearchEl = getDirectChildByTagName(doc.getDocumentElement(), CONTEXT_AZURE_AI_SEARCH_TAG);
+
 
         // INFO: Query service configuration
         String qsQueryUrl = null;
@@ -1840,94 +1887,11 @@ public class XMLService {
             }
         }
 
-        // INFO: Milvus configuration
-        String milvusBaseUrl = null;
-        Element milvusEl = getChildByTagName(doc.getDocumentElement(), CONTEXT_MILVUS_TAG, false);
-        if (milvusEl != null && milvusEl.hasAttribute(CONTEXT_MILVUS_BASE_URL_ATTR)) {
-            milvusBaseUrl = milvusEl.getAttribute(CONTEXT_MILVUS_BASE_URL_ATTR);
-
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
-                embeddingsImpl = EmbeddingsImpl.valueOf(milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR));
-            }
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR)) {
-                embeddingsModel = milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR);
-            }
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)) {
-                embeddingValueType = EmbeddingValueType.valueOf(milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR));
-            } else {
-                embeddingValueType = EmbeddingValueType.float32;
-            }
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
-                embeddingsEndpoint = milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
-            }
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR)) {
-                embeddingsApiToken = milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR);
-            }
-            if (milvusEl.hasAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR)) {
-                similarityMetricStr = milvusEl.getAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR);
-            }
-        }
-
         // INFO: Knowledge graph configuration
         String knowledgeGraphQueryUrl = null;
         NodeList knowledgeGraphNL = doc.getElementsByTagName(CONTEXT_KNOWLEDGE_GRAPH_TAG);
         if (knowledgeGraphNL.getLength() > 0) {
             knowledgeGraphQueryUrl = ((Element)knowledgeGraphNL.item(0)).getTextContent();;
-        }
-
-        // INFO: SentenceBERT-Lucene configuration
-        boolean luceneVectorSearch = false;
-        NodeList luceneVectorSearchNL = doc.getElementsByTagName(CONTEXT_LUCENE_VECTOR_SEARCH_TAG);
-        if (luceneVectorSearchNL.getLength() > 0) {
-            luceneVectorSearch = true;
-            Element luceneVectorSearchEl = (Element) luceneVectorSearchNL.item(0);
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
-                embeddingsImpl = EmbeddingsImpl.valueOf(luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR));
-            }
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR)) {
-                embeddingsModel = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_MODEL_ATTR);
-            }
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR)) {
-                embeddingsDimensions = Integer.parseInt(luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_DIMENSIONS_ATTR));
-            }
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR)) {
-                embeddingValueType = EmbeddingValueType.valueOf(luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_VALUE_TYPE_ATTR));
-            } else {
-                embeddingValueType = EmbeddingValueType.float32;
-            }
-
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR)) {
-                embeddingsEndpoint = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDING_ENDPOINT_ATTR);
-            } else {
-                if (embeddingsImpl.equals(EmbeddingsImpl.OPENAI_AZURE)) {
-                    embeddingsEndpoint = defaultOpenAIAzureHost;
-                    log.warn("No domain specific embeddings endpoint configured (Domain: " + domainId + "), therefore use globally configured OpenAI Azure endpoint '" + embeddingsEndpoint + "'.");
-                } else if (embeddingsImpl.equals(EmbeddingsImpl.SBERT)) {
-                    log.info("SBERT endpoint: " + sbertHostname);
-                } else if (embeddingsImpl.equals(EmbeddingsImpl.OLLAMA)) {
-                    log.info("Ollama endpoint: " + ollamaDefaultHost);
-                } else {
-                    log.error("No embeddings endpoint configured for domain '" + domainId + "'!");
-                }
-            }
-
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR)) {
-                embeddingsApiToken = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_API_TOKEN_ATTR);
-            }
-            if (luceneVectorSearchEl.hasAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR)) {
-                similarityMetricStr = luceneVectorSearchEl.getAttribute(CONTEXT_VECTOR_SEARCH_SIMILARITY_METRIC_ATTR);
-            }
-        }
-
-        // INFO: Lucene sparse vector embeddings configuration
-        boolean luceneSparseVectorEmbeddingsRetrieval = false;
-        NodeList luceneSparseVectorEmbeddingsRetrievalNL = doc.getElementsByTagName(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
-        if (luceneSparseVectorEmbeddingsRetrievalNL.getLength() > 0) {
-            luceneSparseVectorEmbeddingsRetrieval = true;
-            Element luceneSparseVectorEmbeddingsRetrievalEl = (Element) luceneSparseVectorEmbeddingsRetrievalNL.item(0);
-            if (luceneSparseVectorEmbeddingsRetrievalEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
-                embeddingsImpl = EmbeddingsImpl.valueOf(luceneSparseVectorEmbeddingsRetrievalEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR));
-            }
         }
 
         // INFO: SentenceBERT
@@ -2083,6 +2047,7 @@ public class XMLService {
         String reindexBackgroundProcessId = getReindexProcessId(domainId);
 
         Context domain = new Context(contextId, contextDir, answersGenerallyProtected, mailBodyAskKatieHost, mailBodyDeepLink, mailSubjectTag, mailSenderEmail, answersMustBeApproved, informUserReModeration, considerHumanFeedback, reRankAnswers, useGenerativeAI, genAIConfig, katieSearchEnabled, reindexBackgroundProcessId);
+
         domain.setInformUserReNoAnswerAvailable(informUserReNoAnswerAvailable);
         domain.setReRankImpl(reRankImpl);
         domain.setReRankLLMImpl(reRankLLMDefaultImpl); // TODO: Make configurable
@@ -2143,9 +2108,13 @@ public class XMLService {
         if (katieSearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE);
         }
+
         if (katieExperimentalRetrievalEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL);
+
+            domain = getEmbeddingConfiguration(domain, katieExperimentalRetrievalEl);
         }
+
         if (azureAISearchEl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.AZURE_AI_SEARCH);
             domain.setAzureAISearchEndpoint(azureAISearchEl.getAttribute(CONTEXT_AZURE_AI_SEARCH_ENDPOINT_ATTR));
@@ -2161,19 +2130,48 @@ public class XMLService {
             domain.setWeaviateQueryUrl(weaviateQueryUrl);
             domain.setWeaviateCertaintyThreshold(weaviateCertaintyThreshold);
         }
+
+        // INFO: Milvus configuration
+        String milvusBaseUrl = null;
+        Element milvusEl = getChildByTagName(doc.getDocumentElement(), CONTEXT_MILVUS_TAG, false);
+        if (milvusEl != null && milvusEl.hasAttribute(CONTEXT_MILVUS_BASE_URL_ATTR)) {
+            milvusBaseUrl = milvusEl.getAttribute(CONTEXT_MILVUS_BASE_URL_ATTR);
+
+            domain = getEmbeddingConfiguration(domain, milvusEl);
+        }
         if (milvusBaseUrl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.MILVUS);
             domain.setMilvusBaseUrl(milvusBaseUrl);
         }
+
         if (knowledgeGraphQueryUrl != null) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.KNOWLEDGE_GRAPH);
             domain.setKnowledgeGraphQueryUrl(knowledgeGraphQueryUrl);
         }
 
+        // INFO: Lucene vector search configuration
+        boolean luceneVectorSearch = false;
+        NodeList luceneVectorSearchNL = doc.getElementsByTagName(CONTEXT_LUCENE_VECTOR_SEARCH_TAG);
+        if (luceneVectorSearchNL.getLength() > 0) {
+            luceneVectorSearch = true;
+            Element luceneVectorSearchEl = (Element) luceneVectorSearchNL.item(0);
+
+            domain = getEmbeddingConfiguration(domain, luceneVectorSearchEl);
+        }
         if (luceneVectorSearch) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH);
         }
 
+        // INFO: Lucene sparse vector embeddings configuration
+        boolean luceneSparseVectorEmbeddingsRetrieval = false;
+        NodeList luceneSparseVectorEmbeddingsRetrievalNL = doc.getElementsByTagName(CONTEXT_LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL_TAG);
+        if (luceneSparseVectorEmbeddingsRetrievalNL.getLength() > 0) {
+            luceneSparseVectorEmbeddingsRetrieval = true;
+            Element luceneSparseVectorEmbeddingsRetrievalEl = (Element) luceneSparseVectorEmbeddingsRetrievalNL.item(0);
+            if (luceneSparseVectorEmbeddingsRetrievalEl.hasAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)) {
+                domain.setEmbeddingsImpl(EmbeddingsImpl.valueOf(luceneSparseVectorEmbeddingsRetrievalEl.getAttribute(CONTEXT_VECTOR_SEARCH_EMBEDDINGS_IMPL_ATTR)));
+            }
+        }
         if (luceneSparseVectorEmbeddingsRetrieval) {
             domain.setDetectDuplicatedQuestionImpl(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL);
         }
@@ -2191,18 +2189,6 @@ public class XMLService {
         // INFO: Set NER implementation
         if (nerImpl != null) {
             domain.setNerImpl(NerImpl.valueOf(nerImpl));
-        }
-
-        if (embeddingsImpl != EmbeddingsImpl.UNSET) {
-            domain.setEmbeddingsImpl(embeddingsImpl);
-            domain.setEmbeddingsModel(embeddingsModel);
-            domain.setEmbeddingValueType(embeddingValueType);
-            domain.setEmbeddingsDimensions(embeddingsDimensions);
-            domain.setEmbeddingsEndpoint(embeddingsEndpoint);
-            domain.setEmbeddingsApiToken(embeddingsApiToken);
-        }
-        if (similarityMetricStr != null) {
-            domain.setVectorSimilarityMetric(VectorSimilarityFunction.valueOf(similarityMetricStr));
         }
 
         return domain;
