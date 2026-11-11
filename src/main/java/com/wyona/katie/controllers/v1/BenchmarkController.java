@@ -424,11 +424,17 @@ public class BenchmarkController {
     public ResponseEntity<?> runMtebEvaluation(
             @Parameter(name = "dataset-path", description = "Dataset path, e.g. 'Wyona/LIMIT-very-small' (https://huggingface.co/datasets/Wyona/LIMIT-very-small) or 'orionweller/LIMIT-small' (https://huggingface.co/datasets/orionweller/LIMIT-small)", required = true)
             @RequestParam(value = "dataset-path", required = true) String datasetPath,
+
             //@Parameter(name = "retrieval-algorithm", description = "Retrieval implementation", required = true)
             @RequestParam(value = "retrieval-algorithm", required = true, defaultValue = "LUCENE_DEFAULT") DetectDuplicatedQuestionImpl retrievalImpl,
             @RequestParam(value = "embeddings-impl", required = false, defaultValue = "OLLAMA") EmbeddingsImpl embeddingsImpl,
-            @Parameter(name = "embeddings-model", description = "Embeddings model, e.g., 'qwen3-embedding:0.6b' or ", required = false)
+            @Parameter(name = "embeddings-model", description = "Embeddings model, e.g., 'qwen3-embedding:0.6b' or 'text-embedding-3-small'", required = false)
             @RequestParam(value = "embeddings-model", required = false, defaultValue = "qwen3-embedding:0.6b") String embeddingsModel,
+            @Parameter(name = "embeddings-endpoint", description = "Embeddings endpoint, e.g., 'https://llm.apache.org/v1/embeddings'", required = false)
+            @RequestParam(value = "embeddings-endpoint", required = false) String embeddingsEndpoint,
+            @Parameter(name = "embeddings-api-key", description = "Embeddings API key", required = false)
+            @RequestParam(value = "embeddings-api-key", required = false) String embeddingsApiKey,
+
             @RequestParam(value = "completion-impl", required = false, defaultValue = "OPENAI_COMPATIBLE") CompletionImpl completionImpl,
             @Parameter(name = "completion-model", description = "Completion model, e.g., 'gpt-6-luna'", required = false)
             @RequestParam(value = "completion-model", required = false, defaultValue = "gpt-6-luna") String completionModel,
@@ -436,6 +442,7 @@ public class BenchmarkController {
             @RequestParam(value = "completion-host", required = false) String completionHost,
             @Parameter(name = "completion-api-key", description = "Completion API key", required = false)
             @RequestParam(value = "completion-api-key", required = false) String completionApiKey,
+
             HttpServletRequest request) {
 
         if (!(retrievalImpl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_DEFAULT) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL))) {
@@ -464,9 +471,9 @@ public class BenchmarkController {
             if (retrievalImpl.equals(DetectDuplicatedQuestionImpl.KATIE_EXPERIMENTAL) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_VECTOR_SEARCH) || retrievalImpl.equals(DetectDuplicatedQuestionImpl.LUCENE_SPARSE_VECTOR_EMBEDDINGS_RETRIEVAL)) {
                 rConfig.setEmbeddingImpl(embeddingsImpl);
                 rConfig.setEmbeddingModel(embeddingsModel);
-                //rConfig.setEmbeddingEndpoint("TODO");
-                //rConfig.setEmbeddingAPIToken("TODO");
-                // Set embeddings dimensions
+                rConfig.setEmbeddingEndpoint(embeddingsEndpoint);
+                rConfig.setEmbeddingAPIToken(embeddingsApiKey);
+                // TODO: Set embeddings dimensions
 
                 rConfig.setEmbeddingValueType(EmbeddingValueType.float32);
                 // TODO: Set VectorSimilarityFunction.COSINE
