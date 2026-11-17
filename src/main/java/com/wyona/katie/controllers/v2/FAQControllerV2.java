@@ -37,6 +37,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
  * Controller to get and set FAQ
  */
 @Slf4j
+@Tag(name = "FAQs Controller v2", description = "Endpoints for managing FAQs")
 @RestController
 @RequestMapping(value = "/api/v2") 
 public class FAQControllerV2 {
@@ -46,9 +47,6 @@ public class FAQControllerV2 {
 
     @Autowired
     private ImportService importService;
-
-    @Autowired
-    private AuthenticationService authService;
 
     @Autowired
     private IAMService iamService;
@@ -199,7 +197,7 @@ public class FAQControllerV2 {
             @RequestParam(value = "language", required = true) String language,
             @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
             @RequestParam(value = "context", required = false) String context,
-            @Parameter(name = "faq", description = "A set of new (without id) or existing (with id) topics including FAQs, whereas question and answer are mandatory for each FAQ", required = true)
+            //@Parameter(name = "faq", description = "A set of new (without id) or existing (with id) topics including FAQs, whereas question and answer are mandatory for each FAQ", required = true)
             @RequestBody FAQ faq,
             HttpServletRequest request) {
 
@@ -211,12 +209,13 @@ public class FAQControllerV2 {
         }
 
         try {
-            boolean isPublic = true; // TODO: Consider isPublic as request parameter
-            String importProcessId = UUID.randomUUID().toString();
+            boolean areFAQsPublic = true; // TODO: Consider areFAQsPublic as request parameter
+            String processId = UUID.randomUUID().toString(); // TODO: Use regular background process instead http://localhost:8044/swagger-ui/index.html#/FAQs%20Controller%20v2/getImportProgress
             User signedInUser = iamService.getUser(false, false);
             boolean indexAlternativeQuestions = true; // TODO: Make configurable
-            importService.batchImportJSON(domain, language, faq, isPublic, signedInUser, importProcessId, indexAlternativeQuestions);
-            return new ResponseEntity<>("{\"import-process-id\":\"" + importProcessId + "\"}", HttpStatus.OK);
+            importService.batchImportJSON(domain, language, faq, areFAQsPublic, signedInUser, processId, indexAlternativeQuestions);
+
+            return new ResponseEntity<>("{\"process-id\":\"" + processId + "\"}", HttpStatus.OK);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity<>(new Error(e.getMessage(), "ERROR"), HttpStatus.INTERNAL_SERVER_ERROR);
