@@ -1,11 +1,19 @@
 package com.wyona.katie.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.wyona.katie.handlers.*;
 import com.wyona.katie.models.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,9 +82,46 @@ public class EmbeddingsService {
      * @param embeddingType Embedding type, such as for example SEARCH_QUERY or SEARCH_DOCUMENT
      * @return multi-vector embeddings
      */
-    public float[][] getMultiVectorEmbeddings(String text, EmbeddingType embeddingType) {
-        // TODO: Get ColBERT embeddings from a third-party microservice, similar to SBERT
-        return null;
+    public float[][] getMultiVectorEmbeddings(String text, EmbeddingType embeddingType) throws Exception {
+        return getMultiVectorEmbeddingsFromColBERTMicroservice(text, embeddingType);
+    }
+
+    /**
+     * Get ColBERT embeddings from a third-party microservice, similar to SBERT
+     * @return multi-vector embeddings
+     */
+    private float[][] getMultiVectorEmbeddingsFromColBERTMicroservice(String text, EmbeddingType embeddingType) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode requestBodyNode = mapper.createObjectNode();
+        requestBodyNode.put("text", text);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Content-Type", "application/json; charset=UTF-8");
+        HttpEntity<String> request = new HttpEntity<String>(requestBodyNode.toString(), headers);
+
+        String requestUrl = "http://127.0.0.1:8000"; // TODO: Make configurable
+        if (embeddingType.equals(EmbeddingType.SEARCH_DOCUMENT)) {
+            requestUrl = requestUrl + "/v1/embed/documents";
+        } else {
+            requestUrl = requestUrl + "/v1/embed/queries";
+        }
+        log.info("Get multi-vector embeddings: " + requestUrl + " (Body: " + requestBodyNode + ")");
+        ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
+        JsonNode responseBodyNode = response.getBody();
+        log.warn("JSON: " + responseBodyNode);
+        JsonNode embeddingsNode = responseBodyNode.get("embeddings");
+        if (embeddingsNode.isArray()) {
+            // TODO: Turn content of embeddingsNode into float[][]
+            log.error("JSON: " + embeddingsNode);
+            float[][][] parsed3D = mapper.readValue(embeddingsNode.toString(), float[][][].class);
+            float[][] embeddings = parsed3D[0];
+            return embeddings;
+        } else {
+            log.error("No multi-vector embeddings received!");
+            return null;
+        }
     }
 
     /**
