@@ -34,6 +34,7 @@ public class ImportService {
 
     /**
      * Batch import of Katie FAQ JSON
+     * @param isPublic True when FAQs are public and false when QnAs are not public
      * @param importProcessId UUID of batch import
      */
     @Async
