@@ -16,13 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Katie experimental retrieval implementation
@@ -302,7 +297,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         List<Hit> hits = new ArrayList<>();
 
         try {
-            // TODO: See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
+            // See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
             float[][] queryTokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_QUERY);
 
             Vector queryVector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
@@ -311,7 +306,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             IndexSearcher searcher = new IndexSearcher(indexReader);
             int k = 10;
             //int k = 50;
-            Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            Query query = new KnnFloatVectorQuery(MULTI_VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
             TopDocs topDocs = searcher.search(query, k);
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = storedFields.document(scoreDoc.doc);
@@ -356,7 +351,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     }
 
     /**
-     *
+     * Get path of directory containing index
      */
     private File getIndexDirectoryPath(Context domain) {
         if (!use_multi_vector) {
