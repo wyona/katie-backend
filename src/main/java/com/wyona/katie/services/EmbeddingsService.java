@@ -110,11 +110,10 @@ public class EmbeddingsService {
         log.info("Get multi-vector embeddings: " + requestUrl + " (Body: " + requestBodyNode + ")");
         ResponseEntity<JsonNode> response = restTemplate.exchange(requestUrl, HttpMethod.POST, request, JsonNode.class);
         JsonNode responseBodyNode = response.getBody();
-        log.warn("JSON: " + responseBodyNode);
+        log.debug("JSON: " + responseBodyNode);
         JsonNode embeddingsNode = responseBodyNode.get("embeddings");
         if (embeddingsNode.isArray()) {
-            // TODO: Turn content of embeddingsNode into float[][]
-            log.error("JSON: " + embeddingsNode);
+            //log.debug("JSON: " + embeddingsNode);
             float[][][] parsed3D = mapper.readValue(embeddingsNode.toString(), float[][][].class);
             float[][] embeddings = parsed3D[0];
             return embeddings;
