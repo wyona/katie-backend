@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 @Component
 public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
+    boolean use_multi_vector = false;
+
     VectorSimilarityFunction vectorSimilarityFunctionCosine = VectorSimilarityFunction.COSINE;
 
     @Autowired
@@ -45,6 +47,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     private static final String ID_FIELD = "id";
     private static final String TEXT_FIELD = "text";
     private static final String VECTOR_FIELD = "vector";
+    private static final String MULTI_VECTOR_FIELD = "token_vectors";
 
     /**
      * @see QuestionAnswerHandler#deleteTenant(Context)
@@ -141,15 +144,24 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         log.info("Train QnA '" + qna.getUuid() + "' ...");
         Language languageOfQnA = null;
         try {
-            List<String> chunks = getChunks(Utils.getContent(qna), languageOfQnA, domain);
-            //List<String> chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
+            List<String> chunks = new ArrayList<>();
+            if (!use_multi_vector) {
+                chunks = getChunks(Utils.getContent(qna), languageOfQnA, domain);
+                //chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
+            } else {
+                chunks.add(Utils.getContent(qna));
+            }
 
             IndexWriter writer = null;
             writer = new IndexWriter(getIndexDirectory(domain), getIndexWriterConfig(domain));
 
             for (String chunk: chunks) {
                 log.info("Chunk: " + chunk);
-                indedTextAsVector(domain, writer, chunk, qna.getUuid());
+                if (!use_multi_vector) {
+                    indedTextAsVector(domain, writer, chunk, qna.getUuid());
+                } else {
+                    indedTextAsMultiVector(domain, writer, chunk, qna.getUuid());
+                }
             }
 
             writer.close();
@@ -162,9 +174,14 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      * @see QuestionAnswerHandler#getAnswers(Sentence, Context, int)
      */
     public Hit[] getAnswers(Sentence question, Context context, int limit) {
-        log.error("Find answers ...");
+        log.info("Find answers ...");
 
-        List<Hit> hits = vectorSimilaritySearch(question.getSentence(), context);
+        List<Hit> hits = new ArrayList<>();
+        if (!use_multi_vector) {
+            hits = vectorSimilaritySearch(question.getSentence(), context);
+        } else {
+            hits = multiVectorSimilaritySearch(question.getSentence(), context);
+        }
 
         /*
         Map<String, Double> sumOfScoresById = new HashMap<>();
@@ -246,7 +263,49 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         List<Hit> hits = new ArrayList<>();
 
         try {
-            Vector queryVector = embeddingsService.getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType(), domain.getEmbeddingsDimensions(), domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
+            Vector queryVector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
+            IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
+            StoredFields storedFields = indexReader.storedFields();
+            IndexSearcher searcher = new IndexSearcher(indexReader);
+            int k = 10;
+            //int k = 50;
+            Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            TopDocs topDocs = searcher.search(query, k);
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document doc = storedFields.document(scoreDoc.doc);
+                String id = doc.get(ID_FIELD);
+                String text_field_value = doc.get(TEXT_FIELD);
+                log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
+                Date dateAnswered = null;
+                Date dateAnswerModified = null;
+                Date dateOriginalQuestionSubmitted = null;
+                String path = Answer.AK_UUID_COLON + id;
+
+                Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
+                hits.add(hit);
+            }
+            indexReader.close();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return hits;
+    }
+
+    /**
+     * Find similar texts using multi-vector embeddings
+     * @param text Text for which similar texts should be found
+     * @param domain Domain containing vector embedding index
+     * @return similar texts
+     */
+    private List<Hit> multiVectorSimilaritySearch(String text, Context domain) {
+        List<Hit> hits = new ArrayList<>();
+
+        try {
+            // TODO: See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
+            float[][] queryTokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_QUERY);
+
+            Vector queryVector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
@@ -286,7 +345,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
     }
 
     /**
-     *
+     * Get directory containing index
      */
     private Directory getIndexDirectory(Context domain) throws Exception {
         File indexDir = getIndexDirectoryPath(domain);
@@ -300,7 +359,11 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
      *
      */
     private File getIndexDirectoryPath(Context domain) {
-        return new File(domain.getContextDirectory(), "katie-experimental-lucene-vector-index");
+        if (!use_multi_vector) {
+            return new File(domain.getContextDirectory(), "katie-experimental-lucene-vector-index");
+        } else {
+            return new File(domain.getContextDirectory(), "katie-experimental-lucene-multi-vector-index");
+        }
     }
 
     /**
@@ -365,10 +428,37 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         doc.add(textField);
 
         try {
-            Vector vector = embeddingsService.getEmbedding(text, domain.getEmbeddingsImpl(), domain.getEmbeddingsModel(), EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType(), domain.getEmbeddingsDimensions(), domain.getEmbeddingsEndpoint(), domain.getEmbeddingsApiToken());
+            Vector vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
             FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), vectorSimilarityFunctionCosine, VectorEncoding.FLOAT32);
             Field vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
+
+            writer.addDocument(doc);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Index text as vector embedding
+     * @param text Text for which vector embedding should be generated
+     * @param id Id of QnA provided text is associated with
+     */
+    private void indedTextAsMultiVector(Context domain, IndexWriter writer, String text, String id) {
+        Document doc = new Document();
+
+        Field idField = new StringField(ID_FIELD, id, Field.Store.YES);
+        doc.add(idField);
+
+        Field textField = new StringField(TEXT_FIELD, text, Field.Store.YES);
+        doc.add(textField);
+
+        try {
+            // See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
+            float[][] tokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_DOCUMENT);
+            Field lateInteractionField = new LateInteractionField(MULTI_VECTOR_FIELD, tokenVectors);
+
+            doc.add(lateInteractionField);
 
             writer.addDocument(doc);
         } catch (Exception e) {
