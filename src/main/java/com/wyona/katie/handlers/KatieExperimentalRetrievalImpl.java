@@ -300,26 +300,28 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             // See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
             float[][] queryTokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_QUERY);
 
-            Vector queryVector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_QUERY, domain.getEmbeddingValueType());
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
             int k = 10;
             //int k = 50;
-            Query query = new KnnFloatVectorQuery(MULTI_VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
-            TopDocs topDocs = searcher.search(query, k);
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document doc = storedFields.document(scoreDoc.doc);
-                String id = doc.get(ID_FIELD);
-                String text_field_value = doc.get(TEXT_FIELD);
-                log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
-                Date dateAnswered = null;
-                Date dateAnswerModified = null;
-                Date dateOriginalQuestionSubmitted = null;
-                String path = Answer.AK_UUID_COLON + id;
+            for (float[] tokenVector : queryTokenVectors) {
+                Query query = new KnnFloatVectorQuery(MULTI_VECTOR_FIELD, tokenVector, k);
+                log.info("Run multi-vector similarity search for token vector with dimension " + tokenVector.length + " ...");
+                TopDocs topDocs = searcher.search(query, k);
+                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                    Document doc = storedFields.document(scoreDoc.doc);
+                    String id = doc.get(ID_FIELD);
+                    String text_field_value = doc.get(TEXT_FIELD);
+                    log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
+                    Date dateAnswered = null;
+                    Date dateAnswerModified = null;
+                    Date dateOriginalQuestionSubmitted = null;
+                    String path = Answer.AK_UUID_COLON + id;
 
-                Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
-                hits.add(hit);
+                    Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
+                    hits.add(hit);
+                }
             }
             indexReader.close();
         } catch (Exception e) {
