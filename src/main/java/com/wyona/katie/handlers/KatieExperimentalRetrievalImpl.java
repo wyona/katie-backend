@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Katie experimental retrieval implementation
+ * Katie experimental retrieval implementations (either using LLM to generate triples or using ColBERT to generate multi-vector embeddings)
  */
 @Slf4j
 @Component
@@ -41,7 +41,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
 
     private static final String ID_FIELD = "id";
     private static final String TEXT_FIELD = "text";
-    private static final String VECTOR_FIELD = "vector";
+    private static final String SINGLE_VECTOR_FIELD = "vector";
     private static final String MULTI_VECTOR_FIELD = "token_vectors";
 
     /**
@@ -142,7 +142,9 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             List<String> chunks = new ArrayList<>();
             if (!use_multi_vector) {
                 chunks = getChunks(Utils.getContent(qna), languageOfQnA, domain);
-                //chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
+                if (false) {
+                    //chunks = getKeywords(Utils.getContent(qna), languageOfQnA);
+                }
             } else {
                 chunks.add(Utils.getContent(qna));
             }
@@ -264,7 +266,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             IndexSearcher searcher = new IndexSearcher(indexReader);
             int k = 10;
             //int k = 50;
-            Query query = new KnnFloatVectorQuery(VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
+            Query query = new KnnFloatVectorQuery(SINGLE_VECTOR_FIELD, ((FloatVector)queryVector).getValues(), k);
             TopDocs topDocs = searcher.search(query, k);
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = storedFields.document(scoreDoc.doc);
@@ -297,32 +299,46 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         List<Hit> hits = new ArrayList<>();
 
         try {
-            // See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
+            // 1. Generate GTE-ModernColBERT query token embeddings ([numQueryTokens][128])
             float[][] queryTokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_QUERY);
+
+            // 2. Pool query tokens into a single 128-dim vector for 1st-pass k-NN lookup
+            float[] pooledQueryVector = meanPoolAndNormalize(queryTokenVectors);
 
             IndexReader indexReader = DirectoryReader.open(getIndexDirectory(domain));
             StoredFields storedFields = indexReader.storedFields();
             IndexSearcher searcher = new IndexSearcher(indexReader);
-            int k = 10;
-            //int k = 50;
-            for (float[] tokenVector : queryTokenVectors) {
-                Query query = new KnnFloatVectorQuery(MULTI_VECTOR_FIELD, tokenVector, k);
-                log.info("Run multi-vector similarity search for token vector with dimension " + tokenVector.length + " ...");
-                TopDocs topDocs = searcher.search(query, k);
-                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                    Document doc = storedFields.document(scoreDoc.doc);
-                    String id = doc.get(ID_FIELD);
-                    String text_field_value = doc.get(TEXT_FIELD);
-                    log.info("Dense vector embedding found with ID '" + id + "', text '" + text_field_value + "' and  and confidence score (" + vectorSimilarityFunctionCosine + ") '" + scoreDoc.score + "'.");
-                    Date dateAnswered = null;
-                    Date dateAnswerModified = null;
-                    Date dateOriginalQuestionSubmitted = null;
-                    String path = Answer.AK_UUID_COLON + id;
 
-                    Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
-                    hits.add(hit);
-                }
+            // 3. First-pass HNSW k-NN retrieval (oversample before MaxSim rescoring)
+            int candidatePoolSize = 100;
+            Query firstPassKnnQuery = new KnnFloatVectorQuery(SINGLE_VECTOR_FIELD, pooledQueryVector, candidatePoolSize);
+            TopDocs initialTopDocs = searcher.search(firstPassKnnQuery, candidatePoolSize);
+
+            // 4. Second-pass ColBERT MaxSim rescoring over LateInteractionField
+            LateInteractionFloatValuesSource valuesSource = new LateInteractionFloatValuesSource(
+                    MULTI_VECTOR_FIELD,
+                    queryTokenVectors,
+                    VectorSimilarityFunction.DOT_PRODUCT
+            );
+            LateInteractionRescorer rescorer = new LateInteractionRescorer(valuesSource);
+
+            int k = 10;
+            TopDocs rescoredDocs = rescorer.rescore(searcher, initialTopDocs, k);
+
+            for (ScoreDoc scoreDoc : rescoredDocs.scoreDocs) {
+                Document doc = storedFields.document(scoreDoc.doc);
+                String id = doc.get(ID_FIELD);
+                String text_field_value = doc.get(TEXT_FIELD);
+                log.info("GTE-ModernColBERT hit ID '" + id + "', text '" + text_field_value + "', MaxSim score '" + scoreDoc.score + "'.");
+
+                Date dateAnswered = null;
+                Date dateAnswerModified = null;
+                Date dateOriginalQuestionSubmitted = null;
+                String path = Answer.AK_UUID_COLON + id;
+                Hit hit = new Hit(new Answer(text, path, null, null, null, null, null, dateAnswered, dateAnswerModified, null, domain.getId(), id, text_field_value, dateOriginalQuestionSubmitted, true, null, true, null), scoreDoc.score);
+                hits.add(hit);
             }
+
             indexReader.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -427,7 +443,7 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         try {
             Vector vector = embeddingsService.getEmbedding(text, domain, EmbeddingType.SEARCH_DOCUMENT, domain.getEmbeddingValueType());
             FieldType vectorFieldType = new CustomVectorFieldType(vector.getDimension(), vectorSimilarityFunctionCosine, VectorEncoding.FLOAT32);
-            Field vectorField = new KnnFloatVectorField(VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
+            Field vectorField = new KnnFloatVectorField(SINGLE_VECTOR_FIELD, ((FloatVector)vector).getValues(), vectorFieldType);
             doc.add(vectorField);
 
             writer.addDocument(doc);
@@ -451,10 +467,17 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
         doc.add(textField);
 
         try {
-            // See for example https://sease.io/2026/04/late-interaction-comes-to-solr-implementation-and-tutorial.html
+            // 1. Generate GTE-ModernColBERT multi-vector embeddings ([numDocTokens][128])
             float[][] tokenVectors = embeddingsService.getMultiVectorEmbeddings(text, EmbeddingType.SEARCH_DOCUMENT);
-            Field lateInteractionField = new LateInteractionField(MULTI_VECTOR_FIELD, tokenVectors);
 
+            // 2. Pool into a single 128-dim vector for 1st-pass HNSW retrieval
+            float[] pooledDocVector = meanPoolAndNormalize(tokenVectors);
+
+            // 1st-pass HNSW vector field (128-dim)
+            doc.add(new KnnFloatVectorField(SINGLE_VECTOR_FIELD, pooledDocVector, VectorSimilarityFunction.DOT_PRODUCT));
+
+            // 2nd-pass ColBERT multi-vector field (128-dim per token)
+            Field lateInteractionField = new LateInteractionField(MULTI_VECTOR_FIELD, tokenVectors);
             doc.add(lateInteractionField);
 
             writer.addDocument(doc);
@@ -462,4 +485,40 @@ public class KatieExperimentalRetrievalImpl implements QuestionAnswerHandler {
             log.error(e.getMessage(), e);
         }
     }
+
+    /**
+     * TODO
+     * @param tokenVectors
+     * @return
+     */
+    private static float[] meanPoolAndNormalize(float[][] tokenVectors) {
+        if (tokenVectors == null || tokenVectors.length == 0) {
+            throw new IllegalArgumentException("tokenVectors must not be empty");
+        }
+        int dim = tokenVectors[0].length; // 128 for GTE-ModernColBERT
+        float[] pooled = new float[dim];
+
+        // 1. Sum across all token vectors
+        for (float[] vec : tokenVectors) {
+            for (int i = 0; i < dim; i++) {
+                pooled[i] += vec[i];
+            }
+        }
+
+        // 2. Mean and L2 norm
+        double normSq = 0.0;
+        for (int i = 0; i < dim; i++) {
+            pooled[i] /= tokenVectors.length;
+            normSq += (double) pooled[i] * pooled[i];
+        }
+
+        float norm = (float) Math.sqrt(normSq);
+        if (norm > 0f) {
+            for (int i = 0; i < dim; i++) {
+                pooled[i] /= norm;
+            }
+        }
+        return pooled;
+    }
+
 }
