@@ -581,9 +581,10 @@ public class XMLService {
     }
 
     /**
-     * Create FAQ for a particular domain and language, but only topics
+     * Create FAQ topics for a particular domain and language
+     * @param topics List of new FAQ topics to be created
      */
-    public Topic[] createFAQ(Context domain, String language, Topic[] topics) throws Exception {
+    public Topic[] createFAQTopics(Context domain, String language, Topic[] topics) throws Exception {
         Document doc = createDocument(FAQ_NAMESPACE_1_0_0, FAQ_TAG);
         for (int i = 0; i < topics.length; i++) {
             Topic topic = topics[i];
@@ -605,7 +606,7 @@ public class XMLService {
             titleEl.setTextContent(topic.getTitle());
             topicEl.appendChild(titleEl);
 
-            com.wyona.katie.models.faq.Question[] questions = topic.getQuestions();
+            //com.wyona.katie.models.faq.Question[] questions = topic.getQuestions();
             Element questionsEl = doc.createElement(FAQ_TOPIC_QUESTIONS_TAG);
             topicEl.appendChild(questionsEl);
         }
@@ -616,7 +617,7 @@ public class XMLService {
         }
         save(doc, file);
 
-        log.info("FAQ for domain '" + domain.getId() + "' and language '" + language + "' has been created persistently.");
+        log.info(topics.length + " FAQ topic(s) for domain '" + domain.getId() + "' and language '" + language + "' have been created persistently.");
 
         return topics;
     }

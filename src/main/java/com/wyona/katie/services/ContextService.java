@@ -2886,10 +2886,10 @@ public class ContextService {
             }
         } else {
             log.info("There are no existing FAQ topics for domain '" + domain.getId() + "' and language '" + language + "', therefore create one ...");
-            importTopics = xmlService.createFAQ(domain, language, importTopics);
+            importTopics = xmlService.createFAQTopics(domain, language, importTopics);
         }
 
-        log.info("Save new QnAs ...");
+        log.info("Save new QnAs and add to FAQ topics ...");
         ArrayList<QnA> qnas = new ArrayList<QnA>();
         for (int i = 0; i < importTopics.length; i++) {
             Topic topic = importTopics[i];
