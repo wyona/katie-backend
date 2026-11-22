@@ -40,7 +40,7 @@ public class CSPNonceFilter implements Filter {
                 "font-src 'self' fonts.gstatic.com; " +
                 //"font-src 'self'; " +
                 "connect-src 'self' *; " +
-                "img-src 'self' data:; " +
+                "img-src 'self' data: https:; " + // INFO: Allow external images (e.g. linked within answers) loaded via HTTPS
                 "object-src 'self'; " +
                 "media-src 'self' blob:; " +
                 "style-src 'self' 'unsafe-inline' fonts.googleapis.com; " +
