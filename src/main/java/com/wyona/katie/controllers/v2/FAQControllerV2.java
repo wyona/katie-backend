@@ -195,15 +195,15 @@ public class FAQControllerV2 {
     public ResponseEntity<?> importFAQ(
             @Parameter(name = "language", description = "Language of FAQ, e.g. 'de' or 'en'",required = true)
             @RequestParam(value = "language", required = true) String language,
-            @Parameter(name = "context", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
-            @RequestParam(value = "context", required = false) String context,
+            @Parameter(name = "domain-id", description = "Domain Id, for example 'wyona', which represents a single realm containing its own set of FAQ, etc.",required = false)
+            @RequestParam(value = "domain-id", required = false) String domainId,
             //@Parameter(name = "faq", description = "A set of new (without id) or existing (with id) topics including FAQs, whereas question and answer are mandatory for each FAQ", required = true)
             @RequestBody FAQ faq,
             HttpServletRequest request) {
 
         Context domain = null;
         try {
-            domain = contextService.getContext(context);
+            domain = contextService.getContext(domainId);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
         }
