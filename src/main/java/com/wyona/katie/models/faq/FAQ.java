@@ -57,16 +57,22 @@ public class FAQ implements Serializable {
     }
 
     /**
-     *
+     * @return true when QnA has been added and false otherwise
      */
-    public void addQnA(String topicId, String uuid) {
+    public boolean addQnA(String topicId, String uuid) {
         log.info("Add QnA with UUID '" + uuid + "' to topic '" + topicId + "' ...");
         Topic topic = getTopic(topicId);
         if (topic != null) {
-            // TODO: Check whether QnA with this UUID is already added
-            topic.addQuestion(uuid, null, null);
+            if (topic.existsQuestion(uuid)) {
+                log.warn("QnA with UUID '" + uuid + "' already exists in topic '" + topicId + "'!");
+                return false;
+            } else {
+                topic.addQuestion(uuid, null, null);
+                return true;
+            }
         } else {
             log.error("No such topic with Id '" + topicId + "'!");
+            return false;
         }
     }
 

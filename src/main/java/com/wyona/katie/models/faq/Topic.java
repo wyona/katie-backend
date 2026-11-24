@@ -99,6 +99,18 @@ public class Topic implements Serializable {
     }
 
     /**
+     * @return true when QnA with given UUID exists and false otherwise
+     */
+    public boolean existsQuestion(String uuid) {
+        for (Question qna: questions) {
+            if (qna.getUuid().equals(uuid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return true when QnA was removed and false otherwise
      */
     public boolean removeQuestion(String uuid) {
