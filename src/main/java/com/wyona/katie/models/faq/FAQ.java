@@ -49,6 +49,14 @@ public class FAQ implements Serializable {
     }
 
     /**
+     * Remove a particular topic
+     * @param id Topic id
+     */
+    public void removeTopic(String id) {
+        topics.remove(getTopic(id));
+    }
+
+    /**
      *
      */
     public void addQnA(String topicId, String uuid) {

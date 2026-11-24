@@ -3684,7 +3684,7 @@ public class ContextService {
         if (qna.getFaqTopicId() != null) {
             String[] uuids = new String[1];
             uuids[0] = qna.getUuid();
-            deleteQnAsFromFAQ(domain, uuids);
+            deleteQnAsFromFAQ(domain, uuids, false);
         }
         if (faqTopicId != null) {
             addQnA2FAQ(domain, faqLanguage.toString(), faqTopicId, qna.getUuid(), false);
@@ -4881,7 +4881,7 @@ public class ContextService {
         String[] uuids = new String[1];
         uuids[0] = uuid;
 
-        deleteQnAsFromFAQ(domain, uuids);
+        deleteQnAsFromFAQ(domain, uuids, false);
         deleteQnAsFromStorage(domain, uuids);
     }
 
@@ -4892,22 +4892,33 @@ public class ContextService {
         String[] uuids = new String[1];
         uuids[0] = uuid;
 
-        deleteQnAsFromFAQ(domain, uuids);
+        deleteQnAsFromFAQ(domain, uuids, false);
         deleteQnAsFromStorage(domain, uuids);
     }
 
     /**
-     * Delete QnAs from FAQ of a particular domain
+     * Delete QnAs from FAQ topic index of a particular domain
      * @param domain Domain associated with QnAs
      * @param uuids Array of UUIDs of QnAs
+     * @param includingEmptyTopic true when empty FAQ topics should be deleted and false otherwise
      */
-    private void deleteQnAsFromFAQ(Context domain, String[] uuids) throws Exception {
+    private void deleteQnAsFromFAQ(Context domain, String[] uuids, boolean includingEmptyTopic) throws Exception {
         log.info("Try to delete QnAs from FAQ of domain '" + domain.getId() + "' ...");
         String[] faqLanguages = domain.getFAQLanguages();
         for (String faqLang: faqLanguages) {
             FAQ faq = getFAQ(domain, faqLang, true, false);
             for (String uuid : uuids) {
                 if (faq.removeQnA(uuid)) {
+
+                    if (includingEmptyTopic) {
+                        for (Topic topic : faq.getTopics()) {
+                            if (topic.getQuestions().length == 0) {
+                                faq.removeTopic(topic.getId());
+                            }
+                        }
+                    }
+
+                    // INFO: Save remaining FAQs persistently
                     xmlService.createFAQ(domain, faqLang, faq);
                     log.info("QnA '" + uuid + "' has been removed from FAQ with language '" + faqLang + "'.");
                 }
@@ -5046,7 +5057,10 @@ public class ContextService {
 
             aiService.clean(domain);
 
-            deleteQnAsFromFAQ(domain, uuids);
+            log.info("Delete all QnAs of domain '" + domainId + "' from FAQ topic index (including topics) ...");
+            deleteQnAsFromFAQ(domain, uuids, true);
+
+            log.info("Delete all QnAs of domain '" + domainId + "' from persistent storage ...");
             deleteQnAsFromStorage(domain, uuids);
 
             File urlsBaseDir = domain.getURLsDataPath();
