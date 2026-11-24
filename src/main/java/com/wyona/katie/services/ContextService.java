@@ -2607,15 +2607,20 @@ public class ContextService {
         }
 
         FAQ faq = getFAQ(domain, language, true, false);
-        faq.addQnA(topicId, uuid);
-        xmlService.addQnAToFAQ(domain, language, topicId, uuid);
 
-        Answer qna = getQnA(null, uuid, domain);
-        qna.setFaqLanguage(Language.valueOf(language));
-        qna.setFaqTopicId(topicId);
-        xmlService.saveQuestionAnswer(qna, domain.getQnAXmlFilePath(uuid));
+        boolean added = faq.addQnA(topicId, uuid);
+        if (added) {
+            xmlService.addQnAToFAQ(domain, language, topicId, uuid);
 
-        log.info("Qna '" + uuid + "' has been added to FAQ persistently.");
+            Answer qna = getQnA(null, uuid, domain);
+            qna.setFaqLanguage(Language.valueOf(language));
+            qna.setFaqTopicId(topicId);
+            xmlService.saveQuestionAnswer(qna, domain.getQnAXmlFilePath(uuid));
+
+            log.info("Qna '" + uuid + "' has been added to FAQ persistently.");
+        } else {
+            log.warn("Qna '" + uuid + "' has not been added to FAQ, because it is probably already contained by FAQ.");
+        }
 
         return faq;
     }
@@ -2908,12 +2913,19 @@ public class ContextService {
                 String url = null; // TODO: Get URL in case one is provided
                 ContentType contentType = null;
 
-                Answer newQnA = new Answer(null, question.getAnswer(), contentType, url, classifications, QnAType.DEFAULT, null, answered, dateAnswerModified, null, domain.getId(), null, question.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
+                Answer newOrUpdatedQnA = null;
+                if (question.getUuid() != null && question.getUuid().length() > 0 &&  existsQnA(question.getUuid(), domain)) {
+                    log.error("QnA with UUID '" + question.getUuid() + "' already exists, therefore update existing QnA ...");
+                    // TODO: Update existing QnA
+                    newOrUpdatedQnA = getQnA(null, question.getUuid(), domain);
+                } else {
+                    newOrUpdatedQnA = new Answer(null, question.getAnswer(), contentType, url, classifications, QnAType.DEFAULT, null, answered, dateAnswerModified, null, domain.getId(), null, question.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
 
-                newQnA = addQuestionAnswer(newQnA, domain);
+                    newOrUpdatedQnA = addQuestionAnswer(newOrUpdatedQnA, domain);
+                }
 
-                addQnA2FAQ(domain, language, topic.getId(), newQnA.getUuid(), false);
-                qnas.add(new QnA(newQnA));
+                addQnA2FAQ(domain, language, topic.getId(), newOrUpdatedQnA.getUuid(), false);
+                qnas.add(new QnA(newOrUpdatedQnA));
             }
         }
 
