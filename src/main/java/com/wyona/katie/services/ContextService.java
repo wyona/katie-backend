@@ -5058,6 +5058,7 @@ public class ContextService {
             aiService.clean(domain);
 
             log.info("Delete all QnAs of domain '" + domainId + "' from FAQ topic index (including topics) ...");
+            // TODO: Consider deleting directly FAQ index files, instead of calling deleteQnAsFromFAQ(...), because this method is called for each QnA, which is not efficient
             deleteQnAsFromFAQ(domain, uuids, true);
 
             log.info("Delete all QnAs of domain '" + domainId + "' from persistent storage ...");
