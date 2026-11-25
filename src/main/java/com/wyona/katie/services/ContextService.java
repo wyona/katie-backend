@@ -2913,14 +2913,14 @@ public class ContextService {
                 String url = null; // TODO: Get URL in case one is provided
                 ContentType contentType = null;
 
-                Answer newOrUpdatedQnA = null;
+                Answer newOrUpdatedQnA = new Answer(null, question.getAnswer(), contentType, url, classifications, QnAType.DEFAULT, null, answered, dateAnswerModified, null, domain.getId(), null, question.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
                 if (question.getUuid() != null && question.getUuid().length() > 0 &&  existsQnA(question.getUuid(), domain)) {
                     log.error("QnA with UUID '" + question.getUuid() + "' already exists, therefore update existing QnA ...");
-                    // TODO: Update existing QnA
-                    newOrUpdatedQnA = getQnA(null, question.getUuid(), domain);
+                    Answer existingQnA = getQnA(null, question.getUuid(), domain);
+                    // TODO: Update question and answer at the same time
+                    updateQuestionOfTrainedQnA(domain, question.getUuid(), question.getQuestion(), false);
+                    newOrUpdatedQnA = updateTrainedQnA(domain, question.getUuid(), question.getAnswer(), existingQnA.getFaqLanguage(), existingQnA.getFaqTopicId());
                 } else {
-                    newOrUpdatedQnA = new Answer(null, question.getAnswer(), contentType, url, classifications, QnAType.DEFAULT, null, answered, dateAnswerModified, null, domain.getId(), null, question.getQuestion(), dateOriginalQuestionSubmitted, isPublic, new Permissions(isPublic), false, user.getId());
-
                     newOrUpdatedQnA = addQuestionAnswer(newOrUpdatedQnA, domain);
                 }
 
@@ -3460,11 +3460,14 @@ public class ContextService {
 
     /**
      * Update question of trained QnA
+     * @param domain Domain of QnA
+     * @param uuid UUID of QnA
      * @param question Updated question
+     * @param checkAuthorization True when authorization must be checked
      * @return updated QnA
      */
-    public Answer updateQuestionOfTrainedQnA(Context domain, String uuid, String question) throws Exception {
-        if (!isMemberOrAdmin(domain.getId())) {
+    public Answer updateQuestionOfTrainedQnA(Context domain, String uuid, String question, boolean checkAuthorization) throws Exception {
+        if (checkAuthorization && !isMemberOrAdmin(domain.getId())) {
             throw new java.nio.file.AccessDeniedException("User is neither member of domain '" + domain.getId() + "', nor has role " + Role.ADMIN + "!");
         }
 

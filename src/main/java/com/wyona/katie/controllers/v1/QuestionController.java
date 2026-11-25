@@ -284,7 +284,7 @@ public class QuestionController {
         log.info("Update question of trained QnA '" + domainid + "' / '" + uuid + "': " + question.getQuestion());
         try {
             Context domain = contextService.getContext(domainid);
-            Answer qna = contextService.updateQuestionOfTrainedQnA(domain, uuid, question.getQuestion());
+            Answer qna = contextService.updateQuestionOfTrainedQnA(domain, uuid, question.getQuestion(), true);
             return new ResponseEntity<>(qna, HttpStatus.OK);
         } catch(AccessDeniedException e) {
             log.warn(e.getMessage());
